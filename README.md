@@ -27,10 +27,10 @@ See [docs/Requirements v0.0.1.md](docs/Requirements%20v0.0.1.md) for complete sp
 
 ### Prerequisites
 
-- Node.js 20+ and pnpm
-- PostgreSQL database
-- S3-compatible storage (AWS S3 or local MinIO)
-- Resend account for emails
+- Node.js 20+ and npm
+- Docker and Docker Compose
+- (Optional) S3-compatible storage for file uploads
+- (Optional) Resend account for emails
 
 ### Installation
 
@@ -42,34 +42,34 @@ cd carbonreport
 
 2. Install dependencies:
 ```bash
-pnpm install
+npm install
 ```
 
-3. Set up environment variables:
+3. Start PostgreSQL in Docker:
+```bash
+docker compose up -d
+```
+
+4. Set up environment variables:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your configuration:
-- `DATABASE_URL`: PostgreSQL connection string
-- `JWT_SECRET`: Random secret (min 32 chars)
-- `RESEND_API_KEY`: API key from resend.com
-- `S3_*`: S3 or MinIO credentials
+Edit `.env` if needed (defaults work for local development):
+- `DATABASE_URL` - Already configured for Docker PostgreSQL
+- `JWT_SECRET` - Default is fine for dev (change in production!)
+- `RESEND_API_KEY` - Optional, leave empty for now
+- `S3_*` - Optional, leave empty for now
 
-4. Initialize database:
+5. Initialize database:
 ```bash
-pnpm db:push      # Create tables
-pnpm db:seed      # Seed templates and questionnaires
-```
-
-5. Generate Prisma Client:
-```bash
-pnpm db:generate
+npm run db:push      # Create tables
+npm run db:seed      # Seed templates and questionnaires
 ```
 
 6. Run development server:
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -77,10 +77,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Database Commands
 
 ```bash
-pnpm db:generate  # Generate Prisma Client
-pnpm db:push      # Push schema to database
-pnpm db:seed      # Seed initial data
-pnpm db:studio    # Open Prisma Studio (GUI)
+# Prisma
+npm run db:generate  # Generate Prisma Client
+npm run db:push      # Push schema to database
+npm run db:seed      # Seed initial data
+npm run db:studio    # Open Prisma Studio (GUI)
+
+# Docker
+docker compose up -d       # Start PostgreSQL
+docker compose down        # Stop PostgreSQL
+docker compose down -v     # Stop and remove volumes (wipe data)
+docker compose logs -f     # View logs
 ```
 
 ## Project Structure
@@ -109,9 +116,12 @@ carbonreport/
 
 ### Option 1: Vercel (Recommended)
 
+### Option 1: Vercel (Recommended)
+
 1. Connect repository to Vercel
-2. Set environment variables in Vercel dashboard
-3. Deploy automatically on push to main
+2. Add PostgreSQL database (Vercel Postgres or Neon/Supabase)
+3. Set environment variables in Vercel dashboard
+4. Deploy automatically on push to main
 
 ### Option 2: Docker
 
@@ -124,10 +134,10 @@ See [docs/Requirements v0.0.1.md § 6.5](docs/Requirements%20v0.0.1.md#65-deploy
 
 ## Development
 
-- `pnpm dev` - Start dev server with Turbopack
-- `pnpm build` - Build for production
-- `pnpm start` - Run production build
-- `pnpm lint` - Run ESLint
+- `npm run dev` - Start dev server with Turbopack
+- `npm run build` - Build for production
+- `npm run start` - Run production build
+- `npm run lint` - Run ESLint
 
 ## Architecture
 
