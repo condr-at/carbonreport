@@ -20,18 +20,18 @@
   * Filters and sorting (if supported by UI component library out-of-the-box)
 * File repository supports search, filter by file type, and optional link to data points.lto template** is stored in `report_templates.metadata.mailto_templates[field_id]` JSONB field.
 * Template variables: `{contact_name}`, `{project_name}`, `{field_label}`, `{hint_text}`, `{user_name}`.
-* System logs the request in `contact_requests` with fields:
+* System logs the request in `data_requests` with fields:
 
   * `id`, `user_id`, `project_id`, `contact_id`, `data_point_id`, `requested_at`, `revoked_at`, `external_access` (default false).
 * If a link between contact and DP is removed, `revoked_at` timestamp is set.
-* Contact request status tracking (pending/received/declined) is **not implemented in MVP**.
+* Data request status tracking (pending/received/declined) is **not implemented in MVP**.
 * **No external user access**: contacts are reference-only, no login capability.action.
 * On click, user selects a contact (existing or new) and a mailto link is generated using a predefined template.
-* System logs the request in `contact_requests` with fields:
+* System logs the request in `data_requests` with fields:
 
   * `id`, `user_id`, `project_id`, `contact_id`, `data_point_id`, `requested_at`, `revoked_at`, `external_access` (default false).
 * If a link between contact and DP is removed, `revoked_at` timestamp is set.
-* Contact request status tracking (pending/received/declined) is **not implemented in MVP**.view
+* Data request status tracking (pending/received/declined) is **not implemented in MVP**.view
 
 A web application designed to create, manage, and complete carbon footprint assessment projects. The platform guides users through project creation via a questionnaire, manages reports generated from standardized templates (e.g., CBAM, ISO 14067), and centralizes data collection and collaboration tools.
 
@@ -149,7 +149,7 @@ Simplified structure based on field-value pairs:
 
 * Each data point allows triggering a “Request Data” action.
 * On click, user selects a contact (existing or new) and a mailto link is generated using a predefined template.
-* System logs the request in `contact_requests` with fields:
+* System logs the request in `data_requests` with fields:
 
   * `id`, `user_id`, `project_id`, `contact_id`, `data_point_id`, `requested_at`, `revoked_at`, `external_access` (default false).
 * If a link between contact and DP is removed, `revoked_at` timestamp is set.
@@ -250,7 +250,7 @@ Simplified structure based on field-value pairs:
 | created_at | Timestamp | —             |
 | updated_at | Timestamp | —             |
 
-### 3.6. Contact Requests
+### 3.6. Data Requests
 
 | Field           | Type      | Notes                |
 | --------------- | --------- | -------------------- |
@@ -343,7 +343,7 @@ Simplified structure based on field-value pairs:
 The following architectural and data model provisions must be included in MVP schemas and APIs to prevent refactoring during expansion:
 
 1. **Dataset JSONB structure** — maintain flexibility for additional data point types; field_id based system allows easy template extension.
-2. **Contact Requests table** — logs all mailto requests for historical tracking; `external_access` field reserved for future link-based sharing (not used in MVP).
+2. **Data Requests table** — logs all mailto requests for historical tracking; `external_access` field reserved for future link-based sharing (not used in MVP).
 3. **External Access field** — reserved for future external collaborator permissions (ignored in MVP).
 4. **Twin Project Field** — prepare nullable `twin_project_id` column for AI-optimized scenario comparison.
 5. **Versioning Hooks** — store `template_id` and `version` for all reports to support template updates.
@@ -515,7 +515,7 @@ carbonreport/
   * Welcome email (post-registration)
   * Email verification link
   * Password reset link
-  * Contact request notifications (optional, future)
+  * Data request notifications (optional, future)
 * **Configuration**: Environment variables for API key; templates can be React components or HTML
 
 ### 7.3. Real-time Updates
@@ -565,7 +565,7 @@ carbonreport/
 ❌ Advanced analytics dashboards  
 ❌ Multi-language support (i18n/l10n)  
 ❌ Rate limiting and abuse prevention  
-❌ Contact request status tracking (pending/received/declined)  
+❌ Data request status tracking (pending/received/declined)  
 ❌ External user access for contacts  
 ❌ Server-side PDF/XLSX generation (use browser print in MVP)  
 ❌ Autosave functionality

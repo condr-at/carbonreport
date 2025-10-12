@@ -27,10 +27,10 @@ model User {
   deletedAt      DateTime? @map("deleted_at")
 
   // Relations
-  projects        Project[]
-  contacts        Contact[]
-  contactRequests ContactRequest[]
-  files           ProjectFile[]
+  projects     Project[]
+  contacts     Contact[]
+  dataRequests DataRequest[]
+  files        ProjectFile[]
 
   @@unique([oauthProvider, oauthId])
   @@map("users")
@@ -52,12 +52,12 @@ model Project {
   deletedAt      DateTime?     @map("deleted_at")
 
   // Relations
-  user            User              @relation(fields: [userId], references: [id])
-  twinProject     Project?          @relation("TwinProjects", fields: [twinProjectId], references: [id])
-  twinProjects    Project[]         @relation("TwinProjects")
-  reports         Report[]
-  files           ProjectFile[]
-  contactRequests ContactRequest[]
+  user         User          @relation(fields: [userId], references: [id])
+  twinProject  Project?      @relation("TwinProjects", fields: [twinProjectId], references: [id])
+  twinProjects Project[]     @relation("TwinProjects")
+  reports      Report[]
+  files        ProjectFile[]
+  dataRequests DataRequest[]
 
   @@map("projects")
 }
@@ -102,13 +102,17 @@ model Contact {
   updatedAt DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  user     User             @relation(fields: [userId], references: [id])
-  requests ContactRequest[]
+  user         User          @relation(fields: [userId], references: [id])
+  dataRequests DataRequest[]
 
   @@map("contacts")
 }
 
-model ContactRequest {
+// ================================
+// Data Requests
+// ================================
+
+model DataRequest {
   id             String    @id @default(uuid())
   userId         String    @map("user_id")
   projectId      String    @map("project_id")
@@ -123,7 +127,7 @@ model ContactRequest {
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   contact Contact @relation(fields: [contactId], references: [id])
 
-  @@map("contact_requests")
+  @@map("data_requests")
 }
 
 // ================================
