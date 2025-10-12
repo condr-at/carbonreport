@@ -49,9 +49,8 @@ Carbon Report Platform
     │   └── Step 3: Select report types
     │
     ├── Project Workspace (/projects/:id)
-    │   ├── Overview (/projects/:id)
+    │   ├── Overview (/projects/:id) — includes Roadmap
     │   ├── Dataset (/projects/:id/dataset)
-    │   ├── Roadmap (/projects/:id/roadmap)
     │   ├── Reports (/projects/:id/reports)
     │   │   ├── Report list
     │   │   └── Report editor (/projects/:id/reports/:reportId)
@@ -96,49 +95,59 @@ The platform uses **4 distinct layout templates**:
 
 **Structure**:
 ```
-┌─────────────────────────────────────┐
-│ Top Nav: Logo | Projects ▼ | User ▼ │
-├─────────────────────────────────────┤
-│                                     │
-│         Page Content                │
-│         (full-width or container)   │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-**Components**:
-- `<DashboardNav />` — Top navigation with dropdowns
-- `<UserMenu />` — Avatar, name, settings, logout
-- `<ProjectsDropdown />` — Quick access to projects
-- `<Breadcrumbs />` — Current location
-
----
-
-#### 3. `ProjectLayout` (project-specific pages)
-**Used by**: All `/projects/:id/*` routes (Overview, Dataset, Roadmap, Reports, Files)
-
-**Structure**:
-```
-┌─────────────────────────────────────┐
-│ Top Nav: Logo | Projects ▼ | User ▼ │
-├──────────┬──────────────────────────┤
+┌──────────┬──────────────────────────┐
 │          │                          │
-│ Sidebar  │   Page Content           │
+│          │   Page Content           │
+│ Sidebar  │   (main workspace)       │
 │          │                          │
-│ Overview │   (main workspace)       │
-│ Dataset  │                          │
-│ Roadmap  │                          │
-│ Reports  │                          │
-│ Files    │                          │
+│ Dashboard│                          │
+│ Projects │                          │
+│ Contacts │                          │
+│ Settings │                          │
+│          │                          │
+│ ─────────│                          │
+│ User     │                          │
 │          │                          │
 └──────────┴──────────────────────────┘
 ```
 
 **Components**:
-- `<DashboardNav />` — Same as DashboardLayout
-- `<ProjectSidebar />` — Project navigation tabs
-- `<ProjectBreadcrumbs />` — Dashboard > [Project Name] > [Current Page]
+- `<MainSidebar />` — Left sidebar with main navigation (Dashboard, Projects, Contacts, Settings)
+- `<UserMenu />` — At bottom of sidebar: Avatar, name, logout
+- `<Breadcrumbs />` — At top of content area
+
+---
+
+#### 3. `ProjectLayout` (project-specific pages)
+**Used by**: All `/projects/:id/*` routes (Overview, Dataset, Reports, Files)
+
+**Structure**:
+```
+┌──────────┬──────────────────────────┐
+│          │                          │
+│          │  Project Header          │
+│ Main     │  [Project Name] [Badge]  │
+│ Sidebar  │                          │
+│          │  ┌─────────────────────┐ │
+│ Dashboard│  │ Tabs: Overview |    │ │
+│ Projects │  │ Dataset | Reports | │ │
+│ Contacts │  │ Files               │ │
+│ Settings │  └─────────────────────┘ │
+│          │                          │
+│          │   Tab Content            │
+│ ─────────│   (Overview shows        │
+│ User     │    Roadmap inside)       │
+│          │                          │
+└──────────┴──────────────────────────┘
+```
+
+**Components**:
+- `<MainSidebar />` — Same as DashboardLayout (left sidebar)
 - `<ProjectHeader />` — Project name, status badge, actions
+- `<ProjectTabs />` — Horizontal tabs: Overview, Dataset, Reports, Files
+- `<ProjectBreadcrumbs />` — Dashboard > Projects > [Project Name]
+
+**Note**: Roadmap is integrated into Overview tab, not a separate tab
 
 ---
 
