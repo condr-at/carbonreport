@@ -28,7 +28,7 @@ See [docs/Requirements v0.0.1.md](docs/Requirements%20v0.0.1.md) for complete sp
 ### Prerequisites
 
 - Node.js 20+ and npm
-- Docker and Docker Compose
+- Supabase account (free tier works fine)
 - (Optional) S3-compatible storage for file uploads
 - (Optional) Resend account for emails
 
@@ -45,26 +45,30 @@ cd carbonreport
 npm install
 ```
 
-3. Start PostgreSQL in Docker:
-```bash
-docker compose up -d
-```
+3. Set up Supabase database:
+
+**Option A: Use existing Supabase project**
+- Go to [supabase.com](https://supabase.com) and create/open your project
+- Navigate to **Settings → Database**
+- Copy **Connection string** from **Session Pooler** (port 5432)
+
+**Option B: Use provided connection string**
+- Already configured in `.env.example`
 
 4. Set up environment variables:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` if needed (defaults work for local development):
-- `DATABASE_URL` - Already configured for Docker PostgreSQL
+Edit `.env` with your Supabase connection string:
+- `DATABASE_URL` - Supabase Session Pooler URL (port 5432)
 - `JWT_SECRET` - Default is fine for dev (change in production!)
 - `RESEND_API_KEY` - Optional, leave empty for now
 - `S3_*` - Optional, leave empty for now
 
 5. Initialize database:
 ```bash
-npm run db:push      # Create tables
-npm run db:seed      # Seed templates and questionnaires
+npm run db:push      # Create tables in Supabase
 ```
 
 6. Run development server:
@@ -79,15 +83,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```bash
 # Prisma
 npm run db:generate  # Generate Prisma Client
-npm run db:push      # Push schema to database
-npm run db:seed      # Seed initial data
-npm run db:studio    # Open Prisma Studio (GUI)
-
-# Docker
-docker compose up -d       # Start PostgreSQL
-docker compose down        # Stop PostgreSQL
-docker compose down -v     # Stop and remove volumes (wipe data)
-docker compose logs -f     # View logs
+npm run db:push      # Push schema to Supabase
+npm run db:studio    # Open Prisma Studio (GUI for Supabase)
 ```
 
 ## Project Structure
@@ -119,15 +116,21 @@ carbonreport/
 ### Option 1: Vercel (Recommended)
 
 1. Connect repository to Vercel
-2. Add PostgreSQL database (Vercel Postgres or Neon/Supabase)
-3. Set environment variables in Vercel dashboard
+2. Add PostgreSQL database:
+   - **Vercel Postgres** (recommended, integrated)
+   - Or use existing Supabase project
+3. Set environment variables in Vercel dashboard:
+   - `DATABASE_URL` - Use Transaction Pooler (port 6543) for production
 4. Deploy automatically on push to main
 
-### Option 2: Docker
+### Option 2: Self-hosted (Docker)
 
 ```bash
 docker build -t carbonreport .
-docker run -p 3000:3000 carbonreport
+docker run -p 3000:3000 \
+  -e DATABASE_URL="your-supabase-url" \
+  -e JWT_SECRET="your-secret" \
+  carbonreport
 ```
 
 See [docs/Requirements v0.0.1.md § 6.5](docs/Requirements%20v0.0.1.md#65-deployment) for details.
