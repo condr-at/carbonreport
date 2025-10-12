@@ -69,35 +69,22 @@ enum ProjectStatus {
 }
 
 // ================================
-// Reports & Templates
+// Reports
 // ================================
 
 model Report {
-  id         String   @id @default(uuid())
-  projectId  String   @map("project_id")
-  templateId String   @map("template_id")
-  completion Float    @default(0) // 0-100%
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid())
+  projectId    String   @map("project_id")
+  templateCode String   @map("template_code") // "ISO14067", "CBAM", etc.
+  data         Json     @default("{}") // Filled report data
+  completion   Float    @default(0) // 0-100%
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  project  Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  template ReportTemplate @relation(fields: [templateId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("reports")
-}
-
-model ReportTemplate {
-  id       String @id @default(uuid())
-  code     String @unique // ISO14067, CBAM, etc.
-  name     String
-  version  String
-  metadata Json   // JSONB: fields, labels, mailto templates, hints, validation
-
-  // Relations
-  reports Report[]
-
-  @@map("report_templates")
 }
 
 // ================================
@@ -165,19 +152,4 @@ enum FileStatus {
   UPLOADED
   PROCESSED
   LINKED
-}
-
-// ================================
-// Questionnaire Registry
-// ================================
-
-model QuestionnaireRegistry {
-  id        String   @id @default(uuid())
-  version   String   @unique
-  rules     Json     // JSONB: questions and mappings
-  active    Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("questionnaire_registry")
 }
