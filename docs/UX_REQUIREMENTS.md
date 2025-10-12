@@ -1,6 +1,433 @@
-# User Flow & Page Structure
+# UX Requirements & Information Architecture
 
-Diagrams describing the page structure and user navigation within the Carbon Report Platform.
+Complete UX specifications including information architecture, page hierarchy, reusable components, user flows, and navigation patterns for the Carbon Report Platform.
+
+---
+
+## Table of Contents
+
+1. [Information Architecture](#information-architecture)
+   - [Site Map](#site-map)
+   - [Layout Templates](#layout-templates)
+   - [Reusable Page Blocks](#reusable-page-blocks)
+   - [Component Hierarchy](#component-hierarchy)
+   - [Page-to-API Mapping](#page-to-api-mapping)
+2. [Navigation Overview](#navigation-overview)
+3. [Page Architecture](#page-architecture)
+4. [Core User Stories](#core-user-stories)
+5. [Navigation Structure](#navigation-structure-header--sidebar)
+6. [Delivery Priorities](#delivery-priorities-mvp)
+7. [Technical Notes](#technical-notes)
+
+---
+
+## Information Architecture
+
+### Site Map
+
+```
+Carbon Report Platform
+│
+├── Public (unauthenticated)
+│   ├── Landing (/)
+│   ├── Login (/login)
+│   ├── Register (/register)
+│   ├── Email Verification (/verify-email)
+│   └── Forgot Password (/forgot-password)
+│
+└── Protected (authenticated)
+    ├── Dashboard (/dashboard)
+    │   └── Project list with actions
+    │
+    ├── Contacts (/contacts)
+    │   ├── Address book grid
+    │   └── Request history per contact
+    │
+    ├── Project Creation Flow (/projects/new)
+    │   ├── Step 1: Project name
+    │   ├── Step 2 (optional): Questionnaire
+    │   └── Step 3: Select report types
+    │
+    ├── Project Workspace (/projects/:id)
+    │   ├── Overview (/projects/:id)
+    │   ├── Dataset (/projects/:id/dataset)
+    │   ├── Roadmap (/projects/:id/roadmap)
+    │   ├── Reports (/projects/:id/reports)
+    │   │   ├── Report list
+    │   │   └── Report editor (/projects/:id/reports/:reportId)
+    │   │       └── Print view (/projects/:id/reports/:reportId/print)
+    │   └── Files (/projects/:id/files)
+    │
+    └── Settings (/settings)
+        ├── Profile (/settings/profile)
+        └── Password (/settings/password)
+```
+
+### Layout Templates
+
+The platform uses **4 distinct layout templates**:
+
+#### 1. `PublicLayout` (unauthenticated pages)
+**Used by**: Landing, Login, Register, Verify Email, Forgot Password
+
+**Structure**:
+```
+┌─────────────────────────────────────┐
+│ Header: Logo + Login/Register btns  │
+├─────────────────────────────────────┤
+│                                     │
+│         Page Content                │
+│         (centered, max-w-4xl)       │
+│                                     │
+├─────────────────────────────────────┤
+│ Footer: Links, Copyright            │
+└─────────────────────────────────────┘
+```
+
+**Components**:
+- `<PublicHeader />` — Logo, navigation links, CTA buttons
+- `<Footer />` — Site links, legal, social media
+- `<AuthCard />` — Centered card for auth forms
+
+---
+
+#### 2. `DashboardLayout` (main authenticated pages)
+**Used by**: Dashboard, Contacts, Settings
+
+**Structure**:
+```
+┌─────────────────────────────────────┐
+│ Top Nav: Logo | Projects ▼ | User ▼ │
+├─────────────────────────────────────┤
+│                                     │
+│         Page Content                │
+│         (full-width or container)   │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Components**:
+- `<DashboardNav />` — Top navigation with dropdowns
+- `<UserMenu />` — Avatar, name, settings, logout
+- `<ProjectsDropdown />` — Quick access to projects
+- `<Breadcrumbs />` — Current location
+
+---
+
+#### 3. `ProjectLayout` (project-specific pages)
+**Used by**: All `/projects/:id/*` routes (Overview, Dataset, Roadmap, Reports, Files)
+
+**Structure**:
+```
+┌─────────────────────────────────────┐
+│ Top Nav: Logo | Projects ▼ | User ▼ │
+├──────────┬──────────────────────────┤
+│          │                          │
+│ Sidebar  │   Page Content           │
+│          │                          │
+│ Overview │   (main workspace)       │
+│ Dataset  │                          │
+│ Roadmap  │                          │
+│ Reports  │                          │
+│ Files    │                          │
+│          │                          │
+└──────────┴──────────────────────────┘
+```
+
+**Components**:
+- `<DashboardNav />` — Same as DashboardLayout
+- `<ProjectSidebar />` — Project navigation tabs
+- `<ProjectBreadcrumbs />` — Dashboard > [Project Name] > [Current Page]
+- `<ProjectHeader />` — Project name, status badge, actions
+
+---
+
+#### 4. `PrintLayout` (report export)
+**Used by**: `/projects/:id/reports/:reportId/print`
+
+**Structure**:
+```
+┌─────────────────────────────────────┐
+│                                     │
+│   Report Header (logo, metadata)    │
+│                                     │
+│   Report Content                    │
+│   (optimized for PDF)               │
+│                                     │
+│   Footer (page numbers, date)       │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Features**:
+- No navigation elements
+- Print-optimized CSS (`@media print`)
+- A4 page breaks
+- High-contrast text
+- No interactive elements
+
+---
+
+### Reusable Page Blocks
+
+These are **composite components** used across multiple pages:
+
+#### Data & Content Blocks
+
+**`<ProjectCard />`** — Used in: Dashboard
+```tsx
+ProjectCard {
+  - Thumbnail/icon
+  - Project name
+  - Status badge (Active/Archived)
+  - Completion percentage
+  - Last updated timestamp
+  - Quick actions: Open, Duplicate, Archive
+}
+```
+
+**`<DataPointRow />`** — Used in: Dataset, Report Editor
+```tsx
+DataPointRow {
+  - Field ID (with FieldId enum)
+  - Label (from template)
+  - Value input (text, number, date, etc.)
+  - "Request Data" button
+  - Last updated indicator
+  - Validation status icon
+}
+```
+
+**`<ReportCard />`** — Used in: Project Reports list
+```tsx
+ReportCard {
+  - Template icon (ISO14067, CBAM)
+  - Template name
+  - Completion bar (0-100%)
+  - Last updated
+  - Actions: Open, Print, Remove
+}
+```
+
+**`<ContactSelector />`** — Used in: Request Data dialogs
+```tsx
+ContactSelector {
+  - Search/filter contacts
+  - Contact list (name, position, company)
+  - "Create new contact" inline form
+  - Select button
+}
+```
+
+**`<RequestDataDialog />`** — Used in: Dataset, Report Editor
+```tsx
+RequestDataDialog {
+  - Field name display
+  - <ContactSelector />
+  - Mailto template preview
+  - "Send Request" button (opens email client)
+  - Request history for this field
+}
+```
+
+**`<FileUploadZone />`** — Used in: Files page, Contact forms
+```tsx
+FileUploadZone {
+  - Drag-and-drop area
+  - File browser button
+  - Upload progress indicator
+  - File list with thumbnails
+  - Link to data point selector
+}
+```
+
+---
+
+#### Navigation Blocks
+
+**`<Breadcrumbs />`** — Used in: All dashboard pages
+```tsx
+Breadcrumbs {
+  - Dashboard > Projects > [Project Name] > Dataset
+  - Clickable navigation trail
+  - Current page highlighted
+}
+```
+
+**`<Pagination />`** — Used in: Dashboard, Contacts, Dataset (if large)
+```tsx
+Pagination {
+  - Page numbers
+  - Prev/Next buttons
+  - Items per page selector
+  - Total count display
+}
+```
+
+**`<Tabs />`** — Used in: Settings, Project Overview
+```tsx
+Tabs {
+  - Tab list (Profile, Password, etc.)
+  - Active tab indicator
+  - Tab panels with content
+}
+```
+
+---
+
+#### Forms & Inputs
+
+**`<DataTable />`** — Used in: Dataset, Contacts
+```tsx
+DataTable {
+  - Column headers (sortable)
+  - Row selection checkboxes
+  - Inline editing (double-click cell)
+  - Filters per column
+  - Bulk actions toolbar
+  - Export CSV button
+}
+```
+
+**`<WizardSteps />`** — Used in: Project Creation flow
+```tsx
+WizardSteps {
+  - Step indicators (1/3, 2/3, 3/3)
+  - Progress bar
+  - Back/Next buttons
+  - "Exit to Dashboard" button
+  - Step validation
+}
+```
+
+**`<FormFieldGroup />`** — Used in: All forms
+```tsx
+FormFieldGroup {
+  - Label with required indicator
+  - Input component (varies by type)
+  - Helper text / placeholder
+  - Validation error message
+  - "Request Data" button (for report fields)
+}
+```
+
+---
+
+#### Status & Feedback
+
+**`<CompletionBar />`** — Used in: Project cards, Reports, Roadmap
+```tsx
+CompletionBar {
+  - Percentage display (33%)
+  - Progress bar (colored by completion)
+  - Filled vs Required count (5/15)
+}
+```
+
+**`<StatusBadge />`** — Used in: Projects, Reports, Contacts
+```tsx
+StatusBadge {
+  - Color-coded (green=Active, gray=Archived, red=Error)
+  - Icon + text label
+  - Variants: project status, request status, validation status
+}
+```
+
+**`<Toast />`** — Used in: All pages (for notifications)
+```tsx
+Toast {
+  - Success/Error/Warning/Info variants
+  - Auto-dismiss after 5s
+  - Action button (Undo, Retry)
+  - Close button
+}
+```
+
+**`<EmptyState />`** — Used in: Dashboard (no projects), Contacts (empty), Files (no uploads)
+```tsx
+EmptyState {
+  - Illustration/icon
+  - Title ("No projects yet")
+  - Description ("Create your first project to get started")
+  - Primary CTA button
+}
+```
+
+---
+
+### Component Hierarchy
+
+```
+Pages (unique, route-specific)
+│
+├── Layout Templates (4 types)
+│   ├── PublicLayout
+│   ├── DashboardLayout
+│   ├── ProjectLayout
+│   └── PrintLayout
+│
+├── Page Blocks (composite, reusable)
+│   ├── <ProjectCard />
+│   ├── <DataPointRow />
+│   ├── <ReportCard />
+│   ├── <ContactSelector />
+│   ├── <RequestDataDialog />
+│   ├── <FileUploadZone />
+│   ├── <Breadcrumbs />
+│   ├── <Pagination />
+│   ├── <DataTable />
+│   ├── <WizardSteps />
+│   ├── <CompletionBar />
+│   ├── <StatusBadge />
+│   └── <EmptyState />
+│
+└── UI Components (atomic, from DESIGN_SYSTEM.md)
+    ├── <Button />
+    ├── <Input />
+    ├── <Select />
+    ├── <Card />
+    ├── <Dialog />
+    ├── <Dropdown />
+    ├── <Badge />
+    ├── <Avatar />
+    ├── <Checkbox />
+    └── ...50+ more from shadcn/ui
+```
+
+**Implementation Location**:
+- **Pages**: `src/app/**/*.tsx`
+- **Layout Templates**: `src/app/(public)/layout.tsx`, `src/app/(dashboard)/layout.tsx`
+- **Page Blocks**: `src/components/blocks/`
+- **UI Components**: `src/components/ui/` (from shadcn/ui)
+
+---
+
+### Page-to-API Mapping
+
+This table shows which API endpoints each page uses:
+
+| Page | API Endpoints | Data Flow |
+|------|---------------|-----------|
+| **Dashboard** | `GET /api/projects` | Fetches all projects with status, completion |
+| **Create Project** | `POST /api/projects` | Creates project with mailtoTemplates, dataset, reports |
+| **Project Overview** | `GET /api/projects/:id` | Project metadata, stats |
+| **Dataset** | `GET /api/projects/:id/dataset`<br>`PUT /api/projects/:id/dataset` | Fetch dataset + version<br>Update with optimistic locking |
+| **Roadmap** | `GET /api/projects/:id` (checklist field) | Roadmap items from Project.checklist JSONB |
+| **Reports List** | `GET /api/projects/:id` (with reports relation) | List of reports with templateCode, completion |
+| **Report Editor** | `GET /api/projects/:id/reports/:reportId` | Template config + filtered dataset + completion |
+| **Report Print** | Same as Report Editor | Read-only view, no API calls on render |
+| **Files** | `GET /api/projects/:id/files`<br>`POST /api/projects/:id/files` | List files<br>Upload to S3 |
+| **Contacts** | `GET /api/contacts`<br>`POST /api/contacts` | List all user contacts<br>Create contact |
+| **Request Data** | `POST /api/data-requests` | Create request record, log to DB |
+| **Mailto Templates** | `GET /api/projects/:id/mailto-templates`<br>`PUT /api/projects/:id/mailto-templates/:fieldId` | Get all templates<br>Update specific template |
+| **Settings** | `GET /api/users/me`<br>`PUT /api/users/me` | Current user info<br>Update profile |
+
+**Key Patterns**:
+- **Optimistic Locking**: Dataset page sends `datasetVersion` with PUT, handles 409 Conflict
+- **Filtered Views**: Report Editor reads `Project.dataset`, filters by template field_ids
+- **Mailto Generation**: Client-side, no API call (uses template from `Project.mailtoTemplates`)
+
+---
 
 ## Navigation Overview
 

@@ -34,15 +34,19 @@ Visual design system and UI component specifications.
 
 ---
 
-### 👤 [USER_FLOW.md](./USER_FLOW.md)
-User journey documentation and interaction patterns.
+### 👤 [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md)
+UX specifications, information architecture, and user interaction patterns.
 
 **Contents**:
-- Step-by-step user flows
-- Screen wireframes and navigation
-- User stories and scenarios
+- Information Architecture (site map, layouts, page blocks)
+- Layout templates (PublicLayout, DashboardLayout, ProjectLayout, PrintLayout)
+- Reusable page blocks (ProjectCard, DataPointRow, ContactSelector, etc.)
+- Component hierarchy (Pages → Blocks → UI Components)
+- Page-to-API mapping (which endpoints each page uses)
+- User flows and navigation diagrams
+- Screen wireframes and scenarios
 
-**When to use**: Understanding user experience, planning features, UX reviews
+**When to use**: Understanding user experience, planning features, UX reviews, frontend architecture
 
 ---
 
@@ -76,13 +80,14 @@ Development progress tracker and implementation roadmap.
 
 **New to the project?**
 1. Start with [Requirements v0.0.1](./Requirements%20v0.0.1.md)
-2. Read [USER_FLOW.md](./USER_FLOW.md) to understand user experience
+2. Read [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md) to understand user experience
 3. Check [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md) for current status
 
 **Building frontend?**
 1. Read [API_REFERENCE.md](./API_REFERENCE.md) for endpoint specs
-2. Use [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) for UI components
-3. Follow [USER_FLOW.md](./USER_FLOW.md) for navigation patterns
+2. Use [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md) for page structure and IA
+3. Use [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) for UI components
+4. Follow page-to-API mapping for data flow
 
 **Working on backend?**
 1. Refer to [Requirements v0.0.1](./Requirements%20v0.0.1.md) for data model
@@ -96,8 +101,8 @@ Development progress tracker and implementation roadmap.
 | Document | Status | Last Updated |
 |----------|--------|--------------|
 | Requirements v0.0.1 | ✅ Complete | Oct 12, 2025 |
+| UX_REQUIREMENTS | ✅ Complete | Oct 12, 2025 |
 | DESIGN_SYSTEM | ✅ Complete | Oct 12, 2025 |
-| USER_FLOW | ✅ Complete | Oct 12, 2025 |
 | API_REFERENCE | ✅ Complete | Oct 12, 2025 |
 | IMPLEMENTATION_CHECKLIST | 🟡 In Progress | Oct 12, 2025 |
 

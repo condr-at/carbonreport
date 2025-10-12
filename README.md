@@ -179,9 +179,9 @@ See [Requirements v0.0.1 § 2](docs/Requirements%20v0.0.1.md#2-functional-requir
 ## Documentation
 
 - [Requirements v0.0.1](docs/Requirements%20v0.0.1.md) - Complete system specifications
+- [UX Requirements](docs/UX_REQUIREMENTS.md) - Information architecture and user flows
 - [API Reference](docs/API_REFERENCE.md) - REST API endpoints documentation
 - [Design System](docs/DESIGN_SYSTEM.md) - UI components and visual guidelines
-- [User Flow](docs/USER_FLOW.md) - User journeys and interaction patterns
 - [Implementation Checklist](docs/IMPLEMENTATION_CHECKLIST.md) - Development progress tracker
 
 See [docs/README.md](docs/README.md) for complete documentation index.
