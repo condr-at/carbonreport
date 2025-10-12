@@ -29,15 +29,18 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 
 * Dynamically maps user responses (e.g., type of production, logistics chain, region) to recommended report types.
 * **User-facing terminology**: "Which type of report do you need?" or "Which standard should you follow?"
-* Mapping rules stored in database as JSONB in `questionnaire_registry` table.
-* Rules are updatable via admin interface without code deployment.
+* **Implementation**: Questionnaire logic and mapping rules are stored in JSON configuration files within the application code (`src/lib/questionnaires/`).
+* Configuration includes question structure, answer options, and mapping rules (responses → recommended report template codes).
+* Versioned through Git; updates require code deployment.
+* **Post-MVP**: Admin interface for non-technical questionnaire editing may migrate configuration to database.
 * User may skip the questionnaire and manually select report types from a list.
 
 ### 2.3. Reports
 
 * Reports are pre-built web templates containing input fields, labels, and contextual guidance.
 * **User-facing terminology**: Reports are called "Report Types" or "Report Standards" (e.g., "ISO 14067", "CBAM")
-* **Technical terminology**: Internally called "templates" in code and database
+* **Technical terminology**: Internally called "templates" in code; template configurations stored as TypeScript/JSON in `src/lib/report-templates/`
+* **Template versioning**: Managed through Git version control; template code updates require deployment
 * Reports are **not user-editable structurally**; they are designed and maintained by administrators.
 * Users can:
   * Fill data directly in input fields.
@@ -52,9 +55,31 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 * Data points (DPs) have unique IDs and can belong to multiple reports.
 * Completing or updating a DP updates the completion status of all linked reports.
 * Data points can be **scalar** (single values) or **tabular** (repeating rows, e.g., purchase tables).
-* DP IDs are predefined in report templates and consistent across projects (e.g., `field-ProductName`).
+* DP IDs are predefined in report templates and consistent across projects (e.g., `Product_Name`).
 * When multiple reports use the same field with identical validation/boundaries, they share one DP.
-* Different boundaries/validation rules = different DPs (e.g., `TotalCFP_ISO14067` vs `TotalCFP_CBAM`).
+* Different boundaries/validation rules = different DPs (e.g., `Emission_Total_ISO14067` vs `Emission_Total_CBAM`).
+
+#### Field ID Naming Convention
+
+**Format**: `{Entity}_{Attribute}[_{Subtype}]` (PascalCase)
+
+**Examples**:
+- `Product_Name` — scalar field
+- `Product_Description` — scalar field
+- `Material_Name` — tabular field (use with `item_id: "1"`, `"2"`, etc.)
+- `Material_Amount` — tabular field (paired with Material_Name by item_id)
+- `Emission_Total_ISO14067` — standard-specific calculation
+- `Emission_Total_CBAM` — different validation rules require different field_id
+- `Transport_Distance_Air` — subtype specifies transport mode
+- `Energy_Consumption_Renewable` — subtype clarifies energy source
+
+**Rules**:
+1. Use **PascalCase** for readability
+2. **Entity** — data category (Product, Material, Transport, Energy, Emission)
+3. **Attribute** — measured property (Name, Amount, Distance, Consumption, Total)
+4. **Subtype** (optional) — qualifier (ISO14067, CBAM, Air, Renewable)
+5. For tabular data: use same field_id with different `item_id` values, NOT suffixes in field_id
+6. Maintain TypeScript enum in `src/lib/field-ids.ts` for type safety
 
 #### Dataset Interface (MVP)
 
@@ -123,7 +148,7 @@ Simplified structure based on field-value pairs:
   * Reference to specific data point(s)
   * Pre-written guidance hint (e.g., "Ask Production Manager for energy consumption data")
   * Link to relevant form section in report interface
-* Hints are stored in `report_templates.metadata.hints` JSONB field and populated during project initialization.
+* Hints are stored in report template configuration files (`src/lib/report-templates/*.ts`) and populated during project initialization.
 
 ### 2.7. Address Book (Contacts)
 
@@ -192,40 +217,40 @@ Simplified structure based on field-value pairs:
 
 ### 3.2. Projects
 
-| Field            | Type      | Notes                           |
-| ---------------- | --------- | ------------------------------- |
-| id               | UUID      | Primary key                     |
-| user_id          | UUID      | FK to users                     |
-| name             | Text      | Project title                   |
-| created_at       | Timestamp | —                               |
-| deleted_at       | Timestamp | Soft delete (30 days retention) |
-| dataset          | JSONB     | Dynamic data structure          |
-| checklist        | JSONB     | Steps for roadmap               |
-| status           | Enum      | (active, archived, deleted)     |
-| twin_project_id  | UUID      | Nullable; FK to projects        |
+| Field             | Type      | Notes                           |
+| ----------------- | --------- | ------------------------------- |
+| id                | UUID      | Primary key                     |
+| user_id           | UUID      | FK to users                     |
+| name              | Text      | Project title                   |
+| created_at        | Timestamp | —                               |
+| deleted_at        | Timestamp | Soft delete (30 days retention) |
+| dataset           | JSONB     | Dynamic data structure          |
+| dataset_version   | Integer   | Optimistic locking counter      |
+| mailto_templates  | JSONB     | Per-project mailto customization|
+| checklist         | JSONB     | Steps for roadmap               |
+| status            | Enum      | (active, archived, deleted)     |
+| twin_project_id   | UUID      | Nullable; FK to projects        |
 
 ### 3.3. Reports
 
-| Field       | Type      | Notes                  |
-| ----------- | --------- | ---------------------- |
-| id          | UUID      | Primary key            |
-| project_id  | UUID      | FK to projects         |
-| template_id | UUID      | FK to report_templates |
-| completion  | Float     | 0–100%                 |
-| created_at  | Timestamp | —                      |
-| updated_at  | Timestamp | —                      |
+| Field        | Type      | Notes                             |
+| ------------ | --------- | --------------------------------- |
+| id           | UUID      | Primary key                       |
+| project_id   | UUID      | FK to projects                    |
+| template_code| Text      | Template identifier (ISO14067, CBAM)|
+| metadata     | JSONB     | Report-specific metadata (optional)|
+| completion   | Float     | 0–100%                            |
+| created_at   | Timestamp | —                                 |
+| updated_at   | Timestamp | —                                 |
 
-### 3.4. Report Templates
+**Notes**:
+- Reports do NOT store field values — all data lives in `Project.dataset`
+- `template_code` references template configuration in `src/lib/report-templates/`
+- `metadata` (optional) may store report-specific settings: custom field visibility, export preferences, or report-level mailto template overrides
+- Report rendering: load `template_code` config → filter `Project.dataset` by configured `field_id[]` → display form
+- Completion calculated by counting filled vs required fields from template config
 
-| Field    | Type  | Notes                                                                                             |
-| -------- | ----- | ------------------------------------------------------------------------------------------------- |
-| id       | UUID  | Primary key                                                                                       |
-| code     | Text  | Identifier (e.g., CBAM, ISO14067)                                                                 |
-| name     | Text  | Display name                                                                                      |
-| version  | Text  | Template version                                                                                  |
-| metadata | JSONB | Field structure, labels, mailto templates, hints, validation rules. Structure defined at runtime. |
-
-### 3.5. Contacts
+### 3.4. Contacts
 
 | Field      | Type      | Notes         |
 | ---------- | --------- | ------------- |
@@ -238,7 +263,7 @@ Simplified structure based on field-value pairs:
 | created_at | Timestamp | —             |
 | updated_at | Timestamp | —             |
 
-### 3.6. Data Requests
+### 3.5. Data Requests
 
 | Field           | Type      | Notes                |
 | --------------- | --------- | -------------------- |
@@ -251,7 +276,7 @@ Simplified structure based on field-value pairs:
 | revoked_at      | Timestamp | Nullable             |
 | external_access | Boolean   | Default false        |
 
-### 3.7. Project Files
+### 3.6. Project Files
 
 | Field              | Type      | Notes                         |
 | ------------------ | --------- | ----------------------------- |
@@ -269,49 +294,6 @@ Simplified structure based on field-value pairs:
 * `confidence` field: Float (0-1) for OCR/LLM extraction confidence
 * `source_type` enum: Manual | OCR | LLM  
 * `extraction_metadata` JSONB: Raw OCR/LLM output
-
-### 3.8. Questionnaire Registry
-
-| Field      | Type      | Notes                                    |
-| ---------- | --------- | ---------------------------------------- |
-| id         | UUID      | Primary key                              |
-| version    | Text      | Registry version                         |
-| rules      | JSONB     | Mapping rules: responses → report_ids    |
-| created_at | Timestamp | —                                        |
-| updated_at | Timestamp | —                                        |
-| active     | Boolean   | Only one active version at a time        |
-
-**Rules structure (indicative)**:
-```json
-{
-  "questions": [
-    {
-      "id": "q1",
-      "text": "What type of product are you assessing?",
-      "type": "single-choice",
-      "options": ["Physical goods", "Services", "Software"]
-    }
-  ],
-  "mappings": [
-    {
-      "condition": {"q1": "Physical goods", "q2": "EU market"},
-      "recommended_reports": ["ISO14067", "CBAM"],
-      "priority": 1
-    }
-  ]
-}
-```
-
-### 3.9. Logs (optional for MVP)
-
-| Field     | Type      | Notes                            |
-| --------- | --------- | -------------------------------- |
-| id        | UUID      | Primary key                      |
-| user_id   | UUID      | FK to users                      |
-| entity    | Text      | (project, report, contact, file) |
-| entity_id | UUID      | —                                |
-| action    | Text      | (create, update, delete, export) |
-| timestamp | Timestamp | —                                |
 
 ---
 
@@ -335,10 +317,11 @@ The following architectural and data model provisions must be included in MVP sc
 2. **Data Requests table** — logs all mailto requests for historical tracking; `external_access` field reserved for future link-based sharing (not used in MVP).
 3. **External Access field** — reserved for future external collaborator permissions (ignored in MVP).
 4. **Twin Project Field** — prepare nullable `twin_project_id` column for AI-optimized scenario comparison.
-5. **Versioning Hooks** — store `template_id` and `version` for all reports to support template updates.
+5. **Template Configuration Versioning** — Git-based versioning allows rollback and tracking of template changes; `template_code` stored in Reports for template evolution.
 6. **File Metadata extensibility** — structure allows adding `confidence` and `source_type` (OCR/Manual) fields post-MVP.
 7. **API routes** — designed to support eventual organization-level scoping and role-based access control.
-8. **Mailto templates** — stored in report_templates metadata; post-MVP users can customize per data point.
+8. **Mailto templates** — stored in `Project.mailto_templates` JSONB; initialized from template defaults, customizable per project.
+9. **Optimistic locking** — `Project.dataset_version` prevents concurrent edit conflicts in multi-user scenarios.
 
 ---
 
@@ -536,22 +519,29 @@ carbonreport/
 ✅ **Auto-redirect to project creation after first registration**  
 ✅ Project creation, editing, soft-delete, and full duplication (with data)  
 ✅ Multi-step project creation with questionnaire or manual report type selection  
+✅ **Questionnaire logic stored in code** (`src/lib/questionnaires/`) with Git versioning  
+✅ **Report templates stored in code** (`src/lib/report-templates/`) with Git versioning  
 ✅ **User-facing terminology**: "Report Types" or "Report Standards" (not "templates")  
 ✅ Report types (ISO 14067, CBAM) with dynamic forms  
 ✅ Reports with unified edit mode (no separate preview/edit modes)  
 ✅ **Request Data functionality in both Dataset AND Report views**  
 ✅ Shared dataset with scalar and tabular data points  
+✅ **Field ID naming convention**: PascalCase with Entity_Attribute_Subtype format  
 ✅ **Global contact management** (contacts shared across all user's projects)  
 ✅ Mailto-based data requests from data points (in Dataset or Reports)  
+✅ **Per-project mailto template customization** (stored in `Project.mailto_templates`)  
 ✅ File repository with upload (10 MB limit, all file types) and linking  
 ✅ Progress tracking and completion calculation  
 ✅ Export to PDF via browser print functionality (dedicated print page)  
 ✅ Transactional emails (verification, password reset)  
 ✅ `/projects/:id/dataset` spreadsheet-style view with inline editing, filtering, CSV export, and Request Data actions  
 ✅ Manual save with unsaved changes warning  
+✅ **Optimistic locking** for concurrent dataset edits (`dataset_version` field)  
 
 ### Out of Scope (Post-MVP)
 ❌ Admin interface and user management  
+❌ **Database-stored questionnaire registry** (code-based in MVP)  
+❌ **Database-stored report templates** (code-based in MVP)  
 ❌ Multi-user organizations and role-based access control  
 ❌ OAuth authentication providers (Google, Microsoft)  
 ❌ Real-time collaboration via WebSockets  
@@ -575,6 +565,7 @@ carbonreport/
 The MVP implements all user-facing features for project creation, report management, dataset editing, contact interaction, and file storage, while reserving architecture for future modules such as billing, multi-user organizations, AI automation, and data extraction.
 
 **Key architectural decisions:**
+- **Code-based configuration**: Questionnaires and report templates stored in Git-versioned TypeScript/JSON files (`src/lib/`) for rapid iteration without database migrations
 - **Global contacts**: Contacts are user-scoped (not project-scoped), with full history of data requests across all projects
 - **Dataset page**: Single route (`/projects/:id/dataset`) delivering a spreadsheet-style grid with inline editing, filtering, CSV export, and Request Data actions
 - **Report editing**: Single unified mode without separate preview — users edit and print directly
@@ -582,6 +573,10 @@ The MVP implements all user-facing features for project creation, report managem
 - **Project creation flow**: Multi-step process requiring at least one report type selection (via questionnaire or manual)
 - **First-time user experience**: Auto-redirect to project creation wizard after email verification (can exit to Dashboard)
 - **User-facing terminology**: "Report Types" or "Report Standards" (not "templates") for better UX
+- **Mailto template customization**: Per-project customization stored in `Project.mailto_templates` JSONB, initialized from template defaults
+- **Data architecture**: All field values live in `Project.dataset`; Reports reference data via `template_code` and filter logic
+- **Field ID convention**: PascalCase `Entity_Attribute_Subtype` format with TypeScript enum for type safety
+- **Optimistic locking**: `dataset_version` counter prevents concurrent edit conflicts
 
 Each module (Projects, Reports, Dataset, Contacts, Files) operates independently but shares a consistent identifier model and unified synchronization logic, ensuring interoperability and scalability without future schema rewrites.
 
