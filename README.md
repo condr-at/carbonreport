@@ -144,19 +144,47 @@ See [docs/Requirements v0.0.1.md § 6.5](docs/Requirements%20v0.0.1.md#65-deploy
 
 ## Architecture
 
-This is a **monolithic Next.js application** using:
-- **Frontend**: React components in `src/app` (Server Components by default)
-- **Backend**: API Routes in `src/app/api` (serverless functions)
-- **Database**: PostgreSQL via Prisma ORM
-- **File Storage**: S3-compatible object storage
+This is a **monolithic Next.js application** with code-based configuration:
 
-All backend logic runs as Next.js API Routes - no separate backend server needed.
+**Frontend**: React Server Components in `src/app`  
+**Backend**: API Routes in `src/app/api` (serverless functions)  
+**Database**: PostgreSQL via Prisma ORM (Supabase)  
+**File Storage**: S3-compatible object storage
+
+### Key Architectural Decisions
+
+**Code-Based Templates** (MVP approach):
+- Questionnaires: `src/lib/questionnaires/` (JSON + TypeScript engine)
+- Report Templates: `src/lib/report-templates/` (TypeScript configs)
+- **Rationale**: Faster iteration, no DB migrations for config changes
+- **Future**: May migrate to database with admin UI post-MVP
+
+**Single Source of Truth**:
+- All field data stored in `Project.dataset` JSONB column
+- Reports are filtered views of project dataset (no duplicate data)
+- `Report.metadata` stores UI preferences only (sort order, filters)
+
+**Optimistic Locking**:
+- `Project.datasetVersion` counter prevents concurrent edit conflicts
+- Incremented atomically on each save
+- Returns 409 Conflict if version mismatch detected
+
+**Type Safety**:
+- FieldId enum in `src/lib/field-ids.ts` (50+ predefined values)
+- Zod validation schemas in `src/lib/dataset-validation.ts`
+- PascalCase naming: `Entity_Attribute_Subtype` (e.g., `Material_Weight_Kg`)
+
+See [Requirements v0.0.1 § 2](docs/Requirements%20v0.0.1.md#2-functional-requirements) for complete details.
 
 ## Documentation
 
-- [Requirements v0.0.1](docs/Requirements%20v0.0.1.md) - Complete specifications
-- [Project Overview](docs/PROJECT_OVERVIEW.md) - Original project context
-- [Changelog](docs/CHANGELOG.md) - Version history
+- [Requirements v0.0.1](docs/Requirements%20v0.0.1.md) - Complete system specifications
+- [API Reference](docs/API_REFERENCE.md) - REST API endpoints documentation
+- [Design System](docs/DESIGN_SYSTEM.md) - UI components and visual guidelines
+- [User Flow](docs/USER_FLOW.md) - User journeys and interaction patterns
+- [Implementation Checklist](docs/IMPLEMENTATION_CHECKLIST.md) - Development progress tracker
+
+See [docs/README.md](docs/README.md) for complete documentation index.
 
 ## License
 
