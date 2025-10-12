@@ -35,23 +35,19 @@ graph TD
     
     ProjectDetail --> Overview[Overview<br/>Обзор проекта]
     ProjectDetail --> Dataset[Dataset<br/>Сбор данных]
-    ProjectDetail --> DatasetAdvanced[Dataset Advanced<br/>Расширенный вид таблицы]
     ProjectDetail --> Roadmap[Roadmap<br/>Дорожная карта]
     ProjectDetail --> Reports[Reports<br/>Список отчётов]
     ProjectDetail --> Files[Files<br/>Файлы]
     
     Dataset --> DataPoint[Data Point<br/>Поле данных]
+    Dataset --> InlineEdit[Inline Edit<br/>Редактирование в таблице]
+    Dataset --> ExportCSV[Export CSV<br/>Экспорт данных]
     DataPoint --> RequestDataFromDP[Request Data<br/>Запросить данные]
     RequestDataFromDP --> SelectContact{Выбрать контакт}
     SelectContact -->|Существующий| GenerateMailto[Generate Mailto<br/>Создать email]
     SelectContact -->|Новый| CreateContactInline[Create Contact<br/>Добавить контакт]
     CreateContactInline --> GenerateMailto
     GenerateMailto --> EmailClient[Email Client<br/>Открывается почта]
-    
-    DatasetAdvanced --> ExportCSV[Export CSV<br/>Экспорт данных]
-    DatasetAdvanced --> InlineEdit[Inline Edit<br/>Редактирование в таблице]
-    DatasetAdvanced --> RequestDataFromTable[Request Data<br/>Запросить данные]
-    RequestDataFromTable --> SelectContact
     
     Reports --> AddReport[Add Report<br/>Добавить тип отчёта]
     Reports --> OpenReport[Open Report<br/>Открыть отчёт]
@@ -101,8 +97,7 @@ graph LR
         
         subgraph "Project Pages"
             C2[/projects/:id<br/>Обзор проекта]
-            C3[/projects/:id/dataset<br/>Сбор данных - Normal View]
-            C3a[/projects/:id/dataset/advanced<br/>Advanced View - таблица]
+            C3[/projects/:id/dataset<br/>Сбор данных]
             C5[/projects/:id/roadmap<br/>Дорожная карта]
             C6[/projects/:id/reports<br/>Список отчётов]
             C8[/projects/:id/reports/:reportId<br/>Редактор отчёта]
@@ -127,7 +122,6 @@ graph LR
     B1 --> B2
     
     C2 --> C3
-    C3 --> C3a
     C2 --> C5
     C2 --> C6
     C2 --> C9
@@ -167,12 +161,14 @@ sequenceDiagram
     User->>ProjectNew: Открывает /projects/new
     User->>ProjectNew: Вводит название проекта
     ProjectNew->>User: Предлагает анкету (+ кнопка "Выйти в Dashboard")
+    Note over ProjectNew,User: Кнопка "Выйти в Dashboard" отменяет мастер после подтверждения; пока не нажата "Сохранить", проект не создаётся.
     User->>Questionnaire: Выбирает "Пройти анкету"
     User->>Questionnaire: Отвечает на вопросы
     Questionnaire->>ProjectNew: Рекомендует типы отчётов (ISO14067, CBAM)
     User->>ProjectNew: Подтверждает выбор типов отчётов
     ProjectNew->>ProjectPage: Создаёт проект с выбранными отчётами
     ProjectPage->>User: Показывает обзор проекта
+    Note over ProjectPage: Дорожная карта генерируется фоново из незаполненных данных и предзаготовленных хинтов; пока процесс идёт, показывается индикатор загрузки.
     
     Note over User,Report: Сценарий 2б: Создание проекта вручную
     User->>ProjectNew: Открывает /projects/new
@@ -190,6 +186,7 @@ sequenceDiagram
     Contact->>Contact: Создаёт запись в data_requests
     Contact->>User: Генерирует mailto: ссылку с шаблоном
     User->>Contact: Открывает email клиент
+    Note over Contact: Даже при ошибке шаблона почтовый клиент открывается с пустым телом; mailto ссылка формируется всегда.
     Note over Contact: Email содержит:<br/>- Название проекта<br/>- Название поля<br/>- Подсказку что нужно<br/>- Контекст
     
     Note over User,Report: Сценарий 3б: Запрос данных из отчёта
@@ -201,6 +198,7 @@ sequenceDiagram
     User->>Contact: Выбирает контакт
     Contact->>User: Генерирует mailto: ссылку
     User->>Contact: Открывает email клиент
+    Note over Contact: Mailto ссылка не зависит от шаблона; при сбое тело остаётся пустым, но письмо можно отправить.
     
     Note over User,Report: Сценарий 4: Заполнение и экспорт отчёта
     User->>ProjectPage: Переходит в Reports
@@ -216,22 +214,22 @@ sequenceDiagram
     User->>Report: Выбирает "Save as PDF" в браузере
     Report->>User: Сохраняет PDF отчёт
     
-    Note over User,Report: Сценарий 5: Расширенный вид датасета
+    Note over User,Report: Сценарий 5: Работа с датасетом (табличный вид)
     User->>ProjectPage: Открывает Dataset
-    ProjectPage->>Dataset: Показывает обычный вид (форма)
-    User->>Dataset: Переходит в "Advanced View"
-    Dataset->>User: Открывает /projects/:id/dataset/advanced<br/>Excel-like таблица (Field ID, Item ID, Value, Updated)
-    User->>Dataset: Редактирует ячейки inline
+    ProjectPage->>Dataset: Показывает единую таблицу всех data points (Field ID, Item ID, Value, Updated)
+    User->>Dataset: Редактирует ячейки inline и добавляет строки
+    Dataset->>User: Показывает индикатор сохранения и подтверждение или ошибку
     User->>Dataset: Нажимает "Export CSV"
-    Dataset->>User: Скачивает dataset.csv
-    User->>Dataset: Возвращается в "Normal View"
-    Dataset->>User: Открывает /projects/:id/dataset
+    Dataset->>User: Показывает прогресс выгрузки и скачивает dataset.csv
+    Note over Dataset: Request Data доступна из той же таблицы через кнопки на ячейках.
     
     Note over User,Report: Сценарий 6: Дублирование проекта
     User->>Dashboard: Видит список проектов
     User->>Dashboard: Нажимает "Duplicate" на проекте
+    Dashboard->>Dashboard: Показывает прогресс копирования и даёт возможность отменить
     Dashboard->>ProjectPage: Создаёт копию со всеми данными
     ProjectPage->>User: Открывает "[Original Name] (Copy)"
+    Note over Dashboard,ProjectPage: При ошибке отображается toast с возможностью повторить попытку.
     
     Note over User,Report: Сценарий 7: Выход из системы
     User->>Dashboard: Нажимает User menu → Logout
@@ -264,7 +262,6 @@ graph TD
     subgraph "Project Sidebar (внутри проекта)"
         Side1[Overview]
         Side2[Dataset]
-        Side2a[Dataset Advanced]
         Side3[Roadmap]
         Side4[Reports]
         Side5[Files]
@@ -298,14 +295,10 @@ graph TD
 3. Просмотр истории запросов данных по контакту
 
 ### Phase 4: Dataset & Roadmap
-1. `/projects/:id/dataset` - Сбор данных (Normal View - форма)
-2. `/projects/:id/dataset/advanced` - Advanced View (отдельная страница с таблицей)
-3. Normal View - форма по полям с группировкой
-4. Advanced View - Excel-like таблица (отдельный роут)
-5. Request Data из data point в обоих видах (mailto generation)
-6. Связь data requests с контактами
-7. CSV export из advanced view
-8. `/projects/:id/roadmap` - Чеклист roadmap
+1. `/projects/:id/dataset` - Табличный сбор данных (inline редактирование, фильтры, Request Data, CSV export)
+2. Связь data requests с контактами
+3. Подсветка заполняемости и фильтры по статусу
+4. `/projects/:id/roadmap` - Чеклист roadmap
 
 ### Phase 5: Reports
 1. `/projects/:id/reports` - Список отчётов проекта
@@ -347,9 +340,7 @@ src/app/
 │   │   └── [id]/
 │   │       ├── page.tsx              # Overview
 │   │       ├── dataset/
-│   │       │   ├── page.tsx          # Dataset Normal View (форма)
-│   │       │   └── advanced/
-│   │       │       └── page.tsx      # Dataset Advanced View (таблица)
+│   │       │   └── page.tsx          # Dataset таблица с Request Data
 │   │       ├── roadmap/
 │   │       ├── reports/
 │   │       │   ├── page.tsx          # Список отчётов

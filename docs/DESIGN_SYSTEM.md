@@ -135,7 +135,7 @@ const inter = Inter({
 - **Label** — подписи к полям форм
 - **Checkbox** — чекбоксы для множественного выбора
 - **Radio Group** — радио-кнопки
-- **Switch** — тогглы (например, Normal/Advanced view в Dataset)
+- **Switch** — тогглы (например, фильтр "Показывать только незаполненные" в Dataset)
 - **Select** — выпадающие списки (встроенный shadcn/ui Select)
 
 #### Навигация
@@ -173,7 +173,7 @@ const inter = Inter({
 #### Таблицы — Продвинутая таблица (TBD)
 
 **Использование**:
-- **Dataset Advanced View** — Excel-like таблица с сортировкой, фильтрацией, inline editing
+- **Dataset Grid** (`/projects/:id/dataset`) — Excel-like таблица с сортировкой, фильтрацией, inline editing
 - **Contacts list** — таблица контактов с поиском и фильтрами
 - **Files repository** — список файлов с метаданными
 
@@ -189,7 +189,7 @@ const inter = Inter({
 
 **Выбор библиотеки**: TBD (рассматриваются @tanstack/react-table, AG Grid Community, или кастомное решение на shadcn/ui Table)
 
-**Пример колонок для Dataset Advanced View**:
+**Пример колонок для Dataset Grid**:
 
 | Колонка | Описание | Тип | Editable |
 |---------|----------|-----|----------|
@@ -582,58 +582,51 @@ const form = useForm<z.infer<typeof formSchema>>({
 - Empty state card (Create your first project)
 - Archived project (приглушённые цвета)
 
-### 4.2. Report Card
+### 10.2. Dataset Surface
 
-**Расположение**: `/projects/:id/reports`
+**Структура**: Одна страница `/projects/:id/dataset` с табличным видом, тулбаром фильтров и контекстными действиями.
 
-**Структура**:
+**Роуты**:
+- `/projects/:id/dataset` — основная таблица данных проекта (inline edit, Request Data, CSV export)
+
+**Layout**:
 ```tsx
-<Card>
-  <CardHeader>
-    <div className="flex items-center justify-between">
-      <div>
-        <CardTitle>ISO 14067</CardTitle>
-        <CardDescription>Carbon Footprint of Products</CardDescription>
-      </div>
-      <Badge variant={completion === 100 ? 'success' : 'warning'}>
-        {completion}% Complete
-      </Badge>
-    </div>
-  </CardHeader>
-  <CardContent>
-    <Progress value={completion} className="mb-2" />
-    <p className="text-sm text-muted-foreground">
-      {filledFields}/{totalFields} fields completed
-    </p>
-  </CardContent>
-  <CardFooter className="flex gap-2">
-    <Button variant="outline" size="sm">Edit</Button>
-    <Button variant="ghost" size="sm">Print to PDF</Button>
-    <Button variant="destructive" size="sm">Remove</Button>
-  </CardFooter>
-</Card>
-```
-
-### 4.3. Contacts Table
-
-**Расположение**: `/contacts`
-
-**Структура** (с использованием TanStack Table):
-```tsx
-<div className="space-y-4">
-  {/* Header с поиском и действиями */}
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-2 flex-1 max-w-md">
-      <Input 
-        placeholder="Search contacts..." 
-        value={searchQuery}
-        onChange={handleSearch}
-        className="flex-1"
-      />
-      <Button variant="outline" size="icon">
-        <Search className="h-4 w-4" />
+<section className="flex flex-col gap-4">
+  <header className="flex flex-wrap items-center gap-3">
+    <DatasetBreadcrumb projectId={projectId} />
+    <div className="ml-auto flex gap-2">
+      <Button variant="outline" size="sm" onClick={handleFilterClick}>
+        <Filter className="mr-2 h-4 w-4" /> Фильтры
+      </Button>
+      <Button variant="outline" size="sm" onClick={handleShowOnlyEmptyToggle}>
+        <EyeOff className="mr-2 h-4 w-4" /> Только пустые
+      </Button>
+      <Button size="sm" onClick={handleExportCsv} disabled={isExporting}>
+        {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+        Export CSV
       </Button>
     </div>
+  </header>
+
+  <DatasetGridTable
+    data={rows}
+    onCellEdit={handleCellEdit}
+    onRequestData={handleRequestData}
+    savingState={savingState}
+  />
+
+  <DatasetPropertyPanel
+    open={isPanelOpen}
+    onOpenChange={setPanelOpen}
+    dataPoint={selectedDataPoint}
+  />
+</section>
+```
+
+**Особенности UX**:
+- Состояния сохранения/ошибок отображаются на уровне строк и глобальным toast.
+- Request Data кнопки встроены в действия строки/ячейки.
+- Фильтры и поиск через Sheet/Popover, результаты отражаются в тулбаре в виде чипов.
     <Button onClick={handleAddContact}>
       <Plus className="mr-2 h-4 w-4" />
       Add Contact
@@ -1036,63 +1029,6 @@ const form = useForm<z.infer<typeof formSchema>>({
 )}
 ```
 
-### 4.10. Error States
-
-**Паттерн**: Информативные сообщения об ошибках
-
-**Page Error**:
-```tsx
-<div className="flex flex-col items-center justify-center min-h-[400px] px-4 text-center">
-  <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-  <h3 className="text-xl font-semibold mb-2">Something went wrong</h3>
-  <p className="text-sm text-muted-foreground max-w-md mb-6">
-    {errorMessage || 'An unexpected error occurred. Please try again.'}
-  </p>
-  <div className="flex gap-2">
-    <Button variant="outline" onClick={handleGoBack}>
-      Go Back
-    </Button>
-    <Button onClick={handleRetry}>
-      Try Again
-    </Button>
-  </div>
-</div>
-```
-
-**Form Field Error**:
-```tsx
-<FormField
-  control={form.control}
-  name="email"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Email</FormLabel>
-      <FormControl>
-        <Input placeholder="your@email.com" {...field} />
-      </FormControl>
-      <FormMessage /> {/* Автоматически показывает ошибку валидации */}
-    </FormItem>
-  )}
-/>
-```
-
-**Inline Error Alert**:
-```tsx
-{error && (
-  <Alert variant="destructive">
-    <AlertCircle className="h-4 w-4" />
-    <AlertTitle>Error</AlertTitle>
-    <AlertDescription>{error.message}</AlertDescription>
-  </Alert>
-)}
-```
-
-### 4.11. Unsaved Changes Warning
-
-**Паттерн**: Предупреждение при навигации с несохранёнными изменениями
-
-```tsx
-<AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
   <AlertDialogContent>
     <AlertDialogHeader>
       <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
@@ -1274,7 +1210,7 @@ const form = useForm<z.infer<typeof formSchema>>({
 **Использование**:
 - Contacts table (bulk delete, bulk archive)
 - Files list (bulk delete)
-- Dataset advanced view (bulk clear values)
+- Dataset grid (bulk clear values, массовое применение подсказок)
 
 ### 4.15. Keyboard Shortcuts Hints
 
@@ -1307,63 +1243,6 @@ const form = useForm<z.infer<typeof formSchema>>({
       <span className="font-bold text-xl">Carbon Report</span>
     </Link>
     
-    {/* Main Navigation */}
-    <NavigationMenu className="hidden md:flex">
-      <NavigationMenuList>
-        {/* Projects dropdown */}
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>Projects</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4">
-              <li>
-                <NavigationMenuLink asChild>
-                  <Link href="/dashboard" className="block select-none space-y-1 rounded-md p-3 hover:bg-accent">
-                    <div className="text-sm font-medium">All Projects</div>
-                    <p className="text-sm text-muted-foreground">View all your projects</p>
-                  </Link>
-                </NavigationMenuLink>
-              </li>
-              <li>
-                <NavigationMenuLink asChild>
-                  <Link href="/projects/new" className="block select-none space-y-1 rounded-md p-3 hover:bg-accent">
-                    <div className="text-sm font-medium">Create New</div>
-                    <p className="text-sm text-muted-foreground">Start a new project</p>
-                  </Link>
-                </NavigationMenuLink>
-              </li>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        
-        {/* Contacts */}
-        <NavigationMenuItem>
-          <Link href="/contacts" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Contacts
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
-    
-    {/* Right side */}
-    <div className="ml-auto flex items-center gap-2">
-      {/* Quick search */}
-      <Button variant="outline" size="sm" className="hidden md:flex">
-        <Search className="mr-2 h-4 w-4" />
-        Search
-        <kbd className="ml-2 pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px]">
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </Button>
-      
-      {/* Notifications (пост-MVP) */}
-      <Button variant="ghost" size="icon">
-        <Bell className="h-5 w-5" />
-      </Button>
-      
-      {/* Theme toggle */}
-      <ThemeToggle />
       
       {/* User menu */}
       <DropdownMenu>
@@ -1424,35 +1303,25 @@ const form = useForm<z.infer<typeof formSchema>>({
 
 ### 4.17. Project Sidebar
 
-**Боковая навигация** внутри проекта
-
 ```tsx
 <aside className="w-64 border-r bg-muted/40 min-h-screen">
   <div className="flex h-14 items-center border-b px-4">
     <h2 className="font-semibold truncate">{projectName}</h2>
   </div>
-  
+
   <nav className="space-y-1 p-4">
     <SidebarLink href={`/projects/${projectId}`} icon={LayoutDashboard}>
       Overview
     </SidebarLink>
-    
+
     <SidebarLink href={`/projects/${projectId}/dataset`} icon={Database}>
       Dataset
     </SidebarLink>
-    
-    <SidebarLink 
-      href={`/projects/${projectId}/dataset/advanced`} 
-      icon={Table}
-      className="ml-6 text-sm"
-    >
-      Advanced View
-    </SidebarLink>
-    
+
     <SidebarLink href={`/projects/${projectId}/roadmap`} icon={ListChecks}>
       Roadmap
     </SidebarLink>
-    
+
     <SidebarLink href={`/projects/${projectId}/reports`} icon={FileText}>
       Reports
       {reportCount > 0 && (
@@ -1461,7 +1330,7 @@ const form = useForm<z.infer<typeof formSchema>>({
         </Badge>
       )}
     </SidebarLink>
-    
+
     <SidebarLink href={`/projects/${projectId}/files`} icon={Paperclip}>
       Files
       {filesCount > 0 && (
@@ -1471,9 +1340,8 @@ const form = useForm<z.infer<typeof formSchema>>({
       )}
     </SidebarLink>
   </nav>
-  
-  {/* Project actions */}
-  <div className="absolute bottom-0 left-0 right-0 border-t p-4 bg-background">
+
+  <div className="mt-auto border-t p-4 bg-background">
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="w-full justify-start">
@@ -1507,15 +1375,15 @@ const form = useForm<z.infer<typeof formSchema>>({
 
 **SidebarLink компонент**:
 ```tsx
-function SidebarLink({ 
-  href, 
-  icon: Icon, 
-  children, 
-  className 
+function SidebarLink({
+  href,
+  icon: Icon,
+  children,
+  className
 }: SidebarLinkProps) {
   const pathname = usePathname()
   const isActive = pathname === href || pathname.startsWith(href + '/')
-  
+
   return (
     <Link
       href={href}
@@ -1533,7 +1401,86 @@ function SidebarLink({
 }
 ```
 
-### 4.18. Breadcrumbs
+**UX-рекомендации**:
+- Активное состояние подсвечивается через `bg-accent`.
+- Для мобильных повторяем ссылки в `Sheet`.
+- Кнопки действий блокируются, пока выполняется запрос (loading state).
+
+### 4.18. Панель свойств сущности
+
+**Назначение**: боковая панель с минимальным набором editable-полей для файлов, data points и контактов.
+
+**Компоненты**: `Sheet`, `Form`, `TagCombobox` (autocomplete + chips), `Button`, `Separator`.
+
+```tsx
+<Sheet open={open} onOpenChange={setOpen}>
+  <SheetContent side="right" className="w-[360px] sm:w-[420px]">
+    <SheetHeader>
+      <SheetTitle>{entityTitle}</SheetTitle>
+      <SheetDescription>Редактируйте только необходимые свойства.</SheetDescription>
+    </SheetHeader>
+
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-6">
+        <FormField
+          control={form.control}
+          name="linkedDataPoints"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Data Points</FormLabel>
+              <TagCombobox
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Свяжите с датапоинтом"
+                fetchOptions={searchDataPoints}
+              />
+              <FormDescription>
+                Автодополнение + чипсы; каждый тег можно удалить.
+              </FormDescription>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes (optional)</FormLabel>
+              <Textarea rows={3} placeholder="Краткий контекст" {...field} />
+            </FormItem>
+          )}
+        />
+
+        <Separator />
+
+        <div className="flex items-center gap-2">
+          <Button type="submit" disabled={isSaving}>
+            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save changes
+          </Button>
+          <Button variant="ghost" type="button" onClick={() => setOpen(false)}>
+            Close
+          </Button>
+        </div>
+      </form>
+    </Form>
+  </SheetContent>
+</Sheet>
+```
+
+**Принципы**:
+- Показываем только ключевые поля (для файлов: имя, привязанные data points, заметка).
+- `TagCombobox` блокирует дубли и показывает количество выбранных датапоинтов.
+- Loading и error состояния отображаются в кнопке и через toast.
+- Панель закрывается автоматически после успешного сохранения.
+
+**Повторное использование**:
+- `Files` — привязка файла к data points.
+- `Dataset` — назначение ответственного контакта или заметки.
+- `Contacts` — быстрое обновление должности/роли.
+
+### 4.19. Breadcrumbs
 
 **Паттерн**: Навигация по иерархии
 
@@ -1557,7 +1504,7 @@ function SidebarLink({
 </Breadcrumb>
 ```
 
-### 4.19. Stats Cards (Dashboard Overview)
+### 4.20. Stats Cards (Dashboard Overview)
 
 **Паттерн**: Карточки со статистикой
 
@@ -1617,7 +1564,7 @@ function SidebarLink({
 </div>
 ```
 
-### 4.20. Theme Toggle
+### 4.21. Theme Toggle
 
 **Паттерн**: Переключатель темы (Light/Dark)
 
@@ -1656,7 +1603,7 @@ function ThemeToggle() {
 }
 ```
 
-### 4.21. Landing Page Components
+### 4.22. Landing Page Components
 
 **Hero Section**:
 ```tsx
@@ -1761,7 +1708,7 @@ function FeatureCard({
 }
 ```
 
-### 4.22. Authentication Forms
+### 4.23. Authentication Forms
 
 **Login Form**:
 ```tsx
@@ -1836,7 +1783,7 @@ function FeatureCard({
 
 **Register Form** — аналогично, с дополнительными полями (name, confirm password, terms agreement)
 
-### 4.23. Email Verification
+### 4.24. Email Verification
 
 **Паттерн**: Страница подтверждения email
 
@@ -1912,63 +1859,6 @@ function FeatureCard({
 </div>
 ```
 
-### 5.2. Grid системы
-
-**Dashboard (Project Cards)**:
-```tsx
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {projects.map(project => <ProjectCard key={project.id} {...project} />)}
-</div>
-```
-
-**Reports List**:
-```tsx
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  {reports.map(report => <ReportCard key={report.id} {...report} />)}
-</div>
-```
-
-**Dataset Normal View (Form Layout)**:
-```tsx
-<div className="space-y-8">
-  {/* Группировка по секциям */}
-  <section>
-    <h2 className="text-2xl font-semibold mb-4">Product Information</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <DataPointField {...field1} />
-      <DataPointField {...field2} />
-    </div>
-  </section>
-  
-  <Separator />
-  
-  <section>
-    <h2 className="text-2xl font-semibold mb-4">Materials</h2>
-    {/* Tabular data fields */}
-  </section>
-</div>
-```
-
-### 5.3. Container
-
-```tsx
-<div className="container mx-auto max-w-7xl">
-  {/* Content */}
-</div>
-```
-
----
-
-## 6. Spacing и Sizing
-
-### Spacing Scale (Tailwind)
-
-| Значение | Класс | Размер |
-|----------|-------|--------|
-| 0 | `m-0`, `p-0` | 0 |
-| 1 | `m-1`, `p-1` | 4px |
-| 2 | `m-2`, `p-2` | 8px |
-| 3 | `m-3`, `p-3` | 12px |
 | 4 | `m-4`, `p-4` | 16px |
 | 6 | `m-6`, `p-6` | 24px |
 | 8 | `m-8`, `p-8` | 32px |
@@ -2058,118 +1948,6 @@ transition: all 150ms ease-in-out;
 **Forms**:
 - Mobile: 1 колонка
 - Desktop: 2 колонки для коротких полей (имя/фамилия)
-
-**Tables (Advanced Dataset)**:
-- Mobile: Скрытие некоторых колонок, горизонтальный скролл
-- Desktop: Все колонки видны
-
-**Dataset View Toggle**:
-- Mobile: Рекомендуется Normal View (форма)
-- Desktop: Advanced View удобен (таблица с широкими колонками)
-
----
-
-## 10. Специфичные компоненты платформы
-
-### 10.1. Project Creation Wizard
-
-**Шаги**:
-1. **Step 1**: Название проекта (Input + Textarea для описания)
-2. **Step 2a** (optional): Questionnaire — анкета с радио-кнопками/чекбоксами
-3. **Step 2b/3**: Select Report Types — список чекбоксов с рекомендациями
-
-**Компоненты**:
-- Stepper (индикатор шагов) — можно использовать `Tabs` или кастомный компонент
-- Navigation buttons (Back, Next, Skip, Exit to Dashboard)
-
-**Паттерн**:
-```tsx
-<div className="max-w-3xl mx-auto py-12">
-  {/* Stepper */}
-  <div className="flex items-center justify-between mb-8">
-    <Step number={1} active={currentStep === 1} completed={currentStep > 1} />
-    <Separator className="flex-1 mx-4" />
-    <Step number={2} active={currentStep === 2} completed={currentStep > 2} />
-    <Separator className="flex-1 mx-4" />
-    <Step number={3} active={currentStep === 3} />
-  </div>
-  
-  {/* Content */}
-  <Card>
-    <CardHeader>
-      <CardTitle>{stepTitle}</CardTitle>
-      <CardDescription>{stepDescription}</CardDescription>
-    </CardHeader>
-    <CardContent>
-      {stepContent}
-    </CardContent>
-    <CardFooter className="flex justify-between">
-      <Button variant="outline" onClick={handleBack}>Back</Button>
-      <div className="flex gap-2">
-        <Button variant="ghost" onClick={handleSkip}>Skip</Button>
-        <Button onClick={handleNext}>Next</Button>
-      </div>
-    </CardFooter>
-  </Card>
-</div>
-```
-
-### 10.2. Dataset Navigation
-
-**Структура**: Две отдельные страницы с навигацией через Tabs или Links
-
-**Роуты**:
-- `/projects/:id/dataset` — Normal View (форма)
-- `/projects/:id/dataset/advanced` — Advanced View (таблица)
-
-**Вариант 1: Tabs в Project Sidebar**
-```tsx
-// В ProjectSidebar
-<nav className="space-y-1">
-  <SidebarLink href={`/projects/${projectId}`}>
-    <LayoutDashboard className="mr-2 h-4 w-4" />
-    Overview
-  </SidebarLink>
-  
-  <SidebarLink href={`/projects/${projectId}/dataset`}>
-    <Database className="mr-2 h-4 w-4" />
-    Dataset
-  </SidebarLink>
-  
-  <SidebarLink href={`/projects/${projectId}/dataset/advanced`} className="ml-6">
-    <Table className="mr-2 h-4 w-4" />
-    Dataset (Advanced)
-  </SidebarLink>
-  
-  <SidebarLink href={`/projects/${projectId}/roadmap`}>
-    <ListChecks className="mr-2 h-4 w-4" />
-    Roadmap
-  </SidebarLink>
-  
-  {/* ... остальные ссылки */}
-</nav>
-```
-
-**Вариант 2: Tabs на странице Dataset**
-```tsx
-// На обеих страницах dataset и dataset/advanced
-<Tabs value={currentView} className="mb-6">
-  <TabsList>
-    <TabsTrigger value="normal" asChild>
-      <Link href={`/projects/${projectId}/dataset`}>
-        <LayoutList className="mr-2 h-4 w-4" />
-        Normal View
-      </Link>
-    </TabsTrigger>
-    <TabsTrigger value="advanced" asChild>
-      <Link href={`/projects/${projectId}/dataset/advanced`}>
-        <Table className="mr-2 h-4 w-4" />
-        Advanced View
-      </Link>
-    </TabsTrigger>
-  </TabsList>
-</Tabs>
-```
 
 ### 10.3. Progress Indicator
 
@@ -2297,7 +2075,7 @@ transition: all 150ms ease-in-out;
 
 ### Экспорт
 
-- **papaparse** — CSV экспорт/импорт для Dataset Advanced View
+- **papaparse** — CSV экспорт/импорт для Dataset Grid
 - **jsPDF** или **Puppeteer** (серверный) — PDF generation (пост-MVP)
 
 ---

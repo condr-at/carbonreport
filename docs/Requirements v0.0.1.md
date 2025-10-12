@@ -2,86 +2,7 @@
 
 ---
 
-## 1* ### 2.1. Project Creation
-
-* Users initiate project creation by completing an adaptive questionnaire or by manually selecting desired report types.
-* A project cannot be created without at least one report type selected.
-* **First-time user flow**: After email verification, user is automatically redirected to `/projects/new` (project creation wizard)
-  * User can exit to Dashboard via "Exit" button if they want to explore first
-* Upon completing **"Create Project"**:
-  * If unauthenticated: the user is prompted to register or log in.
-  * If authenticated: the project is created and user is redirected to project overview page.
-* Each project appears as a card in the dashboard and contains its dataset, report set, checklist, and file storage. point allows triggering a "Reques#### Contact Usage
-
-* Contacts are **not platform users**; they represent external collaborators.
-* **Contacts are global** — scoped to the owning user account, not per-project.
-* Fields: `id`, `user_id`, `name`, `position` (opti## 4. System Behavior and UX Requirements
-
-* All forms save manually via "Save" button (no autosave).
-* Warning prompt when navigating away from unsaved changes.
-* Deletion actions (project/report/contact) are reversible within 30 days.
-* Each report interface includes clear completion indicators and a link to missing data points.
-* **Reports have a single unified mode** — no separate edit/preview modes. Users edit directly and can print anytime.
-* **Reports include "Request Data" functionality** — users can request data from contacts directly from report fields, identical to Dataset functionality.
-* Data editing and tabular inputs support inline addition/removal.
-* **Dataset has a toggle between two views on the same page** (`/projects/:id/dataset`):
-  * **Normal View**: Form-based input with fields grouped logically
-  * **Advanced View**: Excel-like editable grid showing all project data points
-    * Columns: Field ID, Item ID, Value, Last Updated
-    * Inline cell editing with save-per-row
-    * CSV export button
-    * Filters and sorting (if supported by UI component library out-of-the-box)
-  * Toggle button switches between views without changing URL
-* File repository supports search, filter by file type, and optional link to data points.email`, `created_at`, `updated_at`, `archived`.
-* Each contact record tracks all data requests across all user's projects.
-
-#### Contact Usage
-
-* Each data point allows triggering a "Request Data" action.
-* On click, user selects a contact (existing or new) and a mailto link is generated using a predefined template.
-* **Mailto template** is stored in `report_templates.metadata.mailto_templates[field_id]` JSONB field.
-* Template variables: `{contact_name}`, `{project_name}`, `{field_label}`, `{hint_text}`, `{user_name}`.
-* System logs the request in `data_requests` with fields:
-  * `id`, `user_id`, `project_id`, `contact_id`, `data_point_id`, `requested_at`, `revoked_at`, `external_access` (default false).
-* If a link between contact and DP is removed, `revoked_at` timestamp is set.
-* Data request status tracking (pending/received/declined) is **not implemented in MVP**.
-* **No external user access**: contacts are reference-only, no login capability.
-
-#### Contact Interface
-
-* **Global view**: `/contacts` page shows all user's contacts with search and filtering.
-* In data entry view: shows the last contact associated with each data point.
-* In the global contacts page: each contact card displays:
-  * Active requests across all projects.
-  * Historical (revoked) requests with timestamps and project names.
-  * Quick link to projects where this contact is referenced.llows triggering a "Request Data" action.
-* On click, user selects a contact (existing or new) and a mailto link is generated using a predefined template.## 4. System Behavior and UX Requirements
-
-* All forms save manually via "Save" button (no autosave).
-* Warning prompt when navigating away from unsaved changes.
-* Deletion actions (project/report/contact) are reversible within 30 days.
-* Each report interface includes clear completion indicators and a link to missing data points.
-* Data editing and tabular inputs support inline addition/removal.
-* Dataset view provides an "advanced mode" (spreadsheet-like table) accessible via toggle:
-  * Excel-like editable grid showing all project data points
-  * Columns: Field ID, Item ID, Value, Last Updated
-  * Inline cell editing with save-per-row
-  * CSV export button
-  * Filters and sorting (if supported by UI component library out-of-the-box)
-* File repository supports search, filter by file type, and optional link to data points.lto template** is stored in `report_templates.metadata.mailto_templates[field_id]` JSONB field.
-* Template variables: `{contact_name}`, `{project_name}`, `{field_label}`, `{hint_text}`, `{user_name}`.
-* System logs the request in `data_requests` with fields:
-
-  * `id`, `user_id`, `project_id`, `contact_id`, `data_point_id`, `requested_at`, `revoked_at`, `external_access` (default false).
-* If a link between contact and DP is removed, `revoked_at` timestamp is set.
-* Data request status tracking (pending/received/declined) is **not implemented in MVP**.
-* **No external user access**: contacts are reference-only, no login capability.action.
-* On click, user selects a contact (existing or new) and a mailto link is generated using a predefined template.
-* System logs the request in `data_requests` with fields:
-
-  * `id`, `user_id`, `project_id`, `contact_id`, `data_point_id`, `requested_at`, `revoked_at`, `external_access` (default false).
-* If a link between contact and DP is removed, `revoked_at` timestamp is set.
-* Data request status tracking (pending/received/declined) is **not implemented in MVP**.view
+## 1. Overview
 
 A web application designed to create, manage, and complete carbon footprint assessment projects. The platform guides users through project creation via a questionnaire, manages reports generated from standardized templates (e.g., CBAM, ISO 14067), and centralizes data collection and collaboration tools.
 
@@ -95,6 +16,9 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 
 * Users initiate project creation by completing an adaptive questionnaire or by manually selecting desired reports.
 * A project cannot be created without at least one report selected.
+* **First-time user flow**: after email verification the user is redirected to `/projects/new`; choosing "Exit" cancels the wizard after confirmation and no project record is created.
+* The wizard persists a project only after the user clicks **Save** or finishes the flow; abandoning the form discards all inputs.
+* Save actions surface a blocking loading state with clear error messaging on failure before the user is returned to the dashboard or project overview.
 * Upon choosing **“Create Project”**:
 
   * If unauthenticated: the user is prompted to register or log in.
@@ -131,6 +55,14 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 * DP IDs are predefined in report templates and consistent across projects (e.g., `field-ProductName`).
 * When multiple reports use the same field with identical validation/boundaries, they share one DP.
 * Different boundaries/validation rules = different DPs (e.g., `TotalCFP_ISO14067` vs `TotalCFP_CBAM`).
+
+#### Dataset Interface (MVP)
+
+* Single route `/projects/:id/dataset` renders a spreadsheet-like table with all project data points; there is no separate "advanced" or "normal" mode.
+* Inline cell editing, row insertion/removal, filtering, and sorting are available directly in the grid when supported by the UI library.
+* “Request Data” actions are surfaced from each relevant cell/row and share UX with report field requests.
+* CSV export runs from the same page and exposes loading and failure feedback.
+* Bulk edits, save operations, and exports display in-context loading indicators and non-blocking error toasts.
 
 #### Dataset JSONB Structure (MVP)
 
@@ -180,12 +112,13 @@ Simplified structure based on field-value pairs:
   * File repository ("project files").
 * Projects can be cloned, duplicated, or deleted (soft-delete with 30-day retention).
 * **Duplicate/Clone**: Creates a full copy of the project including all data, reports, and files. New project gets name "[Original Name] (Copy)" and fresh UUID.
+* Duplication triggers a modal progress indicator; completion or failure appears as success/error banners before routing to the copied project.
 
 ### 2.6. Roadmap / Checklist
 
 * Contains sequential steps guiding the user toward project completion.
 * Each step can be marked complete and includes links to relevant report sections or data points.
-* Checklist items are auto-generated from report template metadata when project is created.
+* Checklist items are generated in the background immediately after project creation, combining existing data point coverage with predefined hints; users see a loading state until population completes.
 * Each checklist item includes:
   * Reference to specific data point(s)
   * Pre-written guidance hint (e.g., "Ask Production Manager for energy consumption data")
@@ -202,6 +135,7 @@ Simplified structure based on field-value pairs:
 
 * Each data point allows triggering a “Request Data” action.
 * On click, user selects a contact (existing or new) and a mailto link is generated using a predefined template.
+* Mail clients always open with a `mailto:` link; if template metadata is missing or malformed the body falls back to an empty message instead of failing the interaction.
 * System logs the request in `data_requests` with fields:
 
   * `id`, `user_id`, `project_id`, `contact_id`, `data_point_id`, `requested_at`, `revoked_at`, `external_access` (default false).
@@ -222,6 +156,7 @@ Simplified structure based on field-value pairs:
 * **File size limit**: 10 MB per file.
 * **Allowed file types**: All formats (xlsx, pdf, jpg, png, csv, doc, etc.).
 * Metadata: `id`, `user_id`, `project_id`, `filename`, `type`, `size`, `uploaded_at`, `linked_data_points[]`, `status`.
+* Linking to data points is handled through a tag-style multi-select with autosuggest inside a file properties side panel; the same pattern is reused for other entity property editors.
 * Initially passive (storage only). Future integration: OCR and LLM-assisted data extraction.
 
 ### 2.9. Progress Tracking
@@ -382,12 +317,13 @@ Simplified structure based on field-value pairs:
 
 ## 4. System Behavior and UX Requirements
 
-* All forms autosave locally (preventing data loss on navigation).
+* All forms save explicitly via a **Save** button; navigation away with unsaved changes triggers a confirmation prompt.
+* Long-running operations (project save, duplication, dataset export, file upload, mailto generation) expose loading states and resilient error messaging before closing dialogs or redirecting users.
 * Deletion actions (project/report/contact) are reversible within 30 days.
 * Each report interface includes clear completion indicators and a link to missing data points.
 * Data editing and tabular inputs support inline addition/removal.
-* Dataset view provides an “advanced mode” (spreadsheet-like table) accessible via toggle.
-* File repository supports search, filter by file type, and optional link to data points.
+* Dataset view is a single spreadsheet-like experience (`/projects/:id/dataset`) with inline editing, filtering, and CSV export.
+* File repository supports search, filter by file type, and linking files to data points via tag-based selectors.
 
 ---
 
@@ -611,8 +547,7 @@ carbonreport/
 ✅ Progress tracking and completion calculation  
 ✅ Export to PDF via browser print functionality (dedicated print page)  
 ✅ Transactional emails (verification, password reset)  
-✅ **Dataset with toggle between Normal and Advanced view** (same page)  
-✅ Advanced view features: editable grid, CSV export, filtering  
+✅ `/projects/:id/dataset` spreadsheet-style view with inline editing, filtering, CSV export, and Request Data actions  
 ✅ Manual save with unsaved changes warning  
 
 ### Out of Scope (Post-MVP)
@@ -641,7 +576,7 @@ The MVP implements all user-facing features for project creation, report managem
 
 **Key architectural decisions:**
 - **Global contacts**: Contacts are user-scoped (not project-scoped), with full history of data requests across all projects
-- **Dataset view toggle**: Single page (`/projects/:id/dataset`) with toggle between Normal (form) and Advanced (grid) views
+- **Dataset page**: Single route (`/projects/:id/dataset`) delivering a spreadsheet-style grid with inline editing, filtering, CSV export, and Request Data actions
 - **Report editing**: Single unified mode without separate preview — users edit and print directly
 - **Request Data everywhere**: Available in both Dataset view AND within Report editors (same functionality)
 - **Project creation flow**: Multi-step process requiring at least one report type selection (via questionnaire or manual)
