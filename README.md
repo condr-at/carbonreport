@@ -1,130 +1,151 @@
 # Carbon Report Platform
 
-A web application for creating, managing, and completing carbon footprint assessment projects based on ISO 14067, CBAM, and other international standards.
+A carbon footprint assessment platform for preparing ISO 14067, CBAM, and other environmental reports.
 
 ## Overview
 
-The Carbon Report Platform guides users through project creation via an adaptive questionnaire, manages reports generated from standardized templates, and centralizes data collection and collaboration tools.
+This platform helps users:
+- Collect and organize data for carbon footprint assessments
+- Generate standardized reports (ISO 14067, EU CBAM)
+- Request data from external contacts
+- Track progress through roadmap checklists
+- Upload and link supporting documentation
 
-### Key Features (MVP)
-
-- ✅ Single-user accounts with email/password authentication
-- ✅ Project creation with adaptive questionnaire
-- ✅ Report templates (ISO 14067, CBAM) with dynamic forms
-- ✅ Shared dataset with scalar and tabular data points
-- ✅ Contact management with mailto-based data requests
-- ✅ File repository (10 MB limit per file)
-- ✅ Progress tracking and completion calculation
-- ✅ PDF export via browser print
-- ✅ Advanced dataset view (editable grid, CSV export)
+See [docs/Requirements v0.0.1.md](docs/Requirements%20v0.0.1.md) for complete specifications.
 
 ## Tech Stack
 
-- **Frontend**: React + Next.js + TypeScript
-- **UI**: Tailwind CSS + shadcn/ui
-- **Backend**: Node.js (NestJS or Express)
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
 - **Database**: PostgreSQL + Prisma ORM
-- **File Storage**: S3-compatible (AWS S3 or MinIO)
-- **Authentication**: JWT (email/password)
-- **Email**: Resend (resend.com)
-- **Export**: Browser print-to-PDF
-
-## Project Structure
-
-```
-carbonreport/
-├── docs/                    # Documentation
-│   └── Requirements v0.0.1.md
-├── apps/                    # Applications (monorepo structure)
-│   ├── web/                # Next.js frontend
-│   └── api/                # Backend API
-├── packages/               # Shared packages
-│   ├── ui/                 # Shared UI components
-│   ├── database/           # Prisma schema and migrations
-│   └── config/             # Shared configuration
-└── README.md
-```
+- **UI**: Tailwind CSS + shadcn/ui + Lucide icons
+- **Auth**: JWT (email/password)
+- **Email**: Resend
+- **Storage**: S3-compatible (AWS S3 or MinIO)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
-- PostgreSQL 14+
-- pnpm (recommended) or npm
+- Node.js 20+ and pnpm
+- PostgreSQL database
+- S3-compatible storage (AWS S3 or local MinIO)
+- Resend account for emails
 
 ### Installation
 
+1. Clone the repository:
 ```bash
-# Install dependencies
+git clone <repository-url>
+cd carbonreport
+```
+
+2. Install dependencies:
+```bash
 pnpm install
+```
 
-# Set up environment variables
-cp .env.example .env.local
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
 
-# Run database migrations
-pnpm db:migrate
+Edit `.env` with your configuration:
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_SECRET`: Random secret (min 32 chars)
+- `RESEND_API_KEY`: API key from resend.com
+- `S3_*`: S3 or MinIO credentials
 
-# Start development server
+4. Initialize database:
+```bash
+pnpm db:push      # Create tables
+pnpm db:seed      # Seed templates and questionnaires
+```
+
+5. Generate Prisma Client:
+```bash
+pnpm db:generate
+```
+
+6. Run development server:
+```bash
 pnpm dev
 ```
 
-### Environment Variables
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Create `.env.local` file:
+## Database Commands
 
-```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/carbonreport"
-
-# JWT
-JWT_SECRET="your-secret-key"
-JWT_EXPIRES_IN="24h"
-REFRESH_TOKEN_EXPIRES_IN="30d"
-
-# Resend
-RESEND_API_KEY="re_..."
-
-# S3 Storage
-S3_ENDPOINT="https://s3.amazonaws.com"
-S3_BUCKET="carbonreport-files"
-S3_ACCESS_KEY_ID="..."
-S3_SECRET_ACCESS_KEY="..."
-
-# App
-NEXT_PUBLIC_API_URL="http://localhost:3001"
+```bash
+pnpm db:generate  # Generate Prisma Client
+pnpm db:push      # Push schema to database
+pnpm db:seed      # Seed initial data
+pnpm db:studio    # Open Prisma Studio (GUI)
 ```
+
+## Project Structure
+
+```
+carbonreport/
+├── src/
+│   ├── app/              # Next.js App Router pages & API routes
+│   │   ├── api/          # Backend API endpoints
+│   │   ├── (auth)/       # Auth pages (login, register, etc.)
+│   │   └── (dashboard)/  # Protected dashboard pages
+│   ├── components/       # React components
+│   │   └── ui/           # shadcn/ui components
+│   └── lib/              # Utilities & helpers
+│       ├── db.ts         # Prisma client singleton
+│       ├── auth.ts       # JWT utilities
+│       └── s3.ts         # S3 storage utilities
+├── prisma/
+│   ├── schema.prisma     # Database schema
+│   └── seed.ts           # Seed script
+├── docs/                 # Project documentation
+└── public/               # Static assets
+```
+
+## Deployment
+
+### Option 1: Vercel (Recommended)
+
+1. Connect repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main
+
+### Option 2: Docker
+
+```bash
+docker build -t carbonreport .
+docker run -p 3000:3000 carbonreport
+```
+
+See [docs/Requirements v0.0.1.md § 6.5](docs/Requirements%20v0.0.1.md#65-deployment) for details.
+
+## Development
+
+- `pnpm dev` - Start dev server with Turbopack
+- `pnpm build` - Build for production
+- `pnpm start` - Run production build
+- `pnpm lint` - Run ESLint
+
+## Architecture
+
+This is a **monolithic Next.js application** using:
+- **Frontend**: React components in `src/app` (Server Components by default)
+- **Backend**: API Routes in `src/app/api` (serverless functions)
+- **Database**: PostgreSQL via Prisma ORM
+- **File Storage**: S3-compatible object storage
+
+All backend logic runs as Next.js API Routes - no separate backend server needed.
 
 ## Documentation
 
-- [Requirements Specification](./Requirements%20v0.0.1.md)
-- API Documentation (coming soon)
-- User Guide (coming soon)
-
-## Development Roadmap
-
-### MVP (Current Phase)
-- Single-user functionality
-- ISO 14067 and CBAM report templates
-- Manual save with browser print export
-
-### Post-MVP
-- Multi-user organizations
-- OAuth providers (Google, Microsoft)
-- Real-time collaboration via WebSockets
-- OCR/LLM-assisted data extraction
-- Billing and subscriptions
-- Mobile applications
-
-## Contributing
-
-This is a private project. For questions or contributions, please contact the project maintainer.
+- [Requirements v0.0.1](docs/Requirements%20v0.0.1.md) - Complete specifications
+- [Project Overview](docs/PROJECT_OVERVIEW.md) - Original project context
+- [Changelog](docs/CHANGELOG.md) - Version history
 
 ## License
 
-Proprietary - All rights reserved
+Private project - not licensed for public use.
 
----
-
-**Version**: 0.1.0  
-**Last Updated**: October 11, 2025

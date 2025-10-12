@@ -353,21 +353,136 @@ The following architectural and data model provisions must be included in MVP sc
 
 ---
 
-## 6. Technology Stack Recommendations (Separate Section)
+## 6. Technology Stack & Architecture
 
 *(Implementation guidance — not part of functional requirements)*
 
-| Layer             | Recommended Technology                           | Notes                                  |
-| ----------------- | ------------------------------------------------ | -------------------------------------- |
-| Frontend          | React (Next.js or Vite) + TypeScript             | Modular UI with component-based forms  |
-| UI Toolkit        | Tailwind CSS + shadcn/ui                         | Lightweight, responsive components     |
-| Backend           | Node.js (NestJS / Express)                       | REST or GraphQL API                    |
-| Database          | PostgreSQL + Prisma ORM                          | Supports JSONB for dataset flexibility |
-| File Storage      | S3-compatible (AWS / MinIO)                      | For file repository and exports        |
-| Auth              | JWT (email/password); OAuth providers reserved   | Simple auth in MVP, OAuth post-MVP     |
-| Email Service     | Resend (resend.com)                              | Transactional emails for registration  |
-| Export Engine     | Puppeteer / ExcelJS                              | PDF and XLSX generation                |
-| Optional Services | OCR (Tesseract / AWS Textract), LLM (OpenAI API) | Future integration                     |
+### 6.1. Application Architecture
+
+**Monolithic Next.js Application** (recommended for MVP):
+- Single application combining frontend and backend
+- Next.js App Router for UI pages
+- Next.js API Routes for backend logic
+- Simplified deployment and development
+- Scales via serverless (Vercel) or containers (Docker)
+
+**Why monolith over microservices:**
+- ✅ Faster MVP development (single codebase)
+- ✅ Simpler deployment (one service)
+- ✅ Built-in API for future mobile apps (API Routes accessible externally)
+- ✅ Serverless-ready (Vercel/AWS auto-scales)
+- ✅ Easy to extract services later if needed
+- ❌ Microservices add unnecessary complexity for single-user MVP
+
+### 6.2. Technology Stack
+
+| Layer             | Technology                                       | Notes                                          |
+| ----------------- | ------------------------------------------------ | ---------------------------------------------- |
+| **Framework**     | Next.js 15 (App Router)                          | Full-stack React framework                     |
+| **Language**      | TypeScript                                       | Type safety across frontend and backend        |
+| **UI Toolkit**    | Tailwind CSS + shadcn/ui                         | Utility-first CSS with accessible components   |
+| **Database**      | PostgreSQL + Prisma ORM                          | Relational DB with JSONB for dataset           |
+| **Authentication**| JWT (email/password); OAuth reserved             | Simple auth in MVP, OAuth post-MVP             |
+| **Email Service** | Resend (resend.com)                              | Transactional emails (React Email templates)   |
+| **File Storage**  | S3-compatible (AWS S3 or MinIO)                  | 10 MB file uploads, future OCR integration     |
+| **API Layer**     | Next.js API Routes                               | RESTful endpoints in `/app/api/*`              |
+| **Export Engine** | Browser print-to-PDF (MVP); Puppeteer (post-MVP) | User-initiated PDF export                      |
+| **Deployment**    | Vercel (recommended) or Docker/VPS               | Serverless or self-hosted                      |
+
+**Optional Services** (post-MVP):
+- OCR: Tesseract / AWS Textract
+- LLM: OpenAI API for data extraction
+- Real-time: WebSockets (Socket.io)
+
+### 6.3. Project Structure
+
+```
+carbonreport/
+├── prisma/
+│   ├── schema.prisma          # Database schema
+│   ├── migrations/            # Migration history
+│   └── seed.ts                # Initial data (report templates)
+│
+├── public/                    # Static assets
+│
+├── src/
+│   ├── app/                   # Next.js App Router
+│   │   ├── (auth)/           # Auth pages (login, register)
+│   │   │   ├── login/
+│   │   │   └── register/
+│   │   ├── (dashboard)/      # Protected routes
+│   │   │   ├── projects/
+│   │   │   ├── contacts/
+│   │   │   └── settings/
+│   │   ├── api/              # Backend API Routes
+│   │   │   ├── auth/
+│   │   │   ├── projects/
+│   │   │   ├── reports/
+│   │   │   ├── contacts/
+│   │   │   └── files/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   │
+│   ├── components/           # React components
+│   │   ├── ui/              # shadcn/ui components
+│   │   ├── forms/           # Form components
+│   │   └── layout/          # Layout components
+│   │
+│   └── lib/                 # Utilities and services
+│       ├── db.ts            # Prisma client singleton
+│       ├── auth.ts          # JWT helpers, session management
+│       ├── email.ts         # Resend integration
+│       ├── storage.ts       # S3 client
+│       ├── validations.ts   # Zod schemas
+│       └── utils.ts         # General utilities
+│
+├── .env.example
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+└── package.json
+```
+
+### 6.4. Deployment Strategy
+
+**MVP Deployment (Recommended: Vercel)**
+- One-click deployment from Git
+- Automatic HTTPS, CDN, and edge functions
+- PostgreSQL via Vercel Postgres or external (Supabase, Neon)
+- Environment variables in Vercel dashboard
+- Free tier: 100 GB bandwidth, unlimited API requests
+
+**Alternative: Self-hosted (Docker)**
+- `next build` → standalone output
+- Docker container with Node.js
+- Nginx reverse proxy
+- PostgreSQL container or managed service
+- More control, requires DevOps
+
+### 6.5. Database Hosting Options
+
+| Provider         | Type    | Free Tier          | Notes                      |
+| ---------------- | ------- | ------------------ | -------------------------- |
+| Vercel Postgres  | Managed | 256 MB, 60h compute| Integrated with Vercel     |
+| Supabase         | Managed | 500 MB, 2 projects | Includes auth, storage     |
+| Neon             | Managed | 512 MB             | Serverless Postgres        |
+| Railway          | Managed | $5 credit          | Easy setup, Docker support |
+| Self-hosted      | DIY     | ∞                  | Full control, more work    |
+
+### 6.6. Why Next.js API Routes (not separate backend)
+
+**Advantages:**
+- ✅ Same codebase for frontend and API (shared types)
+- ✅ Single deployment (no CORS configuration)
+- ✅ Serverless auto-scaling on Vercel
+- ✅ Built-in middleware for auth, logging
+- ✅ API accessible to mobile apps (standard HTTP)
+
+**When to extract backend:**
+- 10,000+ concurrent users (rare for MVP)
+- Heavy background jobs (OCR/LLM processing)
+- Multiple frontend clients (web, iOS, Android) with different teams
+- **For this MVP**: Not needed
 
 ---
 
