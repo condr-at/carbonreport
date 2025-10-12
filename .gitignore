@@ -35,6 +35,9 @@ yarn-error.log*
 !.env.example
 !vercel.env.template
 
+# Vercel env with real secrets (DO NOT COMMIT)
+.env.vercel
+
 # vercel
 .vercel
 
