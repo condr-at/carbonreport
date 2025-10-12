@@ -7,7 +7,15 @@
 - ✅ Resend API key: `re_UH78eSQ5_GHn1e8TB7Kz8cQKPnssQPvtA`
 - ✅ Email отправителя: `noreply@carbonreport.app`
 
-### 2. Обновлены файлы
+### 2. Файлы для деплоя
+- ✅ `.env.example` - development template
+- ✅ `.env.production` - production values (gitignored)
+- ✅ **`vercel.env.template`** - готовый к импорту в Vercel (замени DATABASE_URL и JWT_SECRET)
+- ✅ `VERCEL_DEPLOYMENT.md` - пошаговая инструкция через Dashboard
+- ✅ `VERCEL_CLI_DEPLOY.md` - быстрый деплой через CLI
+- ✅ `PRODUCTION_CONFIG.md` - детальная конфигурация
+
+### 3. Обновлены файлы
 - ✅ `.env.example` - production values
 - ✅ `VERCEL_DEPLOYMENT.md` - пошаговая инструкция
 - ✅ `PRODUCTION_CONFIG.md` - детальная конфигурация
@@ -35,7 +43,31 @@
 
 ## Следующие шаги (Deploy на Vercel)
 
-### 1. Commit & Push
+### Вариант А: Быстрый деплой через CLI (рекомендуется)
+
+```bash
+# 1. Установи Vercel CLI
+npm i -g vercel
+
+# 2. Подготовь переменные
+cp vercel.env.template .env.production.local
+# Отредактируй .env.production.local:
+# - Замени DATABASE_URL на свой Supabase URL (port 6543)
+# - Сгенерируй JWT_SECRET: openssl rand -base64 32
+
+# 3. Deploy
+vercel login
+vercel link
+vercel --prod
+```
+
+📖 Детали в **VERCEL_CLI_DEPLOY.md**
+
+---
+
+### Вариант Б: Через Vercel Dashboard
+
+1. **Commit & Push**:
 ```bash
 git add .
 git commit -m "Production ready: carbonreport.app config, landing page, API fixes"
@@ -48,8 +80,15 @@ git push origin main
 
 1. **Import Git Repository** → Select `carbonreport`
 2. **Framework Preset**: Next.js ✅ (auto-detected)
-3. **Environment Variables** (добавьте все):
+3. **Environment Variables** - импортируйте файл или добавьте вручную:
 
+#### Вариант А: Импорт файла (быстрее)
+1. Откройте `vercel.env.template`
+2. Замените `DATABASE_URL` и `JWT_SECRET` на реальные значения
+3. Vercel Dashboard → Settings → Environment Variables → **Import .env**
+4. Выберите обновленный файл
+
+#### Вариант Б: Ручное добавление
 ```bash
 DATABASE_URL="postgresql://postgres.xxx:PASSWORD@aws-1-us-east-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
 JWT_SECRET="ваш-32-символьный-секрет"
