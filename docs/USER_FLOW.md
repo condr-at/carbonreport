@@ -16,35 +16,65 @@ graph TD
     Register --> EmailVerify[Email Verification<br/>Подтверждение email]
     EmailVerify --> Dashboard
     
-    Auth -->|Да| Dashboard[Dashboard<br/>Список проектов]
+    Auth -->|Да| CreateProject[Create Project<br/>Создание первого проекта]
+    CreateProject --> ChooseReports{Как выбрать типы отчётов?}
+    ChooseReports -->|Анкета| Questionnaire[Questionnaire<br/>Анкета]
+    ChooseReports -->|Вручную| ManualReportSelection[Manual Selection<br/>Ручной выбор типов отчётов]
+    ChooseReports -->|Выйти| Dashboard[Dashboard<br/>Список проектов]
+    Questionnaire --> SelectRecommendedReports[Select Reports<br/>Выбор рекомендованных типов]
+    SelectRecommendedReports --> ProjectCreated[Project Created<br/>Проект создан]
+    ManualReportSelection --> ProjectCreated
+    ProjectCreated --> ProjectDetail[Project Detail<br/>Детали проекта]
     
-    Dashboard --> CreateProject[Create Project<br/>Создание проекта]
-    Dashboard --> ProjectDetail[Project Detail<br/>Детали проекта]
+    Dashboard --> CreateNewProject[Create New Project<br/>Создать новый проект]
+    CreateNewProject --> ChooseReports
+    Dashboard --> DuplicateProject[Duplicate Project<br/>Дублировать проект]
+    DuplicateProject --> ProjectDetail
+    Dashboard --> ExistingProject[Open Existing<br/>Открыть существующий]
+    ExistingProject --> ProjectDetail
     
+    ProjectDetail --> Overview[Overview<br/>Обзор проекта]
     ProjectDetail --> Dataset[Dataset<br/>Сбор данных]
+    ProjectDetail --> DatasetAdvanced[Dataset Advanced<br/>Расширенный вид таблицы]
     ProjectDetail --> Roadmap[Roadmap<br/>Дорожная карта]
-    ProjectDetail --> Reports[Reports<br/>Отчёты]
+    ProjectDetail --> Reports[Reports<br/>Список отчётов]
     ProjectDetail --> Files[Files<br/>Файлы]
-    ProjectDetail --> Contacts[Contacts<br/>Контакты]
     
-    Dataset --> QuestionnaireStart[Questionnaire<br/>Анкета для начала]
-    Dataset --> ManualEntry[Manual Entry<br/>Ручной ввод данных]
+    Dataset --> DataPoint[Data Point<br/>Поле данных]
+    DataPoint --> RequestDataFromDP[Request Data<br/>Запросить данные]
+    RequestDataFromDP --> SelectContact{Выбрать контакт}
+    SelectContact -->|Существующий| GenerateMailto[Generate Mailto<br/>Создать email]
+    SelectContact -->|Новый| CreateContactInline[Create Contact<br/>Добавить контакт]
+    CreateContactInline --> GenerateMailto
+    GenerateMailto --> EmailClient[Email Client<br/>Открывается почта]
     
-    Reports --> CreateReport[Create Report<br/>Выбор шаблона]
-    CreateReport --> FillReport[Fill Report<br/>Заполнение отчёта]
-    FillReport --> PreviewReport[Preview Report<br/>Предпросмотр]
-    PreviewReport --> ExportReport[Export Report<br/>Скачать HTML/PDF]
+    DatasetAdvanced --> ExportCSV[Export CSV<br/>Экспорт данных]
+    DatasetAdvanced --> InlineEdit[Inline Edit<br/>Редактирование в таблице]
+    DatasetAdvanced --> RequestDataFromTable[Request Data<br/>Запросить данные]
+    RequestDataFromTable --> SelectContact
+    
+    Reports --> AddReport[Add Report<br/>Добавить тип отчёта]
+    Reports --> OpenReport[Open Report<br/>Открыть отчёт]
+    AddReport --> SelectReportType[Select Report Type<br/>Выбор типа отчёта]
+    SelectReportType --> OpenReport
+    OpenReport --> EditReport[Edit Report<br/>Заполнение отчёта]
+    EditReport --> RequestDataFromReport[Request Data<br/>Запросить данные из отчёта]
+    RequestDataFromReport --> SelectContact
+    EditReport --> PrintToPDF[Print to PDF<br/>Печать через браузер]
     
     Files --> UploadFile[Upload File<br/>Загрузка файла]
-    Files --> LinkFile[Link to Data Point<br/>Привязка к данным]
+    Files --> LinkFileToDP[Link to Data Point<br/>Привязка к данным]
     
-    Contacts --> AddContact[Add Contact<br/>Добавить контакт]
-    Contacts --> RequestData[Request Data<br/>Запросить данные]
-    RequestData --> EmailSent[Email Sent<br/>Письмо отправлено]
+    Dashboard --> GlobalContacts[Contacts<br/>Адресная книга]
+    GlobalContacts --> AddContact[Add Contact<br/>Добавить контакт]
+    GlobalContacts --> ViewContactHistory[View History<br/>История запросов]
     
     Dashboard --> Settings[Settings<br/>Настройки профиля]
     Settings --> Profile[Profile<br/>Имя, email, аватар]
     Settings --> Password[Change Password<br/>Смена пароля]
+    
+    Dashboard --> Logout[Logout<br/>Выход из системы]
+    Logout --> Landing
 ```
 
 ## Детальная структура страниц
@@ -61,18 +91,23 @@ graph LR
     
     subgraph "Protected Pages (требуют авторизации)"
         B1[/dashboard<br/>Главная]
+        B2[/contacts<br/>Глобальная адресная книга]
+        
+        subgraph "Project Creation Flow"
+            C0[/projects/new<br/>Создать проект - Шаг 1]
+            C0a[/projects/new/questionnaire<br/>Анкета - опционально]
+            C0b[/projects/new/select-reports<br/>Выбор типов отчётов]
+        end
         
         subgraph "Project Pages"
-            C1[/projects/new<br/>Создать проект]
             C2[/projects/:id<br/>Обзор проекта]
-            C3[/projects/:id/dataset<br/>Сбор данных]
-            C4[/projects/:id/questionnaire<br/>Анкета]
+            C3[/projects/:id/dataset<br/>Сбор данных - Normal View]
+            C3a[/projects/:id/dataset/advanced<br/>Advanced View - таблица]
             C5[/projects/:id/roadmap<br/>Дорожная карта]
             C6[/projects/:id/reports<br/>Список отчётов]
-            C7[/projects/:id/reports/new<br/>Новый отчёт]
             C8[/projects/:id/reports/:reportId<br/>Редактор отчёта]
+            C8a[/projects/:id/reports/:reportId/print<br/>Печать отчёта]
             C9[/projects/:id/files<br/>Файлы]
-            C10[/projects/:id/contacts<br/>Контакты]
         end
         
         subgraph "Settings Pages"
@@ -82,16 +117,24 @@ graph LR
         end
     end
     
-    B1 --> C1
+    B1 --> C0
+    C0 --> C0a
+    C0 --> C0b
+    C0a --> C0b
+    C0b --> C2
+    
     B1 --> C2
+    B1 --> B2
+    
     C2 --> C3
-    C2 --> C4
+    C3 --> C3a
     C2 --> C5
     C2 --> C6
     C2 --> C9
-    C2 --> C10
-    C6 --> C7
-    C7 --> C8
+    
+    C6 --> C8
+    C8 --> C8a
+    
     B1 --> D1
     D1 --> D2
     D1 --> D3
@@ -105,8 +148,12 @@ sequenceDiagram
     participant Landing as Landing Page
     participant Auth as Auth System
     participant Dashboard as Dashboard
-    participant Project as Project Page
-    participant Report as Report Builder
+    participant ProjectNew as Project Creation
+    participant Questionnaire as Questionnaire
+    participant ProjectPage as Project Page
+    participant Dataset as Dataset
+    participant Contact as Contact System
+    participant Report as Report Editor
     
     Note over User,Report: Сценарий 1: Новый пользователь
     User->>Landing: Заходит на сайт
@@ -114,24 +161,83 @@ sequenceDiagram
     User->>Auth: Регистрируется
     Auth->>User: Отправляет email подтверждение
     User->>Auth: Подтверждает email
-    Auth->>Dashboard: Редирект на Dashboard
+    Auth->>ProjectNew: Редирект на создание первого проекта
     
-    Note over User,Report: Сценарий 2: Создание проекта
-    User->>Dashboard: Создать новый проект
-    Dashboard->>Project: Открывает форму
-    User->>Project: Вводит название
-    Project->>User: Предлагает анкету
-    User->>Project: Заполняет анкету
-    Project->>Project: Автозаполняет dataset
+    Note over User,Report: Сценарий 2: Создание проекта через анкету
+    User->>ProjectNew: Открывает /projects/new
+    User->>ProjectNew: Вводит название проекта
+    ProjectNew->>User: Предлагает анкету (+ кнопка "Выйти в Dashboard")
+    User->>Questionnaire: Выбирает "Пройти анкету"
+    User->>Questionnaire: Отвечает на вопросы
+    Questionnaire->>ProjectNew: Рекомендует типы отчётов (ISO14067, CBAM)
+    User->>ProjectNew: Подтверждает выбор типов отчётов
+    ProjectNew->>ProjectPage: Создаёт проект с выбранными отчётами
+    ProjectPage->>User: Показывает обзор проекта
     
-    Note over User,Report: Сценарий 3: Генерация отчёта
-    User->>Project: Переходит в Reports
-    Project->>Report: Выбирает ISO14067
-    User->>Report: Заполняет поля
-    Report->>User: Показывает % заполнения
-    User->>Report: Нажимает Preview
-    Report->>User: Показывает HTML отчёт
-    User->>Report: Скачивает PDF
+    Note over User,Report: Сценарий 2б: Создание проекта вручную
+    User->>ProjectNew: Открывает /projects/new
+    User->>ProjectNew: Вводит название, пропускает анкету
+    User->>ProjectNew: Вручную выбирает типы отчётов из списка
+    ProjectNew->>ProjectPage: Создаёт проект с выбранными отчётами
+    
+    Note over User,Report: Сценарий 3а: Запрос данных из Dataset
+    User->>ProjectPage: Открывает Dataset
+    ProjectPage->>Dataset: Показывает список data points
+    User->>Dataset: Видит незаполненное поле "Энергопотребление"
+    User->>Dataset: Нажимает "Request Data"
+    Dataset->>User: Показывает диалог выбора контакта
+    User->>Contact: Выбирает "Иван Петров, Production Manager"
+    Contact->>Contact: Создаёт запись в data_requests
+    Contact->>User: Генерирует mailto: ссылку с шаблоном
+    User->>Contact: Открывает email клиент
+    Note over Contact: Email содержит:<br/>- Название проекта<br/>- Название поля<br/>- Подсказку что нужно<br/>- Контекст
+    
+    Note over User,Report: Сценарий 3б: Запрос данных из отчёта
+    User->>ProjectPage: Открывает Reports → ISO14067
+    ProjectPage->>Report: Показывает форму отчёта
+    User->>Report: Видит пустое поле "Total Energy Consumption"
+    User->>Report: Нажимает "Request Data" рядом с полем
+    Report->>Contact: Показывает диалог выбора контакта
+    User->>Contact: Выбирает контакт
+    Contact->>User: Генерирует mailto: ссылку
+    User->>Contact: Открывает email клиент
+    
+    Note over User,Report: Сценарий 4: Заполнение и экспорт отчёта
+    User->>ProjectPage: Переходит в Reports
+    ProjectPage->>Report: Показывает список отчётов (ISO14067)
+    User->>Report: Открывает ISO14067
+    Report->>User: Показывает форму с полями
+    User->>Report: Заполняет поля данными
+    Report->>User: Обновляет % заполнения (67%)
+    User->>Report: Продолжает заполнение
+    Report->>User: Показывает 100% заполнение
+    User->>Report: Нажимает "Print"
+    Report->>User: Открывает print-friendly страницу
+    User->>Report: Выбирает "Save as PDF" в браузере
+    Report->>User: Сохраняет PDF отчёт
+    
+    Note over User,Report: Сценарий 5: Расширенный вид датасета
+    User->>ProjectPage: Открывает Dataset
+    ProjectPage->>Dataset: Показывает обычный вид (форма)
+    User->>Dataset: Переходит в "Advanced View"
+    Dataset->>User: Открывает /projects/:id/dataset/advanced<br/>Excel-like таблица (Field ID, Item ID, Value, Updated)
+    User->>Dataset: Редактирует ячейки inline
+    User->>Dataset: Нажимает "Export CSV"
+    Dataset->>User: Скачивает dataset.csv
+    User->>Dataset: Возвращается в "Normal View"
+    Dataset->>User: Открывает /projects/:id/dataset
+    
+    Note over User,Report: Сценарий 6: Дублирование проекта
+    User->>Dashboard: Видит список проектов
+    User->>Dashboard: Нажимает "Duplicate" на проекте
+    Dashboard->>ProjectPage: Создаёт копию со всеми данными
+    ProjectPage->>User: Открывает "[Original Name] (Copy)"
+    
+    Note over User,Report: Сценарий 7: Выход из системы
+    User->>Dashboard: Нажимает User menu → Logout
+    Dashboard->>Auth: Очищает JWT токен
+    Auth->>Landing: Редирект на Landing Page
+    Landing->>User: Показывает публичную страницу
 ```
 
 ## Навигационная структура (Header/Sidebar)
@@ -141,23 +247,27 @@ graph TD
     subgraph "Top Navigation (для авторизованных)"
         Nav1[Logo → Dashboard]
         Nav2[Projects dropdown]
-        Nav3[User menu]
+        Nav3[Contacts]
+        Nav4[User menu]
     end
     
     Nav2 --> Nav2a[Мои проекты]
     Nav2 --> Nav2b[Создать новый]
     Nav2 --> Nav2c[Архивированные]
     
-    Nav3 --> Nav3a[Настройки]
-    Nav3 --> Nav3b[Выход]
+    Nav3 --> Nav3a[Адресная книга]
+    Nav3 --> Nav3b[История запросов]
+    
+    Nav4 --> Nav4a[Настройки]
+    Nav4 --> Nav4b[Выход]
     
     subgraph "Project Sidebar (внутри проекта)"
         Side1[Overview]
         Side2[Dataset]
+        Side2a[Dataset Advanced]
         Side3[Roadmap]
         Side4[Reports]
         Side5[Files]
-        Side6[Contacts]
     end
 ```
 
@@ -167,31 +277,50 @@ graph TD
 1. `/login` - Вход
 2. `/register` - Регистрация
 3. `/verify-email` - Подтверждение email
-4. Email sending (Resend)
-5. JWT auth middleware
+4. `/forgot-password` - Восстановление пароля
+5. **Logout** - Выход из системы (очистка JWT токена, редирект на Landing)
+6. Email sending (Resend)
+7. JWT auth middleware
+8. Редирект после регистрации → `/projects/new` (создание первого проекта)
 
 ### Phase 2: Dashboard & Projects
 1. `/dashboard` - Список проектов
-2. `/projects/new` - Создание проекта
-3. `/projects/:id` - Обзор проекта
-4. CRUD операции для проектов
+2. `/projects/new` - Создание проекта (многошаговая форма)
+3. `/projects/new/questionnaire` - Анкета (опциональный шаг)
+4. `/projects/new/select-reports` - Выбор типов отчётов (обязательный шаг)
+5. `/projects/:id` - Обзор проекта
+6. CRUD операции для проектов
+7. Дублирование проекта
 
-### Phase 3: Dataset & Roadmap
-1. `/projects/:id/dataset` - Сбор данных (JSONB)
-2. `/projects/:id/questionnaire` - Анкета
-3. `/projects/:id/roadmap` - Чеклист roadmap
+### Phase 3: Global Contacts
+1. `/contacts` - Глобальная адресная книга
+2. CRUD операции для контактов
+3. Просмотр истории запросов данных по контакту
 
-### Phase 4: Reports
-1. `/projects/:id/reports` - Список отчётов
-2. `/projects/:id/reports/new` - Выбор шаблона
-3. `/projects/:id/reports/:id` - Редактор отчёта
-4. HTML export
+### Phase 4: Dataset & Roadmap
+1. `/projects/:id/dataset` - Сбор данных (Normal View - форма)
+2. `/projects/:id/dataset/advanced` - Advanced View (отдельная страница с таблицей)
+3. Normal View - форма по полям с группировкой
+4. Advanced View - Excel-like таблица (отдельный роут)
+5. Request Data из data point в обоих видах (mailto generation)
+6. Связь data requests с контактами
+7. CSV export из advanced view
+8. `/projects/:id/roadmap` - Чеклист roadmap
 
-### Phase 5: Files & Contacts
+### Phase 5: Reports
+1. `/projects/:id/reports` - Список отчётов проекта
+2. Добавление/удаление типов отчётов в проект
+3. `/projects/:id/reports/:id` - Редактор отчёта (единый режим)
+4. **Request Data прямо из полей отчёта** (та же функциональность)
+5. Прогресс заполнения отчёта
+6. `/projects/:id/reports/:id/print` - Print-friendly страница
+7. Browser print to PDF
+
+### Phase 6: Files
 1. `/projects/:id/files` - Загрузка файлов
 2. S3 integration
-3. `/projects/:id/contacts` - Управление контактами
-4. Email requests
+3. Привязка файлов к data points
+4. Фильтрация и поиск по файлам
 
 ---
 
@@ -200,24 +329,43 @@ graph TD
 ### Routing (Next.js App Router)
 ```
 src/app/
-├── (public)/           # Группа для публичных страниц
-│   ├── page.tsx       # Landing /
+├── (public)/              # Группа для публичных страниц
+│   ├── page.tsx          # Landing /
 │   ├── login/
-│   └── register/
-├── (dashboard)/       # Группа для защищённых страниц
-│   ├── layout.tsx     # Layout с навигацией
+│   ├── register/
+│   ├── verify-email/
+│   └── forgot-password/
+├── (dashboard)/          # Группа для защищённых страниц
+│   ├── layout.tsx        # Layout с навигацией
 │   ├── dashboard/
+│   ├── contacts/         # Глобальная адресная книга
 │   ├── projects/
-│   │   ├── [id]/
-│   │   │   ├── page.tsx
-│   │   │   ├── dataset/
-│   │   │   ├── reports/
-│   │   │   └── ...
+│   │   ├── new/
+│   │   │   ├── page.tsx              # Шаг 1: Название проекта
+│   │   │   ├── questionnaire/        # Шаг 2а: Анкета (опционально)
+│   │   │   └── select-reports/       # Шаг 2б/3: Выбор типов отчётов
+│   │   └── [id]/
+│   │       ├── page.tsx              # Overview
+│   │       ├── dataset/
+│   │       │   ├── page.tsx          # Dataset Normal View (форма)
+│   │       │   └── advanced/
+│   │       │       └── page.tsx      # Dataset Advanced View (таблица)
+│   │       ├── roadmap/
+│   │       ├── reports/
+│   │       │   ├── page.tsx          # Список отчётов
+│   │       │   └── [reportId]/
+│   │       │       ├── page.tsx      # Редактор отчёта с Request Data
+│   │       │       └── print/        # Print-friendly страница
+│   │       └── files/
 │   └── settings/
-└── api/               # API Routes
+│       ├── profile/
+│       └── password/
+└── api/                  # API Routes
     ├── auth/
+    ├── contacts/
     ├── projects/
-    └── reports/
+    ├── reports/
+    └── files/
 ```
 
 ### Защита маршрутов
