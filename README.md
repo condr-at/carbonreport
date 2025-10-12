@@ -17,11 +17,11 @@ See [docs/Requirements v0.0.1.md](docs/Requirements%20v0.0.1.md) for complete sp
 
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-- **Database**: PostgreSQL + Prisma ORM
+- **Database**: PostgreSQL + Prisma ORM (Supabase)
 - **UI**: Tailwind CSS + shadcn/ui + Lucide icons
 - **Auth**: JWT (email/password)
-- **Email**: Resend
-- **Storage**: S3-compatible (AWS S3 or MinIO)
+- **Email**: Resend (optional for MVP)
+- **File Storage**: ⏸️ Post-MVP (Vercel Blob planned)
 
 ## Getting Started
 
@@ -29,7 +29,6 @@ See [docs/Requirements v0.0.1.md](docs/Requirements%20v0.0.1.md) for complete sp
 
 - Node.js 20+ and npm
 - Supabase account (free tier works fine)
-- (Optional) S3-compatible storage for file uploads
 - (Optional) Resend account for emails
 
 ### Installation
@@ -61,10 +60,9 @@ cp .env.example .env
 ```
 
 Edit `.env` with your Supabase connection string:
-- `DATABASE_URL` - Supabase Session Pooler URL (port 5432)
+- `DATABASE_URL` - Supabase Session Pooler URL (port 5432) for local development
 - `JWT_SECRET` - Default is fine for dev (change in production!)
 - `RESEND_API_KEY` - Optional, leave empty for now
-- `S3_*` - Optional, leave empty for now
 
 5. Initialize database:
 ```bash

@@ -22,11 +22,10 @@ const MailtoTemplateSchema = z.object({
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string; fieldId: string } }
+  { params }: { params: Promise<{ id: string; fieldId: string }> }
 ) {
   try {
-    const projectId = params.id
-    const fieldId = params.fieldId
+    const { id: projectId, fieldId } = await params
     const body = await request.json()
 
     // Validate template structure

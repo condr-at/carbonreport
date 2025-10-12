@@ -19,7 +19,7 @@ async function main() {
   // Clean existing data (dev only!)
   console.log('🧹 Cleaning existing data...')
   await prisma.dataRequest.deleteMany()
-  await prisma.projectFile.deleteMany()
+  // await prisma.projectFile.deleteMany() // ⏸️ Post-MVP
   await prisma.report.deleteMany()
   await prisma.project.deleteMany()
   await prisma.contact.deleteMany()
@@ -262,20 +262,21 @@ Best,
   })
   console.log(`✅ Created data request to ${contact1.name}\n`)
 
+  // ⏸️ Post-MVP: File upload feature
   // Create sample file
-  console.log('📎 Creating sample file...')
-  const file = await prisma.projectFile.create({
-    data: {
-      userId: user.id,
-      projectId: project1.id,
-      filename: 'material_specs.pdf',
-      mimeType: 'application/pdf',
-      size: 245760, // 240 KB
-      linkedDataPoints: [FieldId.Material_Name, FieldId.Material_Amount],
-      status: 'UPLOADED',
-    },
-  })
-  console.log(`✅ Created file: ${file.filename}\n`)
+  // console.log('📎 Creating sample file...')
+  // const file = await prisma.projectFile.create({
+  //   data: {
+  //     userId: user.id,
+  //     projectId: project1.id,
+  //     filename: 'material_specs.pdf',
+  //     mimeType: 'application/pdf',
+  //     size: 245760, // 240 KB
+  //     linkedDataPoints: [FieldId.Material_Name, FieldId.Material_Amount],
+  //     status: 'UPLOADED',
+  //   },
+  // })
+  // console.log(`✅ Created file: ${file.filename}\n`)
 
   // Summary
   console.log('✨ Seeding completed!\n')

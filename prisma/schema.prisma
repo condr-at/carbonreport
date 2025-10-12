@@ -30,7 +30,7 @@ model User {
   projects     Project[]
   contacts     Contact[]
   dataRequests DataRequest[]
-  files        ProjectFile[]
+  // files        ProjectFile[]  // ⏸️ Post-MVP
 
   @@unique([oauthProvider, oauthId])
   @@map("users")
@@ -58,7 +58,7 @@ model Project {
   twinProject  Project?      @relation("TwinProjects", fields: [twinProjectId], references: [id])
   twinProjects Project[]     @relation("TwinProjects")
   reports      Report[]
-  files        ProjectFile[]
+  // files        ProjectFile[]  // ⏸️ Post-MVP
   dataRequests DataRequest[]
 
   @@map("projects")
@@ -133,29 +133,33 @@ model DataRequest {
 }
 
 // ================================
-// Files
+// Files ⏸️ Post-MVP
 // ================================
 
-model ProjectFile {
-  id               String     @id @default(uuid())
-  userId           String     @map("user_id")
-  projectId        String     @map("project_id")
-  filename         String
-  mimeType         String     @map("mime_type")
-  size             Int        // bytes
-  linkedDataPoints Json       @map("linked_data_points") // JSONB: array of data point IDs
-  status           FileStatus @default(UPLOADED)
-  uploadedAt       DateTime   @default(now()) @map("uploaded_at")
+// TODO: Uncomment when implementing file upload feature
+// Will use Vercel Blob Storage or similar managed solution
 
-  // Relations
-  user    User    @relation(fields: [userId], references: [id])
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@map("project_files")
-}
-
-enum FileStatus {
-  UPLOADED
-  PROCESSED
-  LINKED
-}
+// model ProjectFile {
+//   id               String     @id @default(uuid())
+//   userId           String     @map("user_id")
+//   projectId        String     @map("project_id")
+//   filename         String
+//   mimeType         String     @map("mime_type")
+//   size             Int        // bytes
+//   storageUrl       String     @map("storage_url") // Vercel Blob URL
+//   linkedDataPoints Json       @map("linked_data_points") // JSONB: array of data point IDs
+//   status           FileStatus @default(UPLOADED)
+//   uploadedAt       DateTime   @default(now()) @map("uploaded_at")
+//
+//   // Relations
+//   user    User    @relation(fields: [userId], references: [id])
+//   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+//
+//   @@map("project_files")
+// }
+//
+// enum FileStatus {
+//   UPLOADED
+//   PROCESSED
+//   LINKED
+// }

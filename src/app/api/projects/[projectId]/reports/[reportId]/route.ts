@@ -31,10 +31,10 @@ import type { ReportTemplateCode } from '@/lib/report-templates/types'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string; reportId: string } }
+  { params }: { params: Promise<{ projectId: string; reportId: string }> }
 ) {
   try {
-    const { projectId, reportId } = params
+    const { projectId, reportId } = await params
 
     // Fetch report with related project dataset
     const report = await prisma.report.findUnique({

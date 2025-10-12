@@ -174,15 +174,21 @@ Simplified structure based on field-value pairs:
   * Active requests.
   * Historical (revoked) requests with timestamps.
 
-### 2.8. File Repository (Project Files)
+### 2.8. File Repository (Project Files) ⏸️ Post-MVP
 
-* Each project includes a structured file storage area for incoming materials (e.g., Excel sheets, photos, scanned tables).
-* Supports drag-and-drop and manual upload.
+> **Status**: Deferred to Post-MVP. Not required for initial deployment.
+
+* Each project will include a structured file storage area for incoming materials (e.g., Excel sheets, photos, scanned tables).
+* Planned features: drag-and-drop upload, file tagging, linking to data points.
+* **Future integration**: OCR and LLM-assisted data extraction from uploaded documents.
+* **Implementation**: Will use Vercel Blob storage or similar managed solution when implemented.
 * **File size limit**: 10 MB per file.
 * **Allowed file types**: All formats (xlsx, pdf, jpg, png, csv, doc, etc.).
 * Metadata: `id`, `user_id`, `project_id`, `filename`, `type`, `size`, `uploaded_at`, `linked_data_points[]`, `status`.
 * Linking to data points is handled through a tag-style multi-select with autosuggest inside a file properties side panel; the same pattern is reused for other entity property editors.
-* Initially passive (storage only). Future integration: OCR and LLM-assisted data extraction.
+* Tagging files (e.g., "Material supplier invoice", "Energy bill Q3 2024").
+* Linking files to specific data points.
+* **Status**: ⏸️ Post-MVP feature, not included in initial deployment.
 
 ### 2.9. Progress Tracking
 
@@ -276,7 +282,9 @@ Simplified structure based on field-value pairs:
 | revoked_at      | Timestamp | Nullable             |
 | external_access | Boolean   | Default false        |
 
-### 3.6. Project Files
+### 3.6. Project Files ⏸️ Post-MVP
+
+> **Status**: Deferred to Post-MVP. Schema commented out in `schema.prisma`.
 
 | Field              | Type      | Notes                         |
 | ------------------ | --------- | ----------------------------- |
@@ -286,9 +294,12 @@ Simplified structure based on field-value pairs:
 | filename           | Text      | Original filename             |
 | mime_type          | Text      | —                             |
 | size               | Integer   | Bytes                         |
+| storage_url        | Text      | Vercel Blob or similar        |
 | linked_data_points | JSONB     | Array of DP IDs               |
 | uploaded_at        | Timestamp | —                             |
 | status             | Enum      | (uploaded, processed, linked) |
+
+**Note**: File uploads will be implemented using Vercel Blob Storage when this feature is activated.
 
 **Future extensibility (post-MVP)**:
 * `confidence` field: Float (0-1) for OCR/LLM extraction confidence
@@ -356,7 +367,7 @@ The following architectural and data model provisions must be included in MVP sc
 | **Database**      | PostgreSQL + Prisma ORM                          | Relational DB with JSONB for dataset           |
 | **Authentication**| JWT (email/password); OAuth reserved             | Simple auth in MVP, OAuth post-MVP             |
 | **Email Service** | Resend (resend.com)                              | Transactional emails (React Email templates)   |
-| **File Storage**  | S3-compatible (AWS S3 or MinIO)                  | 10 MB file uploads, future OCR integration     |
+| **File Storage**  | ⏸️ Post-MVP (Vercel Blob or similar)             | Deferred: File uploads with OCR integration    |
 | **API Layer**     | Next.js API Routes                               | RESTful endpoints in `/app/api/*`              |
 | **Export Engine** | Browser print-to-PDF (MVP); Puppeteer (post-MVP) | User-initiated PDF export                      |
 | **Deployment**    | Vercel (recommended) or Docker/VPS               | Serverless or self-hosted                      |
@@ -391,9 +402,9 @@ carbonreport/
 │   │   │   ├── projects/
 │   │   │   ├── reports/
 │   │   │   ├── contacts/
-│   │   │   └── files/
+│   │   │   └── files/        # ⏸️ Post-MVP
 │   │   ├── layout.tsx
-│   │   └── page.tsx
+│   │   └── page.tsx          # Marketing landing page
 │   │
 │   ├── components/           # React components
 │   │   ├── ui/              # shadcn/ui components
@@ -404,8 +415,12 @@ carbonreport/
 │       ├── db.ts            # Prisma client singleton
 │       ├── auth.ts          # JWT helpers, session management
 │       ├── email.ts         # Resend integration
-│       ├── storage.ts       # S3 client
+│       ├── storage.ts       # ⏸️ Post-MVP: File storage client
 │       ├── validations.ts   # Zod schemas
+│       ├── field-ids.ts     # FieldId enum (50+ values)
+│       ├── dataset-validation.ts  # Dataset CRUD and validation
+│       ├── questionnaires/  # Questionnaire configs
+│       ├── report-templates/  # Report template configs
 │       └── utils.ts         # General utilities
 │
 ├── .env.example

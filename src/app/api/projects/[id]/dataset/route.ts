@@ -28,10 +28,10 @@ const UpdateDatasetSchema = z.object({
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = params.id
+    const { id: projectId } = await params
 
     const project = await prisma.project.findUnique({
       where: { id: projectId },
@@ -92,10 +92,10 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = params.id
+    const { id: projectId } = await params
     const body = await request.json()
     
     // Validate request body
