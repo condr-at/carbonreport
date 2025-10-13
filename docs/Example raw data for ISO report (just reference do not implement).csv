@@ -1,0 +1,207 @@
+Section,Field,ItemID,Value
+Report Metadata,OrganizationName,,
+Report Metadata,OrganizationAddress,,
+Report Metadata,ReportID,,PCF-2025-001
+Report Metadata,ReportDate,,2025-09-30
+Report Metadata,ReportingPeriodStart,,2024-01-01
+Report Metadata,ReportingPeriodEnd,,2024-12-31
+Report Metadata,ReportLanguage,,en
+Report Metadata,PCRReference,,PCR 2019:XYZ v1.2
+Report Metadata,GeographicScope,,EU
+Report Metadata,ConfidentialityLevel,,Public
+Report Metadata,Version,,1.0
+Report Metadata,PreviousVersions,,0.9 (draft)
+Report Metadata,ReviewerRequired,,true
+Report Metadata,QRUrl,,https://example.com/pcf/PCF-2025-001
+
+Product Description,ProductName,,Reusable Bottle 750 mL
+Product Description,ProductIdentifier,,
+Product Description,ProductDescription,,"Stainless steel reusable bottle, 750 mL"
+Product Description,IntendedUse,,Reusable drink container
+Product Description,ProductCategoryClassification,,CPC 36110
+Product Description,Market,,EU; US
+Product Description,VariantsCovered,,Blue 750 mL; Black 750 mL
+Product Description,PackagingIncluded,,true
+Product Description,AverageProductMass,,0.32
+Product Description,DeclaredUnit,,1 piece
+
+Goal and Scope,StudyGoal,,Footprint communication and design improvement
+Goal and Scope,IntendedAudience,,Customers; Internal R&D
+Goal and Scope,ComparativeAssertionPublic,,false
+Goal and Scope,Applications,,FootprintCommunication; DesignImprovement
+Goal and Scope,FunctionalUnitDefinition,,Transport and consume 750 mL of beverage per use
+Goal and Scope,FunctionalUnitQuantity,,1
+Goal and Scope,ReferenceFlowDescription,,1 unit of reusable bottle delivered to customer
+Goal and Scope,ReferenceFlowQuantity,,1
+Goal and Scope,SystemBoundaryDescription,,Cradle-to-grave including packaging
+Goal and Scope,LifeCycleStagesIncluded,,RawMaterial; Production; Distribution; Use; EndOfLife
+Goal and Scope,GeographicalBoundary,,EU average
+Goal and Scope,TemporalBoundary,,Primary data 2024; background data 2019–2023
+Goal and Scope,TechnologicalBoundary,,Electric arc furnace steel; injection molding cap
+Goal and Scope,AllocationApproach,,Mass
+Goal and Scope,AllocationRationale,,Mass allocation due to co-products with similar economic value variability
+Goal and Scope,CutOffCriteria,,<1% mass and energy; total exclusions <5% CFP
+Goal and Scope,ImpactAssessmentMethod,,IPCC AR6 GWP
+Goal and Scope,GWPTimeHorizonYears,,100
+Goal and Scope,CarbonPoolsIncluded,,Biogenic; ProductStorage
+Goal and Scope,CarbonStorageDurationConsidered,,10
+Goal and Scope,DelayedEmissionsConsidered,,false
+Goal and Scope,ElectricityMixSelectionMethod,,Market-based; location-based regional grid mix
+Goal and Scope,CFPType,,FullCFP
+Goal and Scope,SystemBoundaryType,,CradleToGrave
+Goal and Scope,ImpactCategory,,Climate change (GWP)
+
+Data Quality,DataQualityRequirements,,Primary data for manufacturing; regional background data
+Data Quality,RepresentativenessGeographical,,High
+Data Quality,RepresentativenessTemporal,,Medium
+Data Quality,RepresentativenessTechnological,,High
+Data Quality,Completeness,,High
+Data Quality,Consistency,,High
+Data Quality,Reliability,,Medium
+Data Quality,Precision,,Medium
+Data Quality,DataQualityAssessmentMethod,,DQI matrix based on pedigree scores
+Data Quality,DataQualityScoreOverall,,Geog: High; Temp: Medium; Tech: High
+
+Life Cycle Inventory - General,DataCollectionApproach,,Primary site data 2024; secondary datasets for upstream; transport modeled; supplier questionnaires
+
+Life Cycle Inventory - Inputs,MaterialInputName,1,Stainless steel 18/8
+Life Cycle Inventory - Inputs,MaterialInputAmount,1,0.30
+Life Cycle Inventory - Inputs,MaterialInputUnit,1,kg
+Life Cycle Inventory - Inputs,MaterialOriginCountry,1,DE
+Life Cycle Inventory - Inputs,RecycledContentPercent,1,60
+Life Cycle Inventory - Inputs,SustainabilityCertification,1,
+Life Cycle Inventory - Inputs,MaterialDataSource,1,ecoinvent 3.9: Steel, stainless, market
+
+Life Cycle Inventory - Inputs,MaterialInputName,2,Polypropylene cap
+Life Cycle Inventory - Inputs,MaterialInputAmount,2,0.02
+Life Cycle Inventory - Inputs,MaterialInputUnit,2,kg
+Life Cycle Inventory - Inputs,MaterialOriginCountry,2,PL
+Life Cycle Inventory - Inputs,RecycledContentPercent,2,0
+Life Cycle Inventory - Inputs,SustainabilityCertification,2,
+Life Cycle Inventory - Inputs,MaterialDataSource,2,ecoinvent 3.9: Polypropylene, granulate, at plant
+
+Life Cycle Inventory - Inputs,EnergyInputType,1,Electricity
+Life Cycle Inventory - Inputs,EnergyInputAmount,1,0.45
+Life Cycle Inventory - Inputs,EnergyInputUnit,1,kWh
+Life Cycle Inventory - Inputs,EnergySourceRenewablePercent,1,45
+Life Cycle Inventory - Inputs,MaterialDataSource,1,
+
+Life Cycle Inventory - Inputs,EnergyInputType,2,NaturalGas
+Life Cycle Inventory - Inputs,EnergyInputAmount,2,0.30
+Life Cycle Inventory - Inputs,EnergyInputUnit,2,MJ
+Life Cycle Inventory - Inputs,EnergySourceRenewablePercent,2,0
+Life Cycle Inventory - Inputs,MaterialDataSource,2,
+
+Life Cycle Inventory - Outputs,ProductOutputQuantity,,1
+Life Cycle Inventory - Outputs,CoProductName,1,Metal scrap
+Life Cycle Inventory - Outputs,CoProductQuantity,1,0.02
+Life Cycle Inventory - Outputs,AllocationToProductPercent,,95
+Life Cycle Inventory - Outputs,DirectEmissionsCO2Fossil,,0.01
+Life Cycle Inventory - Outputs,DirectEmissionsCO2Biogenic,,0
+Life Cycle Inventory - Outputs,DirectEmissionsCH4,,0.0001
+Life Cycle Inventory - Outputs,DirectEmissionsN2O,,0.00002
+Life Cycle Inventory - Outputs,OtherGHGsCO2e,,0.002
+Life Cycle Inventory - Outputs,EmissionFactorsSource,,IPCC 2021; ecoinvent 3.9
+Life Cycle Inventory - Outputs,WasteType,1,Mixed packaging
+Life Cycle Inventory - Outputs,WasteQuantity,1,0.05
+Life Cycle Inventory - Outputs,WasteTreatmentRoute,1,Recycling
+Life Cycle Inventory - Outputs,EmissionsFromLandUseChangeCO2,,0
+Life Cycle Inventory - Outputs,CarbonUptakeBiogenic,,0
+Life Cycle Inventory - Outputs,CarbonStorageInProductAmount,,0
+Life Cycle Inventory - Outputs,CarbonStorageDurationYears,,0
+
+Transportation,TransportMode,1,Truck
+Transportation,VehicleType,1,EURO VI 28t truck
+Transportation,TransportDistance,1,800
+Transportation,LoadFactor,1,70
+Transportation,Backhaul,1,Partial
+Transportation,TransportEmissionFactorSource,1,DEFRA 2024
+
+Transportation,TransportMode,2,Rail
+Transportation,VehicleType,2,Freight rail EU
+Transportation,TransportDistance,2,1200
+Transportation,LoadFactor,2,85
+Transportation,Backhaul,2,None
+Transportation,TransportEmissionFactorSource,2,ecoinvent 3.9
+
+Use Phase,UsePhaseScenarioDescription,1,Daily use; hand-washed once per week
+Use Phase,UsePhaseEnergyPerUse,1,0
+Use Phase,UsesOverLifetime,1,500
+Use Phase,MaintenanceActivities,1,Hand wash with cold water weekly
+Use Phase,Consumables,1,Replacement gasket every 2 years
+Use Phase,UsePhaseEmissionsCO2e,1,0
+Use Phase,UsePhaseDataSource,1,Primary survey 2024
+
+End-of-Life,EoLScenarioDescription,1,"Collection, sorting, recycling of metal; landfill of residuals"
+End-of-Life,CollectionRatePercent,1,90
+End-of-Life,RecyclingRatePercent,1,85
+End-of-Life,ReuseRatePercent,1,0
+End-of-Life,IncinerationRatePercent,1,5
+End-of-Life,LandfillRatePercent,1,10
+End-of-Life,CompostingRatePercent,1,0
+End-of-Life,EoLElectricityRecoveryCreditMethod,1,CutOff
+End-of-Life,EoLEmissionFactorsSource,1,ecoinvent 3.9; national LCI database
+
+Impact Assessment & Results,TotalCFP_CO2e,,1.85
+Impact Assessment & Results,UncertaintyRange_CO2e,,1.70–2.05
+Impact Assessment & Results,StageResults_RawMaterial_CO2e,,1.10
+Impact Assessment & Results,StageResults_Production_CO2e,,0.40
+Impact Assessment & Results,StageResults_Distribution_CO2e,,0.10
+Impact Assessment & Results,StageResults_Use_CO2e,,0.00
+Impact Assessment & Results,StageResults_EndOfLife_CO2e,,0.25
+Impact Assessment & Results,BiogenicCO2Emissions_CO2e,,0
+Impact Assessment & Results,BiogenicCO2Uptake_CO2e,,0
+Impact Assessment & Results,LandUseChangeCO2e,,0
+Impact Assessment & Results,TimingAdjustmentMethod,,None
+Impact Assessment & Results,TimeAdjustedCFP_CO2e,,1.85
+Impact Assessment & Results,HotspotsSummary,,Stainless steel production and transport dominate impacts.
+Impact Assessment & Results,GHGsIncluded,,CO2; CH4; N2O
+
+Communication Requirements,IntendedCommunicationMode,,Public; B2B
+Communication Requirements,ComparativeAssertionRulesFollowed,,
+
+Interpretation,Conclusions,,The product shows a carbon footprint of 1.85 kg CO2e per declared unit; main hotspots are steel production and transport.
+Interpretation,Recommendations,,Prioritize supplier engagement for lower-carbon steel; optimize transport routes
+
+Data Sources,PrimaryDataSources,,Plant meter readings 2024; procurement records
+Data Sources,BackgroundDataSets,,ecoinvent 3.9 cut-off; GaBi 2024.2
+Data Sources,ElectricityGridMix,,ENTSO-E 2022 mix
+Data Sources,EmissionFactorsList,,DEFRA 2024 transport; IPCC factors for fuels
+Data Sources,DataGaps,,Supplier data missing for gasket material
+Data Sources,DataGapHandling,,Used representative secondary data with conservative assumptions
+
+Assumptions & Limitations,KeyAssumptions,,500 uses over 10 years; 85% recycling rate
+Assumptions & Limitations,Limitations,,Limited primary data for supplier processes
+Assumptions & Limitations,SensitivityParameters,,Recycling rate; electricity mix; uses over lifetime
+Assumptions & Limitations,SensitivityResultsSummary,,Results vary ±8% across tested parameters
+Assumptions & Limitations,UncertaintyMethod,,Monte Carlo (1000 runs); pedigree-based ranges
+
+Critical Review,ReviewRequired,,true
+Critical Review,ReviewType,,Panel
+Critical Review,ReviewerName,1,Dr. A. Expert
+Critical Review,ReviewerAffiliation,1,Independent LCA Services
+Critical Review,ReviewScope,1,Conformance to standard, data quality, transparency
+Critical Review,ReviewReportLink,1,https://example.com/review.pdf
+Critical Review,ReviewerName,2,Prof. B. Reviewer
+Critical Review,ReviewerAffiliation,2,University Sustainability Lab
+Critical Review,ReviewScope,2,Methodology and data representativeness
+
+Offsets & Claims,OffsetsUsed,,false
+Offsets & Claims,OffsetProjectIDs,,
+Offsets & Claims,OffsetStandards,,
+Offsets & Claims,ResidualEmissionsAfterOffsets,,1.85
+Offsets & Claims,CommunicationClaims,,Product-level CFP result with scope and limitations
+Offsets & Claims,LabelingProgram,,CFP label program ABC
+Offsets & Claims,CommunicationCompliance,,true
+
+Verification & Validation,VerificationPerformed,,false
+Verification & Validation,VerificationBody,,
+Verification & Validation,VerificationStandard,,
+Verification & Validation,VerificationDate,,
+Verification & Validation,VerificationStatementLink,,
+
+Version Control & Sign-off,AuthorName,,J. Analyst
+Version Control & Sign-off,AuthorEmail,,analyst@example.com
+Version Control & Sign-off,ApproverName,,S. Manager
+Version Control & Sign-off,ApprovalDate,,2025-09-30
+Version Control & Sign-off,ChangeLog,,Initial release
