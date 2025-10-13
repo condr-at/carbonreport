@@ -541,44 +541,54 @@ Use this checklist to track implementation of the architecture updates.
 
 **Goal**: Create new projects via multi-step form  
 **Time**: 4-5 hours  
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 
 **Tasks**:
-1. [ ] Install dependencies
+1. [x] Install dependencies
    - `npm install react-hook-form @hookform/resolvers zod`
 
-2. [ ] Create `/projects/new` page structure
-   - `app/(dashboard)/projects/new/page.tsx` — Step 1: Name + description
-   - `app/(dashboard)/projects/new/questionnaire/page.tsx` — Step 2a: Optional questionnaire
-   - `app/(dashboard)/projects/new/select-reports/page.tsx` — Step 2b/3: Select templates
+2. [x] Create `/projects/new` page structure
+   - `app/projects/new/page.tsx` — Step 1: Name + description
+   - `app/projects/new/questionnaire/page.tsx` — Step 2: Questionnaire (optional)
+   - `app/projects/new/select-reports/page.tsx` — Step 3: Select templates
 
-3. [ ] Create `<WizardSteps />` component
-   - Location: `src/components/blocks/wizard-steps.tsx`
-   - Shows: Step 1/3, 2/3, 3/3 with progress bar
-   - Buttons: Back, Next, Exit to Dashboard
+3. [x] Create `<WizardSteps />` component
+   - **Implemented**: Progress bar (3 steps) in each page header
+   - Shows: Step 1/3, 2/3, 3/3 with visual indicator
+   - Buttons: Back, Next, Skip integrated into each page
 
-4. [ ] Implement Step 1: Project Name
+4. [x] Implement Step 1: Project Name
    - react-hook-form with Zod validation
    - Fields: name (required, min 3 chars), description (optional)
    - Next button navigates to `/projects/new/questionnaire`
+   - "Skip to Report Selection" button
 
-5. [ ] Implement Step 2a: Questionnaire (optional)
-   - Load questions from `src/lib/questionnaires/v1.ts`
-   - Map answers to recommended report types
+5. [x] Implement Step 2: Questionnaire (simplified)
+   - **Single question**: "What is your primary goal for this assessment?"
+   - 7 options: ISO14067, CBAM, Internal, Customer, Regulation, Multiple, Not Sure
+   - Maps answers to recommended template codes
    - Skip button navigates to `/projects/new/select-reports`
+   - **Note**: Simplified from full questionnaire - only for report recommendation
 
-6. [ ] Implement Step 3: Select Report Types
-   - Checkboxes for ISO14067, CBAM, etc.
+6. [x] Implement Step 3: Select Report Types
+   - Checkboxes for ISO14067, CBAM (from `getAllReportTemplates()`)
+   - Pre-select based on questionnaire answer
    - At least 1 required
    - Submit: `POST /api/projects` with { name, templateCodes[], userId }
 
-7. [ ] Handle responses
+7. [x] Handle responses
    - Success: Redirect to `/projects/{id}` (project overview)
-   - Error: Show toast notification, stay on form
+   - Error: Show alert, stay on form
+   - Loading state with spinner during submission
 
 **API Used**: `POST /api/projects`
 
-**Deliverable**: Working project creation flow, new projects appear in projects list
+**Deliverable**: ✅ Working 3-step project creation wizard with report recommendation
+
+**Key Simplification**: 
+- ❌ **NO dataset mapping** from questionnaire answers
+- ✅ Questionnaire is **ONLY** for recommending which report templates to pre-select
+- ✅ In future, with dozens of standards, questionnaire helps beginners find relevant reports
 
 ---
 
@@ -1063,7 +1073,7 @@ Use this checklist to track implementation of the architecture updates.
 | 1 ✅ | Foundation (shadcn/ui, sidebar, layouts) | 2-3h | None | ✅ Complete |
 | 2 ✅ | Dashboard Analytics | 4-5h | Iteration 1 | ✅ Complete |
 | 3 ✅ | Projects List Page | 3-4h | Iteration 1 | ✅ Complete |
-| 4 ⬜ | Project Creation Wizard | 4-5h | Iteration 3 | ⬜ Not Started |
+| 4 ✅ | Project Creation Wizard | 4-5h | Iteration 3 | ✅ Complete |
 | 5 ⬜ | Project Layout + Tabs | 3-4h | Iteration 4 | ⬜ Not Started |
 | 6 ⬜ | Dataset Grid (CRUD) | 5-6h | Iteration 5 | ⬜ Not Started |
 | 7 ⬜ | Reports (List + Editor) | 5-6h | Iteration 5, 6 | ⬜ Not Started |
@@ -1087,12 +1097,13 @@ Use this checklist to track implementation of the architecture updates.
 | 4. Frontend Foundation | ✅ Complete | 10 / 10 | 100% |
 | 5. Frontend Iteration 2 (Dashboard) | ✅ Complete | 6 / 6 | 100% |
 | 6. Frontend Iteration 3 (Projects List) | ✅ Complete | 6 / 6 | 100% |
-| 7. Backend APIs (New) | ⬜ Not Started | 0 / 12 | 0% |
-| 8. Frontend Features (Remaining) | ⬜ Not Started | 0 / 58 | 0% |
-| 9. Testing | ⬜ Not Started | 0 / 15 | 0% |
-| 10. Deployment | ⬜ Not Started | 0 / 9 | 0% |
+| 7. Frontend Iteration 4 (Wizard) | ✅ Complete | 7 / 7 | 100% |
+| 8. Backend APIs (New) | ⬜ Not Started | 0 / 12 | 0% |
+| 9. Frontend Features (Remaining) | ⬜ Not Started | 0 / 51 | 0% |
+| 10. Testing | ⬜ Not Started | 0 / 15 | 0% |
+| 11. Deployment | ⬜ Not Started | 0 / 9 | 0% |
 
-**Overall Progress**: 39% (48 / 123 tasks)
+**Overall Progress**: 45% (55 / 123 tasks)
 
 **New APIs to Build**:
 - Contacts API (4 endpoints)
