@@ -1,0 +1,1912 @@
+{
+  "meta": {
+    "totalFields": 162,
+    "totalSections": 19,
+    "generatedAt": "2025-10-13T16:54:47.487Z",
+    "source": "REFERENCE_iso_report_data.csv"
+  },
+  "fieldIds": [
+    "ReportMetadata_OrganizationName",
+    "ReportMetadata_OrganizationAddress",
+    "ReportMetadata_ReportID",
+    "ReportMetadata_ReportDate",
+    "ReportMetadata_ReportingPeriodStart",
+    "ReportMetadata_ReportingPeriodEnd",
+    "ReportMetadata_ReportLanguage",
+    "ReportMetadata_PCRReference",
+    "ReportMetadata_GeographicScope",
+    "ReportMetadata_ConfidentialityLevel",
+    "ReportMetadata_Version",
+    "ReportMetadata_PreviousVersions",
+    "ReportMetadata_ReviewerRequired",
+    "ReportMetadata_QRUrl",
+    "ProductDescription_ProductName",
+    "ProductDescription_ProductIdentifier",
+    "ProductDescription_ProductDescription",
+    "ProductDescription_IntendedUse",
+    "ProductDescription_ProductCategoryClassification",
+    "ProductDescription_Market",
+    "ProductDescription_VariantsCovered",
+    "ProductDescription_PackagingIncluded",
+    "ProductDescription_AverageProductMass",
+    "ProductDescription_DeclaredUnit",
+    "GoalAndScope_StudyGoal",
+    "GoalAndScope_IntendedAudience",
+    "GoalAndScope_ComparativeAssertionPublic",
+    "GoalAndScope_Applications",
+    "GoalAndScope_FunctionalUnitDefinition",
+    "GoalAndScope_FunctionalUnitQuantity",
+    "GoalAndScope_ReferenceFlowDescription",
+    "GoalAndScope_ReferenceFlowQuantity",
+    "GoalAndScope_SystemBoundaryDescription",
+    "GoalAndScope_LifeCycleStagesIncluded",
+    "GoalAndScope_GeographicalBoundary",
+    "GoalAndScope_TemporalBoundary",
+    "GoalAndScope_TechnologicalBoundary",
+    "GoalAndScope_AllocationApproach",
+    "GoalAndScope_AllocationRationale",
+    "GoalAndScope_CutOffCriteria",
+    "GoalAndScope_ImpactAssessmentMethod",
+    "GoalAndScope_GWPTimeHorizonYears",
+    "GoalAndScope_CarbonPoolsIncluded",
+    "GoalAndScope_CarbonStorageDurationConsidered",
+    "GoalAndScope_DelayedEmissionsConsidered",
+    "GoalAndScope_ElectricityMixSelectionMethod",
+    "GoalAndScope_CFPType",
+    "GoalAndScope_SystemBoundaryType",
+    "GoalAndScope_ImpactCategory",
+    "DataQuality_DataQualityRequirements",
+    "DataQuality_RepresentativenessGeographical",
+    "DataQuality_RepresentativenessTemporal",
+    "DataQuality_RepresentativenessTechnological",
+    "DataQuality_Completeness",
+    "DataQuality_Consistency",
+    "DataQuality_Reliability",
+    "DataQuality_Precision",
+    "DataQuality_DataQualityAssessmentMethod",
+    "DataQuality_DataQualityScoreOverall",
+    "LifeCycleInventoryGeneral_DataCollectionApproach",
+    "LifeCycleInventoryInputs_MaterialInputName",
+    "LifeCycleInventoryInputs_MaterialInputAmount",
+    "LifeCycleInventoryInputs_MaterialInputUnit",
+    "LifeCycleInventoryInputs_MaterialOriginCountry",
+    "LifeCycleInventoryInputs_RecycledContentPercent",
+    "LifeCycleInventoryInputs_SustainabilityCertification",
+    "LifeCycleInventoryInputs_MaterialDataSource",
+    "LifeCycleInventoryInputs_EnergyInputType",
+    "LifeCycleInventoryInputs_EnergyInputAmount",
+    "LifeCycleInventoryInputs_EnergyInputUnit",
+    "LifeCycleInventoryInputs_EnergySourceRenewablePercent",
+    "LifeCycleInventoryOutputs_ProductOutputQuantity",
+    "LifeCycleInventoryOutputs_CoProductName",
+    "LifeCycleInventoryOutputs_CoProductQuantity",
+    "LifeCycleInventoryOutputs_AllocationToProductPercent",
+    "LifeCycleInventoryOutputs_DirectEmissionsCO2Fossil",
+    "LifeCycleInventoryOutputs_DirectEmissionsCO2Biogenic",
+    "LifeCycleInventoryOutputs_DirectEmissionsCH4",
+    "LifeCycleInventoryOutputs_DirectEmissionsN2O",
+    "LifeCycleInventoryOutputs_OtherGHGsCO2e",
+    "LifeCycleInventoryOutputs_EmissionFactorsSource",
+    "LifeCycleInventoryOutputs_WasteType",
+    "LifeCycleInventoryOutputs_WasteQuantity",
+    "LifeCycleInventoryOutputs_WasteTreatmentRoute",
+    "LifeCycleInventoryOutputs_EmissionsFromLandUseChangeCO2",
+    "LifeCycleInventoryOutputs_CarbonUptakeBiogenic",
+    "LifeCycleInventoryOutputs_CarbonStorageInProductAmount",
+    "LifeCycleInventoryOutputs_CarbonStorageDurationYears",
+    "Transportation_TransportMode",
+    "Transportation_VehicleType",
+    "Transportation_TransportDistance",
+    "Transportation_LoadFactor",
+    "Transportation_Backhaul",
+    "Transportation_TransportEmissionFactorSource",
+    "UsePhase_UsePhaseScenarioDescription",
+    "UsePhase_UsePhaseEnergyPerUse",
+    "UsePhase_UsesOverLifetime",
+    "UsePhase_MaintenanceActivities",
+    "UsePhase_Consumables",
+    "UsePhase_UsePhaseEmissionsCO2e",
+    "UsePhase_UsePhaseDataSource",
+    "EndOfLife_EoLScenarioDescription",
+    "EndOfLife_CollectionRatePercent",
+    "EndOfLife_RecyclingRatePercent",
+    "EndOfLife_ReuseRatePercent",
+    "EndOfLife_IncinerationRatePercent",
+    "EndOfLife_LandfillRatePercent",
+    "EndOfLife_CompostingRatePercent",
+    "EndOfLife_EoLElectricityRecoveryCreditMethod",
+    "EndOfLife_EoLEmissionFactorsSource",
+    "ImpactAssessmentResults_TotalCFPCO2e",
+    "ImpactAssessmentResults_UncertaintyRangeCO2e",
+    "ImpactAssessmentResults_StageResultsRawMaterialCO2e",
+    "ImpactAssessmentResults_StageResultsProductionCO2e",
+    "ImpactAssessmentResults_StageResultsDistributionCO2e",
+    "ImpactAssessmentResults_StageResultsUseCO2e",
+    "ImpactAssessmentResults_StageResultsEndOfLifeCO2e",
+    "ImpactAssessmentResults_BiogenicCO2EmissionsCO2e",
+    "ImpactAssessmentResults_BiogenicCO2UptakeCO2e",
+    "ImpactAssessmentResults_LandUseChangeCO2e",
+    "ImpactAssessmentResults_TimingAdjustmentMethod",
+    "ImpactAssessmentResults_TimeAdjustedCFPCO2e",
+    "ImpactAssessmentResults_HotspotsSummary",
+    "ImpactAssessmentResults_GHGsIncluded",
+    "CommunicationRequirements_IntendedCommunicationMode",
+    "CommunicationRequirements_ComparativeAssertionRulesFollowed",
+    "Interpretation_Conclusions",
+    "Interpretation_Recommendations",
+    "DataSources_PrimaryDataSources",
+    "DataSources_BackgroundDataSets",
+    "DataSources_ElectricityGridMix",
+    "DataSources_EmissionFactorsList",
+    "DataSources_DataGaps",
+    "DataSources_DataGapHandling",
+    "AssumptionsLimitations_KeyAssumptions",
+    "AssumptionsLimitations_Limitations",
+    "AssumptionsLimitations_SensitivityParameters",
+    "AssumptionsLimitations_SensitivityResultsSummary",
+    "AssumptionsLimitations_UncertaintyMethod",
+    "CriticalReview_ReviewRequired",
+    "CriticalReview_ReviewType",
+    "CriticalReview_ReviewerName",
+    "CriticalReview_ReviewerAffiliation",
+    "CriticalReview_ReviewScope",
+    "CriticalReview_ReviewReportLink",
+    "OffsetsClaims_OffsetsUsed",
+    "OffsetsClaims_OffsetProjectIDs",
+    "OffsetsClaims_OffsetStandards",
+    "OffsetsClaims_ResidualEmissionsAfterOffsets",
+    "OffsetsClaims_CommunicationClaims",
+    "OffsetsClaims_LabelingProgram",
+    "OffsetsClaims_CommunicationCompliance",
+    "VerificationValidation_VerificationPerformed",
+    "VerificationValidation_VerificationBody",
+    "VerificationValidation_VerificationStandard",
+    "VerificationValidation_VerificationDate",
+    "VerificationValidation_VerificationStatementLink",
+    "VersionControlSignOff_AuthorName",
+    "VersionControlSignOff_AuthorEmail",
+    "VersionControlSignOff_ApproverName",
+    "VersionControlSignOff_ApprovalDate",
+    "VersionControlSignOff_ChangeLog"
+  ],
+  "sections": [
+    {
+      "name": "Report Metadata",
+      "fieldCount": 14,
+      "fields": [
+        {
+          "name": "OrganizationName",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_OrganizationName"
+        },
+        {
+          "name": "OrganizationAddress",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_OrganizationAddress"
+        },
+        {
+          "name": "ReportID",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_ReportID"
+        },
+        {
+          "name": "ReportDate",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_ReportDate"
+        },
+        {
+          "name": "ReportingPeriodStart",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_ReportingPeriodStart"
+        },
+        {
+          "name": "ReportingPeriodEnd",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_ReportingPeriodEnd"
+        },
+        {
+          "name": "ReportLanguage",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_ReportLanguage"
+        },
+        {
+          "name": "PCRReference",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_PCRReference"
+        },
+        {
+          "name": "GeographicScope",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_GeographicScope"
+        },
+        {
+          "name": "ConfidentialityLevel",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_ConfidentialityLevel"
+        },
+        {
+          "name": "Version",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_Version"
+        },
+        {
+          "name": "PreviousVersions",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_PreviousVersions"
+        },
+        {
+          "name": "ReviewerRequired",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_ReviewerRequired"
+        },
+        {
+          "name": "QRUrl",
+          "isRepeatable": false,
+          "fieldId": "ReportMetadata_QRUrl"
+        }
+      ]
+    },
+    {
+      "name": "Product Description",
+      "fieldCount": 10,
+      "fields": [
+        {
+          "name": "ProductName",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_ProductName"
+        },
+        {
+          "name": "ProductIdentifier",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_ProductIdentifier"
+        },
+        {
+          "name": "ProductDescription",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_ProductDescription"
+        },
+        {
+          "name": "IntendedUse",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_IntendedUse"
+        },
+        {
+          "name": "ProductCategoryClassification",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_ProductCategoryClassification"
+        },
+        {
+          "name": "Market",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_Market"
+        },
+        {
+          "name": "VariantsCovered",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_VariantsCovered"
+        },
+        {
+          "name": "PackagingIncluded",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_PackagingIncluded"
+        },
+        {
+          "name": "AverageProductMass",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_AverageProductMass"
+        },
+        {
+          "name": "DeclaredUnit",
+          "isRepeatable": false,
+          "fieldId": "ProductDescription_DeclaredUnit"
+        }
+      ]
+    },
+    {
+      "name": "Goal and Scope",
+      "fieldCount": 25,
+      "fields": [
+        {
+          "name": "StudyGoal",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_StudyGoal"
+        },
+        {
+          "name": "IntendedAudience",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_IntendedAudience"
+        },
+        {
+          "name": "ComparativeAssertionPublic",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_ComparativeAssertionPublic"
+        },
+        {
+          "name": "Applications",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_Applications"
+        },
+        {
+          "name": "FunctionalUnitDefinition",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_FunctionalUnitDefinition"
+        },
+        {
+          "name": "FunctionalUnitQuantity",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_FunctionalUnitQuantity"
+        },
+        {
+          "name": "ReferenceFlowDescription",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_ReferenceFlowDescription"
+        },
+        {
+          "name": "ReferenceFlowQuantity",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_ReferenceFlowQuantity"
+        },
+        {
+          "name": "SystemBoundaryDescription",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_SystemBoundaryDescription"
+        },
+        {
+          "name": "LifeCycleStagesIncluded",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_LifeCycleStagesIncluded"
+        },
+        {
+          "name": "GeographicalBoundary",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_GeographicalBoundary"
+        },
+        {
+          "name": "TemporalBoundary",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_TemporalBoundary"
+        },
+        {
+          "name": "TechnologicalBoundary",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_TechnologicalBoundary"
+        },
+        {
+          "name": "AllocationApproach",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_AllocationApproach"
+        },
+        {
+          "name": "AllocationRationale",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_AllocationRationale"
+        },
+        {
+          "name": "CutOffCriteria",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_CutOffCriteria"
+        },
+        {
+          "name": "ImpactAssessmentMethod",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_ImpactAssessmentMethod"
+        },
+        {
+          "name": "GWPTimeHorizonYears",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_GWPTimeHorizonYears"
+        },
+        {
+          "name": "CarbonPoolsIncluded",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_CarbonPoolsIncluded"
+        },
+        {
+          "name": "CarbonStorageDurationConsidered",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_CarbonStorageDurationConsidered"
+        },
+        {
+          "name": "DelayedEmissionsConsidered",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_DelayedEmissionsConsidered"
+        },
+        {
+          "name": "ElectricityMixSelectionMethod",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_ElectricityMixSelectionMethod"
+        },
+        {
+          "name": "CFPType",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_CFPType"
+        },
+        {
+          "name": "SystemBoundaryType",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_SystemBoundaryType"
+        },
+        {
+          "name": "ImpactCategory",
+          "isRepeatable": false,
+          "fieldId": "GoalAndScope_ImpactCategory"
+        }
+      ]
+    },
+    {
+      "name": "Data Quality",
+      "fieldCount": 10,
+      "fields": [
+        {
+          "name": "DataQualityRequirements",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_DataQualityRequirements"
+        },
+        {
+          "name": "RepresentativenessGeographical",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_RepresentativenessGeographical"
+        },
+        {
+          "name": "RepresentativenessTemporal",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_RepresentativenessTemporal"
+        },
+        {
+          "name": "RepresentativenessTechnological",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_RepresentativenessTechnological"
+        },
+        {
+          "name": "Completeness",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_Completeness"
+        },
+        {
+          "name": "Consistency",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_Consistency"
+        },
+        {
+          "name": "Reliability",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_Reliability"
+        },
+        {
+          "name": "Precision",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_Precision"
+        },
+        {
+          "name": "DataQualityAssessmentMethod",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_DataQualityAssessmentMethod"
+        },
+        {
+          "name": "DataQualityScoreOverall",
+          "isRepeatable": false,
+          "fieldId": "DataQuality_DataQualityScoreOverall"
+        }
+      ]
+    },
+    {
+      "name": "Life Cycle Inventory - General",
+      "fieldCount": 1,
+      "fields": [
+        {
+          "name": "DataCollectionApproach",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryGeneral_DataCollectionApproach"
+        }
+      ]
+    },
+    {
+      "name": "Life Cycle Inventory - Inputs",
+      "fieldCount": 11,
+      "fields": [
+        {
+          "name": "MaterialInputName",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_MaterialInputName"
+        },
+        {
+          "name": "MaterialInputAmount",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_MaterialInputAmount"
+        },
+        {
+          "name": "MaterialInputUnit",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_MaterialInputUnit"
+        },
+        {
+          "name": "MaterialOriginCountry",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_MaterialOriginCountry"
+        },
+        {
+          "name": "RecycledContentPercent",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_RecycledContentPercent"
+        },
+        {
+          "name": "SustainabilityCertification",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_SustainabilityCertification"
+        },
+        {
+          "name": "MaterialDataSource",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_MaterialDataSource"
+        },
+        {
+          "name": "EnergyInputType",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_EnergyInputType"
+        },
+        {
+          "name": "EnergyInputAmount",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_EnergyInputAmount"
+        },
+        {
+          "name": "EnergyInputUnit",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_EnergyInputUnit"
+        },
+        {
+          "name": "EnergySourceRenewablePercent",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryInputs_EnergySourceRenewablePercent"
+        }
+      ]
+    },
+    {
+      "name": "Life Cycle Inventory - Outputs",
+      "fieldCount": 17,
+      "fields": [
+        {
+          "name": "ProductOutputQuantity",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_ProductOutputQuantity"
+        },
+        {
+          "name": "CoProductName",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryOutputs_CoProductName"
+        },
+        {
+          "name": "CoProductQuantity",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryOutputs_CoProductQuantity"
+        },
+        {
+          "name": "AllocationToProductPercent",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_AllocationToProductPercent"
+        },
+        {
+          "name": "DirectEmissionsCO2Fossil",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_DirectEmissionsCO2Fossil"
+        },
+        {
+          "name": "DirectEmissionsCO2Biogenic",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_DirectEmissionsCO2Biogenic"
+        },
+        {
+          "name": "DirectEmissionsCH4",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_DirectEmissionsCH4"
+        },
+        {
+          "name": "DirectEmissionsN2O",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_DirectEmissionsN2O"
+        },
+        {
+          "name": "OtherGHGsCO2e",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_OtherGHGsCO2e"
+        },
+        {
+          "name": "EmissionFactorsSource",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_EmissionFactorsSource"
+        },
+        {
+          "name": "WasteType",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryOutputs_WasteType"
+        },
+        {
+          "name": "WasteQuantity",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryOutputs_WasteQuantity"
+        },
+        {
+          "name": "WasteTreatmentRoute",
+          "isRepeatable": true,
+          "fieldId": "LifeCycleInventoryOutputs_WasteTreatmentRoute"
+        },
+        {
+          "name": "EmissionsFromLandUseChangeCO2",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_EmissionsFromLandUseChangeCO2"
+        },
+        {
+          "name": "CarbonUptakeBiogenic",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_CarbonUptakeBiogenic"
+        },
+        {
+          "name": "CarbonStorageInProductAmount",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_CarbonStorageInProductAmount"
+        },
+        {
+          "name": "CarbonStorageDurationYears",
+          "isRepeatable": false,
+          "fieldId": "LifeCycleInventoryOutputs_CarbonStorageDurationYears"
+        }
+      ]
+    },
+    {
+      "name": "Transportation",
+      "fieldCount": 6,
+      "fields": [
+        {
+          "name": "TransportMode",
+          "isRepeatable": true,
+          "fieldId": "Transportation_TransportMode"
+        },
+        {
+          "name": "VehicleType",
+          "isRepeatable": true,
+          "fieldId": "Transportation_VehicleType"
+        },
+        {
+          "name": "TransportDistance",
+          "isRepeatable": true,
+          "fieldId": "Transportation_TransportDistance"
+        },
+        {
+          "name": "LoadFactor",
+          "isRepeatable": true,
+          "fieldId": "Transportation_LoadFactor"
+        },
+        {
+          "name": "Backhaul",
+          "isRepeatable": true,
+          "fieldId": "Transportation_Backhaul"
+        },
+        {
+          "name": "TransportEmissionFactorSource",
+          "isRepeatable": true,
+          "fieldId": "Transportation_TransportEmissionFactorSource"
+        }
+      ]
+    },
+    {
+      "name": "Use Phase",
+      "fieldCount": 7,
+      "fields": [
+        {
+          "name": "UsePhaseScenarioDescription",
+          "isRepeatable": true,
+          "fieldId": "UsePhase_UsePhaseScenarioDescription"
+        },
+        {
+          "name": "UsePhaseEnergyPerUse",
+          "isRepeatable": true,
+          "fieldId": "UsePhase_UsePhaseEnergyPerUse"
+        },
+        {
+          "name": "UsesOverLifetime",
+          "isRepeatable": true,
+          "fieldId": "UsePhase_UsesOverLifetime"
+        },
+        {
+          "name": "MaintenanceActivities",
+          "isRepeatable": true,
+          "fieldId": "UsePhase_MaintenanceActivities"
+        },
+        {
+          "name": "Consumables",
+          "isRepeatable": true,
+          "fieldId": "UsePhase_Consumables"
+        },
+        {
+          "name": "UsePhaseEmissionsCO2e",
+          "isRepeatable": true,
+          "fieldId": "UsePhase_UsePhaseEmissionsCO2e"
+        },
+        {
+          "name": "UsePhaseDataSource",
+          "isRepeatable": true,
+          "fieldId": "UsePhase_UsePhaseDataSource"
+        }
+      ]
+    },
+    {
+      "name": "End-of-Life",
+      "fieldCount": 9,
+      "fields": [
+        {
+          "name": "EoLScenarioDescription",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_EoLScenarioDescription"
+        },
+        {
+          "name": "CollectionRatePercent",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_CollectionRatePercent"
+        },
+        {
+          "name": "RecyclingRatePercent",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_RecyclingRatePercent"
+        },
+        {
+          "name": "ReuseRatePercent",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_ReuseRatePercent"
+        },
+        {
+          "name": "IncinerationRatePercent",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_IncinerationRatePercent"
+        },
+        {
+          "name": "LandfillRatePercent",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_LandfillRatePercent"
+        },
+        {
+          "name": "CompostingRatePercent",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_CompostingRatePercent"
+        },
+        {
+          "name": "EoLElectricityRecoveryCreditMethod",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_EoLElectricityRecoveryCreditMethod"
+        },
+        {
+          "name": "EoLEmissionFactorsSource",
+          "isRepeatable": true,
+          "fieldId": "EndOfLife_EoLEmissionFactorsSource"
+        }
+      ]
+    },
+    {
+      "name": "Impact Assessment & Results",
+      "fieldCount": 14,
+      "fields": [
+        {
+          "name": "TotalCFP_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_TotalCFPCO2e"
+        },
+        {
+          "name": "UncertaintyRange_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_UncertaintyRangeCO2e"
+        },
+        {
+          "name": "StageResults_RawMaterial_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_StageResultsRawMaterialCO2e"
+        },
+        {
+          "name": "StageResults_Production_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_StageResultsProductionCO2e"
+        },
+        {
+          "name": "StageResults_Distribution_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_StageResultsDistributionCO2e"
+        },
+        {
+          "name": "StageResults_Use_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_StageResultsUseCO2e"
+        },
+        {
+          "name": "StageResults_EndOfLife_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_StageResultsEndOfLifeCO2e"
+        },
+        {
+          "name": "BiogenicCO2Emissions_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_BiogenicCO2EmissionsCO2e"
+        },
+        {
+          "name": "BiogenicCO2Uptake_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_BiogenicCO2UptakeCO2e"
+        },
+        {
+          "name": "LandUseChangeCO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_LandUseChangeCO2e"
+        },
+        {
+          "name": "TimingAdjustmentMethod",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_TimingAdjustmentMethod"
+        },
+        {
+          "name": "TimeAdjustedCFP_CO2e",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_TimeAdjustedCFPCO2e"
+        },
+        {
+          "name": "HotspotsSummary",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_HotspotsSummary"
+        },
+        {
+          "name": "GHGsIncluded",
+          "isRepeatable": false,
+          "fieldId": "ImpactAssessmentResults_GHGsIncluded"
+        }
+      ]
+    },
+    {
+      "name": "Communication Requirements",
+      "fieldCount": 2,
+      "fields": [
+        {
+          "name": "IntendedCommunicationMode",
+          "isRepeatable": false,
+          "fieldId": "CommunicationRequirements_IntendedCommunicationMode"
+        },
+        {
+          "name": "ComparativeAssertionRulesFollowed",
+          "isRepeatable": false,
+          "fieldId": "CommunicationRequirements_ComparativeAssertionRulesFollowed"
+        }
+      ]
+    },
+    {
+      "name": "Interpretation",
+      "fieldCount": 2,
+      "fields": [
+        {
+          "name": "Conclusions",
+          "isRepeatable": false,
+          "fieldId": "Interpretation_Conclusions"
+        },
+        {
+          "name": "Recommendations",
+          "isRepeatable": false,
+          "fieldId": "Interpretation_Recommendations"
+        }
+      ]
+    },
+    {
+      "name": "Data Sources",
+      "fieldCount": 6,
+      "fields": [
+        {
+          "name": "PrimaryDataSources",
+          "isRepeatable": false,
+          "fieldId": "DataSources_PrimaryDataSources"
+        },
+        {
+          "name": "BackgroundDataSets",
+          "isRepeatable": false,
+          "fieldId": "DataSources_BackgroundDataSets"
+        },
+        {
+          "name": "ElectricityGridMix",
+          "isRepeatable": false,
+          "fieldId": "DataSources_ElectricityGridMix"
+        },
+        {
+          "name": "EmissionFactorsList",
+          "isRepeatable": false,
+          "fieldId": "DataSources_EmissionFactorsList"
+        },
+        {
+          "name": "DataGaps",
+          "isRepeatable": false,
+          "fieldId": "DataSources_DataGaps"
+        },
+        {
+          "name": "DataGapHandling",
+          "isRepeatable": false,
+          "fieldId": "DataSources_DataGapHandling"
+        }
+      ]
+    },
+    {
+      "name": "Assumptions & Limitations",
+      "fieldCount": 5,
+      "fields": [
+        {
+          "name": "KeyAssumptions",
+          "isRepeatable": false,
+          "fieldId": "AssumptionsLimitations_KeyAssumptions"
+        },
+        {
+          "name": "Limitations",
+          "isRepeatable": false,
+          "fieldId": "AssumptionsLimitations_Limitations"
+        },
+        {
+          "name": "SensitivityParameters",
+          "isRepeatable": false,
+          "fieldId": "AssumptionsLimitations_SensitivityParameters"
+        },
+        {
+          "name": "SensitivityResultsSummary",
+          "isRepeatable": false,
+          "fieldId": "AssumptionsLimitations_SensitivityResultsSummary"
+        },
+        {
+          "name": "UncertaintyMethod",
+          "isRepeatable": false,
+          "fieldId": "AssumptionsLimitations_UncertaintyMethod"
+        }
+      ]
+    },
+    {
+      "name": "Critical Review",
+      "fieldCount": 6,
+      "fields": [
+        {
+          "name": "ReviewRequired",
+          "isRepeatable": false,
+          "fieldId": "CriticalReview_ReviewRequired"
+        },
+        {
+          "name": "ReviewType",
+          "isRepeatable": false,
+          "fieldId": "CriticalReview_ReviewType"
+        },
+        {
+          "name": "ReviewerName",
+          "isRepeatable": true,
+          "fieldId": "CriticalReview_ReviewerName"
+        },
+        {
+          "name": "ReviewerAffiliation",
+          "isRepeatable": true,
+          "fieldId": "CriticalReview_ReviewerAffiliation"
+        },
+        {
+          "name": "ReviewScope",
+          "isRepeatable": true,
+          "fieldId": "CriticalReview_ReviewScope"
+        },
+        {
+          "name": "ReviewReportLink",
+          "isRepeatable": true,
+          "fieldId": "CriticalReview_ReviewReportLink"
+        }
+      ]
+    },
+    {
+      "name": "Offsets & Claims",
+      "fieldCount": 7,
+      "fields": [
+        {
+          "name": "OffsetsUsed",
+          "isRepeatable": false,
+          "fieldId": "OffsetsClaims_OffsetsUsed"
+        },
+        {
+          "name": "OffsetProjectIDs",
+          "isRepeatable": false,
+          "fieldId": "OffsetsClaims_OffsetProjectIDs"
+        },
+        {
+          "name": "OffsetStandards",
+          "isRepeatable": false,
+          "fieldId": "OffsetsClaims_OffsetStandards"
+        },
+        {
+          "name": "ResidualEmissionsAfterOffsets",
+          "isRepeatable": false,
+          "fieldId": "OffsetsClaims_ResidualEmissionsAfterOffsets"
+        },
+        {
+          "name": "CommunicationClaims",
+          "isRepeatable": false,
+          "fieldId": "OffsetsClaims_CommunicationClaims"
+        },
+        {
+          "name": "LabelingProgram",
+          "isRepeatable": false,
+          "fieldId": "OffsetsClaims_LabelingProgram"
+        },
+        {
+          "name": "CommunicationCompliance",
+          "isRepeatable": false,
+          "fieldId": "OffsetsClaims_CommunicationCompliance"
+        }
+      ]
+    },
+    {
+      "name": "Verification & Validation",
+      "fieldCount": 5,
+      "fields": [
+        {
+          "name": "VerificationPerformed",
+          "isRepeatable": false,
+          "fieldId": "VerificationValidation_VerificationPerformed"
+        },
+        {
+          "name": "VerificationBody",
+          "isRepeatable": false,
+          "fieldId": "VerificationValidation_VerificationBody"
+        },
+        {
+          "name": "VerificationStandard",
+          "isRepeatable": false,
+          "fieldId": "VerificationValidation_VerificationStandard"
+        },
+        {
+          "name": "VerificationDate",
+          "isRepeatable": false,
+          "fieldId": "VerificationValidation_VerificationDate"
+        },
+        {
+          "name": "VerificationStatementLink",
+          "isRepeatable": false,
+          "fieldId": "VerificationValidation_VerificationStatementLink"
+        }
+      ]
+    },
+    {
+      "name": "Version Control & Sign-off",
+      "fieldCount": 5,
+      "fields": [
+        {
+          "name": "AuthorName",
+          "isRepeatable": false,
+          "fieldId": "VersionControlSignOff_AuthorName"
+        },
+        {
+          "name": "AuthorEmail",
+          "isRepeatable": false,
+          "fieldId": "VersionControlSignOff_AuthorEmail"
+        },
+        {
+          "name": "ApproverName",
+          "isRepeatable": false,
+          "fieldId": "VersionControlSignOff_ApproverName"
+        },
+        {
+          "name": "ApprovalDate",
+          "isRepeatable": false,
+          "fieldId": "VersionControlSignOff_ApprovalDate"
+        },
+        {
+          "name": "ChangeLog",
+          "isRepeatable": false,
+          "fieldId": "VersionControlSignOff_ChangeLog"
+        }
+      ]
+    }
+  ],
+  "initialDataset": {
+    "data_points": [
+      {
+        "field_id": "ReportMetadata_OrganizationName",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_OrganizationAddress",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_ReportID",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_ReportDate",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_ReportingPeriodStart",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_ReportingPeriodEnd",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_ReportLanguage",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_PCRReference",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_GeographicScope",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_ConfidentialityLevel",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_Version",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_PreviousVersions",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_ReviewerRequired",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ReportMetadata_QRUrl",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_ProductName",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_ProductIdentifier",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_ProductDescription",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_IntendedUse",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_ProductCategoryClassification",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_Market",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_VariantsCovered",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_PackagingIncluded",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_AverageProductMass",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ProductDescription_DeclaredUnit",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_StudyGoal",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_IntendedAudience",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_ComparativeAssertionPublic",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_Applications",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_FunctionalUnitDefinition",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_FunctionalUnitQuantity",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_ReferenceFlowDescription",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_ReferenceFlowQuantity",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_SystemBoundaryDescription",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_LifeCycleStagesIncluded",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_GeographicalBoundary",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_TemporalBoundary",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_TechnologicalBoundary",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_AllocationApproach",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_AllocationRationale",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_CutOffCriteria",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_ImpactAssessmentMethod",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_GWPTimeHorizonYears",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_CarbonPoolsIncluded",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_CarbonStorageDurationConsidered",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_DelayedEmissionsConsidered",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_ElectricityMixSelectionMethod",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_CFPType",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_SystemBoundaryType",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "GoalAndScope_ImpactCategory",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_DataQualityRequirements",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_RepresentativenessGeographical",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_RepresentativenessTemporal",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_RepresentativenessTechnological",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_Completeness",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_Consistency",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_Reliability",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_Precision",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_DataQualityAssessmentMethod",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataQuality_DataQualityScoreOverall",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryGeneral_DataCollectionApproach",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_MaterialInputName",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_MaterialInputAmount",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_MaterialInputUnit",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_MaterialOriginCountry",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_RecycledContentPercent",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_SustainabilityCertification",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_MaterialDataSource",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_EnergyInputType",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_EnergyInputAmount",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_EnergyInputUnit",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryInputs_EnergySourceRenewablePercent",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_ProductOutputQuantity",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_CoProductName",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_CoProductQuantity",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_AllocationToProductPercent",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_DirectEmissionsCO2Fossil",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_DirectEmissionsCO2Biogenic",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_DirectEmissionsCH4",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_DirectEmissionsN2O",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_OtherGHGsCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_EmissionFactorsSource",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_WasteType",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_WasteQuantity",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_WasteTreatmentRoute",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_EmissionsFromLandUseChangeCO2",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_CarbonUptakeBiogenic",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_CarbonStorageInProductAmount",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "LifeCycleInventoryOutputs_CarbonStorageDurationYears",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "Transportation_TransportMode",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "Transportation_VehicleType",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "Transportation_TransportDistance",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "Transportation_LoadFactor",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "Transportation_Backhaul",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "Transportation_TransportEmissionFactorSource",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "UsePhase_UsePhaseScenarioDescription",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "UsePhase_UsePhaseEnergyPerUse",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "UsePhase_UsesOverLifetime",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "UsePhase_MaintenanceActivities",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "UsePhase_Consumables",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "UsePhase_UsePhaseEmissionsCO2e",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "UsePhase_UsePhaseDataSource",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_EoLScenarioDescription",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_CollectionRatePercent",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_RecyclingRatePercent",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_ReuseRatePercent",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_IncinerationRatePercent",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_LandfillRatePercent",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_CompostingRatePercent",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_EoLElectricityRecoveryCreditMethod",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "EndOfLife_EoLEmissionFactorsSource",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_TotalCFPCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_UncertaintyRangeCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_StageResultsRawMaterialCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_StageResultsProductionCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_StageResultsDistributionCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_StageResultsUseCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_StageResultsEndOfLifeCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_BiogenicCO2EmissionsCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_BiogenicCO2UptakeCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_LandUseChangeCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_TimingAdjustmentMethod",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_TimeAdjustedCFPCO2e",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_HotspotsSummary",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "ImpactAssessmentResults_GHGsIncluded",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "CommunicationRequirements_IntendedCommunicationMode",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "CommunicationRequirements_ComparativeAssertionRulesFollowed",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "Interpretation_Conclusions",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "Interpretation_Recommendations",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataSources_PrimaryDataSources",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataSources_BackgroundDataSets",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataSources_ElectricityGridMix",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataSources_EmissionFactorsList",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataSources_DataGaps",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "DataSources_DataGapHandling",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "AssumptionsLimitations_KeyAssumptions",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "AssumptionsLimitations_Limitations",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "AssumptionsLimitations_SensitivityParameters",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "AssumptionsLimitations_SensitivityResultsSummary",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "AssumptionsLimitations_UncertaintyMethod",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "CriticalReview_ReviewRequired",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "CriticalReview_ReviewType",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "CriticalReview_ReviewerName",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "CriticalReview_ReviewerAffiliation",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "CriticalReview_ReviewScope",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "CriticalReview_ReviewReportLink",
+        "item_id": "1",
+        "value": ""
+      },
+      {
+        "field_id": "OffsetsClaims_OffsetsUsed",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "OffsetsClaims_OffsetProjectIDs",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "OffsetsClaims_OffsetStandards",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "OffsetsClaims_ResidualEmissionsAfterOffsets",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "OffsetsClaims_CommunicationClaims",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "OffsetsClaims_LabelingProgram",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "OffsetsClaims_CommunicationCompliance",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VerificationValidation_VerificationPerformed",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VerificationValidation_VerificationBody",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VerificationValidation_VerificationStandard",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VerificationValidation_VerificationDate",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VerificationValidation_VerificationStatementLink",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VersionControlSignOff_AuthorName",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VersionControlSignOff_AuthorEmail",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VersionControlSignOff_ApproverName",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VersionControlSignOff_ApprovalDate",
+        "item_id": null,
+        "value": ""
+      },
+      {
+        "field_id": "VersionControlSignOff_ChangeLog",
+        "item_id": null,
+        "value": ""
+      }
+    ]
+  }
+}

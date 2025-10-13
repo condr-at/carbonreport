@@ -3,6 +3,7 @@
  * 
  * GET /api/projects/[id]/dataset - Read project dataset
  * PUT /api/projects/[id]/dataset - Update entire dataset (with optimistic locking)
+ * PATCH /api/projects/[id]/dataset - Update single data point
  * 
  * Key requirements from docs/Requirements v0.0.1.md:
  * - All data lives in Project.dataset JSONB
@@ -13,8 +14,17 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
-import { validateDataset, type Dataset } from '@/lib/dataset-validation'
+import { validateDataset, type Dataset, type DataPoint } from '@/lib/dataset-validation'
+import { FieldId } from '@/lib/field-ids'
 import { z } from 'zod'
+
+// Schema for PATCH - single field update
+const PatchDataPointSchema = z.object({
+  field_id: z.nativeEnum(FieldId),
+  item_id: z.string().nullable(),
+  value: z.string(),
+  datasetVersion: z.number().int().min(0).optional(),
+})
 
 // Request schema for UPDATE
 const UpdateDatasetSchema = z.object({
@@ -166,6 +176,101 @@ export async function PUT(
     console.error('Error updating dataset:', error)
     return NextResponse.json(
       { error: 'Failed to update dataset' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * PATCH /api/projects/[id]/dataset
+ * Update a single data point value (more efficient than PUT for single field edits)
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id: projectId } = await params
+    const body = await request.json()
+    
+    // Validate request body
+    const { field_id, item_id, value, datasetVersion } = PatchDataPointSchema.parse(body)
+
+    // Fetch current project
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: {
+        dataset: true,
+        datasetVersion: true,
+      },
+    })
+
+    if (!project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+
+    // Check optimistic locking version if provided
+    if (datasetVersion !== undefined && datasetVersion !== project.datasetVersion) {
+      return NextResponse.json(
+        {
+          error: 'Dataset version conflict. Please refresh and try again.',
+          currentVersion: project.datasetVersion,
+        },
+        { status: 409 }
+      )
+    }
+
+    // Get current dataset
+    const currentDataset = project.dataset as Dataset | null
+    const dataPoints = currentDataset?.data_points || []
+
+    // Find existing data point
+    const existingIndex = dataPoints.findIndex(
+      (dp) =>
+        dp.field_id === field_id &&
+        (item_id === null ? dp.item_id === null : dp.item_id === item_id)
+    )
+
+    let updatedDataPoint: DataPoint
+
+    if (existingIndex >= 0) {
+      // Update existing
+      updatedDataPoint = { field_id: field_id as FieldId, item_id, value }
+      dataPoints[existingIndex] = updatedDataPoint
+    } else {
+      // Insert new
+      updatedDataPoint = { field_id: field_id as FieldId, item_id, value }
+      dataPoints.push(updatedDataPoint)
+    }
+
+    // Update project
+    const updatedProject = await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        dataset: { data_points: dataPoints } as any,
+        datasetVersion: { increment: 1 },
+      },
+      select: {
+        datasetVersion: true,
+      },
+    })
+
+    return NextResponse.json({
+      success: true,
+      datasetVersion: updatedProject.datasetVersion,
+      updatedDataPoint,
+    })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      )
+    }
+
+    console.error('Error updating data point:', error)
+    return NextResponse.json(
+      { error: 'Failed to update data point' },
       { status: 500 }
     )
   }

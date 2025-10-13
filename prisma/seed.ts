@@ -2,14 +2,17 @@
  * Database Seed Script
  * 
  * Seeds the database with sample data for development.
- * Includes proper initialization of:
- * - Empty dataset structure
+ * Uses the new full dataset schema (162 fields) approach.
+ * 
+ * Features:
+ * - Full dataset initialization (162 fields from schema)
+ * - Mock data for realistic testing
  * - Default mailto templates
  * - datasetVersion counter
  */
 
 import { PrismaClient } from '@prisma/client'
-import { FieldId } from '../src/lib/field-ids'
+import { initializeFullDataset } from '../src/lib/dataset-init'
 
 const prisma = new PrismaClient()
 
@@ -58,9 +61,72 @@ async function main() {
   })
   console.log(`✅ Created ${2} contacts\n`)
 
-  // Default mailto templates
+  // Helper function to create mock dataset with some filled values
+  function createMockDataset(projectType: 'ebike' | 'steel') {
+    // Start with full dataset (162 fields)
+    const fullDataset = initializeFullDataset();
+
+    // Fill some realistic values based on project type
+    const updates: Record<string, string> = {};
+
+    if (projectType === 'ebike') {
+      // E-Bike project mock data
+      updates['ReportMetadata_OrganizationName'] = 'GreenCycle Manufacturing';
+      updates['ReportMetadata_ReportDate'] = '2025-10-13';
+      updates['ReportMetadata_ReportLanguage'] = 'English';
+      updates['ProductDescription_ProductName'] = 'E-Bike Model X Pro';
+      updates['ProductDescription_ProductDescription'] = 'Electric bicycle with 750W motor and lithium battery';
+      updates['ProductDescription_IntendedUse'] = 'Urban commuting and recreational cycling';
+      updates['ProductDescription_Market'] = 'European Union, North America';
+      updates['GoalAndScope_StudyGoal'] = 'Calculate carbon footprint according to ISO 14067';
+      updates['GoalAndScope_FunctionalUnit'] = '1 electric bicycle';
+      updates['GoalAndScope_SystemBoundary'] = 'Cradle-to-gate including raw materials, manufacturing, and packaging';
+      
+      // Life Cycle Inventory - Inputs (repeatable, item 1)
+      updates['LifeCycleInventoryInputs_MaterialInputName'] = 'Aluminum Frame';
+      updates['LifeCycleInventoryInputs_MaterialInputAmount'] = '8.5';
+      updates['LifeCycleInventoryInputs_MaterialInputUnit'] = 'kg';
+      updates['LifeCycleInventoryInputs_MaterialInputSource'] = 'Alcoa Aluminum Supplier';
+      
+      // Impact Assessment Results
+      updates['ImpactAssessmentResults_TotalCFPCO2e'] = '145.5';
+      updates['ImpactAssessmentResults_CFPUnit'] = 'kg CO2e';
+    } else {
+      // Steel project mock data
+      updates['ReportMetadata_OrganizationName'] = 'Steel Manufacturing Ltd';
+      updates['ReportMetadata_ReportDate'] = '2025-10-13';
+      updates['ReportMetadata_ReportLanguage'] = 'English';
+      updates['ProductDescription_ProductName'] = 'Steel Beam 200x100';
+      updates['ProductDescription_ProductDescription'] = 'Structural steel beam for construction';
+      updates['ProductDescription_IntendedUse'] = 'Building construction and infrastructure';
+      updates['ProductDescription_Market'] = 'European Union';
+      updates['GoalAndScope_StudyGoal'] = 'CBAM compliance reporting';
+      updates['GoalAndScope_FunctionalUnit'] = '1 ton of steel beams';
+      updates['GoalAndScope_SystemBoundary'] = 'Cradle-to-gate: mining, processing, manufacturing';
+      
+      // Impact Assessment Results
+      updates['ImpactAssessmentResults_TotalCFPCO2e'] = '1850';
+      updates['ImpactAssessmentResults_CFPUnit'] = 'kg CO2e';
+    }
+
+    // Apply updates to the full dataset
+    const updatedDataPoints = fullDataset.map((dp) => {
+      const key = dp.item_id 
+        ? `${dp.field_id}` // For repeatable fields, update first item only
+        : dp.field_id;
+      
+      if (updates[key] && (dp.item_id === null || dp.item_id === '1')) {
+        return { ...dp, value: updates[key] };
+      }
+      return dp;
+    });
+
+    return { data_points: updatedDataPoints };
+  }
+
+  // Default mailto templates (using string keys instead of FieldId enum)
   const defaultMailtoTemplates = {
-    [FieldId.Product_Name]: `Hi {contact_name},
+    'ProductDescription_ProductName': `Hi {contact_name},
 
 We are preparing a carbon footprint assessment for our project "{project_name}" and need your input.
 
@@ -72,7 +138,7 @@ This information is needed for our ISO 14067 compliance report.
 Best regards,
 {user_name}`,
 
-    [FieldId.Material_Name]: `Dear {contact_name},
+    'LifeCycleInventoryInputs_MaterialInputName': `Dear {contact_name},
 
 For our carbon footprint assessment of "{project_name}", we require detailed information about materials.
 
@@ -85,7 +151,7 @@ Thank you for your cooperation.
 
 {user_name}`,
 
-    [FieldId.Energy_Consumption_Total]: `Hi {contact_name},
+    'LifeCycleInventoryInputs_EnergyInputType': `Hi {contact_name},
 
 We need energy consumption data for "{project_name}" carbon assessment.
 
@@ -99,7 +165,7 @@ Deadline: {deadline}
 Thanks,
 {user_name}`,
 
-    [FieldId.Transport_Distance_Air]: `Hello {contact_name},
+    'Transportation_TransportMode': `Hello {contact_name},
 
 For our CBAM reporting requirements on "{project_name}", please provide:
 
@@ -111,8 +177,8 @@ Best,
 {user_name}`,
   }
 
-  // Create sample project 1 (ISO 14067)
-  console.log('📁 Creating sample project 1...')
+  // Create sample project 1 (ISO 14067 - E-Bike)
+  console.log('📁 Creating sample project 1 (E-Bike)...')
   const project1 = await prisma.project.create({
     data: {
       userId: user.id,
@@ -120,64 +186,26 @@ Best,
       status: 'ACTIVE',
       datasetVersion: 0,
       mailtoTemplates: defaultMailtoTemplates,
-      dataset: {
-        data_points: [
-          {
-            field_id: FieldId.Product_Name,
-            item_id: null,
-            value: 'E-Bike Model X Pro',
-          },
-          {
-            field_id: FieldId.Product_Description,
-            item_id: null,
-            value: 'Electric bicycle with 750W motor and lithium battery',
-          },
-          {
-            field_id: FieldId.Product_Weight,
-            item_id: null,
-            value: '25',
-          },
-          {
-            field_id: FieldId.Material_Name,
-            item_id: '1',
-            value: 'Aluminum Frame',
-          },
-          {
-            field_id: FieldId.Material_Amount,
-            item_id: '1',
-            value: '8.5',
-          },
-          {
-            field_id: FieldId.Material_Name,
-            item_id: '2',
-            value: 'Lithium Battery',
-          },
-          {
-            field_id: FieldId.Material_Amount,
-            item_id: '2',
-            value: '2.5',
-          },
-        ],
-      },
+      dataset: createMockDataset('ebike'),
       checklist: {
         items: [
           {
             id: 'cl1',
             title: 'Gather product specifications',
             completed: true,
-            dataPointIds: [FieldId.Product_Name, FieldId.Product_Weight],
+            dataPointIds: ['ProductDescription_ProductName', 'ProductDescription_ProductDescription'],
           },
           {
             id: 'cl2',
             title: 'Collect material data',
             completed: false,
-            dataPointIds: [FieldId.Material_Name, FieldId.Material_Amount],
+            dataPointIds: ['LifeCycleInventoryInputs_MaterialInputName', 'LifeCycleInventoryInputs_MaterialInputAmount'],
           },
           {
             id: 'cl3',
-            title: 'Request energy consumption data',
+            title: 'Calculate carbon footprint',
             completed: false,
-            dataPointIds: [FieldId.Energy_Consumption_Total],
+            dataPointIds: ['ImpactAssessmentResults_TotalCFPCO2e'],
           },
         ],
       },
@@ -185,19 +213,25 @@ Best,
   })
   console.log(`✅ Created project: ${project1.name}`)
 
+  // Calculate completion percentage
+  const totalFields = 162;
+  const dataset1 = project1.dataset as any;
+  const filledFieldsP1 = dataset1?.data_points?.filter((dp: any) => dp.value && dp.value.trim() !== '').length || 0;
+  const completionP1 = Math.round((filledFieldsP1 / totalFields) * 100);
+
   // Create report for project 1
   const report1 = await prisma.report.create({
     data: {
       projectId: project1.id,
       templateCode: 'ISO14067',
-      metadata: undefined, // No custom settings yet
-      completion: 33.3, // 3 out of 9 fields filled
+      metadata: undefined,
+      completion: completionP1,
     },
   })
-  console.log(`   ✅ Added ISO14067 report (${report1.completion}% complete)\n`)
+  console.log(`   ✅ Added ISO14067 report (${filledFieldsP1}/${totalFields} fields = ${report1.completion}% complete)\n`)
 
-  // Create sample project 2 (CBAM)
-  console.log('📁 Creating sample project 2...')
+  // Create sample project 2 (CBAM - Steel)
+  console.log('📁 Creating sample project 2 (Steel)...')
   const project2 = await prisma.project.create({
     data: {
       userId: user.id,
@@ -205,33 +239,20 @@ Best,
       status: 'ACTIVE',
       datasetVersion: 0,
       mailtoTemplates: defaultMailtoTemplates,
-      dataset: {
-        data_points: [
-          {
-            field_id: FieldId.Product_Name,
-            item_id: null,
-            value: 'Steel Beam 200x100',
-          },
-          {
-            field_id: FieldId.Company_Name,
-            item_id: null,
-            value: 'Steel Manufacturing Ltd',
-          },
-        ],
-      },
+      dataset: createMockDataset('steel'),
       checklist: {
         items: [
           {
             id: 'cl1',
             title: 'Fill company information',
             completed: true,
-            dataPointIds: [FieldId.Company_Name],
+            dataPointIds: ['ReportMetadata_OrganizationName'],
           },
           {
             id: 'cl2',
             title: 'Calculate total emissions',
             completed: false,
-            dataPointIds: [FieldId.Emission_Total_CBAM],
+            dataPointIds: ['ImpactAssessmentResults_TotalCFPCO2e'],
           },
         ],
       },
@@ -239,15 +260,19 @@ Best,
   })
   console.log(`✅ Created project: ${project2.name}`)
 
+  const dataset2 = project2.dataset as any;
+  const filledFieldsP2 = dataset2?.data_points?.filter((dp: any) => dp.value && dp.value.trim() !== '').length || 0;
+  const completionP2 = Math.round((filledFieldsP2 / totalFields) * 100);
+
   const report2 = await prisma.report.create({
     data: {
       projectId: project2.id,
       templateCode: 'CBAM',
       metadata: undefined,
-      completion: 15.0,
+      completion: completionP2,
     },
   })
-  console.log(`   ✅ Added CBAM report (${report2.completion}% complete)\n`)
+  console.log(`   ✅ Added CBAM report (${filledFieldsP2}/${totalFields} fields = ${report2.completion}% complete)\n`)
 
   // Create data request
   console.log('📧 Creating sample data request...')
@@ -256,7 +281,7 @@ Best,
       userId: user.id,
       projectId: project1.id,
       contactId: contact1.id,
-      dataPointId: FieldId.Energy_Consumption_Total,
+      dataPointId: 'LifeCycleInventoryInputs_EnergyInputType',
       externalAccess: false,
     },
   })

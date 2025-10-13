@@ -1,7 +1,14 @@
 import { ProjectLayout } from '@/components/layouts/project-layout';
-import { Card, CardContent } from '@/components/ui/card';
-import { Database } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import { getReportTemplate } from '@/lib/report-templates';
+import {
+  enrichDataPoints,
+  groupDataPoints,
+  flattenToTableRows,
+  DataPoint,
+} from '@/lib/dataset-utils';
+import { initializeFullDataset } from '@/lib/dataset-init';
+import { DatasetPageClient } from './dataset-page-client';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -29,17 +36,31 @@ export default async function DatasetPage({ params }: PageProps) {
     notFound();
   }
 
+  // Get all templates for this project (for metadata/labels)
+  const templates = project.reports
+    .map((r: any) => getReportTemplate(r.templateCode))
+    .filter(Boolean);
+
+  // Initialize FULL dataset structure (162 fields from master schema)
+  // This is independent of which report templates are selected
+  const existingDataPoints = (project.dataset?.data_points || []) as DataPoint[];
+  const completeDataPoints = initializeFullDataset(existingDataPoints);
+  
+  // Transform dataset for display
+  const enrichedDataPoints = enrichDataPoints(completeDataPoints, templates);
+  const groupedData = groupDataPoints(enrichedDataPoints);
+  const tableRows = flattenToTableRows(groupedData);
+
   return (
     <ProjectLayout project={project}>
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Database className="h-16 w-16 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold">Dataset Grid</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Coming in Iteration 6 - Spreadsheet-like data editor
-          </p>
-        </CardContent>
-      </Card>
+      <DatasetPageClient
+        projectId={project.id}
+        projectName={project.name}
+        initialRows={tableRows}
+        datasetVersion={project.datasetVersion || 0}
+        templates={templates}
+        groupedData={groupedData}
+      />
     </ProjectLayout>
   );
 }
