@@ -394,11 +394,18 @@ Use this checklist to track implementation of the architecture updates.
 - ✅ DashboardLayout wrapper
 - ✅ Basic Dashboard page (`/dashboard`)
 
-**What we need to clarify**:
-1. ❓ Enhanced-button: Use jakobhoeg's enhanced-button or stick with standard shadcn Button?
-2. ❓ Navigation: Sidebar + tabs confirmed? Roadmap integrated in Overview?
-3. ❓ `/projects` page: Separate list page or redirect to dashboard?
-4. ❓ Contacts API: Is `GET /api/contacts` implemented in backend?
+**Decisions confirmed**:
+1. ✅ Enhanced-button: **Use jakobhoeg's enhanced-button** for primary actions
+2. ✅ Navigation: Sidebar has separate **Dashboard** and **Projects** pages
+3. ✅ `/dashboard`: Analytics view (stats, next steps from roadmaps, Hello User)
+4. ✅ `/projects`: Full project list with cards, filters, sorting
+5. ✅ Roadmap: Integrated into project Overview tab
+6. ✅ New section: **Data Requests** list (needs API + UI)
+
+**What we need to build**:
+1. ⬜ Contacts API (`/api/contacts`) - not implemented yet
+2. ⬜ Auth APIs (`/api/auth/*`) - not implemented yet
+3. ⬜ Data Requests API (`/api/data-requests`) - not implemented yet
 
 ---
 
@@ -421,9 +428,59 @@ Use this checklist to track implementation of the architecture updates.
 
 ---
 
-### Iteration 2: Dashboard + Project Listing
+### Iteration 2: Dashboard Analytics
 
-**Goal**: Show real projects from database  
+**Goal**: Create analytics dashboard with stats and insights  
+**Time**: 4-5 hours  
+**Status**: ⬜ Not Started
+
+**Tasks**:
+1. [ ] Update `/dashboard` page structure
+   - Greeting: "Hello [User Name]" (use mock user for now)
+   - Date/time display
+   - Layout: 2-column grid (stats left, next steps right)
+
+2. [ ] Create stats cards
+   - **Total Projects**: Count all projects
+   - **In Progress**: Filter by status
+   - **Completed**: Filter by completion = 100%
+   - **Reports Generated**: Sum of all reports across projects
+   - **Pending Data Requests**: Count requests with status != fulfilled (future)
+   - Display with Card, Badge, and icons
+
+3. [ ] Create `<NextStepsWidget />` component
+   - Location: `src/components/blocks/next-steps-widget.tsx`
+   - Fetch all projects, extract roadmap items where completed=false
+   - Show first 5-10 items across all projects
+   - Format: "Project Name › Roadmap Item Title"
+   - Clicking navigates to `/projects/[id]` (Overview tab)
+
+4. [ ] Add Recent Activity feed (optional)
+   - Location: Bottom of dashboard
+   - Show: "Project X updated 2 hours ago", "Report Y created yesterday"
+   - Pull from Project.updatedAt timestamps
+
+5. [ ] Create route group structure
+   - Move `/dashboard` → `/(dashboard)/dashboard/page.tsx`
+   - Move `/projects` → `/(dashboard)/projects/page.tsx`
+   - Add `/(dashboard)/layout.tsx` with DashboardLayout
+   - Ensures consistent layout across protected routes
+
+6. [ ] Add `<Breadcrumbs />` component
+   - Location: `src/components/blocks/breadcrumbs.tsx`
+   - Show: Dashboard / Current Page
+   - Integrate into DashboardLayout header
+
+**API Used**: 
+- `GET /api/projects` (with reports included)
+
+**Deliverable**: Dashboard with analytics, stats cards, next steps from roadmaps
+
+---
+
+### Iteration 3: Projects List Page
+
+**Goal**: Separate page for browsing all projects  
 **Time**: 3-4 hours  
 **Status**: ⬜ Not Started
 
@@ -444,30 +501,37 @@ Use this checklist to track implementation of the architecture updates.
    - Props: `{ icon, title, description, actionLabel?, onAction? }`
    - Usage: When no projects exist
 
-3. [ ] Update `/dashboard` page
-   - Fetch data: `const projects = await fetch('/api/projects')`
+3. [ ] Create `/projects` page
+   - Location: `app/(dashboard)/projects/page.tsx`
+   - Fetch: `GET /api/projects`
+   - Display: Grid of `<ProjectCard />` components
    - Add loading state with Skeleton cards
    - Add error state with Alert
-   - Map projects to `<ProjectCard />` grid
-   - Show `<EmptyState />` when empty
+   - Show `<EmptyState />` when no projects
 
-4. [ ] Create route group structure
-   - Move `/dashboard` → `/(dashboard)/dashboard/`
-   - Add `/(dashboard)/layout.tsx` with DashboardLayout
-   - Ensures layout applies to all dashboard routes
+4. [ ] Add filtering and sorting
+   - Filter by: Status (All/Active/Archived), Completion (0-25%/25-50%/etc)
+   - Sort by: Name (A-Z), Last Updated, Completion %
+   - Use URL search params to persist filters
+   - Client-side filtering initially (move to API later)
 
-5. [ ] Add `<Breadcrumbs />` component
-   - Location: `src/components/blocks/breadcrumbs.tsx`
-   - Show: Dashboard / Current Page
-   - Integrate into DashboardLayout
+5. [ ] Add search bar
+   - Search by project name
+   - Debounced input (300ms)
+   - Clear button when text entered
+
+6. [ ] Add "New Project" button
+   - Top right of page
+   - **Use Enhanced Button** with expandIcon effect
+   - Links to `/projects/new`
 
 **API Used**: `GET /api/projects`
 
-**Deliverable**: Dashboard showing list of projects from seed data, clickable cards
+**Deliverable**: Full project list page with cards, filters, search, and navigation
 
 ---
 
-### Iteration 3: Project Creation Wizard
+### Iteration 4: Project Creation Wizard
 
 **Goal**: Create new projects via multi-step form  
 **Time**: 4-5 hours  
@@ -508,11 +572,11 @@ Use this checklist to track implementation of the architecture updates.
 
 **API Used**: `POST /api/projects`
 
-**Deliverable**: Working project creation flow, new projects appear in dashboard
+**Deliverable**: Working project creation flow, new projects appear in projects list
 
 ---
 
-### Iteration 4: Project Layout + Tabs
+### Iteration 5: Project Layout + Tabs
 
 **Goal**: Project pages with tab navigation  
 **Time**: 3-4 hours  
@@ -550,7 +614,7 @@ Use this checklist to track implementation of the architecture updates.
 
 ---
 
-### Iteration 5: Dataset Grid (CRUD)
+### Iteration 6: Dataset Grid (CRUD)
 
 **Goal**: View and edit project dataset  
 **Time**: 5-6 hours  
@@ -604,7 +668,7 @@ Use this checklist to track implementation of the architecture updates.
 
 ---
 
-### Iteration 6: Reports (List + Editor)
+### Iteration 7: Reports (List + Editor)
 
 **Goal**: View and fill out report forms  
 **Time**: 5-6 hours  
@@ -659,29 +723,116 @@ Use this checklist to track implementation of the architecture updates.
 
 ---
 
-### Iteration 7: Contacts + Request Data
+### Iteration 8: Data Requests List
+
+**Goal**: New section to track all data requests  
+**Time**: 3-4 hours  
+**Status**: ⬜ Not Started
+
+**Prerequisites**:
+- ⬜ **Need to build**: Backend API for data requests
+- ⬜ **Need to build**: Contact model and API
+
+**Tasks**:
+1. [ ] Create backend API for data requests
+   - `POST /api/data-requests` - Log new request
+   - `GET /api/data-requests` - List all (with filters)
+   - `PUT /api/data-requests/:id` - Update status
+   - Schema:
+     ```prisma
+     model DataRequest {
+       id          String   @id @default(uuid())
+       projectId   String
+       project     Project  @relation(fields: [projectId])
+       contactId   String?
+       contact     Contact? @relation(fields: [contactId])
+       fieldId     String   // FieldId enum value
+       status      String   @default("pending") // pending, fulfilled, cancelled
+       requestedAt DateTime @default(now())
+       fulfilledAt DateTime?
+       userId      String
+       user        User     @relation(fields: [userId])
+     }
+     ```
+
+2. [ ] Create Data Requests page
+   - Location: `app/(dashboard)/data-requests/page.tsx`
+   - Add to MainSidebar navigation
+   - Fetch: `GET /api/data-requests`
+
+3. [ ] Create `<DataRequestCard />` component
+   - Location: `src/components/blocks/data-request-card.tsx`
+   - Shows: Project name, Field label, Contact name, Status, Date
+   - Actions: Mark as Fulfilled, Cancel, Resend (opens mailto again)
+
+4. [ ] Add filtering
+   - By Status: All, Pending, Fulfilled, Cancelled
+   - By Project: Dropdown of all projects
+   - By Contact: Dropdown of all contacts
+   - Date range picker (optional)
+
+5. [ ] Add status update functionality
+   - Click "Mark as Fulfilled" → `PUT /api/data-requests/:id`
+   - Update status to "fulfilled", set fulfilledAt timestamp
+   - Show success toast
+
+6. [ ] Update Dashboard stats
+   - Add "Pending Requests" card
+   - Count where status = "pending"
+
+**API Used**:
+- `POST /api/data-requests`
+- `GET /api/data-requests`
+- `PUT /api/data-requests/:id`
+
+**Deliverable**: Data Requests section with list, filtering, status updates
+
+---
+
+### Iteration 9: Contacts + Request Data
 
 **Goal**: Manage contacts and request data via mailto  
 **Time**: 4-5 hours  
 **Status**: ⬜ Not Started
 
 **Prerequisites**:
-- ❓ **Question**: Is `GET /api/contacts` endpoint implemented in backend?
-- ❓ **Question**: Is `POST /api/data-requests` endpoint implemented?
+- ⬜ **Need to build**: Contacts API (see tasks below)
+- ⬜ **Depends on**: Iteration 8 (Data Requests API)
 
 **Tasks**:
-1. [ ] Create Contacts page (if API exists)
+1. [ ] Create Contacts backend API
+   - `POST /api/contacts` - Create contact
+   - `GET /api/contacts` - List all contacts (for current user)
+   - `PUT /api/contacts/:id` - Update contact
+   - `DELETE /api/contacts/:id` - Delete contact
+   - Schema:
+     ```prisma
+     model Contact {
+       id          String   @id @default(uuid())
+       name        String
+       position    String?
+       email       String
+       userId      String
+       user        User     @relation(fields: [userId])
+       createdAt   DateTime @default(now())
+       updatedAt   DateTime @updatedAt
+     }
+     ```
+
+2. [ ] Create Contacts page
    - `app/(dashboard)/contacts/page.tsx`
+   - Add to MainSidebar navigation
    - Fetch: `GET /api/contacts`
    - Display: Grid of contact cards with name, position, email
    - Actions: Edit, Delete, View request history
 
-2. [ ] Create Contact form dialog
+3. [ ] Create Contact form dialog
    - Add/Edit contact
    - Fields: name, position (optional), email
    - POST/PUT to `/api/contacts`
+   - Validation: Email format, required fields
 
-3. [ ] Create `<RequestDataDialog />` component
+4. [ ] Create `<RequestDataDialog />` component
    - Location: `src/components/blocks/request-data-dialog.tsx`
    - Props: `{ projectId, fieldId, fieldLabel, onClose }`
    - Steps:
@@ -701,25 +852,28 @@ Use this checklist to track implementation of the architecture updates.
        .replace('{user_name}', currentUser.name)
      ```
 
-5. [ ] Log data request
+6. [ ] Log data request
    - POST to `/api/data-requests` with:
      ```json
      {
        "projectId": "uuid",
        "contactId": "uuid",
-       "dataPointId": "Field_Name",
+       "fieldId": "Product_Name",
+       "status": "pending",
        "requestedAt": "2025-10-13T..."
      }
      ```
 
-6. [ ] Integrate into Dataset and Reports
+7. [ ] Integrate into Dataset and Reports
    - Add "Request Data" button to `<DataPointRow />`
    - Add "Request Data" button to report fields
    - Both open `<RequestDataDialog />`
 
 **API Used**:
-- `GET /api/contacts`
 - `POST /api/contacts`
+- `GET /api/contacts`
+- `PUT /api/contacts/:id`
+- `DELETE /api/contacts/:id`
 - `GET /api/projects/:id/mailto-templates`
 - `POST /api/data-requests`
 
@@ -727,7 +881,7 @@ Use this checklist to track implementation of the architecture updates.
 
 ---
 
-### Iteration 8: Mailto Template Editor
+### Iteration 10: Mailto Template Editor
 
 **Goal**: Customize mailto templates per project  
 **Time**: 3-4 hours  
@@ -767,135 +921,153 @@ Use this checklist to track implementation of the architecture updates.
 
 ---
 
-### Iteration 9: Authentication + Route Protection
+### Iteration 11: Authentication + Route Protection
 
 **Goal**: Secure pages and implement login  
-**Time**: 4-5 hours  
+**Time**: 5-6 hours  
 **Status**: ⬜ Not Started
 
-**Prerequisites**:
-- ❓ **Question**: Are auth APIs (`/api/auth/login`, `/api/auth/register`) implemented?
+**Approach**: Start with mock auth, then build real backend
 
-**Tasks**:
-1. [ ] Create auth pages (if not done)
+**Phase 1: Mock Authentication** (2 hours)
+1. [ ] Create mock auth context
+   - Location: `src/lib/auth-context.tsx`
+   - Mock user: `{ id: '1', name: 'John Doe', email: 'john@example.com' }`
+   - Functions: `login()`, `logout()`, `isAuthenticated()`
+
+2. [ ] Create login page with mock
    - `app/(public)/login/page.tsx`
-   - `app/(public)/register/page.tsx`
-   - `app/(public)/verify-email/page.tsx`
+   - Any email/password combo works
+   - Store mock session in localStorage
+   - Redirect to `/dashboard`
 
-2. [ ] Implement login form
-   - react-hook-form with Zod
-   - Fields: email, password
-   - POST to `/api/auth/login`
+3. [ ] Create middleware for route protection
+   - `middleware.ts` at root
+   - Check localStorage for session
+   - Redirect unauthenticated to `/login`
+   - Redirect authenticated from `/login` to `/dashboard`
+
+4. [ ] Update MainSidebar
+   - Show mock user name and email
+   - Logout button clears localStorage
+
+**Phase 2: Real Authentication Backend** (3-4 hours)
+5. [ ] Create auth backend API
+   - `POST /api/auth/register` - Create user account
+   - `POST /api/auth/login` - Authenticate, return JWT
+   - `POST /api/auth/logout` - Clear session
+   - `GET /api/auth/me` - Get current user
+   - Use bcrypt for password hashing
+   - Use jose or jsonwebtoken for JWT
+
+6. [ ] Update login/register pages
+   - Connect to real API endpoints
+   - Handle errors (invalid credentials, etc.)
    - Store JWT in httpOnly cookie
 
-3. [ ] Implement register form
+7. [ ] Update middleware
+   - Verify JWT instead of localStorage
+   - Decode token to get user info
+
+8. [ ] Add register page
+   - `app/(public)/register/page.tsx`
    - Fields: name, email, password, confirm password
-   - POST to `/api/auth/register`
-   - Redirect to verify-email
+   - Validation with Zod
 
-4. [ ] Create middleware for route protection
-   - `middleware.ts` at root
-   - Check JWT token
-   - Redirect unauthenticated users to `/login`
-   - Redirect authenticated users from `/login` to `/dashboard`
-
-5. [ ] Update MainSidebar
-   - Show real user name and email
-   - Fetch from session/JWT
-   - Logout button: Clear cookie, redirect to `/`
-
-6. [ ] Handle logout
-   - Button in MainSidebar
-   - POST to `/api/auth/logout`
-   - Clear session, redirect to landing
-
-**API Used**:
-- `POST /api/auth/login`
+**API Used** (Phase 2):
 - `POST /api/auth/register`
+- `POST /api/auth/login`
 - `POST /api/auth/logout`
-- `GET /api/auth/me` (current user)
+- `GET /api/auth/me`
 
-**Deliverable**: Secured application with login/register/logout flows
+**Deliverable**: Working auth flow (mock first, then real)
 
 ---
 
-### Iteration 10: Polish + Accessibility
+### Iteration 12: Polish + Accessibility
 
-**Goal**: Improve UX, add missing features  
-**Time**: 3-4 hours  
+**Goal**: Improve UX, integrate Enhanced Button fully, add missing features  
+**Time**: 4-5 hours  
 **Status**: ⬜ Not Started
 
 **Tasks**:
-1. [ ] Add toast notifications
-   - Install: `npm install sonner` or use shadcn/ui toast
-   - Success toasts: "Project created", "Data saved"
-   - Error toasts: "Failed to save", "Conflict detected"
+1. [ ] Install and integrate Enhanced Button
+   - Install: `npm install https://github.com/jakobhoeg/enhanced-button`
+   - Install peer deps: `npm install framer-motion`
+   - Replace key buttons:
+     - "New Project" button → Enhanced with expandIcon
+     - "Send Request" button → Enhanced with loading state
+     - Form submit buttons → Enhanced with shine effect
+   - Keep standard Button for secondary actions
 
-2. [ ] Improve Breadcrumbs
+2. [ ] Add toast notifications
+   - Install: `npm install sonner` or use shadcn/ui toast
+   - Success toasts: "Project created", "Data saved", "Request sent"
+   - Error toasts: "Failed to save", "Conflict detected", "Network error"
+   - Info toasts: "Changes auto-saved"
+
+3. [ ] Improve Breadcrumbs
    - Show full path: Dashboard > Projects > [Name] > Dataset
    - Clickable links
    - Current page not clickable
 
-3. [ ] Add dark mode support
+4. [ ] Add dark mode support
    - Already configured in globals.css
-   - Add toggle button in MainSidebar or Settings
+   - Add toggle button in MainSidebar user menu
    - Persist preference in localStorage
+   - Test all components in dark mode
 
-4. [ ] Responsive design
+5. [ ] Responsive design
    - Test on mobile: Sidebar collapses to hamburger menu
    - Tables: Horizontal scroll on small screens
    - Forms: Stack vertically on mobile
 
-5. [ ] Keyboard navigation
-   - Tab order correct
-   - Escape closes modals
+6. [ ] Keyboard navigation
+   - Tab order correct across all pages
+   - Escape closes modals and dialogs
    - Enter submits forms
-   - Arrow keys navigate tables
+   - Arrow keys navigate tables (if using react-table)
+   - Cmd/Ctrl+K for search (optional)
 
-6. [ ] Loading states
+7. [ ] Loading states
    - Skeleton loaders for lists
    - Spinner for buttons during submission
    - Progress bar for file uploads (future)
 
-7. [ ] Error boundaries
-   - Catch React errors
-   - Show fallback UI
-   - Log to console/monitoring
+8. [ ] Error boundaries
+   - Catch React errors globally
+   - Show fallback UI with "Something went wrong"
+   - Log to console (add Sentry later)
+   - Add to root layout
 
-**Deliverable**: Polished, accessible, responsive application
+9. [ ] Add micro-interactions
+   - Hover effects on cards
+   - Smooth transitions between pages
+   - Loading animations (use framer-motion)
+   - Success animations on form submit
+
+**Deliverable**: Polished, accessible, responsive application with Enhanced Button integration
 
 ---
 
-## Priority Questions for Clarification
+## Revised Iteration Summary
 
-Before continuing with implementation, please confirm:
+| Iteration | Focus | Time Estimate | Dependencies |
+|-----------|-------|---------------|--------------|
+| 1 ✅ | Foundation (shadcn/ui, sidebar, layouts) | 2-3h | None |
+| 2 ⬜ | Dashboard Analytics | 4-5h | Iteration 1 |
+| 3 ⬜ | Projects List Page | 3-4h | Iteration 1 |
+| 4 ⬜ | Project Creation Wizard | 4-5h | Iteration 3 |
+| 5 ⬜ | Project Layout + Tabs | 3-4h | Iteration 4 |
+| 6 ⬜ | Dataset Grid (CRUD) | 5-6h | Iteration 5 |
+| 7 ⬜ | Reports (List + Editor) | 5-6h | Iteration 5, 6 |
+| 8 ⬜ | Data Requests List | 3-4h | Backend API |
+| 9 ⬜ | Contacts + Request Data | 5-6h | Iteration 8 |
+| 10 ⬜ | Mailto Template Editor | 3-4h | Iteration 9 |
+| 11 ⬜ | Authentication (Mock → Real) | 5-6h | None |
+| 12 ⬜ | Polish + Enhanced Button | 4-5h | All previous |
 
-1. **Enhanced Button**: Should we use jakobhoeg's enhanced-button (with effects like expandIcon, shine, gooey) or stick with standard shadcn Button?
-   - My recommendation: Start with standard, add enhanced later if needed
-
-2. **Navigation Structure**: Confirm sidebar + tabs structure:
-   - MainSidebar (left): Dashboard, Projects, Contacts, Settings
-   - Project Tabs (horizontal): Overview, Dataset, Reports, Files
-   - Roadmap integrated into Overview tab (not separate tab)
-   - ✅ This matches UX_REQUIREMENTS.md as updated
-
-3. **`/projects` Page**: Should there be a separate `/projects` list page, or does clicking "Projects" in sidebar go to `/dashboard`?
-   - Current UX doc shows only `/dashboard` for project listing
-   - Sidebar "Projects" link could go to `/dashboard` or `/projects`
-
-4. **Contacts API**: Are these endpoints implemented in backend?
-   - `GET /api/contacts`
-   - `POST /api/contacts`
-   - `PUT /api/contacts/:id`
-   - `DELETE /api/contacts/:id`
-
-5. **Auth APIs**: Are authentication endpoints ready?
-   - `POST /api/auth/login`
-   - `POST /api/auth/register`
-   - `POST /api/auth/logout`
-   - `GET /api/auth/me`
-
-6. **Data Requests API**: Is `POST /api/data-requests` endpoint implemented?
+**Total Estimated Time**: 47-58 hours (6-7 full days)
 
 ---
 
@@ -905,13 +1077,20 @@ Before continuing with implementation, please confirm:
 |-------|--------|----------------|-------------|
 | 1. Database Migration | ✅ Complete | 7 / 7 | 100% |
 | 2. Type Safety Layer | ✅ Complete | 8 / 8 | 100% |
-| 3. Backend APIs | ✅ Complete | 11 / 11 | 100% |
+| 3. Backend APIs (Projects) | ✅ Complete | 11 / 11 | 100% |
 | 4. Frontend Foundation | ✅ Complete | 10 / 10 | 100% |
-| 5. Frontend Features | 🟡 In Progress | 0 / 60 | 0% |
-| 6. Testing | ⬜ Not Started | 0 / 15 | 0% |
-| 7. Deployment | ⬜ Not Started | 0 / 9 | 0% |
+| 5. Backend APIs (New) | ⬜ Not Started | 0 / 12 | 0% |
+| 6. Frontend Features | ⬜ Not Started | 0 / 70 | 0% |
+| 7. Testing | ⬜ Not Started | 0 / 15 | 0% |
+| 8. Deployment | ⬜ Not Started | 0 / 9 | 0% |
 
-**Overall Progress**: 36% (36 / 100 tasks)
+**Overall Progress**: 29% (36 / 123 tasks)
+
+**New APIs to Build**:
+- Contacts API (4 endpoints)
+- Data Requests API (3 endpoints)
+- Auth API (4 endpoints)
+- Files API (future - 1 endpoint)
 
 ---
 
