@@ -45,6 +45,14 @@ export async function GET(request: NextRequest) {
         status: true,
         createdAt: true,
         datasetVersion: true,
+        checklist: true, // Include checklist for roadmap
+        reports: {
+          select: {
+            id: true,
+            templateCode: true,
+            completion: true,
+          },
+        },
         _count: {
           select: {
             reports: true,
@@ -64,6 +72,8 @@ export async function GET(request: NextRequest) {
         reportsCount: p._count.reports,
         datasetVersion: p.datasetVersion,
         createdAt: p.createdAt,
+        checklist: p.checklist, // For roadmap widget
+        reports: p.reports, // For completion calculation
       })),
     })
   } catch (error) {
