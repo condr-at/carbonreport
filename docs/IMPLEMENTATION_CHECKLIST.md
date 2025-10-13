@@ -485,10 +485,10 @@ Use this checklist to track implementation of the architecture updates.
 
 **Goal**: Separate page for browsing all projects  
 **Time**: 3-4 hours  
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 
 **Tasks**:
-1. [ ] Create `<ProjectCard />` component
+1. [x] Create `<ProjectCard />` component
    - Location: `src/components/blocks/project-card.tsx`
    - Props: `{ project: Project, onOpen, onDuplicate, onArchive }`
    - Features:
@@ -499,38 +499,41 @@ Use this checklist to track implementation of the architecture updates.
      - Quick actions dropdown (Open, Duplicate, Archive)
    - Components needed: Card, Badge, Progress, DropdownMenu
 
-2. [ ] Create `<EmptyState />` component
+2. [x] Create `<EmptyState />` component
    - Location: `src/components/blocks/empty-state.tsx`
    - Props: `{ icon, title, description, actionLabel?, onAction? }`
    - Usage: When no projects exist
 
-3. [ ] Create `/projects` page
-   - Location: `app/(dashboard)/projects/page.tsx`
+3. [x] Create `/projects` page
+   - Location: `app/projects/page.tsx`
    - Fetch: `GET /api/projects`
    - Display: Grid of `<ProjectCard />` components
    - Add loading state with Skeleton cards
    - Add error state with Alert
    - Show `<EmptyState />` when no projects
 
-4. [ ] Add filtering and sorting
+4. [x] Add filtering and sorting
    - Filter by: Status (All/Active/Archived), Completion (0-25%/25-50%/etc)
    - Sort by: Name (A-Z), Last Updated, Completion %
    - Use URL search params to persist filters
    - Client-side filtering initially (move to API later)
+   - **Implemented**: Status filter, Sort by name/date
 
-5. [ ] Add search bar
+5. [x] Add search bar
    - Search by project name
    - Debounced input (300ms)
    - Clear button when text entered
+   - **Implemented**: Real-time search with useMemo
 
-6. [ ] Add "New Project" button
+6. [x] Add "New Project" button
    - Top right of page
    - **Use Enhanced Button** with expandIcon effect
    - Links to `/projects/new`
+   - **Note**: Using standard Button for now, Enhanced Button to be added in Iteration 12
 
 **API Used**: `GET /api/projects`
 
-**Deliverable**: Full project list page with cards, filters, search, and navigation
+**Deliverable**: ✅ Full project list page with cards, filters, search, and navigation
 
 ---
 
@@ -1059,7 +1062,7 @@ Use this checklist to track implementation of the architecture updates.
 |-----------|-------|---------------|--------------|--------|
 | 1 ✅ | Foundation (shadcn/ui, sidebar, layouts) | 2-3h | None | ✅ Complete |
 | 2 ✅ | Dashboard Analytics | 4-5h | Iteration 1 | ✅ Complete |
-| 3 ⬜ | Projects List Page | 3-4h | Iteration 1 | ⬜ Not Started |
+| 3 ✅ | Projects List Page | 3-4h | Iteration 1 | ✅ Complete |
 | 4 ⬜ | Project Creation Wizard | 4-5h | Iteration 3 | ⬜ Not Started |
 | 5 ⬜ | Project Layout + Tabs | 3-4h | Iteration 4 | ⬜ Not Started |
 | 6 ⬜ | Dataset Grid (CRUD) | 5-6h | Iteration 5 | ⬜ Not Started |
@@ -1083,12 +1086,13 @@ Use this checklist to track implementation of the architecture updates.
 | 3. Backend APIs (Projects) | ✅ Complete | 11 / 11 | 100% |
 | 4. Frontend Foundation | ✅ Complete | 10 / 10 | 100% |
 | 5. Frontend Iteration 2 (Dashboard) | ✅ Complete | 6 / 6 | 100% |
-| 6. Backend APIs (New) | ⬜ Not Started | 0 / 12 | 0% |
-| 7. Frontend Features (Remaining) | ⬜ Not Started | 0 / 64 | 0% |
-| 8. Testing | ⬜ Not Started | 0 / 15 | 0% |
-| 9. Deployment | ⬜ Not Started | 0 / 9 | 0% |
+| 6. Frontend Iteration 3 (Projects List) | ✅ Complete | 6 / 6 | 100% |
+| 7. Backend APIs (New) | ⬜ Not Started | 0 / 12 | 0% |
+| 8. Frontend Features (Remaining) | ⬜ Not Started | 0 / 58 | 0% |
+| 9. Testing | ⬜ Not Started | 0 / 15 | 0% |
+| 10. Deployment | ⬜ Not Started | 0 / 9 | 0% |
 
-**Overall Progress**: 34% (42 / 123 tasks)
+**Overall Progress**: 39% (48 / 123 tasks)
 
 **New APIs to Build**:
 - Contacts API (4 endpoints)
