@@ -1,12 +1,11 @@
 import { ProjectLayout } from '@/components/layouts/project-layout';
 import { notFound } from 'next/navigation';
-import { getReportTemplate } from '@/lib/report-templates';
 import {
   enrichDataPoints,
-  groupDataPoints,
   flattenToTableRows,
-  DataPoint,
-} from '@/lib/dataset-utils';
+  type DataPoint,
+  type FieldDefinition,
+} from '@/lib/dataset-utils-v2';
 import { initializeFullDataset } from '@/lib/dataset-init';
 import { DatasetPageClient } from './dataset-page-client';
 
@@ -28,6 +27,28 @@ async function getProject(id: string) {
   return res.json();
 }
 
+async function getFieldDefinitions(): Promise<FieldDefinition[]> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+  
+  try {
+    const res = await fetch(`${baseUrl}/api/dataset-fields`, {
+      cache: 'force-cache', // Cache field definitions
+      next: { revalidate: 300 }, // Revalidate every 5 minutes
+    });
+
+    if (!res.ok) {
+      console.error('Failed to fetch field definitions');
+      return [];
+    }
+
+    const data = await res.json();
+    return data.fields || [];
+  } catch (error) {
+    console.error('Error fetching field definitions:', error);
+    return [];
+  }
+}
+
 export default async function DatasetPage({ params }: PageProps) {
   const { id } = await params;
   const project = await getProject(id);
@@ -36,20 +57,16 @@ export default async function DatasetPage({ params }: PageProps) {
     notFound();
   }
 
-  // Get all templates for this project (for metadata/labels)
-  const templates = project.reports
-    .map((r: any) => getReportTemplate(r.templateCode))
-    .filter(Boolean);
+  // Fetch field definitions from database
+  const fieldDefinitions = await getFieldDefinitions();
 
   // Initialize FULL dataset structure (162 fields from master schema)
-  // This is independent of which report templates are selected
   const existingDataPoints = (project.dataset?.data_points || []) as DataPoint[];
   const completeDataPoints = initializeFullDataset(existingDataPoints);
   
-  // Transform dataset for display
-  const enrichedDataPoints = enrichDataPoints(completeDataPoints, templates);
-  const groupedData = groupDataPoints(enrichedDataPoints);
-  const tableRows = flattenToTableRows(groupedData);
+  // Transform dataset for display using DB-backed metadata
+  const enrichedDataPoints = enrichDataPoints(completeDataPoints, fieldDefinitions);
+  const tableRows = flattenToTableRows(enrichedDataPoints);
 
   return (
     <ProjectLayout project={project}>
@@ -58,8 +75,7 @@ export default async function DatasetPage({ params }: PageProps) {
         projectName={project.name}
         initialRows={tableRows}
         datasetVersion={project.datasetVersion || 0}
-        templates={templates}
-        groupedData={groupedData}
+        fieldDefinitions={fieldDefinitions}
       />
     </ProjectLayout>
   );

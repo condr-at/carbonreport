@@ -73,7 +73,7 @@ export function parseDatasetSchemaFromCSV(csvPath: string): ParsedDatasetSchema 
 }
 
 /**
- * Generate FieldId enum entries from parsed schema
+ * Generate field identifier strings from parsed schema
  * Converts "Product Description" / "ProductName" -> "ProductDescription_ProductName"
  */
 export function generateFieldIds(schema: ParsedDatasetSchema): string[] {

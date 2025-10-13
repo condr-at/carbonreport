@@ -12,6 +12,7 @@
  */
 
 import { PrismaClient } from '@prisma/client'
+import datasetSchema from '../src/lib/dataset-schema.json'
 import { initializeFullDataset } from '../src/lib/dataset-init'
 
 const prisma = new PrismaClient()
@@ -27,7 +28,56 @@ async function main() {
   await prisma.project.deleteMany()
   await prisma.contact.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.datasetFieldDefinition.deleteMany()
   console.log('✅ Cleaned\n')
+
+  // Seed dataset field definitions
+  console.log('🧱 Seeding dataset field definitions...')
+
+  const fieldDefinitionsToCreate: Array<{
+    fieldId: string
+    label: string
+    hint: string | null
+    type: string
+    options: any | null
+    validation: any | null
+    isRepeatable: boolean
+    repeatableKey: string | null
+  }> = []
+
+  const toLabel = (fieldId: string) => {
+    // Extract the tail after first underscore, convert to readable label
+    const parts = fieldId.split('_')
+    const tail = parts.slice(1).join('_') // Everything after section prefix
+    return tail
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2') // camelCase → camel Case
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2') // ABCDef → ABC Def
+      .replace(/_/g, ' ') // underscores → spaces
+      .trim()
+  }
+
+  for (const section of datasetSchema.sections) {
+    for (const field of section.fields) {
+      const fieldDef = {
+        fieldId: field.fieldId,
+        label: toLabel(field.fieldId),
+        hint: null, // TODO: Add hints from CSV or manual curation
+        type: 'text', // Default type
+        options: null,
+        validation: null,
+        isRepeatable: field.isRepeatable,
+        repeatableKey: field.isRepeatable ? section.name : null,
+      }
+      fieldDefinitionsToCreate.push(fieldDef)
+    }
+  }
+
+  await prisma.datasetFieldDefinition.createMany({
+    data: fieldDefinitionsToCreate,
+    skipDuplicates: true,
+  })
+
+  console.log(`✅ Seeded ${fieldDefinitionsToCreate.length} field definitions\n`)
 
   // Create test user
   console.log('👤 Creating test user...')

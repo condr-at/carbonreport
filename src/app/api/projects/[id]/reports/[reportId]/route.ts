@@ -97,7 +97,7 @@ export async function GET(
     const requiredFieldIds = template.sections
       .flatMap((s) => s.fields)
       .filter((f) => f.required)
-      .map((f) => f.id as any) // Cast to FieldId
+      .map((f) => f.id)
 
     const completionPercentage = calculateCompletion(filteredDataset, requiredFieldIds)
 

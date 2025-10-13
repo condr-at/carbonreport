@@ -6,7 +6,6 @@
  */
 
 import { z } from 'zod'
-import { FieldId } from './field-ids'
 
 /**
  * Data Point Schema
@@ -15,9 +14,7 @@ import { FieldId } from './field-ids'
  * field_id + item_id forms a unique key within a project.
  */
 export const DataPointSchema = z.object({
-  field_id: z.nativeEnum(FieldId, {
-    errorMap: () => ({ message: 'Invalid field_id. Must be a valid FieldId enum value.' })
-  }),
+  field_id: z.string().min(1, 'field_id is required'),
   item_id: z.string().nullable(), // null for scalar fields, "1", "2", etc. for tabular
   value: z.string(), // Always stored as string; type conversion at app layer
 })
@@ -69,7 +66,7 @@ export function createEmptyDataset(): Dataset {
  */
 export function findDataPoint(
   dataset: Dataset,
-  fieldId: FieldId,
+  fieldId: string,
   itemId: string | null = null
 ): DataPoint | undefined {
   return dataset.data_points.find(
@@ -82,7 +79,7 @@ export function findDataPoint(
  */
 export function getDataPointsByField(
   dataset: Dataset,
-  fieldId: FieldId
+  fieldId: string
 ): DataPoint[] {
   return dataset.data_points.filter(dp => dp.field_id === fieldId)
 }
@@ -92,7 +89,7 @@ export function getDataPointsByField(
  */
 export function upsertDataPoint(
   dataset: Dataset,
-  fieldId: FieldId,
+  fieldId: string,
   value: string,
   itemId: string | null = null
 ): Dataset {
@@ -116,7 +113,7 @@ export function upsertDataPoint(
  */
 export function removeDataPoint(
   dataset: Dataset,
-  fieldId: FieldId,
+  fieldId: string,
   itemId: string | null = null
 ): Dataset {
   dataset.data_points = dataset.data_points.filter(
@@ -130,7 +127,7 @@ export function removeDataPoint(
  */
 export function calculateCompletion(
   dataset: Dataset,
-  requiredFields: FieldId[]
+  requiredFields: string[]
 ): number {
   if (requiredFields.length === 0) return 100
 
@@ -147,10 +144,10 @@ export function calculateCompletion(
  */
 export function validateFieldUniqueness(dataset: Dataset): {
   valid: boolean
-  duplicates: Array<{ field_id: FieldId; item_id: string | null }>
+  duplicates: Array<{ field_id: string; item_id: string | null }>
 } {
   const seen = new Set<string>()
-  const duplicates: Array<{ field_id: FieldId; item_id: string | null }> = []
+  const duplicates: Array<{ field_id: string; item_id: string | null }> = []
 
   for (const dp of dataset.data_points) {
     const key = `${dp.field_id}::${dp.item_id ?? 'null'}`

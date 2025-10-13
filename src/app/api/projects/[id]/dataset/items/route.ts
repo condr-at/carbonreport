@@ -8,12 +8,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { type Dataset, type DataPoint } from '@/lib/dataset-validation'
-import { FieldId } from '@/lib/field-ids'
 import { z } from 'zod'
 
 const AddItemSchema = z.object({
   group: z.string(), // e.g., "Material"
-  fieldIds: z.array(z.nativeEnum(FieldId)), // Field IDs to create for this item
+  fieldIds: z.array(z.string().min(1, 'field_id is required')), // Field IDs to create for this item
   datasetVersion: z.number().int().min(0).optional(),
 })
 

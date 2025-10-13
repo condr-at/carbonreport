@@ -9,18 +9,17 @@
  * - All data lives in Project.dataset JSONB
  * - Use optimistic locking via dataset_version counter
  * - Validate with Zod schemas from dataset-validation.ts
- * - Use FieldId enum for type safety
+ * - Validate field identifiers as plain strings
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { validateDataset, type Dataset, type DataPoint } from '@/lib/dataset-validation'
-import { FieldId } from '@/lib/field-ids'
 import { z } from 'zod'
 
 // Schema for PATCH - single field update
 const PatchDataPointSchema = z.object({
-  field_id: z.nativeEnum(FieldId),
+  field_id: z.string().min(1, 'field_id is required'),
   item_id: z.string().nullable(),
   value: z.string(),
   datasetVersion: z.number().int().min(0).optional(),
@@ -235,11 +234,11 @@ export async function PATCH(
 
     if (existingIndex >= 0) {
       // Update existing
-      updatedDataPoint = { field_id: field_id as FieldId, item_id, value }
+  updatedDataPoint = { field_id, item_id, value }
       dataPoints[existingIndex] = updatedDataPoint
     } else {
       // Insert new
-      updatedDataPoint = { field_id: field_id as FieldId, item_id, value }
+  updatedDataPoint = { field_id, item_id, value }
       dataPoints.push(updatedDataPoint)
     }
 

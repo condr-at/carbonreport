@@ -133,6 +133,26 @@ model DataRequest {
 }
 
 // ================================
+// Dataset Field Definitions
+// ================================
+
+model DatasetFieldDefinition {
+  id            String   @id @default(uuid())
+  fieldId       String   @unique @map("field_id") // e.g., "ProductDescription_ProductName"
+  label         String
+  hint          String?
+  type          String   @default("text")
+  options       Json?
+  validation    Json?
+  isRepeatable  Boolean  @default(false) @map("is_repeatable")
+  repeatableKey String?  @map("repeatable_key")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("dataset_field_definitions")
+}
+
+// ================================
 // Files ⏸️ Post-MVP
 // ================================
 

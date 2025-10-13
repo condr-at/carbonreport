@@ -5,8 +5,6 @@
  * Uses the master dataset schema (162 fields from CSV) as the base.
  */
 
-import { ReportTemplate } from './report-templates/types';
-import { FieldId } from './field-ids';
 import { DataPoint } from './dataset-validation';
 import datasetSchema from './dataset-schema.json';
 
@@ -42,14 +40,14 @@ export function initializeFullDataset(
     if (existing) {
       // Keep existing value
       completeDataset.push({
-        field_id: existing.field_id as FieldId,
+        field_id: existing.field_id,
         item_id: existing.item_id,
         value: existing.value || '',
       });
     } else {
       // Add new field with empty value
       completeDataset.push({
-        field_id: schemaDp.field_id as FieldId,
+        field_id: schemaDp.field_id,
         item_id: schemaDp.item_id,
         value: '',
       });
@@ -57,29 +55,6 @@ export function initializeFullDataset(
   }
 
   return completeDataset;
-}
-
-/**
- * Determine if a field is repeatable (tabular) based on schema
- */
-function isRepeatableField(fieldId: FieldId): boolean {
-  // Check in schema
-  const schemaDataPoint = datasetSchema.initialDataset.data_points.find(
-    (dp) => dp.field_id === fieldId
-  );
-  return schemaDataPoint ? schemaDataPoint.item_id !== null : false;
-}
-
-/**
- * Get all field IDs that belong to a repeatable group
- */
-export function getRepeatableFieldsInGroup(group: string): FieldId[] {
-  const fields = datasetSchema.initialDataset.data_points
-    .filter((dp) => dp.field_id.startsWith(group + '_') && dp.item_id !== null)
-    .map((dp) => dp.field_id as FieldId);
-
-  // Remove duplicates
-  return Array.from(new Set(fields));
 }
 
 /**

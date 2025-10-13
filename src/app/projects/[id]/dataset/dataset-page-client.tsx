@@ -4,6 +4,7 @@
  * Dataset Page Client Component
  * 
  * Handles client-side state and interactions for the dataset table
+ * Now works with field definitions from database instead of templates
  */
 
 import { useState, useCallback } from 'react';
@@ -11,21 +12,15 @@ import { DatasetTable } from '@/components/dataset-table';
 import { RequestDataModal } from '@/components/request-data-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database } from 'lucide-react';
-import {
-  TableRow,
-  GroupedData,
-  getUniqueFieldsInGroup,
-  getNextItemId,
-} from '@/lib/dataset-utils';
-import { ReportTemplate } from '@/lib/report-templates/types';
+import { TableRow } from '@/lib/dataset-utils-v2';
+import { FieldDefinition } from '@/lib/dataset-utils-v2';
 
 interface DatasetPageClientProps {
   projectId: string;
   projectName: string;
   initialRows: TableRow[];
   datasetVersion: number;
-  templates: ReportTemplate[];
-  groupedData: GroupedData[];
+  fieldDefinitions: FieldDefinition[];
 }
 
 export function DatasetPageClient({
@@ -33,18 +28,16 @@ export function DatasetPageClient({
   projectName,
   initialRows,
   datasetVersion: initialVersion,
-  templates,
-  groupedData: initialGroupedData,
+  fieldDefinitions,
 }: DatasetPageClientProps) {
   const [rows, setRows] = useState<TableRow[]>(initialRows);
   const [datasetVersion, setDatasetVersion] = useState(initialVersion);
-  const [groupedData, setGroupedData] = useState<GroupedData[]>(initialGroupedData);
   const [requestDataModal, setRequestDataModal] = useState<{
     fieldLabel?: string;
+    fieldHint?: string | null;
     fieldId?: string;
     itemId?: string | null;
-    group?: string;
-    isGroup?: boolean;
+    repeatableKey?: string | null;
   } | null>(null);
 
   // Update single field
@@ -71,13 +64,6 @@ export function DatasetPageClient({
     },
     [projectId, datasetVersion]
   );
-
-  // Delete repeatable item
-  const handleDeleteItem = useCallback(
-    async (group: string, itemId: string) => {
-      if (!confirm(`Delete all fields for Item #${itemId}?`)) {
-        return;
-      }
 
       const response = await fetch(
         `/api/projects/${projectId}/dataset/items/${itemId}?datasetVersion=${datasetVersion}`,

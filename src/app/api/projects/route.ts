@@ -15,7 +15,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { getReportTemplate } from '@/lib/report-templates'
-import { FieldId } from '@/lib/field-ids'
 import { createEmptyDataset } from '@/lib/dataset-validation'
 
 // Request schema

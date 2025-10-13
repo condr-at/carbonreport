@@ -2,7 +2,15 @@
 
 ## Overview
 
-The Dataset view displays all project data points in a unified, editable table with visual grouping by field categories. Users can view, edit, add, delete, and request data for all fields in one place.
+The Dataset view displays **all 162 fixed data points** from the master schema in a unified, editable table. 
+
+**Key principles:**
+- ✅ **162 fields are fixed** - defined in database, cannot be added/removed by users
+- ✅ **No grouping** - fields shown in flat list (singletons first, then repeatables)
+- ✅ **No enrichment** - field metadata (labels, hints, types) already stored in DB
+- ✅ **Only repeatable ITEMS can be added/deleted** - not fields themselves
+
+Users can: edit values, add/delete repeatable items, request data from contacts.
 
 ---
 
@@ -10,35 +18,38 @@ The Dataset view displays all project data points in a unified, editable table w
 
 ### 1. Data Structure
 
-**Input Data:**
+**All 162 fields are pre-defined in database:**
 ```typescript
-// From Project.dataset (JSONB)
+// DatasetFieldDefinition (database) - 162 rows total
+{
+  field_id: 'ProductDescription_ProductName',
+  label: 'Product Name',
+  hint: 'The commercial name of the product being assessed',
+  type: 'text',
+  validation: { maxLength: 200 },
+  is_repeatable: false,
+  repeatable_key: null
+}
+```
+
+**User project data contains only values:**
+```typescript
+// Project.dataset (JSONB) - stores only values for the 162 fields
 {
   data_points: [
-    { field_id: 'Product_Name', item_id: null, value: 'E-Bike' },
-    { field_id: 'Material_Name', item_id: '1', value: 'Aluminum' },
-    { field_id: 'Material_Amount', item_id: '1', value: '8.5' },
-    { field_id: 'Material_Name', item_id: '2', value: 'Battery' },
+    { field_id: 'ProductDescription_ProductName', item_id: null, value: 'E-Bike' },
+    { field_id: 'LifeCycleInventoryInputs_MaterialInputName', item_id: '1', value: 'Aluminum' },
+    { field_id: 'LifeCycleInventoryInputs_MaterialInputAmount', item_id: '1', value: '8.5' },
+    { field_id: 'LifeCycleInventoryInputs_MaterialInputName', item_id: '2', value: 'Battery' },
   ]
-}
-
-// From Report Template Config
-{
-  sections: [{
-    fields: [
-      { id: 'Product_Name', label: 'Product Name', type: 'text' },
-      { id: 'Material_Name', label: 'Material Name', type: 'text' },
-      { id: 'Material_Amount', label: 'Amount', type: 'number' },
-    ]
-  }]
 }
 ```
 
 **Processing:**
-1. Join data_points with template fields by `field_id === field.id`
-2. Group fields by prefix (`Product_*`, `Material_*`, `Energy_*`)
-3. Within each group, separate singleton (item_id === null) vs repeatable (item_id !== null)
-4. For repeatables: pivot by item_id (items as rows, fields as columns)
+1. Fetch ALL 162 field definitions from database: `GET /api/dataset-fields` (cached)
+2. Initialize empty values for any missing fields
+3. Join data_points with field definitions by `field_id`
+4. Sort: singletons first (alphabetically by label), then repeatables (by repeatable_key → item_id → label)
 
 ---
 
@@ -48,99 +59,187 @@ The Dataset view displays all project data points in a unified, editable table w
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│ [Search...] [Filter: All Groups ▼] [+ Add Field]                │
+│ [Search...] [Clear All Values]                                  │
 ├──────────────────────────────────────────────────────────────────┤
-│ Group         │ Field Name    │ Item │ Value      │ Actions     │
+│ Field Name                │ Item │ Value      │ Actions         │
 ├──────────────────────────────────────────────────────────────────┤
-│ 📦 Product    │ Name          │  -   │ E-Bike     │ [📧]        │ ← Group 1 (light bg)
-│               │ Weight        │  -   │ 25         │ [📧]        │
+│ Product Name 💡           │  -   │ E-Bike     │ [📧]            │
+│ Product Identifier 💡     │  -   │ EBK-2025   │ [📧]            │
+│ Report Date 💡            │  -   │ 2024-01-15 │ [📧]            │
+│ ... (150 more singletons) │  -   │ ...        │ [📧]            │
 ├──────────────────────────────────────────────────────────────────┤
-│ 🔩 Materials  │               │      │            │ [📧 All]    │ ← Group header
-│               │ Name          │  1   │ Aluminum   │ [📧][🗑️]   │ ← Group 2 (blue bg)
-│               │ Amount        │  1   │ 8.5        │ [📧][🗑️]   │
-│               │ Unit          │  1   │ kg         │ [📧][🗑️]   │
-│               │ Name          │  2   │ Battery    │ [📧][🗑️]   │ ← Same group
-│               │ Amount        │  2   │ 2.5        │ [📧][🗑️]   │
-│               │ [+ Add Material Item]                            │
+│ Material Input Name 💡    │  1   │ Aluminum   │ [📧][🗑️]      │
+│ Material Input Amount 💡  │  1   │ 8.5        │ [📧][🗑️]      │
+│ Material Input Unit 💡    │  1   │ kg         │ [📧][🗑️]      │
 ├──────────────────────────────────────────────────────────────────┤
-│ ⚡ Energy     │ Total         │  -   │ 45.5       │ [📧]        │ ← Group 3 (green bg)
-│               │ Renewable %   │  -   │ 60         │ [📧]        │
+│ Material Input Name 💡    │  2   │ Battery    │ [📧][🗑️]      │
+│ Material Input Amount 💡  │  2   │ 2.5        │ [📧][🗑️]      │
+│ Material Input Unit 💡    │  2   │ kg         │ [📧][🗑️]      │
+│ [+ Add Material Input]                                          │
+├──────────────────────────────────────────────────────────────────┤
+│ Energy Input Type 💡      │  1   │ Electricity│ [📧][🗑️]      │
+│ Energy Input Amount 💡    │  1   │ 450        │ [📧][🗑️]      │
+│ [+ Add Energy Input]                                            │
 └──────────────────────────────────────────────────────────────────┘
+
+💡 = Hover to see hint/description
+🗑️ = Delete this item (only for repeatables)
 ```
+
+**Important notes:**
+- No visual grouping or colored backgrounds
+- Separator line between different repeatable_key groups
+- "[+ Add {repeatable_key}]" button appears after last item of each repeatable group
 
 ### Columns
 
-1. **Group** (optional, visual indicator)
-   - Icon + Group name (Product, Materials, Energy, Transport, etc.)
-   - Merged cells spanning all rows in group
-   - Background color for visual separation
+1. **Field Name** (from DatasetFieldDefinition.label)
+   - Human-readable label from database (e.g., "Product Name", not "ProductDescription_ProductName")
+   - Icon 💡 when hint is available (tooltip on hover shows full hint text)
+   - Badge "Required" if validation requires non-empty value
+   - **Same label shown for each item** in repeatable fields (no "Material Name #1", "Material Name #2")
 
-2. **Field Name** (from template.field.label)
-   - Human-readable label
-   - For repeatables: only unique field names shown (no "Material Name #1, Material Name #2")
-
-3. **Item** 
+2. **Item** 
    - Shows item_id for repeatable fields (1, 2, 3...)
    - Shows "-" for singleton fields
-   - Read-only
+   - Read-only, auto-incremented
 
-4. **Value**
+3. **Value**
    - Inline editable cell
-   - Type based on template.field.type:
+   - Type based on DatasetFieldDefinition.type:
      - `text` → text input
      - `number` → number input with validation
-     - `select` → dropdown
+     - `select` → dropdown (options from field definition)
      - `textarea` → expandable text area
      - `date` → date picker
    - Click to edit, auto-save on blur or Enter
-   - Validation feedback inline
+   - Validation feedback inline (from field definition)
 
-5. **Actions**
-   - **Singleton fields**: `[📧 Request Data]`
+4. **Actions**
+   - **Singleton fields**: `[📧 Request Data]` only
    - **Repeatable items**: `[📧 Request Data] [🗑️ Delete Item]`
-   - **Repeatable group header**: `[📧 Request All]`
 
 ---
 
-## 3. Grouping Logic
+## 3. Field Definitions from Database
 
-### Field Grouping by Prefix
+### DatasetFieldDefinition Model
+
+**All 162 fields are pre-defined in database.** Users cannot add or remove fields.
 
 ```typescript
-// Automatic grouping by field_id prefix
-const groups = {
-  'Product': ['Product_Name', 'Product_Weight', 'Product_Category'],
-  'Material': ['Material_Name', 'Material_Amount', 'Material_Unit'],
-  'Energy': ['Energy_Total', 'Energy_Renewable'],
-  'Transport': ['Transport_Mode', 'Transport_Distance'],
-  // ... etc
+interface DatasetFieldDefinition {
+  id: string
+  field_id: string                    // e.g., "ProductDescription_ProductName"
+  label: string                       // "Product Name" (what users see)
+  hint: string | null                 // "The commercial name of the product..."
+  type: string                        // "text" | "number" | "select" | "date" | "textarea"
+  options: Json | null                // For select: ["Option 1", "Option 2"]
+  validation: Json | null             // { required: true, min: 0, max: 100 }
+  is_repeatable: boolean              // true for tabular fields
+  repeatable_key: string | null       // "LifeCycleInventoryInputs" for grouping
+  created_at: DateTime
+  updated_at: DateTime
 }
 ```
 
-**Rules:**
-1. Group name = first part before underscore (`Product_*` → "Product")
-2. Icon assigned per group (Product: 📦, Material: 🔩, Energy: ⚡)
-3. Background color per group for visual separation
-4. Groups displayed in fixed order (configurable)
+### Data Flow (No Enrichment!)
 
-### Singleton vs Repeatable
+```typescript
+// 1. Fetch field definitions once (cached globally)
+const fieldDefs = await fetch('/api/dataset-fields') // 162 fields
 
-**Singleton fields** (item_id === null):
-- Display as simple rows: Field Name | Value
-- No "Item" column value (shows "-")
-- Cannot delete (fixed schema)
-- Can request data individually
+// 2. Fetch project dataset (only contains values)
+const project = await fetch(`/api/projects/${id}`)
+const dataPoints = project.dataset.data_points // might be empty or partial
 
-**Repeatable fields** (item_id !== null):
-- Display as pivot table within group
-- All fields with same item_id grouped together
-- Item column shows item_id (1, 2, 3...)
-- Can delete entire item (all fields with that item_id)
-- Can add new item
+// 3. Initialize ALL 162 fields (fill missing with empty values)
+const completeDataPoints = initializeFullDataset(dataPoints, fieldDefs)
+
+// 4. Join with definitions for display
+const tableRows = completeDataPoints.map(dp => {
+  const fieldDef = fieldDefs.find(f => f.field_id === dp.field_id)
+  
+  return {
+    field_id: dp.field_id,
+    label: fieldDef.label,           // From DB
+    hint: fieldDef.hint,              // From DB
+    type: fieldDef.type,              // From DB
+    item_id: dp.item_id,              // From project
+    value: dp.value,                  // From project
+    is_repeatable: fieldDef.is_repeatable,
+    repeatable_key: fieldDef.repeatable_key,
+  }
+})
+
+// 5. Sort for display
+const singletons = tableRows.filter(r => !r.is_repeatable)
+  .sort((a, b) => a.label.localeCompare(b.label))
+
+const repeatables = tableRows.filter(r => r.is_repeatable)
+  .sort((a, b) => {
+    // Sort by: repeatable_key → item_id → label
+    if (a.repeatable_key !== b.repeatable_key) {
+      return a.repeatable_key.localeCompare(b.repeatable_key)
+    }
+    if (a.item_id !== b.item_id) {
+      return parseInt(a.item_id) - parseInt(b.item_id)
+    }
+    return a.label.localeCompare(b.label)
+  })
+
+const finalRows = [...singletons, ...repeatables]
+```
+
+### Key Points
+
+✅ **162 fields fixed** - seeded from `dataset-schema.json` into DB on setup
+✅ **No runtime enrichment** - metadata already in DB, just JOIN
+✅ **Labels from DB** - consistent across all projects
+✅ **Hints in DB** - rich tooltips without bloating project data
+✅ **Types in DB** - validation rules centralized
 
 ---
 
-## 4. Inline Editing
+## 4. Singleton vs Repeatable Fields
+
+**Singleton fields** (item_id === null, is_repeatable === false):
+- Fixed, non-repeating values (e.g., Product Name, Report Date)
+- Always present in dataset (initialized with empty value if missing)
+- **Cannot be deleted** - field stays, only value can be cleared
+- Display as simple rows with "-" in Item column
+- Examples: ~154 fields like ProductDescription_ProductName, ReportMetadata_ReportDate
+
+**Repeatable fields** (item_id !== null, is_repeatable === true):
+- Tabular data with multiple items (e.g., Material Inputs, Transportation records)
+- **Items can be added/deleted**, not fields themselves
+- All fields with same repeatable_key + item_id shown together
+- Item column shows item_id (1, 2, 3...)
+- Examples: ~8 repeatable groups like LifeCycleInventoryInputs, Transportation
+
+### Repeatable Items Logic
+
+When user clicks **[+ Add Material Input]**:
+1. Find all field definitions where `repeatable_key === "LifeCycleInventoryInputs"`
+2. Find max existing item_id for those fields (e.g., max is 2)
+3. Create new data_points for **ALL fields in that group** with `item_id = "3"`:
+   ```typescript
+   [
+     { field_id: 'LifeCycleInventoryInputs_MaterialInputName', item_id: '3', value: '' },
+     { field_id: 'LifeCycleInventoryInputs_MaterialInputAmount', item_id: '3', value: '' },
+     { field_id: 'LifeCycleInventoryInputs_MaterialInputUnit', item_id: '3', value: '' },
+     // ... all other MaterialInputs fields
+   ]
+   ```
+
+When user clicks **[🗑️ Delete]** on item #2:
+1. Delete ALL data_points where `item_id === "2"` AND field matches repeatable_key
+2. **Do NOT renumber** other items (1, 3, 4 stay as is)
+3. Remove rows from UI
+
+---
+
+## 5. Inline Editing
 
 ### Edit Behavior
 
@@ -167,16 +266,17 @@ const groups = {
 
 ---
 
-## 5. Actions
+## 6. Actions
 
 ### Request Data
 
 **Singleton Field:**
 ```typescript
-// User clicks [📧] next to "Product Weight"
-// Opens modal:
+// User clicks [📧] next to "Product Name"
+// Opens modal with field context:
 {
-  title: "Request Data: Product Weight",
+  title: "Request Data: Product Name",
+  hint: "The commercial name of the product being assessed", // From field definition
   fields: [
     { label: "Select Contact", type: "select", options: contacts },
     { label: "Or Add New Contact", type: "text" },
@@ -185,40 +285,20 @@ const groups = {
   actions: ["Cancel", "Generate mailto Link"]
 }
 
-// On submit:
-// 1. Create/select contact
-// 2. Create DataRequest record
-// 3. Generate mailto: link with template
-// 4. Open user's email client
-```
-
-**Repeatable Group (Request All):**
-```typescript
-// User clicks [📧 Request All] in Materials header
-// Same modal, but message includes ALL material fields
-mailtoTemplate = `
-  Hi {contact_name},
-  
-  Please provide the following material information:
-  - Material Name (for all items)
-  - Material Amount (for all items)
-  - Material Unit (for all items)
-  
-  Project: {project_name}
-`
+// On submit: creates DataRequest record, opens mailto: link
 ```
 
 **Repeatable Item:**
 ```typescript
-// User clicks [📧] next to Material #1
-// Message includes only fields for item_id='1'
+// User clicks [📧] next to Material Input #2
+// Message includes only that specific item:
 mailtoTemplate = `
   Hi {contact_name},
   
-  Please provide material information for Item 1:
-  - Material Name
-  - Material Amount
-  - Material Unit
+  Please provide material input information for Item 2:
+  - Material Input Name: [current value or empty]
+  - Material Input Amount: [current value or empty]
+  - Material Input Unit: [current value or empty]
   
   Project: {project_name}
 `
@@ -228,38 +308,34 @@ mailtoTemplate = `
 
 **Repeatable Only:**
 - Click [🗑️] next to any field in repeatable item
-- Confirmation modal: "Delete Material Item #1? This will remove all fields for this item."
+- Confirmation modal: "Delete Item #2? This will remove all fields for this item."
 - On confirm:
-  - DELETE all data_points with that item_id
-  - Re-number remaining items (optional: 1,2,3 → 1,2 after deleting #2)
+  - DELETE all data_points where `item_id === "2"` for this repeatable_key
+  - Do NOT renumber remaining items
   - Optimistic UI update + background API call
+  - On error: revert + show toast
 
 **Singleton:**
-- No delete button (fields are fixed schema)
-- User can only clear value (set to empty string)
+- **No delete button** - fields cannot be removed
+- User can only clear the value (set to empty string)
 
 ### Add Item
 
-**Repeatable Groups:**
-- Show `[+ Add Material Item]` button at bottom of group
+**Repeatable Fields Only:**
+- Show `[+ Add {label}]` button after last item in each repeatable_key group
+- Button label uses human-readable name (e.g., "Add Material Input", not "Add LifeCycleInventoryInputs")
 - On click:
-  - Find max item_id in group, add 1
-  - Create empty data_points for all fields in group with new item_id
-  - Insert new rows in table
-  - Auto-focus first editable field
+  1. Find all field_ids where `repeatable_key === "LifeCycleInventoryInputs"`
+  2. Find max existing item_id → add 1
+  3. POST to API with repeatable_key
+  4. API creates empty data_points for ALL fields in that group
+  5. Refresh table to show new rows
+  6. Auto-focus first editable field in new item
 
-**Example:**
-```typescript
-// Materials group has items 1, 2
-// User clicks [+ Add Material Item]
-// Creates:
-[
-  { field_id: 'Material_Name', item_id: '3', value: '' },
-  { field_id: 'Material_Amount', item_id: '3', value: '' },
-  { field_id: 'Material_Unit', item_id: '3', value: '' },
-]
-// Adds to table, focuses on Material_Name[3] cell
-```
+**NOT Possible:**
+- ❌ Cannot add new field types (162 fixed)
+- ❌ Cannot delete singleton fields
+- ❌ Cannot create "custom fields"
 
 ---
 
@@ -286,10 +362,13 @@ mailtoTemplate = `
 - Creates DataRequest records for each field
 
 **Delete Selected:**
-- Only enabled if all selected rows are repeatable (have item_id)
-- Confirmation modal with list of items to delete
-- Deletes all data_points for selected item_ids
+- **Only enabled if all selected rows are repeatable items (have item_id)**
+- If any singleton field is selected → button disabled with tooltip: "Cannot delete singleton fields"
+- Confirmation modal: "Delete {count} items? This will remove all data for these items."
+- Deletes all data_points for selected item_ids + their repeatable_key groups
+- **Important:** Deletion is at item level (e.g., deletes entire "Material Input #2"), not individual fields
 - Shows success/error toast
+- On error: reverts optimistic update
 
 ---
 
@@ -299,18 +378,43 @@ mailtoTemplate = `
 
 - Top of table: `[🔍 Search fields...]`
 - Searches in:
-  - Field Name (label)
+  - Field label
+  - Field hint
   - Value
-  - Group name
 - Real-time filtering (debounced 300ms)
 - Highlights matching text
 - Shows "X results" count
 
-### Group Filter
+### Report Filter
 
-- Dropdown: `[Filter: All Groups ▼]`
-- Options: All, Product, Materials, Energy, Transport, etc.
-- Filters rows to selected group
+- Dropdown: `[Filter: All Reports ▼]`
+- Options from field definitions:
+  ```typescript
+  filterOptions = [
+    { value: "all", label: "All Fields" },
+    { value: "iso14067", label: "ISO 14067" },
+    { value: "cbam", label: "CBAM" },
+  ]
+  ```
+- Filters by `report_template_ids` array in field definitions (stored in DB)
+- "All Fields" shows all 162 fields
+- Specific report shows only fields with that template ID in their report_template_ids
+
+### Repeatable Group Filter
+
+- Dropdown with all unique repeatable_key values from field definitions
+- Shows human-readable labels:
+  - Query: `SELECT DISTINCT repeatable_key FROM DatasetFieldDefinition WHERE repeatable_key IS NOT NULL`
+  - Transform repeatable_key to label (e.g., "LifeCycleInventoryInputs" → "Material Inputs")
+- Example options: "Material Inputs", "Emission Sources", "Geographic Information"
+- Filters table to show only rows where field.repeatable_key matches selected value
+- **Important:** This is a data filter, NOT a visual grouping mechanism
+
+### Field Type Filter (Optional)
+
+- Dropdown: `[Filter: All Types ▼]`
+- Options: All, Text, Number, Select, Date
+- Filters rows to selected type from field definitions
 - Updates URL query param for deep linking
 
 ### Status Filter (Future)
@@ -322,29 +426,22 @@ mailtoTemplate = `
 
 ## 8. Visual Design
 
-### Color Scheme
+### Colors & Styling
 
-**Group backgrounds:**
-- Product: `bg-slate-50` (light gray)
-- Material: `bg-blue-50` (light blue)
-- Energy: `bg-green-50` (light green)
-- Transport: `bg-amber-50` (light amber)
-- Emission: `bg-red-50` (light red)
-- Default: `bg-gray-50`
-
-**Borders:**
-- Group separator: thicker border (`border-t-2`)
-- Row separator: thin border (`border-t`)
+**Row separators:**
+- Between different repeatable groups: thicker border (`border-t-2`)
+- Between items within same group: thin border (`border-t`)
 - Edit mode cell: `ring-2 ring-primary`
 
-**Icons:**
-- 📦 Product
-- 🔩 Materials
-- ⚡ Energy
-- 🚚 Transport
-- 💨 Emissions
-- 🏭 Manufacturing
-- 📊 Results
+**Hints:**
+- � icon next to field label when hint is available
+- Tooltip appears on hover with full hint text
+- Subtle gray color for hint icon
+
+**Validation:**
+- Required fields: small "Required" badge
+- Invalid values: red border + error message below
+- Valid values: subtle green checkmark
 
 ### Responsive
 
@@ -366,21 +463,60 @@ mailtoTemplate = `
 
 ### Virtualization
 
-- Use TanStack Virtual for rendering only visible rows
+- Use TanStack Virtual (`@tanstack/react-virtual`) for rendering only visible rows
 - Handle 500+ data points without lag
 - 50px row height, 10-row buffer
+- Update virtualizer on scroll events
 
 ### Optimistic Updates
 
 - UI updates immediately on edit
 - Background API calls with retry logic
-- Revert on error with clear feedback
+- Revert on error with clear feedback toast
+- Include `datasetVersion` for optimistic locking
 
-### Data Loading
+### Data Loading Strategy
 
-- Initial load: show skeleton rows
-- Incremental updates via WebSocket (future)
-- Debounced auto-save (500ms after last keystroke)
+```typescript
+// 1. Initial load: Server-side rendering (Next.js)
+// Fetch 162 field definitions (cached aggressively)
+const fieldDefs = await unstable_cache(
+  () => prisma.datasetFieldDefinition.findMany(),
+  ['dataset-field-definitions'],
+  { revalidate: 3600 } // 1 hour cache
+)()
+
+// 2. Fetch project's data points (NO cache - user edits frequently)
+const dataPoints = await prisma.dataPoint.findMany({
+  where: { dataset_id: datasetId }
+})
+
+// 3. JOIN in application layer (not SQL)
+const enrichedRows = dataPoints.map(dp => {
+  const fieldDef = fieldDefs.find(f => f.field_id === dp.field_id)
+  if (!fieldDef) {
+    console.warn(`No field definition for ${dp.field_id}`)
+    return null
+  }
+  return { ...dp, ...fieldDef }
+}).filter(Boolean)
+
+// 4. Pass to client component as prop
+<DatasetTable initialData={enrichedRows} fieldDefs={fieldDefs} />
+```
+
+### Caching Strategy
+
+- **Field definitions:** Aggressive caching (1 hour), rarely change
+- **Data points:** NO cache, user edits frequently
+- **API route caching:** Use Next.js `revalidate` option for GET /api/dataset-fields
+
+### Performance Notes
+
+- Field definitions query is cheap (~162 rows, simple SELECT)
+- Data points query is the bottleneck (filter by dataset_id with index)
+- Consider pagination if dataset exceeds 2000 rows
+- Debounced auto-save (500ms after last keystroke) to reduce API calls
 
 ---
 
@@ -401,47 +537,88 @@ mailtoTemplate = `
 // 1. Fetch project data
 const { data: project } = await fetch(`/api/projects/${id}`)
 
-// 2. Load template configs
-const templates = project.reports.map(r => getTemplate(r.templateCode))
+// 2. Fetch field definitions (can be cached)
+const { data: fieldDefs } = await fetch('/api/dataset-fields')
 
-// 3. Merge template fields with data_points
+// 3. Join data_points with field definitions
 const enrichedData = project.dataset.data_points.map(dp => {
-  const field = templates
-    .flatMap(t => t.sections.flatMap(s => s.fields))
-    .find(f => f.id === dp.field_id)
+  const fieldDef = fieldDefs.find(f => f.field_id === dp.field_id)
+  
+  if (!fieldDef) {
+    console.warn(`No field definition for ${dp.field_id}`)
+    return null
+  }
   
   return {
     ...dp,
-    label: field?.label || dp.field_id,
-    type: field?.type || 'text',
-    group: dp.field_id.split('_')[0], // "Material_Name" → "Material"
+    label: fieldDef.label,
+    hint: fieldDef.hint,
+    type: fieldDef.type,
+    validation: fieldDef.validation,
+    is_repeatable: fieldDef.is_repeatable,
+    repeatable_key: fieldDef.repeatable_key,
   }
-})
+}).filter(Boolean)
 
-// 4. Group by prefix
-const grouped = groupBy(enrichedData, 'group')
+// 4. Separate and sort
+const singletons = enrichedData
+  .filter(d => !d.is_repeatable)
+  .sort((a, b) => a.label.localeCompare(b.label))
 
-// 5. Within each group, pivot repeatables
-const pivoted = Object.entries(grouped).map(([group, items]) => {
-  const singletons = items.filter(i => !i.item_id)
-  const repeatables = groupBy(
-    items.filter(i => i.item_id), 
-    'item_id'
-  )
-  
-  return { group, singletons, repeatables }
-})
+const repeatables = enrichedData
+  .filter(d => d.is_repeatable)
 
-// 6. Render with TanStack Table
+// 5. Group repeatables by repeatable_key + item_id
+const groupedRepeatables = groupBy(repeatables, d => 
+  `${d.repeatable_key}_${d.item_id}`
+)
+
+// 6. Flatten for table
+const tableRows = [
+  ...singletons.map(s => ({ ...s, item_id: null })),
+  ...Object.values(groupedRepeatables).flat()
+]
+
+// 7. Render with TanStack Table
 ```
 
 ### API Endpoints
+
+**GET `/api/dataset-fields`**
+```typescript
+// Get all field definitions (cached, rarely changes)
+// Response
+{
+  fields: [
+    {
+      id: "uuid",
+      field_id: "ProductDescription_ProductName",
+      label: "Product Name",
+      hint: "The commercial name of the product being assessed",
+      type: "text",
+      options: null,
+      validation: { required: true, maxLength: 200 },
+      is_repeatable: false,
+      repeatable_key: null
+    },
+    {
+      field_id: "LifeCycleInventoryInputs_MaterialInputName",
+      label: "Material Name",
+      hint: "Name or description of the material",
+      type: "text",
+      is_repeatable: true,
+      repeatable_key: "MaterialInputs"
+    },
+    // ... 162 total fields
+  ]
+}
+```
 
 **PATCH `/api/projects/:id/dataset`**
 ```typescript
 // Update single field
 {
-  field_id: 'Material_Name',
+  field_id: 'LifeCycleInventoryInputs_MaterialInputName',
   item_id: '1',
   value: 'Aluminum Alloy',
   datasetVersion: 5 // optimistic locking
@@ -455,36 +632,40 @@ const pivoted = Object.entries(grouped).map(([group, items]) => {
 }
 ```
 
+**POST `/api/projects/:id/dataset/items`**
+```typescript
+// Add new repeatable item
+{
+  repeatable_key: 'MaterialInputs', // Used to find all fields to create
+  datasetVersion: 5
+}
+
+// Response
+{
+  success: true,
+  datasetVersion: 6,
+  itemId: '3',
+  createdDataPoints: [
+    { field_id: 'LifeCycleInventoryInputs_MaterialInputName', item_id: '3', value: '' },
+    { field_id: 'LifeCycleInventoryInputs_MaterialInputAmount', item_id: '3', value: '' },
+    { field_id: 'LifeCycleInventoryInputs_MaterialInputUnit', item_id: '3', value: '' },
+  ]
+}
+```
+
 **DELETE `/api/projects/:id/dataset/items/:itemId`**
 ```typescript
 // Delete all data_points with item_id
-// Request: DELETE /api/projects/abc/dataset/items/2
-// Deletes: Material_*[2], Transport_*[2], etc.
+{
+  repeatable_key: 'MaterialInputs', // Optional: delete only within this group
+  datasetVersion: 5
+}
 
 // Response
 {
   success: true,
   deletedCount: 3,
-  datasetVersion: 7
-}
-```
-
-**POST `/api/projects/:id/dataset/items`**
-```typescript
-// Add new repeatable item
-{
-  group: 'Material', // Used to determine which fields to create
-  item_id: '3'       // New item ID
-}
-
-// Response
-{
-  success: true,
-  datasetVersion: 8,
-  createdDataPoints: [
-    { field_id: 'Material_Name', item_id: '3', value: '' },
-    { field_id: 'Material_Amount', item_id: '3', value: '' },
-  ]
+  datasetVersion: 6
 }
 ```
 
@@ -494,15 +675,15 @@ const pivoted = Object.entries(grouped).map(([group, items]) => {
 
 ### Empty Dataset
 
-- Show empty state: "No data yet. Add fields from template or create custom fields."
-- Button: [+ Add First Field]
+- Show empty state: "No data yet. Initialize dataset or import from template."
+- Button: [+ Initialize Dataset]
 
-### Missing Template Fields
+### Missing Field Definitions
 
-- If data_point.field_id not in any template:
-  - Show in "Other" group with warning icon
-  - Display raw field_id as label
+- If data_point.field_id not in field definitions:
+  - Show raw field_id as label with warning icon ⚠️
   - Allow editing/deleting (orphaned data cleanup)
+  - Log warning to console for debugging
 
 ### Conflicting item_ids
 
@@ -512,7 +693,7 @@ const pivoted = Object.entries(grouped).map(([group, items]) => {
 
 ### Validation Errors
 
-- Show inline below cell
+- Show inline below cell with field definition's validation.message
 - Prevent saving invalid value
 - Allow user to fix or revert
 
@@ -546,16 +727,17 @@ const pivoted = Object.entries(grouped).map(([group, items]) => {
 ### Must Have (MVP)
 
 - ✅ Display all data_points in unified table
-- ✅ Visual grouping by field prefix
-- ✅ Inline editing with validation
+- ✅ Field labels and hints from database
+- ✅ Inline editing with validation from field definitions
 - ✅ Request Data action for fields
 - ✅ Delete repeatable items
-- ✅ Add new repeatable items
+- ✅ Add new repeatable items (grouped by repeatable_key)
 - ✅ Search and filter
 - ✅ Optimistic locking
 - ✅ Responsive design
 - ✅ Loading states
 - ✅ Error handling
+- ✅ Tooltip hints on hover
 
 ### Nice to Have (Post-MVP)
 
@@ -563,7 +745,8 @@ const pivoted = Object.entries(grouped).map(([group, items]) => {
 - ⏸️ CSV export
 - ⏸️ Keyboard navigation (Tab, Arrow keys)
 - ⏸️ Column sorting
-- ⏸️ Field validation hints from template
+- ⏸️ Field definition management UI (admin)
+- ⏸️ Custom field creation (user-defined)
 
 ---
 
@@ -587,7 +770,7 @@ const pivoted = Object.entries(grouped).map(([group, items]) => {
 
 ### Edge Cases
 
-- [ ] Field not in template (orphaned data)
+- [ ] Field definition not found (orphaned data)
 - [ ] Non-sequential item_ids
 - [ ] Empty values
 - [ ] Very long text values
@@ -612,14 +795,13 @@ const pivoted = Object.entries(grouped).map(([group, items]) => {
 - **TanStack Virtual** (`@tanstack/react-virtual`) - for virtualization
 - **shadcn/ui components**: Input, Select, Textarea, Button, Checkbox, Card
 - **lucide-react** - icons
-- **react-hook-form** (optional) - for validation
-- **zod** (optional) - schema validation
+- **zod** - schema validation
 
 ---
 
 ## References
 
 - Requirements v0.0.1.md - Data model specification
-- src/lib/field-ids.ts - Field ID enum
-- src/lib/report-templates/ - Template configurations
+- prisma/schema.prisma - DatasetFieldDefinition model
+- src/lib/dataset-schema.json - Master field definitions source
 - TanStack Table Docs: https://tanstack.com/table/v8
