@@ -12,8 +12,13 @@ import { DatasetTable } from '@/components/dataset-table';
 import { RequestDataModal } from '@/components/request-data-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database } from 'lucide-react';
-import { TableRow } from '@/lib/dataset-utils-v2';
-import { FieldDefinition } from '@/lib/dataset-utils-v2';
+import {
+  TableRow,
+  type FieldDefinition,
+  type DataPoint,
+  enrichDataPoints,
+  flattenToTableRows,
+} from '@/lib/dataset-utils-v2';
 
 interface DatasetPageClientProps {
   projectId: string;
@@ -40,6 +45,28 @@ export function DatasetPageClient({
     repeatableKey?: string | null;
   } | null>(null);
 
+  const refreshRows = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/dataset`, {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh dataset');
+      }
+
+      const payload = await response.json();
+      const dataPoints = (payload.dataset?.data_points || []) as DataPoint[];
+      const enriched = enrichDataPoints(dataPoints, fieldDefinitions);
+      const rebuiltRows = flattenToTableRows(enriched);
+
+      setRows(rebuiltRows);
+      setDatasetVersion(payload.datasetVersion ?? 0);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [projectId, fieldDefinitions]);
+
   // Update single field
   const handleUpdate = useCallback(
     async (fieldId: string, itemId: string | null, value: string) => {
@@ -61,10 +88,21 @@ export function DatasetPageClient({
 
       const data = await response.json();
       setDatasetVersion(data.datasetVersion);
+
+      setRows((prevRows) =>
+        prevRows.map((row) => {
+          if (row.fieldId === fieldId && row.itemId === itemId) {
+            return { ...row, value };
+          }
+          return row;
+        })
+      );
     },
     [projectId, datasetVersion]
   );
 
+  const handleDeleteItem = useCallback(
+    async (repeatableKey: string, itemId: string) => {
       const response = await fetch(
         `/api/projects/${projectId}/dataset/items/${itemId}?datasetVersion=${datasetVersion}`,
         {
@@ -81,38 +119,25 @@ export function DatasetPageClient({
       const data = await response.json();
       setDatasetVersion(data.datasetVersion);
 
-      // Remove from UI
-      setRows((prev) => prev.filter((row) => row.itemId !== itemId));
+      setRows((prevRows) =>
+        prevRows.filter(
+          (row) => !(
+            row.repeatableKey === repeatableKey &&
+            row.itemId === itemId
+          )
+        )
+      );
     },
     [projectId, datasetVersion]
   );
 
-  // Add new repeatable item
   const handleAddItem = useCallback(
-    async (group: string) => {
-      // Find all unique field IDs for this group
-      const groupData = groupedData.find((g) => g.group === group);
-      if (!groupData) return;
-
-      // Get field IDs from existing repeatables or singletons
-      const allGroupFields = [
-        ...groupData.singletons,
-        ...Array.from(groupData.repeatables.values()).flat(),
-      ];
-      const uniqueFields = getUniqueFieldsInGroup(allGroupFields);
-      const fieldIds = uniqueFields.map((f) => f.field_id);
-
-      if (fieldIds.length === 0) {
-        alert('No fields found for this group');
-        return;
-      }
-
+    async (repeatableKey: string) => {
       const response = await fetch(`/api/projects/${projectId}/dataset/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          group,
-          fieldIds,
+          repeatableKey,
           datasetVersion,
         }),
       });
@@ -126,27 +151,29 @@ export function DatasetPageClient({
       const data = await response.json();
       setDatasetVersion(data.datasetVersion);
 
-      // Reload page to show new item
-      // TODO: Implement optimistic update instead
-      window.location.reload();
+      // Refresh dataset to include the new rows in correct order
+      await refreshRows();
     },
-    [projectId, datasetVersion, groupedData]
+    [projectId, datasetVersion, refreshRows]
   );
 
-  // Request data
   const handleRequestData = useCallback(
-    (fieldId: string, itemId: string | null, group?: string) => {
-      const row = rows.find((r) => r.fieldId === fieldId && r.itemId === itemId);
-
+    ({ fieldId, itemId, repeatableKey, fieldLabel, fieldHint }: {
+      fieldId: string;
+      itemId: string | null;
+      repeatableKey: string | null;
+      fieldLabel: string;
+      fieldHint: string | null;
+    }) => {
       setRequestDataModal({
-        fieldLabel: row?.fieldLabel,
+        fieldLabel,
+        fieldHint,
         fieldId,
         itemId,
-        group: group || row?.group,
-        isGroup: false,
+        repeatableKey,
       });
     },
-    [rows]
+    []
   );
 
   if (rows.length === 0) {
@@ -175,9 +202,7 @@ export function DatasetPageClient({
         </CardHeader>
         <CardContent>
           <DatasetTable
-            projectId={projectId}
             rows={rows}
-            datasetVersion={datasetVersion}
             onUpdate={handleUpdate}
             onDeleteItem={handleDeleteItem}
             onAddItem={handleAddItem}
@@ -189,7 +214,11 @@ export function DatasetPageClient({
       {requestDataModal && (
         <RequestDataModal
           projectName={projectName}
-          {...requestDataModal}
+            fieldLabel={requestDataModal.fieldLabel}
+            fieldId={requestDataModal.fieldId}
+            itemId={requestDataModal.itemId}
+            group={requestDataModal.repeatableKey || undefined}
+            isGroup={false}
           onClose={() => setRequestDataModal(null)}
         />
       )}

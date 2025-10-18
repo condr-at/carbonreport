@@ -24,6 +24,12 @@ This document describes the REST API endpoints for the Carbon Report Platform. A
 
 For now, endpoints accept `userId` in request body or return all data.
 
+**⚠️ IMPORTANT - Development Workaround**:
+- `POST /api/projects` currently auto-creates users via `upsert()` to bypass foreign key constraints
+- This is a **temporary dev hack** and must be removed when implementing proper authentication
+- See: `src/app/api/projects/route.ts` - search for "Auto-create user if doesn't exist"
+- **TODO**: Replace with proper JWT session validation and remove the `upsert` block
+
 ---
 
 ## Projects

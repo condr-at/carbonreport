@@ -197,7 +197,7 @@ export default function QuestionnairePage() {
         {/* Helper text */}
         <div className="text-sm text-muted-foreground text-center">
           <p>
-            Based on your selection, we'll recommend specific report templates.
+            Based on your selection, we&apos;ll recommend specific report templates.
             You can always add or remove reports later.
           </p>
         </div>

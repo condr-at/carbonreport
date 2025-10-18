@@ -138,8 +138,13 @@ export function RequestDataModal({
                   <strong>Subject:</strong> Data Request for {projectName} -{' '}
                   {group || fieldLabel}
                 </p>
+                {fieldId && (
+                  <p>
+                    <strong>Field ID:</strong> {fieldId}
+                  </p>
+                )}
                 <p className="mt-2">
-                  <strong>Body:</strong> (Click "Open Email Client" to see full
+                  <strong>Body:</strong> (Click &quot;Open Email Client&quot; to see full
                   message)
                 </p>
               </div>

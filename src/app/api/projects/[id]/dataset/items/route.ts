@@ -8,11 +8,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { type Dataset, type DataPoint } from '@/lib/dataset-validation'
+import { getFieldsForRepeatableGroup, type FieldDefinition } from '@/lib/dataset-utils-v2'
 import { z } from 'zod'
 
 const AddItemSchema = z.object({
-  group: z.string(), // e.g., "Material"
-  fieldIds: z.array(z.string().min(1, 'field_id is required')), // Field IDs to create for this item
+  repeatableKey: z.string().min(1, 'repeatable_key is required'),
   datasetVersion: z.number().int().min(0).optional(),
 })
 
@@ -28,7 +28,7 @@ export async function POST(
     const { id: projectId } = await params
     const body = await request.json()
     
-    const { group, fieldIds, datasetVersion } = AddItemSchema.parse(body)
+  const { repeatableKey, datasetVersion } = AddItemSchema.parse(body)
 
     // Fetch current project
     const project = await prisma.project.findUnique({
@@ -54,36 +54,70 @@ export async function POST(
       )
     }
 
-    // Get current dataset
-    const currentDataset = project.dataset as Dataset | null
-    const dataPoints = currentDataset?.data_points || []
+  const currentDataset = project.dataset as Dataset | null
+  const dataPoints = currentDataset?.data_points || []
 
-    // Find max item_id for this group
-    const groupDataPoints = dataPoints.filter((dp) =>
-      dp.field_id.startsWith(group + '_')
+  const fieldDefinitions = await prisma.datasetFieldDefinition.findMany({
+    select: {
+      fieldId: true,
+      label: true,
+      hint: true,
+      type: true,
+      options: true,
+      validation: true,
+      isRepeatable: true,
+      repeatableKey: true,
+      sortOrder: true,
+    },
+  })
+
+  const normalizedFieldDefinitions: FieldDefinition[] = fieldDefinitions.map((field) => ({
+    field_id: field.fieldId,
+    label: field.label,
+    hint: field.hint,
+    type: field.type,
+    options: field.options,
+    validation: field.validation,
+    is_repeatable: field.isRepeatable,
+    repeatable_key: field.repeatableKey,
+    sort_order: field.sortOrder ?? null,
+  }))
+
+  const groupFields = getFieldsForRepeatableGroup(normalizedFieldDefinitions, repeatableKey)
+
+    if (groupFields.length === 0) {
+      return NextResponse.json(
+        { error: `No repeatable fields found for key ${repeatableKey}` },
+        { status: 400 }
+      )
+    }
+
+    const existingItemIds = new Set(
+      dataPoints
+        .filter((dp) => groupFields.some((field) => field.field_id === dp.field_id))
+        .map((dp) => dp.item_id)
+        .filter((id): id is string => id !== null)
     )
-    const itemIds = groupDataPoints
-      .map((dp) => dp.item_id)
-      .filter((id): id is string => id !== null)
-      .map((id) => parseInt(id, 10))
-    const maxItemId = itemIds.length > 0 ? Math.max(...itemIds) : 0
-    const newItemId = (maxItemId + 1).toString()
 
-    // Create new data points for this item
-    const newDataPoints: DataPoint[] = fieldIds.map((fieldId) => ({
-      field_id: fieldId,
+    let nextId = 1
+    while (existingItemIds.has(nextId.toString())) {
+      nextId += 1
+    }
+    const newItemId = nextId.toString()
+
+    const newDataPoints: DataPoint[] = groupFields.map((field) => ({
+      field_id: field.field_id,
       item_id: newItemId,
       value: '',
     }))
 
-    // Add to dataset
-    dataPoints.push(...newDataPoints)
+    const updatedDataPoints = [...dataPoints, ...newDataPoints]
 
     // Update project
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
       data: {
-        dataset: { data_points: dataPoints } as any,
+  dataset: { data_points: updatedDataPoints } as any,
         datasetVersion: { increment: 1 },
       },
       select: {

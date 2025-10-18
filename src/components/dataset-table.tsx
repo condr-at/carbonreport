@@ -4,42 +4,40 @@
  * Dataset Table Component
  * 
  * Unified editable table for all project data points with:
- * - Visual grouping by field prefix
  * - Inline editing with validation
  * - Actions: Request Data, Add Item, Delete Item
  * - Optimistic updates
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
   ColumnDef,
   flexRender,
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Mail, Trash2, Plus, Search } from 'lucide-react';
-import { TableRow } from '@/lib/dataset-utils';
+import { TableRow } from '@/lib/dataset-utils-v2';
 import { cn } from '@/lib/utils';
 
 interface DatasetTableProps {
-  projectId: string;
   rows: TableRow[];
-  datasetVersion: number;
   onUpdate: (fieldId: string, itemId: string | null, value: string) => Promise<void>;
-  onDeleteItem: (group: string, itemId: string) => Promise<void>;
-  onAddItem: (group: string) => Promise<void>;
-  onRequestData: (fieldId: string, itemId: string | null, group?: string) => void;
+  onDeleteItem: (repeatableKey: string, itemId: string) => Promise<void>;
+  onAddItem: (repeatableKey: string) => Promise<void>;
+  onRequestData: (args: {
+    fieldId: string;
+    fieldLabel: string;
+    fieldHint: string | null;
+    itemId: string | null;
+    repeatableKey: string | null;
+  }) => void;
 }
 
 export function DatasetTable({
-  projectId,
   rows: initialRows,
-  datasetVersion,
   onUpdate,
   onDeleteItem,
   onAddItem,
@@ -49,7 +47,10 @@ export function DatasetTable({
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGroup, setSelectedGroup] = useState<string>('All');
+
+  useEffect(() => {
+    setRows(initialRows);
+  }, [initialRows]);
 
   // Optimistic update handler
   const handleCellSave = useCallback(
@@ -80,107 +81,104 @@ export function DatasetTable({
     [onUpdate]
   );
 
-  // Editable cell component
-  const EditableCell = ({ row }: { row: TableRow }) => {
-    const isEditing = editingCell === row.id;
+  const renderEditableCell = useCallback(
+    (row: TableRow) => {
+      const isEditing = editingCell === row.id;
 
-    if (isEditing) {
+      if (isEditing) {
+        return (
+          <Input
+            type={row.type === 'number' ? 'number' : 'text'}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={() => handleCellSave(row, editValue)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleCellSave(row, editValue);
+              } else if (e.key === 'Escape') {
+                setEditingCell(null);
+              }
+            }}
+            autoFocus
+            className="h-8"
+          />
+        );
+      }
+
       return (
-        <Input
-          type={row.type === 'number' ? 'number' : 'text'}
-          value={editValue}
-          onChange={(e) => setEditValue(e.target.value)}
-          onBlur={() => handleCellSave(row, editValue)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleCellSave(row, editValue);
-            } else if (e.key === 'Escape') {
-              setEditingCell(null);
-            }
+        <div
+          className="cursor-pointer hover:bg-muted/50 px-2 py-1 rounded min-h-[32px] flex items-center"
+          onClick={() => {
+            setEditingCell(row.id);
+            setEditValue(row.value);
           }}
-          autoFocus
-          className="h-8"
-        />
+        >
+          {row.value || (
+            <span className="text-muted-foreground italic">Click to edit</span>
+          )}
+        </div>
       );
-    }
-
-    return (
-      <div
-        className="cursor-pointer hover:bg-muted/50 px-2 py-1 rounded min-h-[32px] flex items-center"
-        onClick={() => {
-          setEditingCell(row.id);
-          setEditValue(row.value);
-        }}
-      >
-        {row.value || (
-          <span className="text-muted-foreground italic">Click to edit</span>
-        )}
-      </div>
-    );
-  };
+    },
+    [editingCell, editValue, handleCellSave]
+  );
 
   // Define table columns
+  const repeatableCounts = useMemo(() => {
+    const uniqueItemCounts = new Map<string, number>();
+    const seen = new Set<string>();
+
+    rows.forEach((row) => {
+      if (!row.isRepeatable || !row.repeatableKey || !row.itemId) return;
+      const key = row.repeatableKey;
+      const uniqueKey = `${key}::${row.itemId}`;
+      if (seen.has(uniqueKey)) return;
+      seen.add(uniqueKey);
+      uniqueItemCounts.set(key, (uniqueItemCounts.get(key) ?? 0) + 1);
+    });
+
+    return uniqueItemCounts;
+  }, [rows]);
+
   const columns = useMemo<ColumnDef<TableRow>[]>(
     () => [
-      {
-        id: 'group',
-        header: 'Group',
-        accessorKey: 'group',
-        cell: ({ row }) => {
-          if (!row.original.isFirstInGroup) return null;
-
-          const groupConfig = row.original.groupConfig;
-          const groupRowCount = rows.filter(
-            (r) => r.group === row.original.group
-          ).length;
-
-          return (
-            <div
-              className={cn(
-                'flex items-center gap-2 p-2 font-medium',
-                groupConfig.textColor
-              )}
-              style={{ height: `${groupRowCount * 48}px` }}
-            >
-              <span className="text-xl">{groupConfig.icon}</span>
-              <span className="text-sm">{groupConfig.name}</span>
-            </div>
-          );
-        },
-        size: 150,
-      },
       {
         id: 'fieldName',
         header: 'Field Name',
         accessorKey: 'fieldLabel',
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2">
-            <span className="font-medium">{row.original.fieldLabel}</span>
-            {row.original.required && (
-              <Badge variant="outline" className="text-xs">
-                Required
-              </Badge>
-            )}
-          </div>
-        ),
-        size: 250,
+        cell: ({ row }) => {
+          const original = row.original;
+          return (
+            <div className="flex flex-col">
+              <span className="font-medium">{original.fieldLabel}</span>
+              {original.fieldHint && (
+                <span className="text-xs text-muted-foreground">
+                  {original.fieldHint}
+                </span>
+              )}
+            </div>
+          );
+        },
+        size: 320,
       },
       {
         id: 'item',
         header: 'Item',
         accessorKey: 'itemId',
-        cell: ({ row }) => (
-          <div className="text-center text-muted-foreground">
-            {row.original.itemId || '-'}
-          </div>
-        ),
+        cell: ({ row }) => {
+          const itemId = row.original.itemId;
+          return (
+            <div className="text-center text-muted-foreground">
+              {itemId ?? '—'}
+            </div>
+          );
+        },
         size: 80,
       },
       {
         id: 'value',
         header: 'Value',
         accessorKey: 'value',
-        cell: ({ row }) => <EditableCell row={row.original} />,
+        cell: ({ row }) => renderEditableCell(row.original),
         size: 300,
       },
       {
@@ -188,43 +186,40 @@ export function DatasetTable({
         header: 'Actions',
         cell: ({ row }) => {
           const currentRow = row.original;
-          
-          // Check if this is the last item in a repeatable group
-          const repeatableItemsInGroup = rows.filter(
-            r => r.group === currentRow.group && !r.isSingleton
-          );
-          const uniqueItemIds = new Set(
-            repeatableItemsInGroup.map(r => r.itemId).filter(Boolean)
-          );
-          const isLastRepeatableItem = uniqueItemIds.size === 1 && !currentRow.isSingleton;
-          
+
+          const repeatableKey = currentRow.repeatableKey;
+          const itemId = currentRow.itemId;
+          const repeatableItemCount = repeatableKey
+            ? repeatableCounts.get(repeatableKey) ?? 0
+            : 0;
+          const canDelete = repeatableKey && itemId && repeatableItemCount > 1;
+
           return (
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() =>
-                  onRequestData(
-                    currentRow.fieldId,
-                    currentRow.itemId,
-                    currentRow.group
-                  )
+                  onRequestData({
+                    fieldId: currentRow.fieldId,
+                    fieldLabel: currentRow.fieldLabel,
+                    fieldHint: currentRow.fieldHint,
+                    itemId: currentRow.itemId,
+                    repeatableKey: currentRow.repeatableKey,
+                  })
                 }
                 title="Request data"
               >
                 <Mail className="h-4 w-4" />
               </Button>
-              {/* Show delete button only for:
-                  1. Repeatable fields (not singleton)
-                  2. NOT the last item (must keep at least one)
-              */}
-              {!currentRow.isSingleton && !isLastRepeatableItem && (
+              {canDelete && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() =>
                     currentRow.itemId &&
-                    onDeleteItem(currentRow.group, currentRow.itemId)
+                    currentRow.repeatableKey &&
+                    onDeleteItem(currentRow.repeatableKey, currentRow.itemId)
                   }
                   title="Delete item"
                 >
@@ -237,56 +232,38 @@ export function DatasetTable({
         size: 120,
       },
     ],
-    [rows, editingCell, editValue, onRequestData, onDeleteItem]
+    [renderEditableCell, onRequestData, onDeleteItem, repeatableCounts]
   );
 
-  // Filter rows based on search and group selection
+  const allRows = useMemo(() => rows, [rows]);
+
+  // Filter rows based on search
   const filteredRows = useMemo(() => {
-    let filtered = rows;
+    if (!searchQuery) return allRows;
+    const query = searchQuery.toLowerCase();
+    return allRows.filter((row) =>
+      row.fieldLabel.toLowerCase().includes(query) ||
+      row.value.toLowerCase().includes(query) ||
+      (row.repeatableKey ?? '').toLowerCase().includes(query)
+    );
+  }, [allRows, searchQuery]);
 
-    // Group filter
-    if (selectedGroup !== 'All') {
-      filtered = filtered.filter((row) => row.group === selectedGroup);
-    }
-
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (row) =>
-          row.fieldLabel.toLowerCase().includes(query) ||
-          row.value.toLowerCase().includes(query) ||
-          row.group.toLowerCase().includes(query)
-      );
-    }
-
-    return filtered;
-  }, [rows, searchQuery, selectedGroup]);
-
-  // Get unique groups for filter dropdown
-  const uniqueGroups = useMemo(() => {
-    const groups = new Set(rows.map((row) => row.group));
-    return ['All', ...Array.from(groups).sort()];
-  }, [rows]);
-
-  // Group rows by group for "Add Item" buttons
-  const groupedRows = useMemo(() => {
-    const grouped = new Map<string, TableRow[]>();
+  const repeatableGroups = useMemo(() => {
+    const groups = new Map<string, TableRow[]>();
     rows.forEach((row) => {
-      if (!grouped.has(row.group)) {
-        grouped.set(row.group, []);
+      if (!row.isRepeatable || !row.repeatableKey) return;
+      if (!groups.has(row.repeatableKey)) {
+        groups.set(row.repeatableKey, []);
       }
-      grouped.get(row.group)!.push(row);
+      groups.get(row.repeatableKey)!.push(row);
     });
-    return grouped;
+    return groups;
   }, [rows]);
 
   const table = useReactTable({
     data: filteredRows,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   });
 
   return (
@@ -302,17 +279,6 @@ export function DatasetTable({
             className="pl-9"
           />
         </div>
-        <select
-          value={selectedGroup}
-          onChange={(e) => setSelectedGroup(e.target.value)}
-          className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
-        >
-          {uniqueGroups.map((group) => (
-            <option key={group} value={group}>
-              {group === 'All' ? 'All Groups' : group}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* Table */}
@@ -337,51 +303,47 @@ export function DatasetTable({
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => {
-              const original = row.original;
-              return (
-                <tr
-                  key={row.id}
-                  className={cn(
-                    'border-t transition-colors hover:bg-muted/50',
-                    original.groupConfig.bgColor,
-                    original.isFirstInGroup && 'border-t-2'
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-2">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
+            {table.getRowModel().rows.map((row) => (
+              <tr
+                key={row.id}
+                className={cn(
+                  'border-t transition-colors hover:bg-muted/50'
+                )}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className="px-4 py-2">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
       {/* Add Item buttons for each repeatable group */}
       <div className="space-y-2">
-        {Array.from(groupedRows.entries()).map(([group, groupRows]) => {
-          // Only show Add button if group has repeatable items
-          const hasRepeatables = groupRows.some((row) => !row.isSingleton);
-          if (!hasRepeatables) return null;
-
-          const groupConfig = groupRows[0].groupConfig;
+        {Array.from(repeatableGroups.entries()).map(([repeatableKey, groupRows]) => {
+          const label = groupRows[0]?.fieldLabel.split(' ').slice(0, 3).join(' ') || repeatableKey;
 
           return (
-            <div
-              key={group}
-              className={cn('p-4 rounded-md', groupConfig.bgColor)}
-            >
+            <div key={repeatableKey} className="p-4 rounded-md border bg-muted/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Repeatable group: {repeatableKey}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Items: {new Set(groupRows.map((row) => row.itemId).filter(Boolean)).size}
+                </span>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => onAddItem(group)}
+                onClick={() => onAddItem(repeatableKey)}
                 className="w-full"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add {groupConfig.name} Item
+                Add {label} item
               </Button>
             </div>
           );

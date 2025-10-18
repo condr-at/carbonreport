@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ================================
@@ -146,6 +147,8 @@ model DatasetFieldDefinition {
   validation    Json?
   isRepeatable  Boolean  @default(false) @map("is_repeatable")
   repeatableKey String?  @map("repeatable_key")
+  // Sorting/ordering for UI (ascending); smaller first
+  sortOrder     Int      @default(0) @map("sort_order")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 

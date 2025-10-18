@@ -63,12 +63,14 @@ export async function GET(request: NextRequest) {
         validation: true,
         isRepeatable: true,
         repeatableKey: true,
+        sortOrder: true,
         createdAt: false,
         updatedAt: false,
       },
-      orderBy: {
-        fieldId: 'asc',
-      },
+      orderBy: [
+        { sortOrder: 'asc' },
+        { fieldId: 'asc' },
+      ],
     })
 
     // Transform to camelCase for frontend
@@ -81,6 +83,7 @@ export async function GET(request: NextRequest) {
       validation: f.validation,
       is_repeatable: f.isRepeatable,
       repeatable_key: f.repeatableKey,
+      sort_order: f.sortOrder,
     }))
 
     // Update cache

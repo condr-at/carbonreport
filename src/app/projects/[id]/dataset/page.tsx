@@ -62,7 +62,7 @@ export default async function DatasetPage({ params }: PageProps) {
 
   // Initialize FULL dataset structure (162 fields from master schema)
   const existingDataPoints = (project.dataset?.data_points || []) as DataPoint[];
-  const completeDataPoints = initializeFullDataset(existingDataPoints);
+  const completeDataPoints = initializeFullDataset(fieldDefinitions, existingDataPoints);
   
   // Transform dataset for display using DB-backed metadata
   const enrichedDataPoints = enrichDataPoints(completeDataPoints, fieldDefinitions);

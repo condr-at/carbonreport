@@ -20,6 +20,7 @@ export interface FieldDefinition {
   validation: any | null
   is_repeatable: boolean
   repeatable_key: string | null
+  sort_order?: number | null
 }
 
 export interface EnrichedDataPoint extends DataPoint {
@@ -29,6 +30,7 @@ export interface EnrichedDataPoint extends DataPoint {
   validation?: any
   is_repeatable: boolean
   repeatable_key: string | null
+  sort_order?: number | null
 }
 
 /**
@@ -55,6 +57,7 @@ export function enrichDataPoints(
         validation: undefined,
         is_repeatable: false,
         repeatable_key: null,
+        sort_order: null,
       }
     }
 
@@ -66,6 +69,7 @@ export function enrichDataPoints(
       validation: fieldDef.validation,
       is_repeatable: fieldDef.is_repeatable,
       repeatable_key: fieldDef.repeatable_key,
+      sort_order: fieldDef.sort_order ?? null,
     }
   })
 }
@@ -91,8 +95,14 @@ export function flattenToTableRows(enrichedData: EnrichedDataPoint[]): TableRow[
   const singletons = enrichedData.filter(d => !d.is_repeatable)
   const repeatables = enrichedData.filter(d => d.is_repeatable)
 
-  // Sort singletons by label
-  singletons.sort((a, b) => a.label.localeCompare(b.label))
+  const getOrderValue = (value: number | null | undefined) =>
+    value ?? Number.MAX_SAFE_INTEGER
+
+  singletons.sort((a, b) => {
+    const orderDiff = getOrderValue(a.sort_order) - getOrderValue(b.sort_order)
+    if (orderDiff !== 0) return orderDiff
+    return a.label.localeCompare(b.label)
+  })
 
   // Sort repeatables by repeatable_key, then item_id, then label
   repeatables.sort((a, b) => {
@@ -104,6 +114,8 @@ export function flattenToTableRows(enrichedData: EnrichedDataPoint[]): TableRow[
     if (itemA !== itemB) {
       return itemA - itemB
     }
+    const orderDiff = getOrderValue(a.sort_order) - getOrderValue(b.sort_order)
+    if (orderDiff !== 0) return orderDiff
     return a.label.localeCompare(b.label)
   })
 

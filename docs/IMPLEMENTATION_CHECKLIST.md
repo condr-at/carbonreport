@@ -1,9 +1,22 @@
 # Implementation Checklist
 
 **Status**: 🟡 In Progress (Backend Complete, Frontend Pending)  
-**Last Updated**: October 12, 2025
+**Last Updated**: October 17, 2025
 
 Use this checklist to track implementation of the architecture updates.
+
+---
+
+## ⚠️ Known Technical Debt
+
+### Authentication Workaround (MUST FIX BEFORE PRODUCTION)
+- **Location**: `src/app/api/projects/route.ts` (POST handler)
+- **Issue**: Auto-creates users via `upsert()` to bypass foreign key constraints
+- **Why**: Development workaround to test project creation without full auth system
+- **Action Required**: Remove `upsert` block and implement proper JWT session validation
+- **Related Files**: 
+  - `docs/API_REFERENCE.md` (see Authentication section)
+  - Future: `src/app/api/auth/*` endpoints
 
 ---
 

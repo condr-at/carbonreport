@@ -1,83 +1,96 @@
 /**
  * Dataset Initialization Utilities
- * 
- * Functions to initialize complete dataset structure.
- * Uses the master dataset schema (162 fields from CSV) as the base.
+ *
+ * Initializes dataset structures using field definitions stored in the database.
  */
 
-import { DataPoint } from './dataset-validation';
-import datasetSchema from './dataset-schema.json';
+import type { DataPoint } from './dataset-validation'
+import type { FieldDefinition } from './dataset-utils-v2'
 
-/**
- * Initialize complete dataset structure with ALL fields from master schema
- * 
- * This ensures:
- * 1. Users see all 162 fields available in the system
- * 2. Progress tracking works correctly (% of filled fields)
- * 3. Dataset table shows complete structure
- * 4. Report templates can filter/show subsets of these fields
- */
-export function initializeFullDataset(
-  existingDataPoints: any[] = []
-): DataPoint[] {
-  // Get complete list of data points from schema
-  const schemaDataPoints = datasetSchema.initialDataset.data_points;
+function buildExistingMap(existing: DataPoint[]) {
+  const map = new Map<string, DataPoint>()
+  for (const dp of existing) {
+    const key = `${dp.field_id}::${dp.item_id ?? 'null'}`
+    map.set(key, dp)
+  }
+  return map
+}
 
-  // Create map of existing data points for quick lookup
-  const existingMap = new Map<string, any>();
+function collectRepeatableItemIds(
+  fieldDefinitions: FieldDefinition[],
+  existingDataPoints: DataPoint[]
+) {
+  const fieldById = new Map(fieldDefinitions.map((def) => [def.field_id, def]))
+  const groupItems = new Map<string, Set<string>>()
+
   for (const dp of existingDataPoints) {
-    const key = `${dp.field_id}_${dp.item_id}`;
-    existingMap.set(key, dp);
+    if (dp.item_id === null) continue
+    const def = fieldById.get(dp.field_id)
+    if (!def || !def.is_repeatable) continue
+
+    const groupKey = def.repeatable_key ?? def.field_id
+    if (!groupItems.has(groupKey)) {
+      groupItems.set(groupKey, new Set())
+    }
+    groupItems.get(groupKey)!.add(dp.item_id)
   }
 
-  // Build complete dataset, preserving existing values
-  const completeDataset: DataPoint[] = [];
+  return groupItems
+}
 
-  for (const schemaDp of schemaDataPoints) {
-    const key = `${schemaDp.field_id}_${schemaDp.item_id}`;
-    const existing = existingMap.get(key);
+export function initializeFullDataset(
+  fieldDefinitions: FieldDefinition[],
+  existingDataPoints: DataPoint[] = []
+): DataPoint[] {
+  const existingMap = buildExistingMap(existingDataPoints)
+  const repeatableItems = collectRepeatableItemIds(fieldDefinitions, existingDataPoints)
+  const result: DataPoint[] = []
 
-    if (existing) {
-      // Keep existing value
-      completeDataset.push({
-        field_id: existing.field_id,
-        item_id: existing.item_id,
-        value: existing.value || '',
-      });
+  for (const def of fieldDefinitions) {
+    if (def.is_repeatable) {
+      const groupKey = def.repeatable_key ?? def.field_id
+      const items = repeatableItems.get(groupKey)
+      const itemIds = items && items.size > 0 ? Array.from(items) : ['1']
+      itemIds.sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+
+      for (const itemId of itemIds) {
+        const key = `${def.field_id}::${itemId}`
+        const existing = existingMap.get(key)
+        result.push({
+          field_id: def.field_id,
+          item_id: itemId,
+          value: existing?.value ?? '',
+        })
+      }
     } else {
-      // Add new field with empty value
-      completeDataset.push({
-        field_id: schemaDp.field_id,
-        item_id: schemaDp.item_id,
-        value: '',
-      });
+      const key = `${def.field_id}::null`
+      const existing = existingMap.get(key)
+      result.push({
+        field_id: def.field_id,
+        item_id: null,
+        value: existing?.value ?? '',
+      })
     }
   }
 
-  return completeDataset;
+  // Preserve legacy data points for fields that no longer exist in definitions
+  for (const dp of existingDataPoints) {
+    if (fieldDefinitions.some((def) => def.field_id === dp.field_id)) continue
+    result.push(dp)
+  }
+
+  return result
 }
 
-/**
- * Ensure dataset has all required fields
- * Used when updating existing projects
- */
-export function ensureDatasetCompleteness(currentDataset: any[]): DataPoint[] {
-  return initializeFullDataset(currentDataset);
+export function ensureDatasetCompleteness(
+  fieldDefinitions: FieldDefinition[],
+  currentDataset: DataPoint[]
+): DataPoint[] {
+  return initializeFullDataset(fieldDefinitions, currentDataset)
 }
 
-/**
- * Calculate completion percentage based on filled fields
- */
-export function calculateDatasetCompletion(dataPoints: any[]): number {
-  if (dataPoints.length === 0) return 0;
-
-  const filledCount = dataPoints.filter((dp) => dp.value && dp.value.trim() !== '').length;
-  return Math.round((filledCount / dataPoints.length) * 100);
-}
-
-/**
- * Get metadata about the dataset schema
- */
-export function getDatasetSchemaMeta() {
-  return datasetSchema.meta;
+export function calculateDatasetCompletion(dataPoints: DataPoint[]): number {
+  if (dataPoints.length === 0) return 0
+  const filledCount = dataPoints.filter((dp) => dp.value && dp.value.trim() !== '').length
+  return Math.round((filledCount / dataPoints.length) * 100)
 }

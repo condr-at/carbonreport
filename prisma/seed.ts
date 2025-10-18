@@ -1,97 +1,210 @@
 /**
- * Database Seed Script
- * 
- * Seeds the database with sample data for development.
- * Uses the new full dataset schema (162 fields) approach.
- * 
- * Features:
- * - Full dataset initialization (162 fields from schema)
- * - Mock data for realistic testing
- * - Default mailto templates
- * - datasetVersion counter
+ * Database Seed Script (DB-backed, no CSV dependencies)
  */
-
 import { PrismaClient } from '@prisma/client'
-import datasetSchema from '../src/lib/dataset-schema.json'
-import { initializeFullDataset } from '../src/lib/dataset-init'
+import { DATASET_FIELD_SEED } from './seed-data/dataset-fields'
 
-const prisma = new PrismaClient()
+type DataPoint = {
+  field_id: string
+  item_id: string | null
+  value: string
+}
+
+type FieldValueUpdate = string | Record<string, string>
+
+// Use DIRECT_URL for seed script (transactions need direct connection)
+const databaseUrl = process.env.DIRECT_URL || process.env.DATABASE_URL
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: databaseUrl,
+    },
+  },
+})
+
+function buildEmptyDataset(): DataPoint[] {
+  return DATASET_FIELD_SEED.map((field) => ({
+    field_id: field.fieldId,
+    item_id: field.isRepeatable ? '1' : null,
+    value: '',
+  }))
+}
+
+function applyDatasetUpdates(
+  dataPoints: DataPoint[],
+  updates: Record<string, FieldValueUpdate>
+): DataPoint[] {
+  return dataPoints.map((point) => {
+    const update = updates[point.field_id]
+    if (!update) return point
+
+    if (point.item_id === null && typeof update === 'string') {
+      return { ...point, value: update }
+    }
+
+    if (point.item_id !== null) {
+      if (typeof update === 'string') {
+        return point.item_id === '1' ? { ...point, value: update } : point
+      }
+
+      const repeatableValue = update[point.item_id]
+      if (repeatableValue !== undefined) {
+        return { ...point, value: repeatableValue }
+      }
+    }
+
+    return point
+  })
+}
+
+function datasetToJson(dataPoints: DataPoint[]) {
+  return { data_points: dataPoints }
+}
+
+function createMockDataset(projectType: 'ebike' | 'steel') {
+  const skeleton = buildEmptyDataset()
+  const updates: Record<string, FieldValueUpdate> = {}
+
+  if (projectType === 'ebike') {
+    updates['organization_name'] = 'GreenCycle Manufacturing'
+    updates['report_date'] = '2025-10-13'
+    updates['report_language'] = 'English'
+    updates['product_name'] = 'E-Bike Model X Pro'
+    updates['product_description'] = 'Electric bicycle with 750W motor and lithium battery'
+    updates['intended_market'] = 'European Union, North America'
+    updates['functional_unit'] = '1 electric bicycle'
+    updates['system_boundary'] = 'Cradle-to-gate including raw materials, manufacturing, and packaging'
+    updates['total_cfp_co2e'] = '145.5'
+    updates['cfp_result_unit'] = 'kg CO2e'
+
+    updates['material_input_name'] = { '1': 'Aluminum frame' }
+    updates['material_input_amount'] = { '1': '8.5' }
+    updates['material_input_unit'] = { '1': 'kg' }
+    updates['material_origin_country'] = { '1': 'Germany' }
+    updates['material_data_source'] = { '1': 'Supplier declaration' }
+
+    updates['energy_input_type'] = { '1': 'Purchased electricity' }
+    updates['energy_input_amount'] = { '1': '1200' }
+    updates['energy_input_unit'] = { '1': 'kWh' }
+    updates['energy_source_renewable_percent'] = { '1': '65' }
+  } else {
+    updates['organization_name'] = 'Steel Manufacturing Ltd'
+    updates['report_date'] = '2025-10-13'
+    updates['report_language'] = 'English'
+    updates['product_name'] = 'Steel Beam 200x100'
+    updates['product_description'] = 'Structural steel beam for construction projects'
+    updates['intended_market'] = 'European Union'
+    updates['functional_unit'] = '1 ton of steel beams'
+    updates['system_boundary'] = 'Cradle-to-gate: mining, processing, manufacturing'
+    updates['total_cfp_co2e'] = '1850'
+    updates['cfp_result_unit'] = 'kg CO2e'
+
+    updates['material_input_name'] = { '1': 'Iron ore', '2': 'Coking coal' }
+    updates['material_input_amount'] = { '1': '1.6', '2': '0.6' }
+    updates['material_input_unit'] = { '1': 'ton', '2': 'ton' }
+    updates['material_origin_country'] = { '1': 'Australia', '2': 'Poland' }
+
+    updates['energy_input_type'] = { '1': 'Blast furnace gas' }
+    updates['energy_input_amount'] = { '1': '5800' }
+    updates['energy_input_unit'] = { '1': 'kWh' }
+  }
+
+  const updated = applyDatasetUpdates(skeleton, updates)
+  return datasetToJson(updated)
+}
+
+const defaultMailtoTemplates = {
+  product_name: `Hi {contact_name},
+
+We are preparing a carbon footprint assessment for our project "{project_name}" and need your input.
+
+Could you please provide the following information:
+- {field_label}
+
+This information is needed for our ISO 14067 compliance report.
+
+Best regards,
+{user_name}`,
+
+  material_input_name: `Dear {contact_name},
+
+For our carbon footprint assessment of "{project_name}", we require detailed information about materials.
+
+Please provide:
+- {field_label}
+- Quantities and units
+- Supplier information
+
+Thank you for your cooperation.
+
+{user_name}`,
+
+  energy_input_type: `Hi {contact_name},
+
+We need energy consumption data for "{project_name}" carbon assessment.
+
+Required data:
+- {field_label}
+- Time period: Full production cycle
+- Units: kWh or MWh
+
+Deadline: {deadline}
+
+Thanks,
+{user_name}`,
+
+  transport_mode: `Hello {contact_name},
+
+For our CBAM reporting requirements on "{project_name}", please provide:
+
+- {field_label}
+- Transport mode details
+- Emission factors if available
+
+Best,
+{user_name}`,
+}
 
 async function main() {
-  console.log('🌱 Seeding database...\n')
+  console.log('🌱 Seeding database...')
 
-  // Clean existing data (dev only!)
   console.log('🧹 Cleaning existing data...')
   await prisma.dataRequest.deleteMany()
-  // await prisma.projectFile.deleteMany() // ⏸️ Post-MVP
   await prisma.report.deleteMany()
   await prisma.project.deleteMany()
   await prisma.contact.deleteMany()
   await prisma.user.deleteMany()
   await prisma.datasetFieldDefinition.deleteMany()
-  console.log('✅ Cleaned\n')
+  console.log('✅ Cleaned')
 
-  // Seed dataset field definitions
   console.log('🧱 Seeding dataset field definitions...')
-
-  const fieldDefinitionsToCreate: Array<{
-    fieldId: string
-    label: string
-    hint: string | null
-    type: string
-    options: any | null
-    validation: any | null
-    isRepeatable: boolean
-    repeatableKey: string | null
-  }> = []
-
-  const toLabel = (fieldId: string) => {
-    // Extract the tail after first underscore, convert to readable label
-    const parts = fieldId.split('_')
-    const tail = parts.slice(1).join('_') // Everything after section prefix
-    return tail
-      .replace(/([a-z0-9])([A-Z])/g, '$1 $2') // camelCase → camel Case
-      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2') // ABCDef → ABC Def
-      .replace(/_/g, ' ') // underscores → spaces
-      .trim()
-  }
-
-  for (const section of datasetSchema.sections) {
-    for (const field of section.fields) {
-      const fieldDef = {
-        fieldId: field.fieldId,
-        label: toLabel(field.fieldId),
-        hint: null, // TODO: Add hints from CSV or manual curation
-        type: 'text', // Default type
-        options: null,
-        validation: null,
-        isRepeatable: field.isRepeatable,
-        repeatableKey: field.isRepeatable ? section.name : null,
-      }
-      fieldDefinitionsToCreate.push(fieldDef)
-    }
-  }
-
   await prisma.datasetFieldDefinition.createMany({
-    data: fieldDefinitionsToCreate,
+    data: DATASET_FIELD_SEED.map((field) => ({
+      fieldId: field.fieldId,
+      label: field.label,
+      hint: field.hint ?? null,
+      type: field.type ?? 'text',
+      options: field.options ?? null,
+      validation: field.validation ?? null,
+      isRepeatable: field.isRepeatable ?? false,
+      repeatableKey: field.repeatableKey ?? null,
+      sortOrder: field.sortOrder,
+    })),
     skipDuplicates: true,
   })
+  console.log(`✅ Seeded ${DATASET_FIELD_SEED.length} definitions`)
 
-  console.log(`✅ Seeded ${fieldDefinitionsToCreate.length} field definitions\n`)
-
-  // Create test user
   console.log('👤 Creating test user...')
   const user = await prisma.user.create({
     data: {
       name: 'John Doe',
       email: 'john@example.com',
-      passwordHash: '$2a$10$dummyhash', // Placeholder - use bcrypt in real app
+      passwordHash: '$2a$10$dummyhash',
       emailVerified: true,
     },
   })
-  console.log(`✅ Created user: ${user.email}\n`)
+  console.log(`✅ Created user: ${user.email}`)
 
-  // Create test contacts
   console.log('📇 Creating contacts...')
   const contact1 = await prisma.contact.create({
     data: {
@@ -109,126 +222,9 @@ async function main() {
       email: 'maria@logistics.com',
     },
   })
-  console.log(`✅ Created ${2} contacts\n`)
+  console.log(`✅ Created contacts: ${contact1.name}, ${contact2.name}`)
 
-  // Helper function to create mock dataset with some filled values
-  function createMockDataset(projectType: 'ebike' | 'steel') {
-    // Start with full dataset (162 fields)
-    const fullDataset = initializeFullDataset();
-
-    // Fill some realistic values based on project type
-    const updates: Record<string, string> = {};
-
-    if (projectType === 'ebike') {
-      // E-Bike project mock data
-      updates['ReportMetadata_OrganizationName'] = 'GreenCycle Manufacturing';
-      updates['ReportMetadata_ReportDate'] = '2025-10-13';
-      updates['ReportMetadata_ReportLanguage'] = 'English';
-      updates['ProductDescription_ProductName'] = 'E-Bike Model X Pro';
-      updates['ProductDescription_ProductDescription'] = 'Electric bicycle with 750W motor and lithium battery';
-      updates['ProductDescription_IntendedUse'] = 'Urban commuting and recreational cycling';
-      updates['ProductDescription_Market'] = 'European Union, North America';
-      updates['GoalAndScope_StudyGoal'] = 'Calculate carbon footprint according to ISO 14067';
-      updates['GoalAndScope_FunctionalUnit'] = '1 electric bicycle';
-      updates['GoalAndScope_SystemBoundary'] = 'Cradle-to-gate including raw materials, manufacturing, and packaging';
-      
-      // Life Cycle Inventory - Inputs (repeatable, item 1)
-      updates['LifeCycleInventoryInputs_MaterialInputName'] = 'Aluminum Frame';
-      updates['LifeCycleInventoryInputs_MaterialInputAmount'] = '8.5';
-      updates['LifeCycleInventoryInputs_MaterialInputUnit'] = 'kg';
-      updates['LifeCycleInventoryInputs_MaterialInputSource'] = 'Alcoa Aluminum Supplier';
-      
-      // Impact Assessment Results
-      updates['ImpactAssessmentResults_TotalCFPCO2e'] = '145.5';
-      updates['ImpactAssessmentResults_CFPUnit'] = 'kg CO2e';
-    } else {
-      // Steel project mock data
-      updates['ReportMetadata_OrganizationName'] = 'Steel Manufacturing Ltd';
-      updates['ReportMetadata_ReportDate'] = '2025-10-13';
-      updates['ReportMetadata_ReportLanguage'] = 'English';
-      updates['ProductDescription_ProductName'] = 'Steel Beam 200x100';
-      updates['ProductDescription_ProductDescription'] = 'Structural steel beam for construction';
-      updates['ProductDescription_IntendedUse'] = 'Building construction and infrastructure';
-      updates['ProductDescription_Market'] = 'European Union';
-      updates['GoalAndScope_StudyGoal'] = 'CBAM compliance reporting';
-      updates['GoalAndScope_FunctionalUnit'] = '1 ton of steel beams';
-      updates['GoalAndScope_SystemBoundary'] = 'Cradle-to-gate: mining, processing, manufacturing';
-      
-      // Impact Assessment Results
-      updates['ImpactAssessmentResults_TotalCFPCO2e'] = '1850';
-      updates['ImpactAssessmentResults_CFPUnit'] = 'kg CO2e';
-    }
-
-    // Apply updates to the full dataset
-    const updatedDataPoints = fullDataset.map((dp) => {
-      const key = dp.item_id 
-        ? `${dp.field_id}` // For repeatable fields, update first item only
-        : dp.field_id;
-      
-      if (updates[key] && (dp.item_id === null || dp.item_id === '1')) {
-        return { ...dp, value: updates[key] };
-      }
-      return dp;
-    });
-
-    return { data_points: updatedDataPoints };
-  }
-
-  // Default mailto templates (using string keys instead of FieldId enum)
-  const defaultMailtoTemplates = {
-    'ProductDescription_ProductName': `Hi {contact_name},
-
-We are preparing a carbon footprint assessment for our project "{project_name}" and need your input.
-
-Could you please provide the following information:
-- {field_label}
-
-This information is needed for our ISO 14067 compliance report.
-
-Best regards,
-{user_name}`,
-
-    'LifeCycleInventoryInputs_MaterialInputName': `Dear {contact_name},
-
-For our carbon footprint assessment of "{project_name}", we require detailed information about materials.
-
-Please provide:
-- {field_label}
-- Quantities and units
-- Supplier information
-
-Thank you for your cooperation.
-
-{user_name}`,
-
-    'LifeCycleInventoryInputs_EnergyInputType': `Hi {contact_name},
-
-We need energy consumption data for "{project_name}" carbon assessment.
-
-Required data:
-- {field_label}
-- Time period: Full production cycle
-- Units: kWh or MWh
-
-Deadline: {deadline}
-
-Thanks,
-{user_name}`,
-
-    'Transportation_TransportMode': `Hello {contact_name},
-
-For our CBAM reporting requirements on "{project_name}", please provide:
-
-- {field_label}
-- Transport mode details
-- Emission factors if available
-
-Best,
-{user_name}`,
-  }
-
-  // Create sample project 1 (ISO 14067 - E-Bike)
-  console.log('📁 Creating sample project 1 (E-Bike)...')
+  console.log('📁 Creating sample projects...')
   const project1 = await prisma.project.create({
     data: {
       userId: user.id,
@@ -243,45 +239,19 @@ Best,
             id: 'cl1',
             title: 'Gather product specifications',
             completed: true,
-            dataPointIds: ['ProductDescription_ProductName', 'ProductDescription_ProductDescription'],
+            dataPointIds: ['product_name', 'product_description'],
           },
           {
             id: 'cl2',
             title: 'Collect material data',
             completed: false,
-            dataPointIds: ['LifeCycleInventoryInputs_MaterialInputName', 'LifeCycleInventoryInputs_MaterialInputAmount'],
-          },
-          {
-            id: 'cl3',
-            title: 'Calculate carbon footprint',
-            completed: false,
-            dataPointIds: ['ImpactAssessmentResults_TotalCFPCO2e'],
+            dataPointIds: ['material_input_name', 'material_input_amount'],
           },
         ],
       },
     },
   })
-  console.log(`✅ Created project: ${project1.name}`)
 
-  // Calculate completion percentage
-  const totalFields = 162;
-  const dataset1 = project1.dataset as any;
-  const filledFieldsP1 = dataset1?.data_points?.filter((dp: any) => dp.value && dp.value.trim() !== '').length || 0;
-  const completionP1 = Math.round((filledFieldsP1 / totalFields) * 100);
-
-  // Create report for project 1
-  const report1 = await prisma.report.create({
-    data: {
-      projectId: project1.id,
-      templateCode: 'ISO14067',
-      metadata: undefined,
-      completion: completionP1,
-    },
-  })
-  console.log(`   ✅ Added ISO14067 report (${filledFieldsP1}/${totalFields} fields = ${report1.completion}% complete)\n`)
-
-  // Create sample project 2 (CBAM - Steel)
-  console.log('📁 Creating sample project 2 (Steel)...')
   const project2 = await prisma.project.create({
     data: {
       userId: user.id,
@@ -296,73 +266,57 @@ Best,
             id: 'cl1',
             title: 'Fill company information',
             completed: true,
-            dataPointIds: ['ReportMetadata_OrganizationName'],
+            dataPointIds: ['organization_name'],
           },
           {
             id: 'cl2',
             title: 'Calculate total emissions',
             completed: false,
-            dataPointIds: ['ImpactAssessmentResults_TotalCFPCO2e'],
+            dataPointIds: ['total_cfp_co2e'],
           },
         ],
       },
     },
   })
-  console.log(`✅ Created project: ${project2.name}`)
+  console.log(`✅ Created projects: ${project1.name}, ${project2.name}`)
 
-  const dataset2 = project2.dataset as any;
-  const filledFieldsP2 = dataset2?.data_points?.filter((dp: any) => dp.value && dp.value.trim() !== '').length || 0;
-  const completionP2 = Math.round((filledFieldsP2 / totalFields) * 100);
+  const totalFields = DATASET_FIELD_SEED.length
+  const filledFieldsP1 = (project1.dataset as any).data_points.filter((dp: any) => dp.value && dp.value.trim() !== '').length
+  const filledFieldsP2 = (project2.dataset as any).data_points.filter((dp: any) => dp.value && dp.value.trim() !== '').length
 
-  const report2 = await prisma.report.create({
+  await prisma.report.create({
+    data: {
+      projectId: project1.id,
+      templateCode: 'ISO14067',
+      metadata: undefined,
+      completion: totalFields ? Math.round((filledFieldsP1 / totalFields) * 100) : 0,
+    },
+  })
+  await prisma.report.create({
     data: {
       projectId: project2.id,
       templateCode: 'CBAM',
       metadata: undefined,
-      completion: completionP2,
+      completion: totalFields ? Math.round((filledFieldsP2 / totalFields) * 100) : 0,
     },
   })
-  console.log(`   ✅ Added CBAM report (${filledFieldsP2}/${totalFields} fields = ${report2.completion}% complete)\n`)
+  console.log('✅ Created reports with completion metrics')
 
-  // Create data request
-  console.log('📧 Creating sample data request...')
-  const dataRequest = await prisma.dataRequest.create({
-    data: {
-      userId: user.id,
-      projectId: project1.id,
-      contactId: contact1.id,
-      dataPointId: 'LifeCycleInventoryInputs_EnergyInputType',
-      externalAccess: false,
-    },
-  })
-  console.log(`✅ Created data request to ${contact1.name}\n`)
+  const repeatableField = DATASET_FIELD_SEED.find((f) => f.isRepeatable)
+  if (repeatableField) {
+    await prisma.dataRequest.create({
+      data: {
+        userId: user.id,
+        projectId: project1.id,
+        contactId: contact1.id,
+        dataPointId: repeatableField.fieldId,
+        externalAccess: false,
+      },
+    })
+    console.log(`✅ Created data request for field ${repeatableField.fieldId}`)
+  }
 
-  // ⏸️ Post-MVP: File upload feature
-  // Create sample file
-  // console.log('📎 Creating sample file...')
-  // const file = await prisma.projectFile.create({
-  //   data: {
-  //     userId: user.id,
-  //     projectId: project1.id,
-  //     filename: 'material_specs.pdf',
-  //     mimeType: 'application/pdf',
-  //     size: 245760, // 240 KB
-  //     linkedDataPoints: [FieldId.Material_Name, FieldId.Material_Amount],
-  //     status: 'UPLOADED',
-  //   },
-  // })
-  // console.log(`✅ Created file: ${file.filename}\n`)
-
-  // Summary
-  console.log('✨ Seeding completed!\n')
-  console.log('📊 Summary:')
-  console.log(`   Users: 1`)
-  console.log(`   Contacts: 2`)
-  console.log(`   Projects: 2`)
-  console.log(`   Reports: 2`)
-  console.log(`   Data Requests: 1`)
-  console.log(`   Files: 1`)
-  console.log('\n🚀 Database ready for development!\n')
+  console.log('✨ Seeding completed!')
 }
 
 main()

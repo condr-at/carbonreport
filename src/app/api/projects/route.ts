@@ -90,6 +90,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, templateCodes, userId } = CreateProjectSchema.parse(body)
 
+    // ⚠️ TEMPORARY DEV WORKAROUND - Remove before production!
+    // Auto-create user if doesn't exist (bypasses foreign key constraint for testing)
+    // TODO: Replace with proper JWT session validation (see docs/API_REFERENCE.md)
+    const user = await prisma.user.upsert({
+      where: { id: userId },
+      update: {},
+      create: {
+        id: userId,
+        name: 'Dev User',
+        email: 'dev@carbonreport.app',
+        passwordHash: 'dev-hash',
+      },
+    })
+
     // Generate default mailto templates from selected report templates
     const mailtoTemplates: Record<string, string> = {}
     
