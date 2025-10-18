@@ -1,33 +1,34 @@
 /**
  * Report Template Types
- * 
- * Defines the structure for report templates configuration
+ *
+ * Defines the structure for report templates configuration that is now backed by the database.
  */
 
-export type FieldType = 'text' | 'number' | 'boolean' | 'select' | 'multiselect' | 'textarea' | 'date' | 'json'
+export type JsonObject = Record<string, unknown>
 
-export interface ReportField {
-  id: string
-  label: string
-  type: FieldType
-  required: boolean
-  placeholder?: string
-  hint?: string
-  options?: string[] // For select/multiselect
-  defaultValue?: any
-  validation?: {
-    min?: number
-    max?: number
-    pattern?: string
-    message?: string
-  }
+export interface ReportTemplateFieldMapping {
+  fieldId: string
+  displayLabel?: string
+  isRequired?: boolean
+  displayOrder?: number
+  config?: JsonObject
 }
 
-export interface ReportSection {
-  id: string
+export interface ReportTemplateSectionConfig extends JsonObject {
+  repeatableKey?: string
+}
+
+export interface ReportTemplateSection {
+  key: string
   title: string
   description?: string
-  fields: ReportField[]
+  blockComponent: string
+  config?: ReportTemplateSectionConfig
+  fields: ReportTemplateFieldMapping[]
+}
+
+export interface ReportTemplateLayoutMeta extends JsonObject {
+  layout?: string
 }
 
 export interface MailtoTemplate {
@@ -39,9 +40,10 @@ export interface MailtoTemplate {
 export interface ReportTemplate {
   code: string
   name: string
-  version: string
-  description: string
-  sections: ReportSection[]
+  version?: string
+  description?: string
+  layoutMeta?: ReportTemplateLayoutMeta
+  sections: ReportTemplateSection[]
   mailto?: MailtoTemplate
 }
 

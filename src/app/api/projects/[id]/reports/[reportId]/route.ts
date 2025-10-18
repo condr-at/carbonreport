@@ -31,10 +31,11 @@ import type { ReportTemplateCode } from '@/lib/report-templates/types'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ projectId: string; reportId: string }> }
+  { params }: { params: Promise<{ id: string; reportId: string }> }
 ) {
   try {
-    const { projectId, reportId } = await params
+    const { id, reportId } = await params
+    const projectId = id
 
     // Fetch report with related project dataset
     const report = await prisma.report.findUnique({
@@ -79,7 +80,7 @@ export async function GET(
     const templateFieldIds = new Set<string>()
     for (const section of template.sections) {
       for (const field of section.fields) {
-        templateFieldIds.add(field.id)
+        templateFieldIds.add(field.fieldId)
       }
     }
 
@@ -96,8 +97,8 @@ export async function GET(
     // Calculate completion based on template requirements
     const requiredFieldIds = template.sections
       .flatMap((s) => s.fields)
-      .filter((f) => f.required)
-      .map((f) => f.id)
+      .filter((f) => f.isRequired)
+      .map((f) => f.fieldId)
 
     const completionPercentage = calculateCompletion(filteredDataset, requiredFieldIds)
 

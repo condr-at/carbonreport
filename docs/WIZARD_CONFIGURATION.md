@@ -1,6 +1,6 @@
 # Wizard Configuration Guide
 
-This guide explains how to customize the Project Creation Wizard by editing the centralized configuration file.
+This guide explains how to customize the Project Creation Wizard by editing the centralized TypeScript configuration.
 
 ## 📁 Configuration Location
 
@@ -381,7 +381,7 @@ Expected: ['ISO14067']
 4. ✅ No deployment needed - changes are immediate!
 
 **Key Points:**
-- ✅ All logic is **local TypeScript/JSON** - no database
+- ✅ All logic is **local TypeScript** - no database
 - ✅ Changes apply **immediately** in dev mode
 - ✅ Can be **version controlled** with Git
 - ✅ Easy to **review** and **test**

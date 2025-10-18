@@ -43,70 +43,31 @@ export interface QuestionConfig {
  * Questions are shown in order. If a question has `dependsOn`,
  * it will only show if the condition matches.
  * 
- * CURRENT FLOW:
- * 1. assessment_goal → Always shown
- * 2. product_type → Only if goal involves CBAM or multiple standards
- * 3. target_region → Only if product type is CBAM-relevant
+ * CURRENT FLOW (revised):
+ * 1. target_region → Always shown (EU import relevance first)
+ * 2. product_type → Only if target_region involves EU
+ * 3. reporting_purpose → Always shown (to decide ISO relevance)
  */
 export const WIZARD_QUESTIONNAIRE: Record<string, QuestionConfig> = {
   // ============================================
-  // QUESTION 1: Assessment Goal (always shown)
+  // QUESTION 1: Target Region (always shown)
   // ============================================
-  assessment_goal: {
-    id: 'assessment_goal',
-    question: 'What is your primary goal for this assessment?',
-    description: 'This helps us recommend the right report templates for your needs',
+  target_region: {
+    id: 'target_region',
+    question: 'Where will this product be sold or imported?',
+    description: 'CBAM applies to imports into the European Union',
     type: 'single-choice',
     required: true,
     options: [
-      {
-        value: 'iso14067',
-        label: 'ISO 14067 Certification',
-        description: 'Product carbon footprint standard',
-        recommendedTemplates: ['ISO14067'],
-      },
-      {
-        value: 'cbam',
-        label: 'EU CBAM Compliance',
-        description: 'Carbon Border Adjustment Mechanism',
-        // No direct recommendation - need to check product type first
-      },
-      {
-        value: 'internal',
-        label: 'Internal Sustainability Reporting',
-        description: 'For company sustainability goals',
-        recommendedTemplates: ['ISO14067'],
-      },
-      {
-        value: 'customer',
-        label: 'Customer Requirements',
-        description: 'Requested by clients or partners',
-        recommendedTemplates: ['ISO14067'],
-      },
-      {
-        value: 'regulation',
-        label: 'Regulatory Compliance',
-        description: 'Other regulatory requirements',
-        recommendedTemplates: ['ISO14067'],
-      },
-      {
-        value: 'multiple',
-        label: 'Multiple Standards',
-        description: 'I need several report types',
-        // Will ask follow-up questions
-      },
-      {
-        value: 'unsure',
-        label: 'Not Sure',
-        description: 'Let me browse all options',
-        recommendedTemplates: [],
-      },
+      { value: 'eu', label: 'European Union', description: 'Importing to EU countries' },
+      { value: 'non_eu', label: 'Outside EU', description: 'No imports into the EU' },
+      { value: 'both', label: 'Both EU and Non-EU', description: 'Multiple markets' },
     ],
   },
 
   // ============================================
   // QUESTION 2: Product Type (conditional)
-  // Shown only if: goal = 'cbam' OR 'multiple'
+  // Shown only if: target_region involves EU
   // ============================================
   product_type: {
     id: 'product_type',
@@ -115,8 +76,8 @@ export const WIZARD_QUESTIONNAIRE: Record<string, QuestionConfig> = {
     type: 'single-choice',
     required: true,
     dependsOn: {
-      questionId: 'assessment_goal',
-      values: ['cbam', 'multiple'], // Show only for these goals
+      questionId: 'target_region',
+      values: ['eu', 'both'], // Show only when EU is a target
     },
     options: [
       {
@@ -158,35 +119,21 @@ export const WIZARD_QUESTIONNAIRE: Record<string, QuestionConfig> = {
   },
 
   // ============================================
-  // QUESTION 3: Target Region (conditional)
-  // Shown only if: product_type is CBAM-relevant
+  // QUESTION 3: Reporting Purpose (always shown)
+  // Helps decide ISO relevance without naming report types in UI
   // ============================================
-  target_region: {
-    id: 'target_region',
-    question: 'Where will this product be sold or imported?',
-    description: 'CBAM only applies to imports into the European Union',
+  reporting_purpose: {
+    id: 'reporting_purpose',
+    question: 'What is the purpose of this assessment?',
+    description: 'We will recommend suitable reporting standards based on your purpose',
     type: 'single-choice',
     required: true,
-    dependsOn: {
-      questionId: 'product_type',
-      values: ['cement', 'iron_steel', 'aluminum', 'fertilizers', 'electricity', 'hydrogen'],
-    },
     options: [
-      {
-        value: 'eu',
-        label: 'European Union',
-        description: 'Importing to EU countries',
-      },
-      {
-        value: 'non_eu',
-        label: 'Outside EU',
-        description: 'Not importing to EU',
-      },
-      {
-        value: 'both',
-        label: 'Both EU and Non-EU',
-        description: 'Multiple markets',
-      },
+      { value: 'certification', label: 'Certification', description: 'Obtain a recognized standard' },
+      { value: 'regulation', label: 'Regulatory compliance', description: 'Meet regulatory requirements' },
+      { value: 'customer', label: 'Customer requirements', description: 'Requested by clients or partners' },
+      { value: 'internal', label: 'Internal reporting', description: 'Company sustainability goals' },
+      { value: 'unsure', label: 'Not sure', description: 'Let me browse all options' },
     ],
   },
 };
@@ -223,8 +170,8 @@ export const WIZARD_STEPS: WizardStep[] = [
   {
     id: 'questionnaire',
     path: '/projects/new/questionnaire',
-    title: 'Assessment Goal',
-    description: 'Help us recommend the right reports',
+    title: 'Questionnaire',
+    description: 'Answer a few questions so we can recommend the right reports',
     canSkip: true,
     skipDestination: '/projects/new/select-reports',
   },
@@ -252,28 +199,28 @@ export const WIZARD_STEPS: WizardStep[] = [
 export function getRecommendedTemplates(answers: Record<string, string>): string[] {
   const templates = new Set<string>();
 
-  const goal = answers['assessment_goal'];
   const productType = answers['product_type'];
   const targetRegion = answers['target_region'];
+  const purpose = answers['reporting_purpose'];
 
-  // CBAM Logic: Only recommend CBAM if ALL conditions met
-  if (goal === 'cbam' || goal === 'multiple') {
-    const cbamProducts = ['cement', 'iron_steel', 'aluminum', 'fertilizers', 'electricity', 'hydrogen'];
-    const isCbamProduct = productType && cbamProducts.includes(productType);
-    const isEuTarget = targetRegion === 'eu' || targetRegion === 'both';
+  const cbamProducts = ['cement', 'iron_steel', 'aluminum', 'fertilizers', 'electricity', 'hydrogen'];
+  const isCbamProduct = !!productType && cbamProducts.includes(productType);
+  const isEuTarget = targetRegion === 'eu' || targetRegion === 'both';
 
-    if (isCbamProduct && isEuTarget) {
-      templates.add('CBAM');
-    }
+  // Recommend CBAM strictly if EU-related and product is in CBAM scope
+  if (isEuTarget && isCbamProduct) {
+    templates.add('CBAM');
   }
 
-  // Always add ISO 14067 for most goals (except CBAM-only with non-relevant product)
-  if (goal !== 'cbam' || productType === 'other' || targetRegion === 'non_eu') {
+  // ISO 14067 is broadly applicable: certification/regulatory/customer/internal,
+  // or when not EU or not a CBAM product.
+  const wantsIso = ['certification', 'regulation', 'customer', 'internal'].includes(purpose || '');
+  if (wantsIso || !isEuTarget || (isEuTarget && !isCbamProduct)) {
     templates.add('ISO14067');
   }
 
-  // If user is unsure, return empty (show all options)
-  if (goal === 'unsure') {
+  // If unsure, don't auto-recommend — let user pick on next step
+  if (purpose === 'unsure') {
     return [];
   }
 
@@ -292,7 +239,7 @@ export function getNextQuestion(
   currentQuestionId: string,
   answers: Record<string, string>
 ): QuestionConfig | null {
-  const questionOrder = ['assessment_goal', 'product_type', 'target_region'];
+  const questionOrder = ['target_region', 'product_type', 'reporting_purpose'];
   const currentIndex = questionOrder.indexOf(currentQuestionId);
 
   // Look for next question that should be shown
@@ -332,7 +279,7 @@ export function shouldShowQuestion(
  * Get all questions that should be shown for given answers
  */
 export function getVisibleQuestions(answers: Record<string, string>): QuestionConfig[] {
-  const questionOrder = ['assessment_goal', 'product_type', 'target_region'];
+  const questionOrder = ['target_region', 'product_type', 'reporting_purpose'];
   const visible: QuestionConfig[] = [];
 
   for (const questionId of questionOrder) {

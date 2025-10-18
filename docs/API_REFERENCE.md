@@ -13,7 +13,7 @@ This document describes the REST API endpoints for the Carbon Report Platform. A
 - **Single Source of Truth**: All field data stored in `Project.dataset` JSONB
 - **Optimistic Locking**: Concurrent edit prevention via `datasetVersion` counter
 - **Code-Based Templates**: Report templates and questionnaires in `src/lib/`
-- **Type Safety**: FieldId enum and Zod validation throughout
+ - **Type Safety**: DB-backed field IDs (DatasetFieldDefinition, snake_case) and Zod validation throughout
 
 ---
 
@@ -125,7 +125,7 @@ GET /api/projects/:id/dataset
   "dataset": {
     "data_points": [
       {
-        "field_id": "Product_Name",
+        "field_id": "product_name",
         "item_id": null,
         "value": "Electric Bicycle"
       }
@@ -153,7 +153,7 @@ PUT /api/projects/:id/dataset
   "dataset": {
     "data_points": [
       {
-        "field_id": "Product_Name",
+        "field_id": "product_name",
         "item_id": null,
         "value": "Electric Bicycle"
       }
@@ -190,8 +190,8 @@ Status: `409 Conflict`
 4. If no match: Return 409 error (someone else updated first)
 
 **Validation**:
-- Dataset structure validated with Zod
-- All `field_id` values must exist in FieldId enum
+ - Dataset structure validated with Zod
+ - All `field_id` values must exist in the database (`DatasetFieldDefinition.fieldId`, snake_case)
 - `item_id` can be null or string
 - `value` must be string
 
@@ -226,7 +226,7 @@ GET /api/projects/:projectId/reports/:reportId
         "title": "Product Information",
         "fields": [
           {
-            "id": "Product_Name",
+            "id": "product_name",
             "label": "Product Name",
             "type": "text",
             "required": true
@@ -238,7 +238,7 @@ GET /api/projects/:projectId/reports/:reportId
   "dataset": {
     "data_points": [
       {
-        "field_id": "Product_Name",
+  "field_id": "product_name",
         "item_id": null,
         "value": "Electric Bicycle"
       }
@@ -277,7 +277,7 @@ GET /api/projects/:id/mailto-templates
   "projectId": "uuid",
   "projectName": "Project Name",
   "mailtoTemplates": {
-    "Product_Name": {
+  "product_name": {
       "subject": "Request for Product Name",
       "body": "Hi {{contact_name}}, ..."
     },
@@ -311,7 +311,7 @@ PUT /api/projects/:id/mailto-templates/:fieldId
 ```json
 {
   "success": true,
-  "fieldId": "Product_Name",
+  "fieldId": "product_name",
   "template": {
     "subject": "Custom Subject",
     "body": "Custom body with {{contact_name}} placeholder"
@@ -345,7 +345,7 @@ POST /api/projects/:id/mailto-templates
   "success": true,
   "message": "Mailto templates reset to defaults",
   "mailtoTemplates": {
-    "Product_Name": {
+  "product_name": {
       "subject": "...",
       "body": "..."
     }
@@ -417,34 +417,12 @@ Logs contain detailed error information.
 
 ## Data Structures
 
-### FieldId Enum
-
-**Location**: `src/lib/field-ids.ts`
-
-**Purpose**: Type-safe field identifier registry
-
-**Example Values**:
-```typescript
-enum FieldId {
-  Product_Name = 'Product_Name',
-  Product_Description = 'Product_Description',
-  Material_Name = 'Material_Name',
-  Material_Weight_Kg = 'Material_Weight_Kg',
-  Emission_Factor_KgCO2e = 'Emission_Factor_KgCO2e',
-  // ... 50+ more
-}
-```
-
-**Naming Convention**: `PascalCase Entity_Attribute_Subtype`
-
----
-
 ### Dataset Schema
 
 ```typescript
 {
   data_points: Array<{
-    field_id: FieldId,      // Must exist in FieldId enum
+  field_id: string,       // Must match DB (DatasetFieldDefinition.fieldId - snake_case)
     item_id: string | null, // For repeatable items (e.g., materials list)
     value: string           // All values stored as strings
   }>
@@ -470,10 +448,10 @@ import { validateDataset, upsertDataPoint, calculateCompletion } from '@/lib/dat
 const dataset = validateDataset(rawData) // Throws if invalid
 
 // Add/update field
-const updated = upsertDataPoint(dataset, FieldId.Product_Name, 'Electric Bicycle')
+const updated = upsertDataPoint(dataset, 'product_name', 'Electric Bicycle')
 
 // Calculate completion
-const percent = calculateCompletion(dataset, [FieldId.Product_Name, FieldId.Material_Name])
+const percent = calculateCompletion(dataset, ['product_name', 'material_input_name'])
 // Returns: 50 (if only Product_Name filled)
 ```
 
@@ -504,8 +482,6 @@ const template = getReportTemplate('ISO14067')
 | `POST /api/projects/:id/mailto-templates` | ✅ Complete | Resets to defaults |
 
 **Not Implemented (Optional)**:
-- `PUT /api/projects/:id/dataset/:fieldId` — Single field update
-- `DELETE /api/projects/:id/dataset/:fieldId` — Delete field
 - `POST /api/projects/:id/duplicate` — Clone project
 - `POST /api/projects/:id/reports` — Add report type
 - `PUT /api/projects/:id/reports/:reportId/metadata` — Report settings
@@ -572,6 +548,6 @@ curl -X PUT http://localhost:3000/api/projects/:id/dataset \
 
 ---
 
-**Last Updated**: October 12, 2025  
+**Last Updated**: October 18, 2025  
 **Maintained By**: Development Team  
 **Questions**: Refer to `Requirements v0.0.1.md` or `IMPLEMENTATION_CHECKLIST.md`

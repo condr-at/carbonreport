@@ -29,7 +29,7 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 
 * Dynamically maps user responses (e.g., type of production, logistics chain, region) to recommended report types.
 * **User-facing terminology**: "Which type of report do you need?" or "Which standard should you follow?"
-* **Implementation**: Questionnaire logic and mapping rules are stored in JSON configuration files within the application code (`src/lib/questionnaires/`).
+* **Implementation**: Questionnaire logic and mapping rules are stored as TypeScript configuration in `src/lib/questionnaires/`.
 * Configuration includes question structure, answer options, and mapping rules (responses → recommended report template codes).
 * Versioned through Git; updates require code deployment.
 * **Post-MVP**: Admin interface for non-technical questionnaire editing may migrate configuration to database.
@@ -55,31 +55,26 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 * Data points (DPs) have unique IDs and can belong to multiple reports.
 * Completing or updating a DP updates the completion status of all linked reports.
 * Data points can be **scalar** (single values) or **tabular** (repeating rows, e.g., purchase tables).
-* DP IDs are predefined in report templates and consistent across projects (e.g., `Product_Name`).
+* DP IDs are defined centrally in the database (table `DatasetFieldDefinition`) and are consistent across projects (e.g., `product_name`).
 * When multiple reports use the same field with identical validation/boundaries, they share one DP.
-* Different boundaries/validation rules = different DPs (e.g., `Emission_Total_ISO14067` vs `Emission_Total_CBAM`).
+* Different boundaries/validation rules = different DPs (e.g., `total_cfp_co2e_iso14067` vs `total_cfp_co2e_cbam`).
 
 #### Field ID Naming Convention
 
-**Format**: `{Entity}_{Attribute}[_{Subtype}]` (PascalCase)
+**Format**: `snake_case` identifiers aligned with database columns
 
 **Examples**:
-- `Product_Name` — scalar field
-- `Product_Description` — scalar field
-- `Material_Name` — tabular field (use with `item_id: "1"`, `"2"`, etc.)
-- `Material_Amount` — tabular field (paired with Material_Name by item_id)
-- `Emission_Total_ISO14067` — standard-specific calculation
-- `Emission_Total_CBAM` — different validation rules require different field_id
-- `Transport_Distance_Air` — subtype specifies transport mode
-- `Energy_Consumption_Renewable` — subtype clarifies energy source
+- `product_name` — scalar field
+- `product_description` — scalar field
+- `material_input_name` — repeatable group field (paired by `item_id`)
+- `material_input_amount` — repeatable group field (paired by `item_id`)
+- `total_cfp_co2e` — calculation result (if standard-specific, keep separate IDs by standard)
 
 **Rules**:
-1. Use **PascalCase** for readability
-2. **Entity** — data category (Product, Material, Transport, Energy, Emission)
-3. **Attribute** — measured property (Name, Amount, Distance, Consumption, Total)
-4. **Subtype** (optional) — qualifier (ISO14067, CBAM, Air, Renewable)
-5. For tabular data: use same field_id with different `item_id` values, NOT suffixes in field_id
-6. Maintain TypeScript enum in `src/lib/field-ids.ts` for type safety
+1. Use lowercase snake_case for readability and consistency with DB (`DatasetFieldDefinition.fieldId`)
+2. Keep stable IDs across templates; if validation or semantics differ by standard, define separate IDs
+3. For repeatable data: use the same `field_id` with different `item_id` values, not suffixed IDs
+4. Source of truth is the database; templates consume field IDs, not define them
 
 #### Dataset Interface (MVP)
 
@@ -97,22 +92,22 @@ Simplified structure based on field-value pairs:
 {
   "data_points": [
     {
-      "field_id": "ProductName",
+  "field_id": "product_name",
       "item_id": null,
       "value": "Reusable Bottle 750 mL"
     },
     {
-      "field_id": "MaterialInputName",
+  "field_id": "material_input_name",
       "item_id": "1",
       "value": "Stainless steel 18/8"
     },
     {
-      "field_id": "MaterialInputAmount",
+  "field_id": "material_input_amount",
       "item_id": "1",
       "value": "0.30"
     },
     {
-      "field_id": "MaterialInputName",
+  "field_id": "material_input_name",
       "item_id": "2",
       "value": "Polypropylene cap"
     }
@@ -121,8 +116,8 @@ Simplified structure based on field-value pairs:
 ```
 
 **Key principles**:
-- `field_id`: Matches report template field identifier
-- `item_id`: `null` for scalar fields; `"1"`, `"2"`, `"3"` etc. for tabular rows
+- `field_id`: Matches DB-backed field identifier from `DatasetFieldDefinition`
+- `item_id`: `null` for scalar fields; `"1"`, `"2"`, `"3"` etc. for repeatable rows
 - `value`: Always stored as string; type validation happens at application layer
 - Unique key: `(field_id, item_id)` within a project
 
@@ -412,16 +407,13 @@ carbonreport/
 │   │   └── layout/          # Layout components
 │   │
 │   └── lib/                 # Utilities and services
-│       ├── db.ts            # Prisma client singleton
-│       ├── auth.ts          # JWT helpers, session management
-│       ├── email.ts         # Resend integration
-│       ├── storage.ts       # ⏸️ Post-MVP: File storage client
-│       ├── validations.ts   # Zod schemas
-│       ├── field-ids.ts     # FieldId enum (50+ values)
-│       ├── dataset-validation.ts  # Dataset CRUD and validation
-│       ├── questionnaires/  # Questionnaire configs
-│       ├── report-templates/  # Report template configs
-│       └── utils.ts         # General utilities
+│       ├── db.ts                  # Prisma client singleton
+│       ├── utils.ts               # General utilities
+│       ├── dataset-init.ts        # Initialize dataset from DB field defs
+│       ├── dataset-utils-v2.ts    # Enrich/flatten helpers, repeatables
+│       ├── dataset-validation.ts  # Dataset CRUD and validation (Zod)
+│       ├── questionnaires/        # Questionnaire configs (TS)
+│       └── report-templates/      # Report template configs (TS)
 │
 ├── .env.example
 ├── next.config.ts
@@ -541,7 +533,7 @@ carbonreport/
 ✅ Reports with unified edit mode (no separate preview/edit modes)  
 ✅ **Request Data functionality in both Dataset AND Report views**  
 ✅ Shared dataset with scalar and tabular data points  
-✅ **Field ID naming convention**: PascalCase with Entity_Attribute_Subtype format  
+✅ **Field ID naming convention**: snake_case with DB-backed identifiers  
 ✅ **Global contact management** (contacts shared across all user's projects)  
 ✅ Mailto-based data requests from data points (in Dataset or Reports)  
 ✅ **Per-project mailto template customization** (stored in `Project.mailto_templates`)  
@@ -590,7 +582,7 @@ The MVP implements all user-facing features for project creation, report managem
 - **User-facing terminology**: "Report Types" or "Report Standards" (not "templates") for better UX
 - **Mailto template customization**: Per-project customization stored in `Project.mailto_templates` JSONB, initialized from template defaults
 - **Data architecture**: All field values live in `Project.dataset`; Reports reference data via `template_code` and filter logic
-- **Field ID convention**: PascalCase `Entity_Attribute_Subtype` format with TypeScript enum for type safety
+- **Field ID convention**: snake_case identifiers with database (DatasetFieldDefinition) as source of truth
 - **Optimistic locking**: `dataset_version` counter prevents concurrent edit conflicts
 
 Each module (Projects, Reports, Dataset, Contacts, Files) operates independently but shares a consistent identifier model and unified synchronization logic, ensuring interoperability and scalability without future schema rewrites.

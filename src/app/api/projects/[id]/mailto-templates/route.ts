@@ -81,7 +81,7 @@ export async function POST(
         // For each field in the template, assign the default mailto
         for (const section of template.sections) {
           for (const field of section.fields) {
-            defaultMailtoTemplates[field.id] = {
+            defaultMailtoTemplates[field.fieldId] = {
               subject: template.mailto.subject,
               body: template.mailto.body,
             }

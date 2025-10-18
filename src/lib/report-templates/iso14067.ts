@@ -24,160 +24,72 @@ export const ISO14067Template: ReportTemplate = {
   name: 'ISO 14067 Carbon Footprint Report',
   version: '1.0',
   description: 'International standard for quantifying the carbon footprint of products',
-  
+  layoutMeta: {
+    layout: 'stacked-sections',
+  },
   sections: [
     {
-      id: 'general_info',
+      key: 'general_information',
       title: 'General Information',
-      description: 'Basic information about your company and product',
+      description: 'Organization and product details',
+      blockComponent: 'general-info',
       fields: [
-        {
-          id: 'company_name',
-          label: 'Company Name',
-          type: 'text',
-          required: true,
-          placeholder: 'e.g., Green Manufacturing Ltd.',
-          hint: 'Legal name of the organization conducting the assessment'
-        },
-        {
-          id: 'product_name',
-          label: 'Product Name',
-          type: 'text',
-          required: true,
-          placeholder: 'e.g., Eco-Friendly Widget',
-          hint: 'Name of the product being assessed'
-        },
-        {
-          id: 'functional_unit',
-          label: 'Functional Unit',
-          type: 'text',
-          required: true,
-          placeholder: 'e.g., 1 kg of product',
-          hint: 'Quantified performance of the product system for use as a reference unit'
-        },
-        {
-          id: 'assessment_date',
-          label: 'Assessment Date',
-          type: 'date',
-          required: true,
-          hint: 'Date when the assessment was completed'
-        }
-      ]
+        { fieldId: 'organization_name', isRequired: true, displayOrder: 10 },
+        { fieldId: 'report_date', isRequired: true, displayOrder: 20 },
+        { fieldId: 'report_language', displayOrder: 30 },
+        { fieldId: 'product_name', isRequired: true, displayOrder: 40 },
+        { fieldId: 'product_description', displayOrder: 50 },
+        { fieldId: 'intended_market', displayOrder: 60 },
+        { fieldId: 'functional_unit', isRequired: true, displayOrder: 70 },
+      ],
     },
     {
-      id: 'system_boundary',
-      title: 'System Boundary',
-      description: 'Define the scope and lifecycle stages included in the assessment',
+      key: 'system_boundary',
+      title: 'System Boundary & Scope',
+      blockComponent: 'boundary',
       fields: [
-        {
-          id: 'scope',
-          label: 'Assessment Scope',
-          type: 'select',
-          required: true,
-          options: ['Cradle-to-Gate', 'Cradle-to-Grave', 'Gate-to-Gate', 'Cradle-to-Cradle'],
-          hint: 'Defines which lifecycle stages are included'
-        },
-        {
-          id: 'lifecycle_stages',
-          label: 'Lifecycle Stages Included',
-          type: 'multiselect',
-          required: true,
-          options: [
-            'Raw Material Extraction',
-            'Manufacturing',
-            'Transportation',
-            'Use Phase',
-            'End-of-Life'
-          ],
-          hint: 'Select all stages included in the assessment'
-        },
-        {
-          id: 'exclusions',
-          label: 'Exclusions and Justification',
-          type: 'textarea',
-          required: false,
-          placeholder: 'Describe any excluded processes and reasons...',
-          hint: 'Document any processes or stages excluded from the assessment'
-        }
-      ]
+        { fieldId: 'system_boundary', isRequired: true, displayOrder: 10 },
+        { fieldId: 'hotspots_summary', displayOrder: 20 },
+      ],
     },
     {
-      id: 'ghg_calculation',
-      title: 'GHG Emissions Calculation',
-      description: 'Total greenhouse gas emissions quantification',
+      key: 'ghg_results',
+      title: 'GHG Emissions Results',
+      blockComponent: 'ghg-summary',
       fields: [
-        {
-          id: 'total_emissions',
-          label: 'Total GHG Emissions (kg CO₂e)',
-          type: 'number',
-          required: true,
-          placeholder: '0.00',
-          hint: 'Total carbon footprint in kilograms of CO₂ equivalent',
-          validation: {
-            min: 0,
-            message: 'Emissions cannot be negative'
-          }
-        },
-        {
-          id: 'emissions_breakdown',
-          label: 'Emissions Breakdown by Lifecycle Stage',
-          type: 'json',
-          required: false,
-          hint: 'Detailed breakdown of emissions per lifecycle stage (auto-calculated from dataset)'
-        },
-        {
-          id: 'calculation_method',
-          label: 'Calculation Methodology',
-          type: 'select',
-          required: true,
-          options: [
-            'GHG Protocol Product Standard',
-            'PAS 2050',
-            'ISO 14044',
-            'Other'
-          ],
-          hint: 'Standard or methodology used for calculations'
-        }
-      ]
+        { fieldId: 'total_cfp_co2e', isRequired: true, displayOrder: 10 },
+        { fieldId: 'cfp_result_unit', isRequired: true, displayOrder: 20 },
+      ],
     },
     {
-      id: 'verification',
-      title: 'Verification',
-      description: 'Third-party verification details (optional)',
+      key: 'material_inputs',
+      title: 'Material Inputs',
+      blockComponent: 'repeatable-table',
+      config: {
+        repeatableKey: 'material_input',
+      },
       fields: [
-        {
-          id: 'verified',
-          label: 'Third-Party Verified',
-          type: 'boolean',
-          required: true,
-          defaultValue: false,
-          hint: 'Has this report been verified by an independent third party?'
-        },
-        {
-          id: 'verifier_name',
-          label: 'Verification Body Name',
-          type: 'text',
-          required: false,
-          placeholder: 'e.g., Carbon Trust',
-          hint: 'Name of the organization that conducted the verification'
-        },
-        {
-          id: 'verification_date',
-          label: 'Verification Date',
-          type: 'date',
-          required: false,
-          hint: 'Date when verification was completed'
-        },
-        {
-          id: 'verification_statement',
-          label: 'Verification Statement',
-          type: 'textarea',
-          required: false,
-          placeholder: 'Summary of verification findings...',
-          hint: 'Key findings or conclusions from the verification process'
-        }
-      ]
-    }
+        { fieldId: 'material_input_name', isRequired: true, displayOrder: 10 },
+        { fieldId: 'material_input_amount', displayOrder: 20 },
+        { fieldId: 'material_input_unit', displayOrder: 30 },
+        { fieldId: 'material_origin_country', displayOrder: 40 },
+        { fieldId: 'material_data_source', displayOrder: 50 },
+      ],
+    },
+    {
+      key: 'energy_inputs',
+      title: 'Energy Inputs',
+      blockComponent: 'repeatable-table',
+      config: {
+        repeatableKey: 'energy_input',
+      },
+      fields: [
+        { fieldId: 'energy_input_type', isRequired: true, displayOrder: 10 },
+        { fieldId: 'energy_input_amount', displayOrder: 20 },
+        { fieldId: 'energy_input_unit', displayOrder: 30 },
+        { fieldId: 'energy_source_renewable_percent', displayOrder: 40 },
+      ],
+    },
   ],
   
   mailto: {

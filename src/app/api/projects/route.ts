@@ -121,8 +121,8 @@ export async function POST(request: NextRequest) {
         // For now, apply same mailto template to all fields in this report
         template.sections.forEach(section => {
           section.fields.forEach(field => {
-            if (!mailtoTemplates[field.id]) {
-              mailtoTemplates[field.id] = template.mailto!.body
+            if (!mailtoTemplates[field.fieldId]) {
+              mailtoTemplates[field.fieldId] = template.mailto!.body
             }
           })
         })

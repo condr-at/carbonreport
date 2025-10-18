@@ -24,226 +24,58 @@ export const CBAMTemplate: ReportTemplate = {
   name: 'EU CBAM Declaration',
   version: '1.0',
   description: 'Carbon Border Adjustment Mechanism declaration for EU imports',
-  
+  layoutMeta: {
+    layout: 'tabbed',
+  },
   sections: [
     {
-      id: 'importer_info',
-      title: 'Importer Information',
-      description: 'Details about the importing company',
+      key: 'compliance_overview',
+      title: 'Compliance Overview',
+      blockComponent: 'cbam-overview',
       fields: [
-        {
-          id: 'importer_name',
-          label: 'Importer Company Name',
-          type: 'text',
-          required: true,
-          placeholder: 'e.g., EU Imports GmbH',
-          hint: 'Legal name of the company importing goods into the EU'
-        },
-        {
-          id: 'eori_number',
-          label: 'EORI Number',
-          type: 'text',
-          required: true,
-          placeholder: 'e.g., DE123456789012',
-          hint: 'Economic Operators Registration and Identification number',
-          validation: {
-            pattern: '^[A-Z]{2}[A-Z0-9]{1,15}$',
-            message: 'Must be a valid EORI number (e.g., DE123456789012)'
-          }
-        },
-        {
-          id: 'contact_person',
-          label: 'Contact Person',
-          type: 'text',
-          required: true,
-          placeholder: 'Full name',
-          hint: 'Person responsible for this CBAM declaration'
-        },
-        {
-          id: 'contact_email',
-          label: 'Contact Email',
-          type: 'text',
-          required: true,
-          placeholder: 'email@company.com',
-          hint: 'Email for correspondence regarding this declaration'
-        }
-      ]
+        { fieldId: 'organization_name', isRequired: true, displayOrder: 10 },
+        { fieldId: 'product_name', isRequired: true, displayOrder: 20 },
+        { fieldId: 'product_description', displayOrder: 30 },
+        { fieldId: 'functional_unit', displayOrder: 40 },
+      ],
     },
     {
-      id: 'goods_info',
-      title: 'Goods Information',
-      description: 'Details about the imported goods',
+      key: 'emissions_summary',
+      title: 'Declared Emissions',
+      blockComponent: 'ghg-summary',
       fields: [
-        {
-          id: 'cn_code',
-          label: 'CN Code (Combined Nomenclature)',
-          type: 'text',
-          required: true,
-          placeholder: 'e.g., 7208 10 00',
-          hint: 'EU customs classification code for the goods',
-          validation: {
-            pattern: '^\\d{4}\\s?\\d{2}\\s?\\d{2}$',
-            message: 'Must be an 8-digit CN code (e.g., 7208 10 00)'
-          }
-        },
-        {
-          id: 'goods_description',
-          label: 'Description of Goods',
-          type: 'textarea',
-          required: true,
-          placeholder: 'Detailed description of the imported goods...',
-          hint: 'Detailed description matching the CN code'
-        },
-        {
-          id: 'quantity',
-          label: 'Quantity',
-          type: 'number',
-          required: true,
-          placeholder: '0',
-          hint: 'Amount of goods imported (in relevant unit)',
-          validation: {
-            min: 0,
-            message: 'Quantity must be positive'
-          }
-        },
-        {
-          id: 'quantity_unit',
-          label: 'Unit of Measurement',
-          type: 'select',
-          required: true,
-          options: ['tonnes', 'kg', 'MWh', 'pieces', 'other'],
-          hint: 'Unit used to measure the quantity'
-        },
-        {
-          id: 'country_of_origin',
-          label: 'Country of Origin',
-          type: 'text',
-          required: true,
-          placeholder: 'e.g., China',
-          hint: 'Country where the goods were produced'
-        },
-        {
-          id: 'import_period',
-          label: 'Import Period (Quarter)',
-          type: 'select',
-          required: true,
-          options: ['Q1 (Jan-Mar)', 'Q2 (Apr-Jun)', 'Q3 (Jul-Sep)', 'Q4 (Oct-Dec)'],
-          hint: 'Quarterly reporting period for this declaration'
-        }
-      ]
+        { fieldId: 'total_cfp_co2e', isRequired: true, displayOrder: 10 },
+        { fieldId: 'cfp_result_unit', isRequired: true, displayOrder: 20 },
+        { fieldId: 'hotspots_summary', displayOrder: 30 },
+      ],
     },
     {
-      id: 'embedded_emissions',
-      title: 'Embedded Emissions',
-      description: 'Greenhouse gas emissions embedded in the imported goods',
+      key: 'material_inputs',
+      title: 'Material Composition',
+      blockComponent: 'repeatable-table',
+      config: {
+        repeatableKey: 'material_input',
+      },
       fields: [
-        {
-          id: 'direct_emissions',
-          label: 'Direct Emissions (tonnes CO₂e)',
-          type: 'number',
-          required: true,
-          placeholder: '0.00',
-          hint: 'Scope 1 emissions from the production process',
-          validation: {
-            min: 0,
-            message: 'Direct emissions cannot be negative'
-          }
-        },
-        {
-          id: 'indirect_emissions',
-          label: 'Indirect Emissions (tonnes CO₂e)',
-          type: 'number',
-          required: true,
-          placeholder: '0.00',
-          hint: 'Scope 2 emissions from electricity and heat consumption',
-          validation: {
-            min: 0,
-            message: 'Indirect emissions cannot be negative'
-          }
-        },
-        {
-          id: 'total_emissions',
-          label: 'Total Specific Embedded Emissions (per unit)',
-          type: 'number',
-          required: true,
-          placeholder: '0.00',
-          hint: 'Total emissions per unit of goods (auto-calculated)',
-          validation: {
-            min: 0,
-            message: 'Total emissions cannot be negative'
-          }
-        },
-        {
-          id: 'calculation_method',
-          label: 'Emission Calculation Method',
-          type: 'select',
-          required: true,
-          options: [
-            'EU Default Values',
-            'Actual Emissions (Verified)',
-            'Installation-Specific Data',
-            'Third-Party Database'
-          ],
-          hint: 'Method used to determine embedded emissions'
-        },
-        {
-          id: 'carbon_price_paid',
-          label: 'Carbon Price Paid in Country of Origin (€/tonne CO₂e)',
-          type: 'number',
-          required: false,
-          placeholder: '0.00',
-          hint: 'Any carbon price already paid in the country of origin (can be deducted)',
-          validation: {
-            min: 0,
-            message: 'Carbon price cannot be negative'
-          }
-        }
-      ]
+        { fieldId: 'material_input_name', isRequired: true, displayOrder: 10 },
+        { fieldId: 'material_input_amount', displayOrder: 20 },
+        { fieldId: 'material_input_unit', displayOrder: 30 },
+        { fieldId: 'material_origin_country', displayOrder: 40 },
+      ],
     },
     {
-      id: 'supporting_docs',
-      title: 'Supporting Documentation',
-      description: 'Evidence and verification of reported data',
+      key: 'transport_segments',
+      title: 'Transport Segments',
+      blockComponent: 'repeatable-table',
+      config: {
+        repeatableKey: 'transport_segment',
+      },
       fields: [
-        {
-          id: 'verification_status',
-          label: 'Verification Status',
-          type: 'select',
-          required: true,
-          options: [
-            'Not Verified',
-            'Verification in Progress',
-            'Verified by Accredited Body',
-            'Self-Certified'
-          ],
-          hint: 'Current verification status of the emissions data'
-        },
-        {
-          id: 'verifier_name',
-          label: 'Verifier Name (if applicable)',
-          type: 'text',
-          required: false,
-          placeholder: 'e.g., TÜV SÜD',
-          hint: 'Name of the accredited verification body'
-        },
-        {
-          id: 'data_sources',
-          label: 'Data Sources',
-          type: 'textarea',
-          required: true,
-          placeholder: 'List sources of emissions data...',
-          hint: 'Document all sources used to determine emissions (producer declarations, databases, etc.)'
-        },
-        {
-          id: 'notes',
-          label: 'Additional Notes',
-          type: 'textarea',
-          required: false,
-          placeholder: 'Any additional information...',
-          hint: 'Any relevant additional information or clarifications'
-        }
-      ]
-    }
+        { fieldId: 'transport_mode', isRequired: true, displayOrder: 10 },
+        { fieldId: 'transport_distance', displayOrder: 20 },
+        { fieldId: 'transport_load_factor', displayOrder: 30 },
+      ],
+    },
   ],
   
   mailto: {

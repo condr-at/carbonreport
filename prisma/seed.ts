@@ -1,8 +1,9 @@
 /**
  * Database Seed Script (DB-backed, no CSV dependencies)
  */
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import { DATASET_FIELD_SEED } from './seed-data/dataset-fields'
+import { REPORT_TEMPLATE_SEED } from './seed-data/report-templates'
 
 type DataPoint = {
   field_id: string
@@ -21,6 +22,98 @@ const prisma = new PrismaClient({
     },
   },
 })
+
+async function seedReportTemplates() {
+  console.log('🧱 Seeding report templates...')
+
+  const fieldDefinitions = await prisma.datasetFieldDefinition.findMany({
+    select: {
+      id: true,
+      fieldId: true,
+    },
+  })
+
+  const fieldIdToDefinitionId = new Map<string, string>()
+  fieldDefinitions.forEach((def) => {
+    fieldIdToDefinitionId.set(def.fieldId, def.id)
+  })
+
+  for (const [templateIndex, templateSeed] of REPORT_TEMPLATE_SEED.entries()) {
+    const template = await prisma.reportTemplate.create({
+      data: {
+        code: templateSeed.code,
+        name: templateSeed.name,
+        version: templateSeed.version ?? null,
+        description: templateSeed.description ?? null,
+        layoutMeta: templateSeed.layoutMeta
+          ? (templateSeed.layoutMeta as Prisma.InputJsonValue)
+          : undefined,
+        sections: {
+          create: templateSeed.sections.map((sectionSeed, sectionIndex) => {
+            const sectionData: Prisma.ReportTemplateSectionCreateWithoutTemplateInput = {
+              key: sectionSeed.key,
+              title: sectionSeed.title,
+              description: sectionSeed.description ?? null,
+              blockType: sectionSeed.blockComponent,
+              sortOrder: sectionIndex * 100,
+            }
+
+            if (sectionSeed.config) {
+              sectionData.config = sectionSeed.config as Prisma.InputJsonValue
+            }
+
+            return sectionData
+          }),
+        },
+      },
+      include: {
+        sections: true,
+      },
+    })
+
+    for (const sectionSeed of templateSeed.sections) {
+      const section = (template.sections as any[]).find(
+        (s) => s.key === sectionSeed.key
+      )
+      if (!section) {
+        throw new Error(`Failed to create section ${sectionSeed.key} for template ${templateSeed.code}`)
+      }
+
+      const fieldMappings = sectionSeed.fields.map((fieldSeed, fieldIndex) => {
+        const datasetFieldId = fieldIdToDefinitionId.get(fieldSeed.fieldId)
+        if (!datasetFieldId) {
+          throw new Error(
+            `Dataset field "${fieldSeed.fieldId}" not found while seeding template ${templateSeed.code}`
+          )
+        }
+
+        const mapping: Prisma.ReportTemplateFieldMappingCreateManyInput = {
+          sectionId: section.id,
+          datasetFieldDefinitionId: datasetFieldId,
+          displayLabel: fieldSeed.displayLabel ?? null,
+          isRequired: fieldSeed.isRequired ?? false,
+          displayOrder: fieldSeed.displayOrder ?? fieldIndex * 10,
+        }
+
+        if (fieldSeed.config) {
+          mapping.config = fieldSeed.config as Prisma.InputJsonValue
+        }
+
+        return mapping
+      })
+
+      if (fieldMappings.length > 0) {
+        await prisma.reportTemplateFieldMapping.createMany({
+          data: fieldMappings,
+        })
+      }
+    }
+
+    console.log(`   • Seeded template ${templateSeed.code} (${templateIndex + 1}/${REPORT_TEMPLATE_SEED.length})`)
+  }
+
+  console.log(`✅ Seeded ${REPORT_TEMPLATE_SEED.length} report templates`)
+}
 
 function buildEmptyDataset(): DataPoint[] {
   return DATASET_FIELD_SEED.map((field) => ({
@@ -174,6 +267,9 @@ async function main() {
   await prisma.project.deleteMany()
   await prisma.contact.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.reportTemplateFieldMapping.deleteMany()
+  await prisma.reportTemplateSection.deleteMany()
+  await prisma.reportTemplate.deleteMany()
   await prisma.datasetFieldDefinition.deleteMany()
   console.log('✅ Cleaned')
 
@@ -193,6 +289,8 @@ async function main() {
     skipDuplicates: true,
   })
   console.log(`✅ Seeded ${DATASET_FIELD_SEED.length} definitions`)
+
+  await seedReportTemplates()
 
   console.log('👤 Creating test user...')
   const user = await prisma.user.create({

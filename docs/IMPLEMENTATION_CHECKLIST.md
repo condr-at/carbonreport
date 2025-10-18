@@ -38,10 +38,9 @@ Use this checklist to track implementation of the architecture updates.
 
 ## Phase 2: Type Safety Layer ✅
 
-- [x] Create `src/lib/field-ids.ts`
-- [x] Define FieldId enum (50+ values)
-- [x] Add helper functions (`isValidFieldId`, `getAllFieldIds`)
-- [x] Create `src/lib/dataset-validation.ts`
+- [x] Replace enum-based Field IDs with DB-backed definitions (Prisma `DatasetFieldDefinition`)
+- [x] Ensure `/api/dataset-fields` returns normalized definitions
+- [x] Create/Update `src/lib/dataset-validation.ts`
 - [x] Define Zod schemas (`DataPointSchema`, `DatasetSchema`)
 - [x] Add validation helpers
 - [x] Add CRUD helpers (`findDataPoint`, `upsertDataPoint`, etc.)
@@ -54,14 +53,14 @@ Use this checklist to track implementation of the architecture updates.
 ### 3.1 Update Template Files
 
 - [ ] Update `src/lib/report-templates/iso14067.ts`
-  - [ ] Replace string field IDs with `FieldId` enum
-  - [ ] Ensure mailto template structure correct
+   - [ ] Ensure field IDs match DB `DatasetFieldDefinition.fieldId` (snake_case)
+   - [ ] Ensure mailto template structure correct
 - [ ] Update `src/lib/report-templates/cbam.ts`
-  - [ ] Replace string field IDs with `FieldId` enum
-  - [ ] Ensure mailto template structure correct
+   - [ ] Ensure field IDs match DB `DatasetFieldDefinition.fieldId` (snake_case)
+   - [ ] Ensure mailto template structure correct
 - [ ] Update `src/lib/report-templates/types.ts`
-  - [ ] Update `ReportField` interface to use `FieldId` type
-  - [ ] Document `metadata` field for Reports
+   - [ ] Confirm `ReportField` uses `field_id: string` referencing DB IDs
+   - [ ] Document `metadata` field for Reports
 
 ### 3.2 Update API Routes ✅
 
@@ -78,14 +77,14 @@ Use this checklist to track implementation of the architecture updates.
   - [x] Return dataset with current `datasetVersion`
   - [x] Add validation (optional, for safety)
 
-- [ ] `PUT /api/projects/[id]/dataset/[fieldId]` — Update single field (optional, not implemented)
-  - [ ] Validate `fieldId` is valid `FieldId` enum value
-  - [ ] Use `upsertDataPoint` helper
-  - [ ] Implement optimistic locking
+- [ ] `PATCH /api/projects/[id]/dataset` — Update single field (implemented)
+   - [ ] Validate `field_id` exists in DB definitions
+   - [ ] Use `upsertDataPoint` helper
+   - [ ] Optimistic locking via `datasetVersion`
 
-- [ ] `DELETE /api/projects/[id]/dataset/[fieldId]` — Delete field (optional, not implemented)
-  - [ ] Use `removeDataPoint` helper
-  - [ ] Implement optimistic locking
+- [ ] `DELETE /api/projects/[id]/dataset/items/[itemId]` — Delete repeatable item (implemented)
+   - [ ] Use helper to remove all data points for `item_id`
+   - [ ] Optimistic locking via `datasetVersion`
 
 #### Project Endpoints ✅
 
@@ -125,7 +124,7 @@ Use this checklist to track implementation of the architecture updates.
   - [x] Return `Project.mailtoTemplates` JSONB
 
 - [x] `PUT /api/projects/[id]/mailto-templates/[fieldId]` — Update template
-  - [x] Validate `fieldId` is valid `FieldId`
+   - [x] Validate `fieldId` exists in DB definitions
   - [x] Validate structure with Zod
   - [x] Update specific template in `Project.mailtoTemplates`
 
@@ -148,7 +147,7 @@ Use this checklist to track implementation of the architecture updates.
     }
     ```
   - [ ] Show optimistic UI updates
-  - [ ] Use `FieldId` enum for field references
+   - [ ] Use DB-backed field IDs (snake_case) from `/api/dataset-fields`
 
 #### Report Editor
 
@@ -228,10 +227,10 @@ Use this checklist to track implementation of the architecture updates.
 
 ### Unit Tests
 
-- [ ] `src/lib/field-ids.test.ts`
-  - [ ] `isValidFieldId()` returns true for valid IDs
-  - [ ] `isValidFieldId()` returns false for invalid strings
-  - [ ] `getAllFieldIds()` returns all enum values
+- [ ] `src/lib/dataset-validation.test.ts` (IDs)
+   - [ ] `isValidFieldId()` returns true for valid DB IDs
+   - [ ] `isValidFieldId()` returns false for invalid strings
+   - [ ] `getAllFieldIds()` returns all DB IDs
 
 - [ ] `src/lib/dataset-validation.test.ts`
   - [ ] Zod schema validates correct data
@@ -256,7 +255,7 @@ Use this checklist to track implementation of the architecture updates.
 - [ ] **Dataset updates**
   - [ ] Increments datasetVersion on save
   - [ ] Rejects stale datasetVersion (409 error)
-  - [ ] Validates field_id against FieldId enum
+   - [ ] Validates `field_id` against DB definitions
 
 - [ ] **Report rendering**
   - [ ] Loads data from Project.dataset only
@@ -399,7 +398,7 @@ Use this checklist to track implementation of the architecture updates.
 **What we have**:
 - ✅ Backend APIs (all 11 endpoints working)
 - ✅ Database schema with optimistic locking
-- ✅ Type safety (FieldId enum, Zod validation)
+- ✅ Type safety (DB-backed field IDs, Zod validation)
 - ✅ Report templates (ISO14067, CBAM) in code
 - ✅ Seed data with sample projects
 - ✅ shadcn/ui setup with base components
@@ -775,7 +774,7 @@ Use this checklist to track implementation of the architecture updates.
        project     Project  @relation(fields: [projectId])
        contactId   String?
        contact     Contact? @relation(fields: [contactId])
-       fieldId     String   // FieldId enum value
+   fieldId     String   // DB-backed snake_case field id
        status      String   @default("pending") // pending, fulfilled, cancelled
        requestedAt DateTime @default(now())
        fulfilledAt DateTime?
@@ -887,7 +886,7 @@ Use this checklist to track implementation of the architecture updates.
      {
        "projectId": "uuid",
        "contactId": "uuid",
-       "fieldId": "Product_Name",
+   "field_id": "product_name",
        "status": "pending",
        "requestedAt": "2025-10-13T..."
      }

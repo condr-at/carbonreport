@@ -17,7 +17,7 @@ import {
 
 export default function QuestionnairePage() {
   const router = useRouter();
-  const [currentQuestionId, setCurrentQuestionId] = useState<string>('assessment_goal');
+  const [currentQuestionId, setCurrentQuestionId] = useState<string>('target_region');
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedValue, setSelectedValue] = useState<string>('');
 
@@ -59,7 +59,7 @@ export default function QuestionnairePage() {
       setCurrentQuestionId(nextQuestion.id);
       setSelectedValue(''); // Reset selection for next question
     } else {
-      // No more questions, calculate recommendations and go to select-reports
+  // No more questions, calculate recommendations and go to select-reports
       const recommendedTemplates = getRecommendedTemplates(updatedAnswers);
       sessionStorage.setItem('recommendedTemplates', JSON.stringify(recommendedTemplates));
       router.push('/projects/new/select-reports');
@@ -180,7 +180,7 @@ export default function QuestionnairePage() {
                 onClick={handleNext}
                 disabled={!selectedValue}
               >
-                Next: Select Reports
+                Next
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button

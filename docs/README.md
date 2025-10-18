@@ -10,19 +10,18 @@ This folder contains all project documentation for the Carbon Report Platform.
 
 1. **Setup Database**: 
    ```bash
-   npm run db:seed  # Fill with mock data
-   npm run dev      # Start dev server
+   npm run db:push   # Sync schema (uses DIRECT_URL)
+   npm run db:seed   # Seed DB-backed field definitions and sample data
+   npm run dev       # Start dev server
    ```
-2. **Read First**: [Requirements v0.0.1](./Requirements%20v0.0.1.md) - System overview
-3. **Mock Data**: [DATABASE_MOCK_DATA.md](./DATABASE_MOCK_DATA.md) - Sample projects
-4. **Implementation**: [DATASET_QUICK_REFERENCE.md](./DATASET_QUICK_REFERENCE.md) - Code examples
-5. **UI Components**: [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - Visual guidelines
+2. **Read First**: [Requirements v0.0.1](./Requirements%20v0.0.1.md) — updated for DB-backed field definitions
+3. **API**: [API_REFERENCE.md](./API_REFERENCE.md) — endpoints and contracts
+4. **UI Components**: [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)
 
 ### For Product/UX
 
 1. **UX Flows**: [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md)
-2. **User Guide**: [DATASET_TABLE_USER_GUIDE.md](./DATASET_TABLE_USER_GUIDE.md)
-3. **Architecture**: [Requirements v0.0.1](./Requirements%20v0.0.1.md)
+2. **Architecture**: [REPORT_TEMPLATES_ARCHITECTURE.md](./REPORT_TEMPLATES_ARCHITECTURE.md) and [Requirements v0.0.1](./Requirements%20v0.0.1.md)
 
 ---
 
@@ -72,147 +71,19 @@ UX specifications, information architecture, and user interaction patterns.
 
 ---
 
-## 📊 Dataset System (Iteration 6)
+## 📊 Dataset System (DB-backed)
 
-### 🎯 [DATASET_QUICK_REFERENCE.md](./DATASET_QUICK_REFERENCE.md) ⭐
-**Start here** for dataset implementation. Quick reference with code examples.
+The dataset is now fully defined by database field definitions (`DatasetFieldDefinition`).
 
-**Contents**:
-- Key concepts and files
-- Commands and API examples
-- Code snippets (init, enrich, group, transform)
-- Troubleshooting guide
+Key references:
+- Field definitions API: `/api/dataset-fields`
+- Seed source: `prisma/seed-data/dataset-fields.ts`
+- Runtime helpers: `src/lib/dataset-init.ts`, `src/lib/dataset-utils-v2.ts`
 
-**When to use**: Implementing dataset features, debugging, quick lookup
-
----
-
-### 📖 [FULL_DATASET_SCHEMA.md](./FULL_DATASET_SCHEMA.md)
-Complete guide to the 162-field dataset system.
-
-**Contents**:
-- Dataset vs Report Templates concept
-- Schema structure (19 sections, 162 fields)
-- Implementation details (parser, generator, initialization)
-- Workflow for adding new fields
-
-**When to use**: Understanding dataset architecture, extending the system
-
----
-
-### 🏗️ [DATASET_INITIALIZATION.md](./DATASET_INITIALIZATION.md)
-Strategy and best practices for dataset initialization.
-
-**Contents**:
-- Comparison of approaches (template-based vs full schema)
-- Implementation patterns
-- Migration strategies
-
-**When to use**: Understanding initialization logic, refactoring
-
----
-
-### 📋 [DATASET_TABLE_REQUIREMENTS.md](./DATASET_TABLE_REQUIREMENTS.md)
-Original specification for dataset table UI.
-
-**Contents**:
-- TanStack Table v8 requirements
-- Data transformation flow
-- Visual grouping specifications
-- Inline editing behaviors
-
-**When to use**: UI implementation, feature planning
-
----
-
-### 👥 [DATASET_TABLE_USER_GUIDE.md](./DATASET_TABLE_USER_GUIDE.md)
-End-user guide for dataset table features.
-
-**Contents**:
-- Feature overview with screenshots
-- Step-by-step guides
-- Tips and shortcuts
-- FAQ
-
-**When to use**: User training, support documentation
-
----
-
-### ✅ [ITERATION_6_COMPLETION.md](./ITERATION_6_COMPLETION.md)
-Summary of Iteration 6 implementation.
-
-**Contents**:
-- Completed tasks checklist
-- Metrics and performance
-- Known issues
-- Sign-off and criteria
-
-**When to use**: Progress tracking, handoff documentation
-
----
-
-### 🔧 [DATASET_REPEATABLE_FIX.md](./DATASET_REPEATABLE_FIX.md) ⭐
-**Critical fix** for repeatable fields behavior.
-
-**Contents**:
-- Правильное понимание repeatable fields (минимум один item)
-- Правила удаления items
-- Изменения в коде и UI
-- Примеры и валидация
-
-**When to use**: Understanding repeatable field logic, debugging delete behavior
-
----
-
-### 📊 [DATASET_STRUCTURE_VISUAL.md](./DATASET_STRUCTURE_VISUAL.md)
-Visual guide to dataset structure with diagrams.
-
-**Contents**:
-- ASCII diagrams of dataset structure
-- UI behavior examples
-- Code logic explanations
-- Decision tables
-
-**When to use**: Quick visual reference, onboarding, understanding structure
-
----
-
-### 📝 [DATASET_FIX_SUMMARY.md](./DATASET_FIX_SUMMARY.md)
-Short summary of repeatable fields fix.
-
-**Contents**:
-- Changes overview
-- Validation results
-- Commit messages
-
-**When to use**: Quick reference, changelog
-
----
-
-### 🗄️ [DATABASE_MOCK_DATA.md](./DATABASE_MOCK_DATA.md) ⭐
-Complete guide to mock data for development.
-
-**Contents**:
-- Sample projects (E-Bike, Steel)
-- User, contacts, reports structure
-- Commands for testing
-- How to extend mock data
-
-**When to use**: Setting up dev environment, testing, understanding sample data
-
----
-
-### 📄 [MOCK_DATA_SUMMARY.md](./MOCK_DATA_SUMMARY.md)
-Short summary of mock data implementation.
-
-**Contents**:
-- What's created
-- Quick commands
-- File changes
-
-**When to use**: Quick reference for mock data
-
----
+Concepts:
+- `field_id`: snake_case string ID stored in DB
+- `is_repeatable`, `repeatable_key`: mark and group repeatable fields
+- `item_id`: numeric string to distinguish rows within a repeatable group
 
 ### 🔧 [API_REFERENCE.md](./API_REFERENCE.md)
 Complete REST API documentation for backend endpoints.
@@ -248,10 +119,9 @@ Development progress tracker and implementation roadmap.
 3. Check [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md) for current status
 
 **Working with Dataset?** ⭐
-1. **Quick start**: [DATASET_QUICK_REFERENCE.md](./DATASET_QUICK_REFERENCE.md) - Code examples
-2. **Architecture**: [FULL_DATASET_SCHEMA.md](./FULL_DATASET_SCHEMA.md) - 162 fields structure
-3. **Visual guide**: [DATASET_STRUCTURE_VISUAL.md](./DATASET_STRUCTURE_VISUAL.md) - Diagrams
-4. **Repeatable fix**: [DATASET_REPEATABLE_FIX.md](./DATASET_REPEATABLE_FIX.md) - Important rules
+1. **Field definitions**: `prisma/seed-data/dataset-fields.ts`
+2. **API**: `/api/dataset-fields`
+3. **Helpers**: `src/lib/dataset-utils-v2.ts`
 
 **Building frontend?**
 1. Read [API_REFERENCE.md](./API_REFERENCE.md) for endpoint specs
@@ -266,20 +136,7 @@ Development progress tracker and implementation roadmap.
 
 ---
 
-## Document Status
-
-| Document | Status | Last Updated |
-|----------|--------|--------------|
-| Requirements v0.0.1 | ✅ Complete | Oct 12, 2025 |
-| UX_REQUIREMENTS | ✅ Complete | Oct 12, 2025 |
-| DESIGN_SYSTEM | ✅ Complete | Oct 12, 2025 |
-| API_REFERENCE | ✅ Complete | Oct 12, 2025 |
-| IMPLEMENTATION_CHECKLIST | 🟡 In Progress | Oct 12, 2025 |
-| **DATASET_QUICK_REFERENCE** | ✅ Complete | **Oct 13, 2025** |
-| **FULL_DATASET_SCHEMA** | ✅ Complete | **Oct 13, 2025** |
-| **DATASET_REPEATABLE_FIX** | ✅ Complete | **Oct 13, 2025** |
-| **DATASET_STRUCTURE_VISUAL** | ✅ Complete | **Oct 13, 2025** |
-| **ITERATION_6_COMPLETION** | ✅ Complete | **Oct 13, 2025** |
+<!-- Removed stale Document Status table to avoid drift -->
 
 ---
 
@@ -289,7 +146,8 @@ Development progress tracker and implementation roadmap.
 - **Single Source of Truth**: All field data in `Project.dataset` JSONB
 - **Code-Based Configuration**: Templates and questionnaires in `src/lib/` (Git-versioned)
 - **Optimistic Locking**: Concurrent edit prevention via `datasetVersion` counter
-- **Type Safety**: FieldId enum and Zod validation throughout
+- **DB-backed Field Definitions**: Single source of truth in DB, fetched via API
+- **Type Safety**: Zod validation throughout
 - **Flexible Reports**: Reports are filtered views of Project.dataset
 
 **Tech Stack**:

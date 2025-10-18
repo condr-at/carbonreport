@@ -198,7 +198,7 @@ ProjectCard {
 **`<DataPointRow />`** — Used in: Dataset, Report Editor
 ```tsx
 DataPointRow {
-  - Field ID (with FieldId enum)
+  - Field ID (snake_case, from DB)
   - Label (from template)
   - Value input (text, number, date, etc.)
   - "Request Data" button

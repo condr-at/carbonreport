@@ -36,4 +36,12 @@ export function isValidTemplateCode(code: string): code is ReportTemplateCode {
 }
 
 // Export types
-export type { ReportTemplate, ReportTemplateCode, ReportField, ReportSection } from './types'
+export type {
+  ReportTemplate,
+  ReportTemplateCode,
+  ReportTemplateFieldMapping,
+  ReportTemplateSection,
+  ReportTemplateSectionConfig,
+  ReportTemplateLayoutMeta,
+  MailtoTemplate,
+} from './types'
