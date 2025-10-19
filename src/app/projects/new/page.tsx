@@ -29,6 +29,20 @@ export default function NewProjectPage() {
     formState: { errors },
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
+    defaultValues: (() => {
+      if (typeof window === 'undefined') return undefined;
+      try {
+        const stored = sessionStorage.getItem('projectData');
+        if (stored) {
+          const parsed = JSON.parse(stored) as Partial<ProjectFormData>;
+          return {
+            name: parsed.name || '',
+            description: parsed.description || '',
+          };
+        }
+      } catch {}
+      return undefined;
+    })(),
   });
 
   const onSubmit = (data: ProjectFormData) => {

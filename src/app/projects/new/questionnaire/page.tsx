@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowRight, ArrowLeft, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { 
   WIZARD_QUESTIONNAIRE, 
@@ -17,6 +17,8 @@ import {
 
 export default function QuestionnairePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resumeMode = searchParams.get('resume') === '1';
   const [currentQuestionId, setCurrentQuestionId] = useState<string>('target_region');
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedValue, setSelectedValue] = useState<string>('');
@@ -24,21 +26,48 @@ export default function QuestionnairePage() {
   // Load existing answers from sessionStorage on mount
   useEffect(() => {
     const savedAnswers = sessionStorage.getItem('wizardAnswers');
-    if (savedAnswers) {
-      const parsed = JSON.parse(savedAnswers);
-      setAnswers(parsed);
-      
-      // Set current value if already answered
-      if (parsed[currentQuestionId]) {
-        setSelectedValue(parsed[currentQuestionId]);
-      }
+    const parsed: Record<string, string> = savedAnswers ? JSON.parse(savedAnswers) : {};
+    setAnswers(parsed);
+
+    const visible = getVisibleQuestions(parsed);
+    if (visible.length === 0) {
+      setCurrentQuestionId('target_region');
+      setSelectedValue(parsed['target_region'] ?? '');
+      return;
     }
-  }, [currentQuestionId]);
+
+    if (resumeMode) {
+      const lastId = visible[visible.length - 1].id;
+      setCurrentQuestionId(lastId);
+      setSelectedValue(parsed[lastId] ?? '');
+      return;
+    }
+
+    const firstUnanswered = visible.find((question) => !parsed[question.id]);
+    const startId = firstUnanswered?.id ?? visible[0].id;
+    setCurrentQuestionId(startId);
+    setSelectedValue(parsed[startId] ?? '');
+  }, [resumeMode]);
 
   const currentQuestion = WIZARD_QUESTIONNAIRE[currentQuestionId];
   const visibleQuestions = getVisibleQuestions(answers);
-  const currentStepNumber = visibleQuestions.findIndex(q => q.id === currentQuestionId) + 1;
-  const totalSteps = visibleQuestions.length + 1; // +1 for final select-reports step
+  const currentQuestionIndex = visibleQuestions.findIndex(q => q.id === currentQuestionId);
+  const answeredCount = visibleQuestions.filter(q => answers[q.id]).length;
+  const totalQuestions = visibleQuestions.length;
+  const questionnaireProgress = totalQuestions > 0 ? Math.min(100, Math.round((answeredCount / totalQuestions) * 100)) : 0;
+
+  // If current question becomes hidden (due to answer changes), move to nearest valid question
+  useEffect(() => {
+    const visible = getVisibleQuestions(answers);
+    if (visible.length === 0) return;
+    const stillVisible = visible.some((question) => question.id === currentQuestionId);
+    if (!stillVisible) {
+      const firstUnanswered = visible.find((question) => !answers[question.id]);
+      const fallbackId = firstUnanswered?.id ?? visible[visible.length - 1].id;
+      setCurrentQuestionId(fallbackId);
+      setSelectedValue(answers[fallbackId] ?? '');
+    }
+  }, [answers, currentQuestionId]);
 
   const handleNext = () => {
     if (!selectedValue) {
@@ -99,9 +128,7 @@ export default function QuestionnairePage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Create New Project</h1>
-            <p className="text-muted-foreground mt-1">
-              Step {currentStepNumber} of {totalSteps}: Questionnaire
-            </p>
+            <p className="text-muted-foreground mt-1">Questionnaire</p>
           </div>
           <Button
             variant="ghost"
@@ -112,22 +139,36 @@ export default function QuestionnairePage() {
           </Button>
         </div>
 
-        {/* Progress indicator */}
+        {/* Progress indicator (fixed 3 segments) */}
         <div className="flex items-center gap-2">
-          {/* Step 1: Project name (completed) */}
+          {/* Segment 1: Project Info (completed) */}
           <div className="flex-1 h-2 bg-primary rounded-full" />
-          
-          {/* Question steps (dynamic based on visible questions) */}
-          {visibleQuestions.map((q, index) => (
-            <div
-              key={q.id}
-              className={`flex-1 h-2 rounded-full ${
-                index < currentStepNumber - 1 ? 'bg-primary' : 'bg-muted'
-              }`}
-            />
-          ))}
-          
-          {/* Final step: Select reports */}
+
+          {/* Segment 2: Questionnaire (split into micro-steps) */}
+          <div className="flex-1 h-2 bg-muted overflow-hidden">
+            {totalQuestions > 0 ? (
+              <div
+                className="grid h-full w-full gap-[2px]"
+                style={{ gridTemplateColumns: `repeat(${totalQuestions}, 1fr)` }}
+              >
+                {Array.from({ length: totalQuestions }).map((_, idx) => {
+                  const isFilled = idx < answeredCount;
+                  return (
+                    <div
+                      key={idx}
+                      className={`h-full transition-colors ${
+                        isFilled ? 'bg-primary' : 'bg-muted'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-full w-full bg-muted" />
+            )}
+          </div>
+
+          {/* Segment 3: Select Reports (upcoming) */}
           <div className="flex-1 h-2 bg-muted rounded-full" />
         </div>
 

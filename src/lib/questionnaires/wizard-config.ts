@@ -144,7 +144,7 @@ export const WIZARD_QUESTIONNAIRE: Record<string, QuestionConfig> = {
 
 export interface WizardStep {
   id: string;
-  path: string;
+  path: string | string[]; // supports multiple variants per step
   title: string;
   description: string;
   canSkip: boolean;
@@ -295,15 +295,19 @@ export function getVisibleQuestions(answers: Record<string, string>): QuestionCo
 /**
  * Get current step info
  */
+function stepPaths(step: WizardStep): string[] {
+  return Array.isArray(step.path) ? step.path : [step.path];
+}
+
 export function getCurrentStepInfo(pathname: string): WizardStep | null {
-  return WIZARD_STEPS.find((step) => step.path === pathname) || null;
+  return WIZARD_STEPS.find((step) => stepPaths(step).includes(pathname)) || null;
 }
 
 /**
  * Get step number (1-indexed)
  */
 export function getStepNumber(pathname: string): number {
-  const index = WIZARD_STEPS.findIndex((step) => step.path === pathname);
+  const index = WIZARD_STEPS.findIndex((step) => stepPaths(step).includes(pathname));
   return index >= 0 ? index + 1 : 1;
 }
 
@@ -318,9 +322,10 @@ export function getTotalSteps(): number {
  * Get next step path
  */
 export function getNextStepPath(currentPath: string): string | null {
-  const currentIndex = WIZARD_STEPS.findIndex((step) => step.path === currentPath);
+  const currentIndex = WIZARD_STEPS.findIndex((step) => stepPaths(step).includes(currentPath));
   if (currentIndex >= 0 && currentIndex < WIZARD_STEPS.length - 1) {
-    return WIZARD_STEPS[currentIndex + 1].path;
+    const next = WIZARD_STEPS[currentIndex + 1];
+    return stepPaths(next)[0] || null;
   }
   return null;
 }
@@ -329,9 +334,10 @@ export function getNextStepPath(currentPath: string): string | null {
  * Get previous step path
  */
 export function getPreviousStepPath(currentPath: string): string | null {
-  const currentIndex = WIZARD_STEPS.findIndex((step) => step.path === currentPath);
+  const currentIndex = WIZARD_STEPS.findIndex((step) => stepPaths(step).includes(currentPath));
   if (currentIndex > 0) {
-    return WIZARD_STEPS[currentIndex - 1].path;
+    const prev = WIZARD_STEPS[currentIndex - 1];
+    return stepPaths(prev)[0] || null;
   }
   return null;
 }

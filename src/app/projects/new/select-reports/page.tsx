@@ -105,7 +105,7 @@ export default function SelectReportsPage() {
   };
 
   const handleBack = () => {
-    router.push('/projects/new/questionnaire');
+    router.push('/projects/new/questionnaire?resume=1');
   };
 
   return (
