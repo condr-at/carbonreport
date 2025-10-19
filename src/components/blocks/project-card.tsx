@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +12,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { saveProjectPrefill } from '@/lib/project-prefill';
+import { useCallback, useMemo } from 'react';
 
 interface Report {
   id: string;
@@ -34,9 +38,11 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProps) {
   // Calculate overall completion (average of all reports)
-  const completion = project.reports && project.reports.length > 0
-    ? Math.round(project.reports.reduce((sum, r) => sum + r.completion, 0) / project.reports.length)
-    : 0;
+  const completion = useMemo(() => {
+    if (!project.reports || project.reports.length === 0) return 0;
+    const total = project.reports.reduce((sum, r) => sum + r.completion, 0);
+    return Math.round(total / project.reports.length);
+  }, [project.reports]);
 
   const statusColor = project.status === 'ACTIVE' ? 'default' : 'secondary';
   const statusIcon = completion === 100 ? CheckCircle2 : Clock;
@@ -45,6 +51,19 @@ export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProp
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
+
+  const rememberProject = useCallback(() => {
+    saveProjectPrefill({
+      id: project.id,
+      name: project.name,
+      status: project.status,
+      createdAt: project.createdAt,
+      reportsCount: project.reportsCount,
+      completion,
+      templateCodes: project.reports?.map((report) => report.templateCode) ?? [],
+      source: 'projects-list',
+    });
+  }, [project.id, project.name, project.status, project.createdAt, project.reportsCount, project.reports, completion]);
 
   return (
     <Card className="group hover:shadow-md transition-shadow">
@@ -64,7 +83,7 @@ export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProp
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href={`/projects/${project.id}`} className="cursor-pointer">
+                <Link href={`/projects/${project.id}`} className="cursor-pointer" onClick={rememberProject}>
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Open Project
                 </Link>
@@ -111,7 +130,7 @@ export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProp
       </CardContent>
       <CardFooter>
         <Button asChild className="w-full" variant="outline">
-          <Link href={`/projects/${project.id}`}>
+          <Link href={`/projects/${project.id}`} onClick={rememberProject}>
             View Details
           </Link>
         </Button>

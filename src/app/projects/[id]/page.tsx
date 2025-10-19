@@ -6,6 +6,7 @@ import { CheckCircle2, Circle, FileText, Database, TrendingUp, MailQuestion } fr
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ProjectRoadmap } from '@/components/project-roadmap';
+import { ProjectPrefillHydrator } from '@/components/project-prefill-hydrator';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -84,6 +85,17 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
 
   return (
     <ProjectLayout project={project}>
+      <ProjectPrefillHydrator
+        project={{
+          id: project.id,
+          name: project.name,
+          status: project.status,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+          datasetVersion: project.datasetVersion,
+        }}
+        reports={project.reports}
+      />
       <div className="space-y-6">
         {/* Three Columns Layout */}
         <div className="grid gap-6 md:grid-cols-3">
