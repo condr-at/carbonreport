@@ -19,6 +19,7 @@ import { createEmptyDataset } from '@/lib/dataset-validation'
 
 // Request schema
 const CreateProjectSchema = z.object({
+  id: z.string().uuid().optional(),
   name: z.string().min(3, 'Project name must be at least 3 characters'),
   templateCodes: z.array(z.string()).min(1, 'At least one report type is required'),
   userId: z.string().uuid(), // TODO: Get from JWT session
@@ -87,8 +88,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Parse and validate request body
-    const body = await request.json()
-    const { name, templateCodes, userId } = CreateProjectSchema.parse(body)
+  const body = await request.json()
+  const { id, name, templateCodes, userId } = CreateProjectSchema.parse(body)
 
     // ⚠️ TEMPORARY DEV WORKAROUND - Remove before production!
     // Auto-create user if doesn't exist (bypasses foreign key constraint for testing)
@@ -132,6 +133,7 @@ export async function POST(request: NextRequest) {
     // Create project with proper initialization
     const project = await prisma.project.create({
       data: {
+        ...(id ? { id } : {}),
         userId,
         name,
         status: 'ACTIVE',

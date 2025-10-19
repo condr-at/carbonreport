@@ -1,6 +1,7 @@
 'use client';
 
 import { DashboardLayout } from '@/components/layouts/dashboard-layout';
+import { MainSidebar } from '@/components/layouts/main-sidebar';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -10,6 +11,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { getAllReportTemplates } from '@/lib/report-templates';
 import { getRecommendedTemplates } from '@/lib/questionnaires/wizard-config';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Spinner } from '@/components/ui/spinner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +24,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { clearWizardProgress, hasAnyWizardProgress } from '@/lib/wizard-progress';
+import { saveProjectPrefill } from '@/lib/project-prefill';
 
 export default function SelectReportsPage() {
   const router = useRouter();
@@ -114,8 +118,31 @@ export default function SelectReportsPage() {
 
     const projectData = JSON.parse(projectDataStr);
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
+    // Generate client-side ID (UUID v4) for immediate navigation
+    const clientId = crypto.randomUUID();
+
+    // Optimistic prefill and immediate navigation
+    saveProjectPrefill({
+      id: clientId,
+      name: projectData.name,
+      status: 'ACTIVE',
+      createdAt: new Date().toISOString(),
+      datasetVersion: 0,
+      reportsCount: selectedTemplates.length,
+      completion: 0,
+      templateCodes: selectedTemplates,
+      source: 'project-create',
+    });
+
+    // Clear wizard progress before navigation
+    clearWizardProgress();
+
+    // Navigate immediately using the client-generated ID
+    router.push(`/projects/${clientId}`);
+
+    // Fire-and-forget: create on server with the same ID to converge
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
@@ -123,6 +150,7 @@ export default function SelectReportsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          id: clientId,
           name: projectData.name,
           templateCodes: selectedTemplates,
           userId: '550e8400-e29b-41d4-a716-446655440000', // Mock user ID
@@ -130,20 +158,16 @@ export default function SelectReportsPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create project');
+        // Optional: could update a transient error state in prefill
+        console.error('Background project create failed', await response.json());
+      } else {
+        const result = await response.json();
+        // Server will hydrate via ProjectPrefillHydrator when page loads
       }
-
-      const result = await response.json();
-
-      // Clear sessionStorage
-      clearWizardProgress();
-
-      // Redirect to project overview
-      router.push(`/projects/${result.project.id}`);
     } catch (error) {
-      console.error('Error creating project:', error);
-      alert(error instanceof Error ? error.message : 'Failed to create project');
+      console.error('Error creating project (background):', error);
+    } finally {
+      // Allow the button to return to idle if we’re still on this screen (e.g. navigation failed).
       setIsSubmitting(false);
     }
   };
@@ -262,6 +286,109 @@ export default function SelectReportsPage() {
           </p>
         </div>
       </div>
+      {isSubmitting && (
+        <div className="fixed inset-0 z-50 flex overflow-hidden bg-background/95 backdrop-blur-sm">
+          <div className="absolute right-8 top-6 flex items-center gap-2 text-sm text-muted-foreground">
+            <Spinner size="md" variant="default" />
+            <span>Создаём проект…</span>
+          </div>
+          <div className="pointer-events-none opacity-90" aria-hidden="true">
+            <MainSidebar />
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <div className="container mx-auto max-w-7xl space-y-6 p-6">
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-start justify-between gap-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-64 rounded-lg" />
+                      <Skeleton className="h-6 w-20 rounded-full" />
+                    </div>
+                    <Skeleton className="h-4 w-48 rounded-md" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                  </div>
+                </div>
+                <div className="border-b border-accent/40 pb-2">
+                  <div className="flex gap-6">
+                    {[120, 96, 108, 102].map((width, index) => (
+                      <div key={index} className="pb-4">
+                        <Skeleton className="h-4 rounded-md" style={{ width: `${width}px` }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="space-y-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="rounded-xl border border-accent/35 bg-background/40 p-6"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-32 rounded-md" />
+                        <Skeleton className="h-4 w-4 rounded-full" />
+                      </div>
+                      <div className="space-y-4 pt-4">
+                        <Skeleton className="h-8 w-24 rounded-md" />
+                        {index === 0 ? (
+                          <div className="h-3 w-full overflow-hidden rounded-full border border-accent/25 bg-background/60">
+                            <Skeleton className="h-full w-3/4 rounded-full" />
+                          </div>
+                        ) : (
+                          <Skeleton className="h-3 w-3/4 rounded-md" />
+                        )}
+                        {index !== 0 && (
+                          <Skeleton className="h-3 w-2/3 rounded-md" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="rounded-xl border border-accent/35 bg-background/40 p-6">
+                  <div className="space-y-2 border-b border-accent/25 pb-4">
+                    <Skeleton className="h-5 w-40 rounded-md" />
+                    <Skeleton className="h-4 w-56 rounded-md" />
+                  </div>
+                  <div className="max-h-[546px] space-y-4 overflow-hidden pt-4">
+                    {Array.from({ length: 9 }).map((_, index) => (
+                      <div key={index} className="space-y-2">
+                        <Skeleton className="h-4 w-48 rounded-md" />
+                        <Skeleton className="h-3 w-60 rounded-md" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-accent/35 bg-background/40 p-6">
+                  <div className="flex items-start justify-between border-b border-accent/25 pb-4">
+                    <div className="space-y-2">
+                      <Skeleton className="h-5 w-44 rounded-md" />
+                      <Skeleton className="h-4 w-36 rounded-md" />
+                    </div>
+                    <Skeleton className="h-9 w-28 rounded-md" />
+                  </div>
+                  <div className="max-h-[546px] space-y-3 overflow-hidden pt-4">
+                    {Array.from({ length: 8 }).map((_, index) => (
+                      <div key={index} className="flex items-start gap-3">
+                        <Skeleton className="mt-1 h-5 w-5 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-full rounded-md" />
+                          <Skeleton className="h-3 w-48 rounded-md" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <AlertDialog open={isExitDialogOpen} onOpenChange={(open) => !open && handleExitCancel()}>
         <AlertDialogContent>
           <AlertDialogHeader>

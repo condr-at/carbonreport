@@ -4,9 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Circle, FileText, Database, TrendingUp, MailQuestion } from 'lucide-react';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import { ProjectRoadmap } from '@/components/project-roadmap';
 import { ProjectPrefillHydrator } from '@/components/project-prefill-hydrator';
+import ProjectLoading from './loading';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -32,7 +32,7 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
   const project = await getProject(id);
 
   if (!project) {
-    notFound();
+    return <ProjectLoading />;
   }
 
   // Calculate completion from reports

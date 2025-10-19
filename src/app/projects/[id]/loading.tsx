@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layouts/dashboard-layout';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +24,7 @@ function formatDate(value?: string) {
 
 export default function ProjectLoading() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const projectId = useMemo(() => {
     if (!params) return '';
     const raw = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -31,6 +32,7 @@ export default function ProjectLoading() {
   }, [params]);
 
   const [prefill, setPrefill] = useState<ProjectPrefill | null>(null);
+  const [pendingState, setPendingState] = useState<'idle' | 'waiting' | 'ready' | 'error'>('idle');
 
   useEffect(() => {
     if (!projectId) return;
@@ -39,6 +41,54 @@ export default function ProjectLoading() {
       setPrefill(cached);
     }
   }, [projectId]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    if (prefill?.source !== 'project-create') return;
+
+    let cancelled = false;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    const poll = async () => {
+      attempts += 1;
+      try {
+        const res = await fetch(`/api/projects/${projectId}`, {
+          cache: 'no-store',
+        });
+        if (res.ok) {
+          if (!cancelled) {
+            setPendingState('ready');
+            router.refresh();
+          }
+          return true;
+        }
+      } catch (error) {
+        console.error('Error polling project creation:', error);
+      }
+
+      if (attempts >= maxAttempts && !cancelled) {
+        setPendingState('error');
+        return true;
+      }
+
+      return false;
+    };
+
+    setPendingState('waiting');
+    poll();
+    const interval = setInterval(async () => {
+      const done = await poll();
+      if (done) {
+        clearInterval(interval);
+      }
+    }, 1200);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [prefill?.source, projectId, router]);
 
   const formattedCreatedAt = useMemo(() => formatDate(prefill?.createdAt), [prefill?.createdAt]);
   const reportsCount = prefill?.reportsCount ?? prefill?.templateCodes?.length ?? null;
@@ -168,6 +218,14 @@ export default function ProjectLoading() {
                 </span>
               ))}
             </nav>
+            {pendingState === 'waiting' && (
+              <p className="pt-2 text-xs text-muted-foreground">Finalizing project creation…</p>
+            )}
+            {pendingState === 'error' && (
+              <div className="mt-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+                We couldn’t confirm the project was created. Refresh the page or try again later.
+              </div>
+            )}
           </div>
         </div>
 
