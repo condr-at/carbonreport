@@ -7,13 +7,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowRight, ArrowLeft, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   WIZARD_QUESTIONNAIRE, 
   getNextQuestion, 
   getVisibleQuestions,
   getRecommendedTemplates 
 } from '@/lib/questionnaires/wizard-config';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { clearWizardProgress, hasAnyWizardProgress } from '@/lib/wizard-progress';
 
 export default function QuestionnairePage() {
   const router = useRouter();
@@ -22,6 +33,9 @@ export default function QuestionnairePage() {
   const [currentQuestionId, setCurrentQuestionId] = useState<string>('target_region');
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selectedValue, setSelectedValue] = useState<string>('');
+  const [storedProgress, setStoredProgress] = useState(false);
+  const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
+  const exitTargetRef = useRef<string | null>(null);
 
   // Load existing answers from sessionStorage on mount
   useEffect(() => {
@@ -54,7 +68,37 @@ export default function QuestionnairePage() {
   const currentQuestionIndex = visibleQuestions.findIndex(q => q.id === currentQuestionId);
   const answeredCount = visibleQuestions.filter(q => answers[q.id]).length;
   const totalQuestions = visibleQuestions.length;
-  const questionnaireProgress = totalQuestions > 0 ? Math.min(100, Math.round((answeredCount / totalQuestions) * 100)) : 0;
+  const completedMicroSteps = Math.max(0, Math.min(answeredCount, currentQuestionIndex));
+  const hasLocalProgress = Object.keys(answers).length > 0 || (selectedValue && selectedValue !== answers[currentQuestionId]);
+  const hasProgress = storedProgress || hasLocalProgress;
+
+  useEffect(() => {
+    setStoredProgress(hasAnyWizardProgress());
+  }, [answers]);
+
+  const requestExit = (target: string) => {
+    if (!hasProgress) {
+      clearWizardProgress();
+      router.push(target);
+      return;
+    }
+
+    exitTargetRef.current = target;
+    setIsExitDialogOpen(true);
+  };
+
+  const handleExitCancel = () => {
+    exitTargetRef.current = null;
+    setIsExitDialogOpen(false);
+  };
+
+  const handleExitConfirm = () => {
+    const target = exitTargetRef.current ?? '/dashboard';
+    clearWizardProgress();
+    setIsExitDialogOpen(false);
+    exitTargetRef.current = null;
+    router.push(target);
+  };
 
   // If current question becomes hidden (due to answer changes), move to nearest valid question
   useEffect(() => {
@@ -122,8 +166,9 @@ export default function QuestionnairePage() {
   }
 
   return (
-    <DashboardLayout>
-      <div className="max-w-2xl mx-auto space-y-6">
+    <>
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -133,7 +178,7 @@ export default function QuestionnairePage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => requestExit('/dashboard')}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -144,27 +189,37 @@ export default function QuestionnairePage() {
           {/* Segment 1: Project Info (completed) */}
           <div className="flex-1 h-2 bg-primary rounded-full" />
 
-          {/* Segment 2: Questionnaire (split into micro-steps) */}
-          <div className="flex-1 h-2 bg-muted overflow-hidden">
+          {/* Segment 2: Questionnaire (current) */}
+          <div className="flex-1 h-2 rounded-full overflow-hidden">
             {totalQuestions > 0 ? (
               <div
                 className="grid h-full w-full gap-[2px]"
                 style={{ gridTemplateColumns: `repeat(${totalQuestions}, 1fr)` }}
               >
                 {Array.from({ length: totalQuestions }).map((_, idx) => {
-                  const isFilled = idx < answeredCount;
+                  const isFilled = idx < completedMicroSteps;
+                  const isActive = idx === currentQuestionIndex;
+                  const isFirst = idx === 0;
+                  const isLast = idx === totalQuestions - 1;
+                  const roundedClass = totalQuestions === 1
+                    ? 'rounded-full'
+                    : isFirst
+                      ? 'rounded-l-full'
+                      : isLast
+                        ? 'rounded-r-full'
+                        : '';
                   return (
                     <div
                       key={idx}
-                      className={`h-full transition-colors ${
-                        isFilled ? 'bg-primary' : 'bg-muted'
+                      className={`h-full ${roundedClass} transition-colors ${
+                        isFilled ? 'bg-primary' : isActive ? 'bg-primary/60' : 'bg-muted'
                       }`}
                     />
                   );
                 })}
               </div>
             ) : (
-              <div className="h-full w-full bg-muted" />
+              <div className="h-full w-full bg-transparent" />
             )}
           </div>
 
@@ -242,7 +297,22 @@ export default function QuestionnairePage() {
             You can always add or remove reports later.
           </p>
         </div>
-      </div>
-    </DashboardLayout>
+        </div>
+      </DashboardLayout>
+      <AlertDialog open={isExitDialogOpen} onOpenChange={(open) => !open && handleExitCancel()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave the project wizard?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Any answers you have provided will be cleared if you exit now.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleExitCancel}>Stay</AlertDialogCancel>
+            <AlertDialogAction onClick={handleExitConfirm}>Leave wizard</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

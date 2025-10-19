@@ -7,15 +7,29 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Loader2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { getAllReportTemplates } from '@/lib/report-templates';
 import { getRecommendedTemplates } from '@/lib/questionnaires/wizard-config';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { clearWizardProgress, hasAnyWizardProgress } from '@/lib/wizard-progress';
 
 export default function SelectReportsPage() {
   const router = useRouter();
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectName, setProjectName] = useState('');
+  const [hasStoredProgress, setHasStoredProgress] = useState(false);
+  const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
+  const exitTargetRef = useRef<string | null>(null);
 
   useEffect(() => {
     // Load project data from sessionStorage
@@ -45,9 +59,39 @@ export default function SelectReportsPage() {
     }
   }, [router]);
 
-  const allTemplates = getAllReportTemplates();
+  useEffect(() => {
+    setHasStoredProgress(hasAnyWizardProgress());
+  }, []);
+
+  const allTemplates = useMemo(() => getAllReportTemplates(), []);
+  const hasSelection = selectedTemplates.length > 0;
+  const hasProgress = hasStoredProgress || hasSelection;
+
+  const requestExit = (target: string) => {
+    if (!hasProgress) {
+      clearWizardProgress();
+      router.push(target);
+      return;
+    }
+    exitTargetRef.current = target;
+    setIsExitDialogOpen(true);
+  };
+
+  const handleExitCancel = () => {
+    exitTargetRef.current = null;
+    setIsExitDialogOpen(false);
+  };
+
+  const handleExitConfirm = () => {
+    const target = exitTargetRef.current ?? '/dashboard';
+    clearWizardProgress();
+    setIsExitDialogOpen(false);
+    exitTargetRef.current = null;
+    router.push(target);
+  };
 
   const handleToggleTemplate = (code: string) => {
+    if (isSubmitting) return;
     setSelectedTemplates((prev) =>
       prev.includes(code)
         ? prev.filter((c) => c !== code)
@@ -92,8 +136,7 @@ export default function SelectReportsPage() {
       const result = await response.json();
 
       // Clear sessionStorage
-      sessionStorage.removeItem('projectData');
-      sessionStorage.removeItem('recommendedTemplates');
+      clearWizardProgress();
 
       // Redirect to project overview
       router.push(`/projects/${result.project.id}`);
@@ -103,8 +146,8 @@ export default function SelectReportsPage() {
       setIsSubmitting(false);
     }
   };
-
   const handleBack = () => {
+    if (isSubmitting) return;
     router.push('/projects/new/questionnaire?resume=1');
   };
 
@@ -122,11 +165,7 @@ export default function SelectReportsPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => {
-              sessionStorage.removeItem('projectData');
-              sessionStorage.removeItem('recommendedTemplates');
-              router.push('/dashboard');
-            }}
+            onClick={() => requestExit('/dashboard')}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -136,7 +175,7 @@ export default function SelectReportsPage() {
         <div className="flex items-center gap-2">
           <div className="flex-1 h-2 bg-primary rounded-full" />
           <div className="flex-1 h-2 bg-primary rounded-full" />
-          <div className="flex-1 h-2 bg-primary rounded-full" />
+          <div className={`flex-1 h-2 rounded-full ${hasSelection ? 'bg-primary' : 'bg-primary/40'}`} />
         </div>
 
         {/* Report Selection */}
@@ -152,13 +191,16 @@ export default function SelectReportsPage() {
               {allTemplates.map((template) => (
                 <div
                   key={template.code}
-                  className="flex items-start space-x-4 p-4 rounded-lg border cursor-pointer hover:bg-accent transition-colors"
+                  className={`flex items-start space-x-4 p-4 rounded-lg border transition-colors ${
+                    isSubmitting ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-accent'
+                  }`}
                   onClick={() => handleToggleTemplate(template.code)}
                 >
                   <Checkbox
                     id={template.code}
                     checked={selectedTemplates.includes(template.code)}
                     onCheckedChange={() => handleToggleTemplate(template.code)}
+                    disabled={isSubmitting}
                   />
                   <div className="flex-1 space-y-1">
                     <Label
@@ -217,6 +259,20 @@ export default function SelectReportsPage() {
           </p>
         </div>
       </div>
+      <AlertDialog open={isExitDialogOpen} onOpenChange={(open) => !open && handleExitCancel()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave the project wizard?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Selected report types and form data will be cleared if you exit now.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleExitCancel}>Stay</AlertDialogCancel>
+            <AlertDialogAction onClick={handleExitConfirm}>Leave wizard</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

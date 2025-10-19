@@ -7,10 +7,21 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { clearWizardProgress, hasAnyWizardProgress } from '@/lib/wizard-progress';
 
 const projectSchema = z.object({
   name: z.string().min(3, 'Project name must be at least 3 characters'),
@@ -22,10 +33,14 @@ type ProjectFormData = z.infer<typeof projectSchema>;
 export default function NewProjectPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
+  const [storedProgress, setStoredProgress] = useState(false);
+  const exitTargetRef = useRef<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
@@ -44,6 +59,42 @@ export default function NewProjectPage() {
       return undefined;
     })(),
   });
+
+  const nameValue = watch('name');
+  const descriptionValue = watch('description');
+
+  useEffect(() => {
+    setStoredProgress(hasAnyWizardProgress());
+  }, []);
+
+  const hasProgress =
+    storedProgress ||
+    Boolean(nameValue?.trim()) ||
+    Boolean(descriptionValue?.trim());
+
+  const requestExit = (target: string) => {
+    if (!hasProgress) {
+      clearWizardProgress();
+      router.push(target);
+      return;
+    }
+
+    exitTargetRef.current = target;
+    setIsExitDialogOpen(true);
+  };
+
+  const handleExitCancel = () => {
+    exitTargetRef.current = null;
+    setIsExitDialogOpen(false);
+  };
+
+  const handleExitConfirm = () => {
+    const target = exitTargetRef.current ?? '/dashboard';
+    clearWizardProgress();
+    setIsExitDialogOpen(false);
+    exitTargetRef.current = null;
+    router.push(target);
+  };
 
   const onSubmit = (data: ProjectFormData) => {
     // Store data in sessionStorage and navigate to questionnaire
@@ -65,8 +116,9 @@ export default function NewProjectPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="max-w-2xl mx-auto space-y-6">
+    <>
+      <DashboardLayout>
+        <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -78,7 +130,7 @@ export default function NewProjectPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push('/dashboard')}
+            onClick={() => requestExit('/dashboard')}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -86,7 +138,7 @@ export default function NewProjectPage() {
 
         {/* Progress indicator */}
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 bg-primary rounded-full" />
+          <div className="flex-1 h-2 bg-primary/40 rounded-full" />
           <div className="flex-1 h-2 bg-muted rounded-full" />
           <div className="flex-1 h-2 bg-muted rounded-full" />
         </div>
@@ -149,7 +201,22 @@ export default function NewProjectPage() {
             or skip directly to manual selection.
           </p>
         </div>
-      </div>
-    </DashboardLayout>
+        </div>
+      </DashboardLayout>
+      <AlertDialog open={isExitDialogOpen} onOpenChange={(open) => !open && handleExitCancel()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave the project setup?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your progress in the project wizard will be cleared if you exit now.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleExitCancel}>Stay</AlertDialogCancel>
+            <AlertDialogAction onClick={handleExitConfirm}>Leave wizard</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
