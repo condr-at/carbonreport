@@ -68,6 +68,7 @@ export default function SelectReportsPage() {
   const hasProgress = hasStoredProgress || hasSelection;
 
   const requestExit = (target: string) => {
+    if (isSubmitting) return;
     if (!hasProgress) {
       clearWizardProgress();
       router.push(target);
@@ -166,6 +167,8 @@ export default function SelectReportsPage() {
             variant="ghost"
             size="icon"
             onClick={() => requestExit('/dashboard')}
+            disabled={isSubmitting}
+            className={isSubmitting ? 'pointer-events-none opacity-60' : undefined}
           >
             <X className="h-4 w-4" />
           </Button>
