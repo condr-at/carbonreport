@@ -11,6 +11,10 @@ import { TrendingUp, FileText, Database, MailQuestion } from 'lucide-react';
 
 const NAV_ITEMS = ['Overview', 'Dataset', 'Reports', 'Files'];
 
+interface ProjectLoadingProps {
+  initialPendingState?: 'idle' | 'waiting' | 'ready' | 'error';
+}
+
 function formatDate(value?: string) {
   if (!value) return null;
   const date = new Date(value);
@@ -22,7 +26,7 @@ function formatDate(value?: string) {
   });
 }
 
-export default function ProjectLoading() {
+export default function ProjectLoading({ initialPendingState = 'idle' }: ProjectLoadingProps) {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const projectId = useMemo(() => {
@@ -32,7 +36,11 @@ export default function ProjectLoading() {
   }, [params]);
 
   const [prefill, setPrefill] = useState<ProjectPrefill | null>(null);
-  const [pendingState, setPendingState] = useState<'idle' | 'waiting' | 'ready' | 'error'>('idle');
+  const [pendingState, setPendingState] = useState<'idle' | 'waiting' | 'ready' | 'error'>(initialPendingState);
+
+  useEffect(() => {
+    setPendingState(initialPendingState);
+  }, [initialPendingState]);
 
   useEffect(() => {
     if (!projectId) return;
@@ -75,7 +83,7 @@ export default function ProjectLoading() {
       return false;
     };
 
-    setPendingState('waiting');
+  setPendingState((prev) => (prev === 'error' ? prev : 'waiting'));
     poll();
     const interval = setInterval(async () => {
       const done = await poll();
@@ -218,9 +226,6 @@ export default function ProjectLoading() {
                 </span>
               ))}
             </nav>
-            {pendingState === 'waiting' && (
-              <p className="pt-2 text-xs text-muted-foreground">Finalizing project creation…</p>
-            )}
             {pendingState === 'error' && (
               <div className="mt-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
                 We couldn’t confirm the project was created. Refresh the page or try again later.

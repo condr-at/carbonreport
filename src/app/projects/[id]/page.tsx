@@ -12,27 +12,51 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-async function getProject(id: string) {
-  // Use relative URL for server-side fetch (works in both dev and production)
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
-  const res = await fetch(`${baseUrl}/api/projects/${id}`, {
-    cache: 'no-store',
-  });
+type ProjectFetchStatus = 'ok' | 'not-found' | 'error';
 
-  if (!res.ok) {
-    if (res.status === 404) return null;
-    throw new Error('Failed to fetch project');
+interface ProjectFetchResult<TProject> {
+  status: ProjectFetchStatus;
+  project: TProject | null;
+}
+
+async function getProject(id: string): Promise<ProjectFetchResult<any>> {
+  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.APP_URL ||
+    vercelUrl ||
+    'http://localhost:3000';
+
+  try {
+    const res = await fetch(`${baseUrl}/api/projects/${id}`, {
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const project = await res.json();
+      return { status: 'ok', project };
+    }
+
+    if (res.status === 404) {
+      return { status: 'not-found', project: null };
+    }
+
+    console.error(`Failed to fetch project ${id}:`, res.status, res.statusText);
+    return { status: 'error', project: null };
+  } catch (error) {
+    console.error('Error fetching project:', error);
+    return { status: 'error', project: null };
   }
-
-  return res.json();
 }
 
 export default async function ProjectOverviewPage({ params }: PageProps) {
   const { id } = await params;
-  const project = await getProject(id);
+  const { status, project } = await getProject(id);
 
-  if (!project) {
-    return <ProjectLoading />;
+  if (status !== 'ok' || !project) {
+    return (
+      <ProjectLoading initialPendingState={status === 'error' ? 'error' : 'idle'} />
+    );
   }
 
   // Calculate completion from reports
