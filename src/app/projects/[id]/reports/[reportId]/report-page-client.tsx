@@ -39,7 +39,7 @@ interface ReportPageClientProps {
   fieldDefinitions: FieldDefinition[];
   datasetVersion: number;
   completion: { filled: number; required: number; percentage: number };
-  mailtoTemplates: Record<string, { subject?: string; body?: string } | string>;
+  mailtoTemplate: { subject?: string; body?: string } | null;
 }
 
 type RequestModalState = {
@@ -62,7 +62,7 @@ export function ReportPageClient({
   fieldDefinitions,
   datasetVersion: initialVersion,
   completion,
-  mailtoTemplates,
+  mailtoTemplate,
 }: ReportPageClientProps) {
   const [rows, setRows] = useState<TableRow[]>(initialRows);
   const [datasetVersion, setDatasetVersion] = useState(initialVersion);
@@ -88,25 +88,13 @@ export function ReportPageClient({
   }, [sections]);
 
   const resolveMailtoTemplate = useCallback(
-    (fieldId: string): { subject: string; body: string } | null => {
-      const entry = mailtoTemplates[fieldId];
-      if (!entry) {
+    (): { subject: string; body: string } | null => {
+      if (!mailtoTemplate) {
         return null;
       }
 
-      if (typeof entry === 'string') {
-        const trimmed = entry.trim();
-        if (!trimmed) {
-          return null;
-        }
-        return {
-          subject: `Data Request for ${projectName}`,
-          body: trimmed,
-        };
-      }
-
-      const candidateSubject = typeof entry.subject === 'string' ? entry.subject.trim() : '';
-      const candidateBody = typeof entry.body === 'string' ? entry.body.trim() : '';
+      const candidateSubject = typeof mailtoTemplate.subject === 'string' ? mailtoTemplate.subject.trim() : '';
+      const candidateBody = typeof mailtoTemplate.body === 'string' ? mailtoTemplate.body.trim() : '';
 
       if (!candidateBody) {
         return null;
@@ -117,7 +105,7 @@ export function ReportPageClient({
         body: candidateBody,
       };
     },
-    [mailtoTemplates, projectName]
+    [mailtoTemplate, projectName]
   );
 
   const buildRows = useCallback(
@@ -310,7 +298,7 @@ export function ReportPageClient({
       fieldLabel: string;
       fieldHint: string | null;
     }) => {
-      const template = resolveMailtoTemplate(fieldId);
+      const template = resolveMailtoTemplate();
       setRequestModal({
         fieldId,
         itemId,

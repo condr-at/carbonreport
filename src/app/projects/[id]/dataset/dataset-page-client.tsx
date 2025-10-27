@@ -26,7 +26,7 @@ interface DatasetPageClientProps {
   initialRows: TableRow[];
   datasetVersion: number;
   fieldDefinitions: FieldDefinition[];
-  mailtoTemplates: Record<string, { subject?: string; body?: string } | string>;
+  mailtoTemplate: { subject?: string; body?: string } | null;
 }
 
 export function DatasetPageClient({
@@ -35,7 +35,7 @@ export function DatasetPageClient({
   initialRows,
   datasetVersion: initialVersion,
   fieldDefinitions,
-  mailtoTemplates,
+  mailtoTemplate,
 }: DatasetPageClientProps) {
   const [rows, setRows] = useState<TableRow[]>(initialRows);
   const [datasetVersion, setDatasetVersion] = useState(initialVersion);
@@ -49,25 +49,13 @@ export function DatasetPageClient({
   } | null>(null);
 
   const resolveMailtoTemplate = useCallback(
-    (fieldId: string): { subject: string; body: string } | null => {
-      const entry = mailtoTemplates[fieldId];
-      if (!entry) {
+    (): { subject: string; body: string } | null => {
+      if (!mailtoTemplate) {
         return null;
       }
 
-      if (typeof entry === 'string') {
-        const trimmed = entry.trim();
-        if (!trimmed) {
-          return null;
-        }
-        return {
-          subject: '',
-          body: trimmed,
-        };
-      }
-
-      const candidateSubject = typeof entry.subject === 'string' ? entry.subject.trim() : '';
-      const candidateBody = typeof entry.body === 'string' ? entry.body.trim() : '';
+      const candidateSubject = typeof mailtoTemplate.subject === 'string' ? mailtoTemplate.subject.trim() : '';
+      const candidateBody = typeof mailtoTemplate.body === 'string' ? mailtoTemplate.body.trim() : '';
 
       if (!candidateBody) {
         return null;
@@ -78,7 +66,7 @@ export function DatasetPageClient({
         body: candidateBody,
       };
     },
-    [mailtoTemplates, projectName]
+    [mailtoTemplate, projectName]
   );
 
   const refreshRows = useCallback(async () => {
@@ -262,7 +250,7 @@ export function DatasetPageClient({
       fieldLabel: string;
       fieldHint: string | null;
     }) => {
-      const template = resolveMailtoTemplate(fieldId);
+      const template = resolveMailtoTemplate();
 
       setRequestDataModal({
         fieldLabel,

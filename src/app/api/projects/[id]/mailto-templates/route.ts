@@ -1,23 +1,25 @@
 /**
- * API: Mailto Templates Operations
+ * API: Mailto Template Operations
  * 
- * GET /api/projects/[id]/mailto-templates - Get all mailto templates for project
- * POST /api/projects/[id]/mailto-templates - Reset all templates to defaults
- * 
- * Key requirements from docs/Requirements v0.0.1.md Section 2.3:
- * - Templates stored in Project.mailtoTemplates JSONB
- * - Each field can have custom template with placeholders
- * - Placeholders: {{contact_name}}, {{user_name}}, {{data_point_label}}, {{deadline}}
- * - Reset reloads defaults from report template configs
+ * GET /api/projects/[id]/mailto-template - Get project-wide mailto template
+ * PUT /api/projects/[id]/mailto-template - Update project-wide mailto template
+ * POST /api/projects/[id]/mailto-template/reset - Reset template to default
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
-import { getAllReportTemplates } from '@/lib/report-templates'
+import { z } from 'zod'
+import { getReportTemplate } from '@/lib/report-templates'
+
+// Validation schema for mailto template
+const MailtoTemplateSchema = z.object({
+  subject: z.string().min(1, 'Subject is required'),
+  body: z.string().min(1, 'Body is required'),
+})
 
 /**
- * GET /api/projects/[id]/mailto-templates
- * Returns all mailto templates for project (from Project.mailtoTemplates)
+ * GET /api/projects/[id]/mailto-template
+ * Returns project-wide mailto template
  */
 export async function GET(
   request: NextRequest,
@@ -31,7 +33,7 @@ export async function GET(
       select: {
         id: true,
         name: true,
-        mailtoTemplates: true,
+        mailtoTemplate: true,
       },
     })
 
@@ -45,70 +47,60 @@ export async function GET(
     return NextResponse.json({
       projectId: project.id,
       projectName: project.name,
-      mailtoTemplates: project.mailtoTemplates || {},
+      mailtoTemplate: project.mailtoTemplate || null,
     })
   } catch (error) {
-    console.error('Error fetching mailto templates:', error)
+    console.error('Error fetching mailto template:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch mailto templates' },
+      { error: 'Failed to fetch mailto template' },
       { status: 500 }
     )
   }
 }
 
 /**
- * POST /api/projects/[id]/mailto-templates
- * Resets all templates to defaults from report template configs
- * 
- * This extracts mailto templates from all report templates and overwrites
- * Project.mailtoTemplates with fresh defaults
+ * PUT /api/projects/[id]/mailto-template
+ * Updates project-wide mailto template
  */
-export async function POST(
+export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: projectId } = await params
+    const body = await request.json()
 
-    // Load all report templates to get defaults
-    const allTemplates = getAllReportTemplates()
+    // Validate template structure
+    const { subject, body: emailBody } = MailtoTemplateSchema.parse(body)
 
-    const defaultMailtoTemplates: Record<string, any> = {}
-
-    // Extract mailto templates from each report template
-    for (const template of allTemplates) {
-      if (template.mailto) {
-        // For each field in the template, assign the default mailto
-        for (const section of template.sections) {
-          for (const field of section.fields) {
-            defaultMailtoTemplates[field.fieldId] = {
-              subject: template.mailto.subject,
-              body: template.mailto.body,
-            }
-          }
-        }
-      }
-    }
-
-    // Update project with reset templates
+    // Update project mailto template
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
-      data: { mailtoTemplates: defaultMailtoTemplates },
+      data: {
+        mailtoTemplate: { subject, body: emailBody },
+      },
       select: {
         id: true,
-        mailtoTemplates: true,
+        mailtoTemplate: true,
       },
     })
 
     return NextResponse.json({
       success: true,
-      message: 'Mailto templates reset to defaults',
-      mailtoTemplates: updatedProject.mailtoTemplates,
+      mailtoTemplate: updatedProject.mailtoTemplate,
+      message: 'Mailto template updated successfully',
     })
   } catch (error) {
-    console.error('Error resetting mailto templates:', error)
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      )
+    }
+
+    console.error('Error updating mailto template:', error)
     return NextResponse.json(
-      { error: 'Failed to reset mailto templates' },
+      { error: 'Failed to update mailto template' },
       { status: 500 }
     )
   }

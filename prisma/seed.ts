@@ -206,56 +206,19 @@ function createMockDataset(projectType: 'ebike' | 'steel') {
   return datasetToJson(updated)
 }
 
-const defaultMailtoTemplates = {
-  product_name: `Hi {contact_name},
+const defaultMailtoTemplate = {
+  subject: 'Data Request for {{project_name}}',
+  body: `Dear {{contact_name}},
 
-We are preparing a carbon footprint assessment for our project "{project_name}" and need your input.
+We are preparing a carbon footprint assessment for our project "{{project_name}}" and need your input.
 
 Could you please provide the following information:
-- {field_label}
+- {{data_point_label}}
 
-This information is needed for our ISO 14067 compliance report.
+This information is needed by {{deadline}}.
 
 Best regards,
-{user_name}`,
-
-  material_input_name: `Dear {contact_name},
-
-For our carbon footprint assessment of "{project_name}", we require detailed information about materials.
-
-Please provide:
-- {field_label}
-- Quantities and units
-- Supplier information
-
-Thank you for your cooperation.
-
-{user_name}`,
-
-  energy_input_type: `Hi {contact_name},
-
-We need energy consumption data for "{project_name}" carbon assessment.
-
-Required data:
-- {field_label}
-- Time period: Full production cycle
-- Units: kWh or MWh
-
-Deadline: {deadline}
-
-Thanks,
-{user_name}`,
-
-  transport_mode: `Hello {contact_name},
-
-For our CBAM reporting requirements on "{project_name}", please provide:
-
-- {field_label}
-- Transport mode details
-- Emission factors if available
-
-Best,
-{user_name}`,
+{{user_name}}`,
 }
 
 async function main() {
@@ -329,7 +292,7 @@ async function main() {
       name: 'Electric Bicycle Carbon Assessment',
       status: 'ACTIVE',
       datasetVersion: 0,
-      mailtoTemplates: defaultMailtoTemplates,
+      mailtoTemplate: defaultMailtoTemplate,
       dataset: createMockDataset('ebike'),
       checklist: {
         items: [
@@ -356,7 +319,7 @@ async function main() {
       name: 'Steel Components CBAM Report',
       status: 'ACTIVE',
       datasetVersion: 0,
-      mailtoTemplates: defaultMailtoTemplates,
+      mailtoTemplate: defaultMailtoTemplate,
       dataset: createMockDataset('steel'),
       checklist: {
         items: [

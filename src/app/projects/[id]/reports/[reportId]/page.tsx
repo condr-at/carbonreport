@@ -8,14 +8,14 @@ import {
   type FieldDefinition,
 } from '@/lib/dataset-utils-v2';
 import { initializeFullDataset } from '@/lib/dataset-init';
-import { getBaseUrl } from '@/lib/utils';
+import { getBaseUrl } from '@/lib/server-utils';
 
 interface PageProps {
   params: Promise<{ id: string; reportId: string }>;
 }
 
 async function getProject(projectId: string) {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const res = await fetch(`${baseUrl}/api/projects/${projectId}`, {
     cache: 'no-store',
   });
@@ -31,7 +31,7 @@ async function getProject(projectId: string) {
 }
 
 async function getReport(projectId: string, reportId: string) {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const res = await fetch(`${baseUrl}/api/projects/${projectId}/reports/${reportId}`, {
     cache: 'no-store',
   });
@@ -47,7 +47,7 @@ async function getReport(projectId: string, reportId: string) {
 }
 
 async function getFieldDefinitions(): Promise<FieldDefinition[]> {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
 
   try {
     const res = await fetch(`${baseUrl}/api/dataset-fields`, {
@@ -142,7 +142,7 @@ export default async function ReportPage({ params }: PageProps) {
           required: requiredCount,
           percentage: completionPercentage,
         }}
-        mailtoTemplates={project.mailtoTemplates || {}}
+        mailtoTemplate={project.mailtoTemplate || null}
       />
     </ProjectLayout>
   );

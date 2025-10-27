@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { ProjectRoadmap } from '@/components/project-roadmap';
 import { ProjectPrefillHydrator } from '@/components/project-prefill-hydrator';
 import ProjectLoading from './loading';
+import { getBaseUrl } from '@/lib/server-utils';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -20,12 +21,7 @@ interface ProjectFetchResult<TProject> {
 }
 
 async function getProject(id: string): Promise<ProjectFetchResult<any>> {
-  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.APP_URL ||
-    vercelUrl ||
-    'http://localhost:3000';
+  const baseUrl = await getBaseUrl();
 
   try {
     const res = await fetch(`${baseUrl}/api/projects/${id}`, {

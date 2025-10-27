@@ -29,19 +29,23 @@ const TABS = [
   { id: 'overview', label: 'Overview', href: '' },
   { id: 'dataset', label: 'Dataset', href: '/dataset' },
   { id: 'reports', label: 'Reports', href: '/reports' },
+  { id: 'emails', label: 'Email Templates', href: '/mailto-templates' },
   { id: 'files', label: 'Files', href: '/files' },
 ] as const;
 
 export function ProjectLayout({ children, project }: ProjectLayoutProps) {
   const pathname = usePathname();
   const baseHref = `/projects/${project.id}`;
+  const normalizedStatus = project.status?.toString() ?? 'active';
+  const statusVariant = normalizedStatus.toLowerCase() === 'active' ? 'default' : 'secondary';
 
   // Determine active tab
   const getActiveTab = () => {
     if (pathname === baseHref) return 'overview';
-    if (pathname.includes('/dataset')) return 'dataset';
-    if (pathname.includes('/reports')) return 'reports';
-    if (pathname.includes('/files')) return 'files';
+  if (pathname.includes('/dataset')) return 'dataset';
+  if (pathname.includes('/reports')) return 'reports';
+  if (pathname.includes('/mailto-templates')) return 'emails';
+  if (pathname.includes('/files')) return 'files';
     return 'overview';
   };
 
@@ -56,8 +60,8 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
             <div className="space-y-1">
               <div className="flex items-center gap-3">
                 <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-                <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-                  {project.status}
+                <Badge variant={statusVariant}>
+                  {normalizedStatus}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground">

@@ -42,17 +42,17 @@ model User {
 // ================================
 
 model Project {
-  id              String        @id @default(uuid())
-  userId          String        @map("user_id")
-  name            String
-  dataset         Json // JSONB: { data_points: [...] }
-  datasetVersion  Int           @default(0) @map("dataset_version") // Optimistic locking
-  mailtoTemplates Json?         @map("mailto_templates") // Per-project mailto customization
-  checklist       Json // JSONB: Roadmap steps
-  status          ProjectStatus @default(ACTIVE)
-  twinProjectId   String?       @map("twin_project_id") // For AI comparison (future)
-  createdAt       DateTime      @default(now()) @map("created_at")
-  deletedAt       DateTime?     @map("deleted_at")
+  id             String        @id @default(uuid())
+  userId         String        @map("user_id")
+  name           String
+  dataset        Json // JSONB: { data_points: [...] }
+  datasetVersion Int           @default(0) @map("dataset_version") // Optimistic locking
+  mailtoTemplate Json?         @map("mailto_template") // Single project-wide mailto template: { subject: string, body: string }
+  checklist      Json // JSONB: Roadmap steps
+  status         ProjectStatus @default(ACTIVE)
+  twinProjectId  String?       @map("twin_project_id") // For AI comparison (future)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  deletedAt      DateTime?     @map("deleted_at")
 
   // Relations
   user         User          @relation(fields: [userId], references: [id])

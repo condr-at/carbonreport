@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getBaseUrl } from '@/lib/utils';
+import { getBaseUrl } from '@/lib/server-utils';
 import { getReportTemplate } from '@/lib/report-templates';
 
 interface PageProps {
@@ -12,7 +12,7 @@ interface PageProps {
 }
 
 async function getProject(id: string) {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const res = await fetch(`${baseUrl}/api/projects/${id}`, {
     cache: 'no-store',
   });

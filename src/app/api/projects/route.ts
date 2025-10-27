@@ -105,8 +105,8 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Generate default mailto templates from selected report templates
-  const mailtoTemplates: Record<string, { subject: string; body: string }> = {}
+    // Get default mailto template from first selected report template
+    let defaultMailtoTemplate: { subject: string; body: string } | null = null
     
     for (const code of templateCodes) {
       const template = getReportTemplate(code as any)
@@ -117,18 +117,12 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Extract mailto template from report template
-      if (template.mailto) {
-        const subject = template.mailto.subject
-        const body = template.mailto.body
-
-        template.sections.forEach(section => {
-          section.fields.forEach(field => {
-            if (!mailtoTemplates[field.fieldId]) {
-              mailtoTemplates[field.fieldId] = { subject, body }
-            }
-          })
-        })
+      // Use mailto template from first report that has one
+      if (template.mailto && !defaultMailtoTemplate) {
+        defaultMailtoTemplate = {
+          subject: template.mailto.subject,
+          body: template.mailto.body,
+        }
       }
     }
 
@@ -141,7 +135,7 @@ export async function POST(request: NextRequest) {
         status: 'ACTIVE',
         dataset: createEmptyDataset(), // { data_points: [] }
         datasetVersion: 0, // Optimistic locking counter
-        mailtoTemplates, // Per-project mailto customization
+        mailtoTemplate: defaultMailtoTemplate || undefined, // Single project-wide template
         checklist: {
           items: [], // Will be populated in background (post-MVP)
         },

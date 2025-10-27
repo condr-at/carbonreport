@@ -14,21 +14,21 @@ async function verifySchema() {
         name: true,
         dataset: true,
         datasetVersion: true,
-        mailtoTemplates: true,
+        mailtoTemplate: true,
       }
     })
 
     console.log('✅ Project table structure:')
     console.log('   - dataset: exists')
     console.log('   - datasetVersion: exists')
-    console.log('   - mailtoTemplates: exists')
+    console.log('   - mailtoTemplate: exists')
     
     if (project) {
       console.log('\n📊 Sample project:')
       console.log('   ID:', project.id)
       console.log('   Name:', project.name)
       console.log('   Dataset version:', project.datasetVersion)
-      console.log('   Mailto templates:', project.mailtoTemplates ? 'configured' : 'null')
+      console.log('   Mailto template:', project.mailtoTemplate ? 'configured' : 'null')
     } else {
       console.log('\n⚠️  No projects found (database is empty)')
     }
