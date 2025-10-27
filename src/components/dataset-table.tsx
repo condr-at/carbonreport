@@ -74,6 +74,8 @@ export function DatasetTable({
           )
         );
         console.error('Failed to update field:', error);
+        const message = error instanceof Error ? error.message : 'Failed to update field';
+        alert(message);
       }
 
       setEditingCell(null);

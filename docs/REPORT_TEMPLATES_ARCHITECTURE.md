@@ -99,7 +99,6 @@ Don't:
 
 - Checker fails with missing fields: ensure the `fieldId` exists in `DATASET_FIELD_SEED` and was seeded to DB
 - Prisma types missing new models: run `npx prisma generate`
-- TypeScript sees legacy files: make sure `zz__legacy_csv_schema__DO_NOT_USE` is excluded in `tsconfig.json`
 
 ---
 

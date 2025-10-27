@@ -7,6 +7,7 @@ import {
   type FieldDefinition,
 } from '@/lib/dataset-utils-v2';
 import { initializeFullDataset } from '@/lib/dataset-init';
+import { getBaseUrl } from '@/lib/utils';
 import { DatasetPageClient } from './dataset-page-client';
 
 interface PageProps {
@@ -14,7 +15,7 @@ interface PageProps {
 }
 
 async function getProject(id: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+  const baseUrl = getBaseUrl();
   const res = await fetch(`${baseUrl}/api/projects/${id}`, {
     cache: 'no-store',
   });
@@ -28,7 +29,7 @@ async function getProject(id: string) {
 }
 
 async function getFieldDefinitions(): Promise<FieldDefinition[]> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+  const baseUrl = getBaseUrl();
   
   try {
     const res = await fetch(`${baseUrl}/api/dataset-fields`, {
@@ -76,6 +77,7 @@ export default async function DatasetPage({ params }: PageProps) {
         initialRows={tableRows}
         datasetVersion={project.datasetVersion || 0}
         fieldDefinitions={fieldDefinitions}
+        mailtoTemplates={project.mailtoTemplates || {}}
       />
     </ProjectLayout>
   );

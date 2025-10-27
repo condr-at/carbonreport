@@ -23,5 +23,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "zz__legacy_csv_schema__DO_NOT_USE"]
+  "exclude": ["node_modules"]
 }

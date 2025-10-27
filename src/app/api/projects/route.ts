@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Generate default mailto templates from selected report templates
-    const mailtoTemplates: Record<string, string> = {}
+  const mailtoTemplates: Record<string, { subject: string; body: string }> = {}
     
     for (const code of templateCodes) {
       const template = getReportTemplate(code as any)
@@ -119,11 +119,13 @@ export async function POST(request: NextRequest) {
 
       // Extract mailto template from report template
       if (template.mailto) {
-        // For now, apply same mailto template to all fields in this report
+        const subject = template.mailto.subject
+        const body = template.mailto.body
+
         template.sections.forEach(section => {
           section.fields.forEach(field => {
             if (!mailtoTemplates[field.fieldId]) {
-              mailtoTemplates[field.fieldId] = template.mailto!.body
+              mailtoTemplates[field.fieldId] = { subject, body }
             }
           })
         })

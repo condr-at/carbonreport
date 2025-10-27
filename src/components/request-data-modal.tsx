@@ -6,7 +6,7 @@
  * Opens email client with pre-filled template for requesting data from contacts
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,51 +16,102 @@ import { X, Mail } from 'lucide-react';
 interface RequestDataModalProps {
   projectName: string;
   fieldLabel?: string;
+  fieldHint?: string | null;
   fieldId?: string;
   itemId?: string | null;
   group?: string;
   isGroup?: boolean;
+  mailtoTemplate?: { subject: string; body: string };
   onClose: () => void;
 }
 
 export function RequestDataModal({
   projectName,
   fieldLabel,
+  fieldHint,
   fieldId,
   itemId,
   group,
   isGroup = false,
+  mailtoTemplate,
   onClose,
 }: RequestDataModalProps) {
   const [contactEmail, setContactEmail] = useState('');
   const [contactName, setContactName] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [requesterName, setRequesterName] = useState('Carbon Report Team');
+
+  const template = useMemo(() => {
+    const fallbackBody = [
+      'Dear {{contact_name}},',
+      '',
+      'We are working on the {{project_name}} carbon footprint report and need your help with {{data_point_label}}.',
+      '',
+      'Please share the latest details by {{deadline}}.',
+      '',
+      'Thank you,',
+      '{{user_name}}',
+    ].join('\n');
+
+  const fallbackSubject = `Data Request for {{project_name}} - {{data_point_label}}`;
+
+    if (!mailtoTemplate) {
+      return { subject: fallbackSubject, body: fallbackBody };
+    }
+
+    const subject = mailtoTemplate.subject?.trim() || fallbackSubject;
+    const body = mailtoTemplate.body?.trim() || fallbackBody;
+
+    return { subject, body };
+  }, [mailtoTemplate, projectName]);
+
+  const preview = useMemo(() => {
+    const deadlineLabel = (() => {
+      if (!deadline) {
+        return 'your earliest convenience';
+      }
+
+      try {
+        return new Date(`${deadline}T00:00:00`).toLocaleDateString();
+      } catch {
+        return deadline;
+      }
+    })();
+
+    const dataPointLabel = (() => {
+      if (!fieldLabel) {
+        return 'the requested data point';
+      }
+      if (itemId) {
+        return `${fieldLabel} (Item ${itemId})`;
+      }
+      return fieldLabel;
+    })();
+
+    const replacements: Record<string, string> = {
+      '{{contact_name}}': contactName || 'there',
+      '{{project_name}}': projectName,
+      '{{data_point_label}}': dataPointLabel,
+      '{{deadline}}': deadlineLabel,
+      '{{user_name}}': requesterName || 'Carbon Report Team',
+    };
+
+    const apply = (text: string) =>
+      Object.entries(replacements).reduce(
+        (acc, [token, value]) => acc.split(token).join(value),
+        text
+      );
+
+    return {
+      subject: apply(template.subject),
+      body: apply(template.body),
+    };
+  }, [contactName, deadline, fieldLabel, itemId, projectName, requesterName, template]);
 
   // Generate mailto template
   const generateMailtoLink = () => {
-    const subject = encodeURIComponent(
-      `Data Request for ${projectName} - ${group || fieldLabel}`
-    );
-
-    let bodyText = `Hi ${contactName || '[Contact Name]'},\n\n`;
-    bodyText += `I'm working on the carbon footprint report for "${projectName}" and need your help with some data.\n\n`;
-
-    if (isGroup && group) {
-      bodyText += `Please provide the following information for ${group}:\n`;
-      bodyText += `[List specific fields here]\n\n`;
-    } else if (fieldLabel) {
-      if (itemId) {
-        bodyText += `Could you provide the following data for Item #${itemId}:\n`;
-        bodyText += `- ${fieldLabel}\n\n`;
-      } else {
-        bodyText += `Could you provide the following data:\n`;
-        bodyText += `- ${fieldLabel}\n\n`;
-      }
-    }
-
-    bodyText += `Please reply with this information at your earliest convenience.\n\n`;
-    bodyText += `Thank you!\n`;
-
-    const body = encodeURIComponent(bodyText);
+    const subject = encodeURIComponent(preview.subject);
+    const body = encodeURIComponent(preview.body);
     return `mailto:${contactEmail}?subject=${subject}&body=${body}`;
   };
 
@@ -98,6 +149,11 @@ export function RequestDataModal({
                 ? `Request all ${group} data`
                 : `Request data for: ${fieldLabel}`}
             </p>
+            {fieldHint && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Hint: {fieldHint}
+              </p>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -128,6 +184,37 @@ export function RequestDataModal({
               </p>
             </div>
 
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="deadline">Deadline</Label>
+                <Input
+                  id="deadline"
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Optional - used to fill the {'{{deadline}}'} placeholder
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="requesterName">Your Name</Label>
+                <Input
+                  id="requesterName"
+                  type="text"
+                  placeholder="Carbon Report Team"
+                  value={requesterName}
+                  onChange={(e) => setRequesterName(e.target.value)}
+                  className="mt-1"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Shown in email signature
+                </p>
+              </div>
+            </div>
+
             <div className="bg-muted p-4 rounded-md">
               <p className="text-sm font-medium mb-2">Email Preview:</p>
               <div className="text-xs space-y-1 text-muted-foreground">
@@ -135,18 +222,19 @@ export function RequestDataModal({
                   <strong>To:</strong> {contactEmail || '[email]'}
                 </p>
                 <p>
-                  <strong>Subject:</strong> Data Request for {projectName} -{' '}
-                  {group || fieldLabel}
+                  <strong>Subject:</strong> {preview.subject}
                 </p>
                 {fieldId && (
                   <p>
                     <strong>Field ID:</strong> {fieldId}
                   </p>
                 )}
-                <p className="mt-2">
-                  <strong>Body:</strong> (Click &quot;Open Email Client&quot; to see full
-                  message)
-                </p>
+                <div className="mt-2">
+                  <strong>Body:</strong>
+                  <pre className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground bg-background/60 border rounded p-2">
+                    {preview.body}
+                  </pre>
+                </div>
               </div>
             </div>
           </div>
