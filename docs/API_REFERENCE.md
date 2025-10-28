@@ -326,7 +326,7 @@ PUT /api/projects/:id/mailto-templates/:fieldId
 - `{{field_display_name}}` — Field label from the template
 - `{{field_list}}` — Bullet list of selected fields for bulk requests
 - `{{deadline}}` — Optional deadline date
-- `{{user_name}}` — Current user name
+- `{{requester_signature}}` — Auto-generated signature combining project owner name and project name
 
 **Validation**:
 - `subject`: Required, min 1 character
@@ -359,6 +359,115 @@ POST /api/projects/:id/mailto-templates
 - Reloads defaults from all report template configs
 - Overwrites entire `Project.mailtoTemplates` JSONB
 - Useful after template updates or to undo customizations
+
+---
+
+## Data Requests
+
+### Create or Update Bulk Requests
+
+```http
+POST /api/data-requests/bulk
+```
+
+**Purpose**: Logs data requests after user opens mailto link. Creates one `data_requests` record per field, revoking previous assignments when a field is reassigned to a new contact.
+
+**Request Body**:
+```json
+{
+  "projectId": "uuid",
+  "contactId": "uuid",
+  "fieldIds": ["product_name", "total_cfp_co2e"],
+  "deadline": "2025-11-15T00:00:00Z"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "created": 2,
+  "revoked": 1,
+  "requests": [
+    {
+      "id": "uuid",
+      "dataPointId": "product_name",
+      "contactId": "uuid",
+      "requestedAt": "2025-10-28T10:00:00Z",
+      "deadline": "2025-11-15T00:00:00Z"
+    }
+  ]
+}
+```
+
+**Behavior**:
+- For each `fieldId`: check if an active request exists (`revoked_at IS NULL`)
+- If found and `contactId` differs: set `revoked_at = NOW()` on old request
+- Insert new request with `requested_at = NOW()`
+- `deadline` is optional; used for overdue highlighting
+
+**Validation**:
+- `projectId`, `contactId`: Valid UUIDs, must exist
+- `fieldIds`: Array of strings, min 1 item
+- `deadline`: ISO 8601 timestamp (optional)
+
+---
+
+### List Project Requests
+
+```http
+GET /api/projects/:id/data-requests?status=active&contact=uuid
+```
+
+**Query Parameters**:
+- `status`: `active` (default) | `closed` | `overdue` | `all`
+- `contact`: Filter by contact UUID (optional)
+- `sort`: `requested_at` | `deadline` | `field_id` (default: `requested_at DESC`)
+
+**Response**:
+```json
+{
+  "requests": [
+    {
+      "id": "uuid",
+      "dataPointId": "product_name",
+      "contact": {
+        "id": "uuid",
+        "name": "Ivan Petrov",
+        "email": "ivan@company.com"
+      },
+      "requestedAt": "2025-10-28T10:00:00Z",
+      "deadline": "2025-11-15T00:00:00Z",
+      "revokedAt": null,
+      "completedAt": null,
+      "status": "active"
+    }
+  ]
+}
+```
+
+**Status Logic**:
+- `active`: `revoked_at IS NULL AND completed_at IS NULL`
+- `closed`: `revoked_at IS NOT NULL OR completed_at IS NOT NULL`
+- `overdue`: `active` + `deadline < NOW()`
+
+---
+
+### Mark Request Complete
+
+```http
+POST /api/data-requests/:id/complete
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "completedAt": "2025-10-28T14:30:00Z"
+}
+```
+
+**Behavior**: Sets `completed_at = NOW()`
 
 ---
 

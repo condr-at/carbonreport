@@ -152,54 +152,113 @@ Use this checklist to track implementation of the architecture updates.
       router.refresh()
     }
     ```
-  - [ ] Show optimistic UI updates
-    - [ ] Use DB-backed field IDs (snake_case) from `/api/dataset-fields`
-   - [ ] Add checkboxes to select multiple rows and enable the bulk "Request Data" action
-   - [ ] Show a badge "Request sent [Contact]" and provide a "Change contact" button
-   - [ ] On modal confirmation call `POST /api/data-requests/bulk` and update local contact state
+   - [ ] Show optimistic UI updates
+      - [ ] Use DB-backed field IDs (snake_case) from `/api/dataset-fields`
+      - [ ] Add checkboxes to select multiple rows and enable the bulk "Request Data" action
+      - [ ] Show a badge "Request sent · [Contact]" linking to request history and provide an inline "Change contact" control
+      - [ ] On modal confirmation call `POST /api/data-requests/bulk` and update local contact state (including badge contact name)
 
 #### Report Editor
 
 - [ ] `app/projects/[id]/reports/[reportId]/page.tsx`
-  - [ ] Fetch data from GET endpoint (filters Project.dataset)
-  - [ ] On field update, call dataset endpoint (not report endpoint)
-  - [ ] Remove any references to `Report.data`
-   - [ ] Add "Request Data" for a single field and allow adding the field to the bulk selection
-   - [ ] Show the current contact and the "Change" action (using `data_requests`)
-   - [ ] Use the project `mailtoTemplate` and `{{field_list}}`
+   - [ ] Fetch data from GET endpoint (filters Project.dataset)
+   - [ ] On field update, call dataset endpoint (not report endpoint)
+   - [ ] Remove any references to `Report.data`
+      - [ ] Add "Request Data" for a single field and allow adding the field to the bulk selection
+      - [ ] Surface the current contact with a status badge and "Change" action (using `data_requests`)
+      - [ ] Use the project `mailtoTemplate`, ensuring `{{field_list}}` renders as bullets in previews
 
 #### Data Requests Page
 
 - [ ] `app/projects/[id]/data-requests/page.tsx`
-   - [ ] Fetch `GET /api/projects/[id]/data-requests` and render a table (field, contact, dates, status)
-   - [ ] Provide filters: active, closed, overdue
-   - [ ] Actions: "Resend", "Change contact", "Close" (invoking the bulk API with matching parameters)
-   - [ ] Prepare the UI for future extensions (deadline column, status badges, bulk reminders)
+   - [ ] Fetch `GET /api/projects/[id]/data-requests` and render a table covering data point, contact, status badge, requested/updated dates, and placeholder deadline column
+   - [ ] Provide built-in filters for status groups: **Active**, **Closed**, **Overdue** (overdue derived from deadline once present)
+   - [ ] Surface row actions "Resend", "Change contact", "Close" (invoke the bulk API with matching parameters)
+   - [ ] Reserve header space for future bulk actions such as "Send follow-up" targeting filtered selections
+   - [ ] Architect status badge component so new states (`received`, `declined`) can be added without structural changes
 
 #### Contact Detail Page
 
 - [ ] `app/contacts/[id]/page.tsx`
-   - [ ] Add a "Requests" tab (table of projects/fields)
-   - [ ] Support quick actions "Resend" and "Close" via the bulk API
-   - [ ] Show history (requested_at, revoked_at, completed_at)
+   - [ ] Add a "Requests" tab (table of projects/fields with status badge and deadline placeholder)
+   - [ ] Support quick actions "Resend" and "Close" via the bulk API (mirror Data Requests page behaviour)
+   - [ ] Show history (requested_at, revoked_at, completed_at) and prepare to append `received_at` / `declined_at`
 
 #### Request Data Dialog
 
-- [ ] `components/request-data-modal.tsx`
-   - [ ] Read the template from `Project.mailtoTemplate`
-   - [ ] Support a list of data points (single/bulk) and generate `{{field_list}}`
-   - [ ] Inject placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`
-   - [ ] Show an email preview (subject/body) with a bullet-formatted list
-   - [ ] After opening the mailto link call `POST /api/data-requests/bulk` to log/update requests
-   - [ ] Support selecting an existing contact or creating a new one, and capture the deadline
+- [x] `components/request-data-modal.tsx` — basic single-field implementation
+   - [x] Read the template from `Project.mailtoTemplate`
+   - [x] Inject placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{requester_signature}}` (auto from project owner + project name)
+   - [x] Show an email preview (subject/body) with sample bullet list
+   - [ ] **Extend to multi-select**: Accept `fieldIds: string[]` and `itemIds: (string | null)[]`
+   - [ ] **Expand `{{field_list}}` generation**: Iterate over selected fields, format as real bullet list
+   - [ ] **API integration**: After opening mailto link call `POST /api/data-requests/bulk` to log/update requests
+   - [ ] **Contact auto-fill**: Wire to Contacts store so email/name populate automatically when selecting existing contact
+   - [ ] **Inline contact creation**: Support adding new contact without leaving modal
+   - [ ] **Deadline capture**: Add optional deadline field and pass to API
 
 #### Mailto Template Editor (Settings)
 
-- [ ] `app/projects/[id]/mailto-templates/page.tsx`
-   - [ ] Edit the shared template (subject/body)
-   - [ ] Validate allowed placeholders (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`)
-   - [ ] Show a preview with a representative bullet list
-   - [ ] Provide a "Reset to Default" button (POST reset endpoint)
+- [x] `app/projects/[id]/mailto-templates/page.tsx` — basic editor implemented
+   - [x] Edit the shared template (subject/body)
+   - [x] Show a preview with representative bullet list and the neutral "Carbon Reporting Data Request" subject
+   - [x] Provide a "Reset to Default" button (POST reset endpoint) restoring the neutral copy
+   - [ ] **Placeholder validation**: Validate allowed placeholders (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{requester_signature}}`)
+   - [ ] **Error feedback**: Show inline warnings for invalid placeholders
+
+#### DatasetTable — Multi-Select Support
+
+- [ ] `components/dataset-table.tsx`
+   - [ ] Add checkbox column with `react-table` row selection API
+   - [ ] Manage selection state (`selectedRows: Set<string>`)
+   - [ ] Show bulk action bar when selections exist: "Request Data for X fields"
+   - [ ] Pass `fieldIds` array to `RequestDataModal` when bulk button clicked
+   - [ ] Clear selection after successful bulk action
+
+#### Data Requests API
+
+- [ ] `app/api/data-requests/bulk/route.ts` — `POST /api/data-requests/bulk`
+   - [ ] Accept `{ projectId, contactId, fieldIds[], deadline? }`
+   - [ ] For each `fieldId`: check if active request exists (`revoked_at IS NULL`)
+   - [ ] If found and `contactId` differs: set `revoked_at = NOW()` on old request
+   - [ ] Insert new request(s) with `requested_at = NOW()`
+   - [ ] Return `{ success, created, revoked, requests[] }`
+   - [ ] Validate `projectId`, `contactId` exist in DB
+   - [ ] Validate `fieldIds` non-empty array
+
+- [ ] `app/api/projects/[id]/data-requests/route.ts` — `GET /api/projects/:id/data-requests`
+   - [ ] Query params: `status=active|closed|overdue|all`, `contact=uuid`, `sort=requested_at|deadline|field_id`
+   - [ ] Return list with contact info, field labels, timestamps
+   - [ ] Implement status logic (active, closed, overdue)
+
+- [ ] `app/api/data-requests/[id]/complete/route.ts` — `POST /api/data-requests/:id/complete`
+   - [ ] Set `completed_at = NOW()`
+   - [ ] Return success response
+
+#### Data Requests Page
+
+- [ ] `app/projects/[id]/data-requests/page.tsx`
+   - [ ] Table with columns: field (label + item), contact, requested_at, deadline, status
+   - [ ] Status filters: Active, Closed, Overdue
+   - [ ] Actions per row: Resend (opens mailto modal), Change contact, Close (mark complete)
+   - [ ] Sorting by requested_at/deadline/field
+   - [ ] Empty state when no requests
+
+#### Dataset/Report Tables — Request Badges
+
+- [ ] Update `DatasetTable` and report dataset views
+   - [ ] Fetch active requests for visible fields via `GET /api/projects/:id/data-requests?status=active`
+   - [ ] Show badge next to each field with active request: "Requested from [Contact Name]" + timestamp
+   - [ ] Badge variants: muted (active), success (completed)
+   - [ ] Click badge to view request details or reassign contact
+   - [ ] Show tooltip warning when reassigning: "This will revoke the previous request"
+
+#### Future Extensions (Plan Ahead)
+
+- [ ] Keep status enums open for manual updates (add `received`, `declined`) without reshaping API/DB responses
+- [ ] Style deadline column / badge hooks now so overdue highlighting can be enabled when deadlines land
+- [ ] Outline bulk reminder flow (disabled CTA + tooltip) tied to `POST /api/data-requests/remind`
+- [ ] Sketch export/report columns for operations stakeholders (contact, project, field, status, dates)
 
 ### 3.4 Add Validation Helpers
 
@@ -210,7 +269,7 @@ Use this checklist to track implementation of the architecture updates.
       '{{project_name}}',
    '{{field_display_name}}',
    '{{field_list}}',
-      '{{user_name}}',
+      '{{requester_signature}}',
       '{{deadline}}',
    ]
   
@@ -233,7 +292,7 @@ Use this checklist to track implementation of the architecture updates.
          projectName: string
          fieldDisplayName: string
          fieldList: string
-         userName: string
+             requesterSignature: string
          deadline?: string
     }
   ): string {
@@ -242,7 +301,7 @@ Use this checklist to track implementation of the architecture updates.
          .replace(/\{\{project_name\}\}/g, data.projectName)
          .replace(/\{\{field_display_name\}\}/g, data.fieldDisplayName)
          .replace(/\{\{field_list\}\}/g, data.fieldList)
-         .replace(/\{\{user_name\}\}/g, data.userName)
+             .replace(/\{\{requester_signature\}\}/g, data.requesterSignature)
          .replace(/\{\{deadline\}\}/g, data.deadline || 'N/A')
   }
   ```
@@ -873,7 +932,7 @@ Use this checklist to track implementation of the architecture updates.
 
 5. [ ] Implement mailto generation
     - Fetch: `GET /api/projects/:id/mailto-template`
-   - Replace placeholders (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`)
+   - Replace placeholders (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{requester_signature}}`)
    - Format the list as bullets (`•` + display name + hint)
 
 6. [ ] Log data request(s)
@@ -922,7 +981,7 @@ Use this checklist to track implementation of the architecture updates.
 
 3. [ ] Inline editor + preview
    - Textareas for subject/body
-   - Placeholder reference (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`)
+   - Placeholder reference (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{requester_signature}}`)
    - Preview with substitutions (including a bullet list)
 
 4. [ ] Persist changes

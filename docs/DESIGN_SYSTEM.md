@@ -297,7 +297,7 @@ Guidelines:
 ### 4.5. Request Data Dialog
 - Search contacts, allow inline contact creation, preview generated email.
 - Buttons: Cancel, Generate Email (disabled until contact selected).
-- Supports placeholders `{{field_display_name}}`, `{{field_list}}`, `{{contact_name}}`, `{{project_name}}`, `{{deadline}}`, `{{user_name}}`.
+- Supports placeholders `{{field_display_name}}`, `{{field_list}}`, `{{contact_name}}`, `{{project_name}}`, `{{deadline}}`, `{{requester_signature}}`.
 
 ### 4.6. Roadmap / Checklist Item
 
@@ -828,7 +828,7 @@ Guidelines:
 ### 4.5. Request Data Dialog
 - Search contacts, allow inline contact creation, preview generated email.
 - Buttons: Cancel, Generate Email (disabled until contact selected).
-- Supports placeholders `{{field_display_name}}`, `{{field_list}}`, `{{contact_name}}`, `{{project_name}}`, `{{deadline}}`, `{{user_name}}`.
+- Supports placeholders `{{field_display_name}}`, `{{field_list}}`, `{{contact_name}}`, `{{project_name}}`, `{{deadline}}`, `{{requester_signature}}`.
 
 ### 4.6. Roadmap / Checklist Item
 

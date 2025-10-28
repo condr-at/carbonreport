@@ -218,7 +218,7 @@ Could you please provide the following information?
 This information is needed by {{deadline}}.
 
 Best regards,
-{{user_name}}`,
+{{requester_signature}}`,
 }
 
 async function main() {

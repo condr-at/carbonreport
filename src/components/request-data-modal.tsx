@@ -15,6 +15,7 @@ import { X, Mail } from 'lucide-react';
 
 interface RequestDataModalProps {
   projectName: string;
+  projectOwnerName: string;
   fieldLabel?: string;
   fieldHint?: string | null;
   fieldId?: string;
@@ -27,6 +28,7 @@ interface RequestDataModalProps {
 
 export function RequestDataModal({
   projectName,
+  projectOwnerName,
   fieldLabel,
   fieldHint,
   fieldId,
@@ -39,7 +41,6 @@ export function RequestDataModal({
   const [contactEmail, setContactEmail] = useState('');
   const [contactName, setContactName] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [requesterName, setRequesterName] = useState('Carbon Report Team');
 
   const template = useMemo(() => {
     const fallbackBody = [
@@ -53,7 +54,7 @@ export function RequestDataModal({
       'Please share the latest details by {{deadline}}.',
       '',
       'Thank you,',
-      '{{user_name}}',
+      '{{requester_signature}}',
     ].join('\n');
 
     const fallbackSubject = `Data Request for {{project_name}} - {{field_display_name}}`;
@@ -92,6 +93,20 @@ export function RequestDataModal({
     })();
 
     const fieldList = `- ${displayName}`;
+    const signature = (() => {
+      const owner = projectOwnerName?.trim();
+      const project = projectName?.trim();
+
+      if (owner && project) {
+        return `${owner} - ${project}`;
+      }
+
+      if (owner) {
+        return owner;
+      }
+
+      return project || 'Carbon Report Team';
+    })();
 
     const replacements: Record<string, string> = {
       '{{contact_name}}': contactName || 'there',
@@ -99,7 +114,7 @@ export function RequestDataModal({
       '{{field_display_name}}': displayName,
       '{{field_list}}': fieldList,
       '{{deadline}}': deadlineLabel,
-      '{{user_name}}': requesterName || 'Carbon Report Team',
+      '{{requester_signature}}': signature,
     };
 
     const apply = (text: string) =>
@@ -112,7 +127,7 @@ export function RequestDataModal({
       subject: apply(template.subject),
       body: apply(template.body),
     };
-  }, [contactName, deadline, fieldLabel, itemId, projectName, requesterName, template]);
+  }, [contactName, deadline, fieldLabel, itemId, projectName, projectOwnerName, template]);
 
   // Generate mailto template
   const generateMailtoLink = () => {
@@ -190,35 +205,18 @@ export function RequestDataModal({
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="deadline">Deadline</Label>
-                <Input
-                  id="deadline"
-                  type="date"
-                  value={deadline}
-                  onChange={(e) => setDeadline(e.target.value)}
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Optional - used to fill the {'{{deadline}}'} placeholder
-                </p>
-              </div>
-
-              <div>
-                <Label htmlFor="requesterName">Your Name</Label>
-                <Input
-                  id="requesterName"
-                  type="text"
-                  placeholder="Carbon Report Team"
-                  value={requesterName}
-                  onChange={(e) => setRequesterName(e.target.value)}
-                  className="mt-1"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Shown in email signature
-                </p>
-              </div>
+            <div>
+              <Label htmlFor="deadline">Deadline</Label>
+              <Input
+                id="deadline"
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Optional - used to fill the {'{{deadline}}'} placeholder
+              </p>
             </div>
 
             <div className="bg-muted p-4 rounded-md">

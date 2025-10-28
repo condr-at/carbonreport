@@ -69,11 +69,14 @@ export default async function DatasetPage({ params }: PageProps) {
   const enrichedDataPoints = enrichDataPoints(completeDataPoints, fieldDefinitions);
   const tableRows = flattenToTableRows(enrichedDataPoints);
 
+  const ownerName = (project.user?.name ?? 'Carbon Report Team').trim() || 'Carbon Report Team';
+
   return (
     <ProjectLayout project={project}>
       <DatasetPageClient
         projectId={project.id}
         projectName={project.name}
+        projectOwnerName={ownerName}
         initialRows={tableRows}
         datasetVersion={project.datasetVersion || 0}
         fieldDefinitions={fieldDefinitions}

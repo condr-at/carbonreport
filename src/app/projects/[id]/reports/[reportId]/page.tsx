@@ -117,11 +117,14 @@ export default async function ReportPage({ params }: PageProps) {
     updatedAt: project.updatedAt,
   };
 
+  const ownerName = (project.user?.name ?? 'Carbon Report Team').trim() || 'Carbon Report Team';
+
   return (
     <ProjectLayout project={projectForLayout}>
       <ReportPageClient
         projectId={project.id}
         projectName={project.name}
+        projectOwnerName={ownerName}
         reportId={reportResponse.reportInfo.id}
         reportName={reportResponse.template.name}
         templateCode={reportResponse.template.code}

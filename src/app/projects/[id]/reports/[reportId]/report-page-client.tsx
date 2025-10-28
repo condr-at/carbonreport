@@ -26,6 +26,7 @@ interface ReportSectionSummary {
 interface ReportPageClientProps {
   projectId: string;
   projectName: string;
+  projectOwnerName: string;
   reportId: string;
   reportName: string;
   templateCode: string;
@@ -54,6 +55,7 @@ type RequestModalState = {
 export function ReportPageClient({
   projectId,
   projectName,
+  projectOwnerName,
   reportId,
   reportName,
   templateCode,
@@ -388,6 +390,7 @@ export function ReportPageClient({
       {requestModal && (
         <RequestDataModal
           projectName={projectName}
+          projectOwnerName={projectOwnerName}
           fieldLabel={requestModal.fieldLabel}
           fieldHint={requestModal.fieldHint}
           fieldId={requestModal.fieldId}

@@ -105,6 +105,6 @@ These inputs populate {{field_display_name}} so the report can reflect the lates
 Please send the requested data by {{deadline}}. If you have questions or need clarification, let me know and we will gladly assist.
 
 Best regards,
-{{user_name}}`
+{{requester_signature}}`
   }
 }

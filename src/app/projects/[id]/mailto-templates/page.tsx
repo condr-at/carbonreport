@@ -9,6 +9,9 @@ type ProjectResponse = {
   status?: string | null;
   updatedAt: string;
   mailtoTemplate?: unknown | null;
+  user?: {
+    name: string | null;
+  } | null;
 };
 
 interface PageProps {
@@ -59,6 +62,7 @@ export default async function MailtoTemplatesPage({ params }: PageProps) {
   }
 
   const template = extractMailtoValues(project.mailtoTemplate);
+  const ownerName = (project.user?.name ?? 'Carbon Report Team').trim() || 'Carbon Report Team';
 
   const projectForLayout = {
     id: project.id,
@@ -72,6 +76,7 @@ export default async function MailtoTemplatesPage({ params }: PageProps) {
       <MailtoTemplatesClient
         projectId={project.id}
         projectName={project.name}
+        projectOwnerName={ownerName}
         template={template}
       />
     </ProjectLayout>

@@ -290,7 +290,9 @@ Simplified structure based on field-value pairs:
 
 **Notes**:
 - The current core uses `requested_at` and `revoked_at`; other fields are reserved for future iterations (see §2.10).
-- Enforce a single active request per `(project_id, data_point_id)` — one field can be linked to only one contact at a time.
+- **Single active contact per field**: Each `(project_id, data_point_id)` pair can have only **one** active request (no `revoked_at`). When reassigning a field to a new contact, the system automatically sets `revoked_at` on the previous request to preserve history.
+- **Bulk requests create multiple records**: A single mailto action requesting multiple fields will create one `data_requests` record per field, all sharing the same `contact_id` and `requested_at` timestamp.
+- **Revoke mechanism**: When changing the contact for a field, the old request receives `revoked_at = NOW()` and a new request is inserted. Revoked requests remain visible in history but are filtered out of "Active" views.
 
 ### 3.6. Project Files ⏸️ Post-MVP
 
@@ -341,7 +343,7 @@ The following architectural and data model provisions must be included in MVP sc
 5. **Template Configuration Versioning** — Git-based versioning allows rollback and tracking of template changes; `template_code` stored in Reports for template evolution.
 6. **File Metadata extensibility** — structure allows adding `confidence` and `source_type` (OCR/Manual) fields post-MVP.
 7. **API routes** — designed to support eventual organization-level scoping and role-based access control.
-8. **Mailto template** — stored in `Project.mailto_template` (JSONB, subject/body), seeded from report templates and supporting placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`.
+8. **Mailto template** — stored in `Project.mailto_template` (JSONB, subject/body), seeded from report templates and supporting placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{requester_signature}}` (auto-composed from the project owner and project name).
 9. **Optimistic locking** — `Project.dataset_version` prevents concurrent edit conflicts in multi-user scenarios.
 
 ---

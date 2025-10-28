@@ -12,6 +12,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const project = await db.project.findUnique({
       where: { id },
       include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
         reports: {
           select: {
             id: true,

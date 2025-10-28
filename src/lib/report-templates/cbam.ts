@@ -91,6 +91,6 @@ These details populate {{field_display_name}} in our reporting workspace and ens
 Please share the data by {{deadline}}. If any of the items are unclear or you need additional context, feel free to reach out so we can clarify promptly.
 
 Thank you for your support,
-{{user_name}}`
+{{requester_signature}}`
   }
 }

@@ -23,6 +23,7 @@ import {
 interface DatasetPageClientProps {
   projectId: string;
   projectName: string;
+  projectOwnerName: string;
   initialRows: TableRow[];
   datasetVersion: number;
   fieldDefinitions: FieldDefinition[];
@@ -32,6 +33,7 @@ interface DatasetPageClientProps {
 export function DatasetPageClient({
   projectId,
   projectName,
+  projectOwnerName,
   initialRows,
   datasetVersion: initialVersion,
   fieldDefinitions,
@@ -303,6 +305,7 @@ export function DatasetPageClient({
       {requestDataModal && (
         <RequestDataModal
           projectName={projectName}
+          projectOwnerName={projectOwnerName}
             fieldLabel={requestDataModal.fieldLabel}
             fieldId={requestDataModal.fieldId}
             itemId={requestDataModal.itemId}

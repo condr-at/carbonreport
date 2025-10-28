@@ -204,6 +204,10 @@ DataPointRow {
   - "Request Data" button
   - Last updated indicator
   - Validation status icon
+  - Request badge (if active request exists): "Requested from [Contact Name]" with timestamp
+    * Badge color: muted for active requests, success for completed
+    * Click badge to view request details or reassign contact
+    * Warning tooltip when reassigning: "This will revoke the previous request"
 }
 ```
 
@@ -435,7 +439,7 @@ This table shows which API endpoints each page uses:
 **Key Patterns**:
 - **Optimistic Locking**: Dataset page sends `datasetVersion` with PUT, handles 409 Conflict
 - **Filtered Views**: Report Editor reads `Project.dataset`, filters by template field_ids
-- **Mailto Generation**: Client-side, no API call (uses `Project.mailto_template` with placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`)
+- **Mailto Generation**: Client-side, no API call (uses `Project.mailto_template` with placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{requester_signature}}`)
 
 ---
 
