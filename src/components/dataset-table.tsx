@@ -18,7 +18,16 @@ import {
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mail, Trash2, Plus, Search } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { Mail, Trash2, Plus, Search, RefreshCcw, UserRound, CheckCircle } from 'lucide-react';
 import { TableRow } from '@/lib/dataset-utils-v2';
 import { cn } from '@/lib/utils';
 
@@ -34,6 +43,26 @@ interface DatasetTableProps {
     itemId: string | null;
     repeatableKey: string | null;
   }) => void;
+  dataRequests?: DataRequestSummary[];
+}
+
+type RequestStatus = 'pending' | 'completed' | 'revoked';
+
+interface DataRequestSummary {
+  id: string;
+  status: RequestStatus;
+  requestedAt: string;
+  completedAt: string | null;
+  revokedAt: string | null;
+  contact?: {
+    id?: string | null;
+    name?: string | null;
+    email?: string | null;
+  };
+  dataPoint?: {
+    id?: string | null;
+    label?: string | null;
+  };
 }
 
 export function DatasetTable({
@@ -42,6 +71,7 @@ export function DatasetTable({
   onDeleteItem,
   onAddItem,
   onRequestData,
+  dataRequests = [],
 }: DatasetTableProps) {
   const [rows, setRows] = useState<TableRow[]>(initialRows);
   const [editingCell, setEditingCell] = useState<string | null>(null);
@@ -141,6 +171,30 @@ export function DatasetTable({
     return uniqueItemCounts;
   }, [rows]);
 
+  const statusStyles: Record<RequestStatus, string> = useMemo(
+    () => ({
+      pending: 'bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100',
+      completed: 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
+      revoked: 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-100',
+    }),
+    []
+  );
+
+  const requestsByField = useMemo(() => {
+    const map = new Map<string, DataRequestSummary[]>();
+    dataRequests.forEach((request) => {
+      const key = request.dataPoint?.id ?? null;
+      if (!key) {
+        return;
+      }
+      if (!map.has(key)) {
+        map.set(key, []);
+      }
+      map.get(key)!.push(request);
+    });
+    return map;
+  }, [dataRequests]);
+
   const columns = useMemo<ColumnDef<TableRow>[]>(
     () => [
       {
@@ -149,6 +203,12 @@ export function DatasetTable({
         accessorKey: 'fieldLabel',
         cell: ({ row }) => {
           const original = row.original;
+          const requestBadges = requestsByField.get(original.fieldId) ?? [];
+          const formatter = new Intl.DateTimeFormat(undefined, {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          });
+
           return (
             <div className="flex flex-col">
               <span className="font-medium">{original.fieldLabel}</span>
@@ -156,6 +216,72 @@ export function DatasetTable({
                 <span className="text-xs text-muted-foreground">
                   {original.fieldHint}
                 </span>
+              )}
+              {requestBadges.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {requestBadges.map((request) => {
+                    const contactLabel = request.contact?.name?.trim() || request.contact?.email || 'Contact';
+                    const statusLabel = request.status.charAt(0).toUpperCase() + request.status.slice(1);
+                    const badgeClass = statusStyles[request.status] ?? statusStyles.pending;
+                    return (
+                      <DropdownMenu key={request.id}>
+                        <DropdownMenuTrigger asChild>
+                          <Badge
+                            variant="outline"
+                            className={cn('cursor-pointer transition-colors', badgeClass)}
+                          >
+                            Requested from {contactLabel}
+                          </Badge>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-56">
+                          <DropdownMenuLabel>
+                            {statusLabel} • {contactLabel}
+                          </DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <div className="px-2 pb-2 text-xs text-muted-foreground space-y-1">
+                            <p>
+                              Requested {formatter.format(new Date(request.requestedAt))}
+                            </p>
+                            {request.completedAt && (
+                              <p>
+                                Completed {formatter.format(new Date(request.completedAt))}
+                              </p>
+                            )}
+                            {request.revokedAt && (
+                              <p>
+                                Revoked {formatter.format(new Date(request.revokedAt))}
+                              </p>
+                            )}
+                            {request.contact?.email && (
+                              <p className="truncate">
+                                Email: {request.contact.email}
+                              </p>
+                            )}
+                          </div>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => alert('Resend request coming soon')}
+                          >
+                            <RefreshCcw className="h-4 w-4" />
+                            Resend request
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => alert('Change contact coming soon')}
+                          >
+                            <UserRound className="h-4 w-4" />
+                            Change contact
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => alert('Mark complete coming soon')}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            Mark complete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    );
+                  })}
+                </div>
               )}
             </div>
           );
@@ -234,7 +360,7 @@ export function DatasetTable({
         size: 120,
       },
     ],
-    [renderEditableCell, onRequestData, onDeleteItem, repeatableCounts]
+    [renderEditableCell, onRequestData, onDeleteItem, repeatableCounts, requestsByField, statusStyles]
   );
 
   const allRows = useMemo(() => rows, [rows]);

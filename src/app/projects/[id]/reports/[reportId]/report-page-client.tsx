@@ -389,6 +389,7 @@ export function ReportPageClient({
 
       {requestModal && (
         <RequestDataModal
+          projectId={projectId}
           projectName={projectName}
           projectOwnerName={projectOwnerName}
           fieldLabel={requestModal.fieldLabel}

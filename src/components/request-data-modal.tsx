@@ -11,9 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { X, Mail } from 'lucide-react';
+import { X, Mail, Loader2 } from 'lucide-react';
 
 interface RequestDataModalProps {
+  projectId: string;
   projectName: string;
   projectOwnerName: string;
   fieldLabel?: string;
@@ -24,9 +25,11 @@ interface RequestDataModalProps {
   isGroup?: boolean;
   mailtoTemplate?: { subject: string; body: string };
   onClose: () => void;
+  onLogged?: () => void | Promise<void>;
 }
 
 export function RequestDataModal({
+  projectId,
   projectName,
   projectOwnerName,
   fieldLabel,
@@ -37,10 +40,18 @@ export function RequestDataModal({
   isGroup = false,
   mailtoTemplate,
   onClose,
+  onLogged,
 }: RequestDataModalProps) {
   const [contactEmail, setContactEmail] = useState('');
   const [contactName, setContactName] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [stage, setStage] = useState<'form' | 'confirm'>('form');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const isValidEmail = useMemo(() => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return (value: string) => emailPattern.test(value);
+  }, []);
 
   const template = useMemo(() => {
     const fallbackBody = [
@@ -136,15 +147,93 @@ export function RequestDataModal({
     return `mailto:${contactEmail}?subject=${subject}&body=${body}`;
   };
 
+  const resetAndClose = () => {
+    setStage('form');
+    setIsSubmitting(false);
+    setApiError(null);
+    onClose();
+  };
+
   const handleSend = () => {
     if (!contactEmail) {
       alert('Please enter a contact email address');
       return;
     }
 
+    if (!isValidEmail(contactEmail)) {
+      alert('Please enter a valid email address (e.g. name@example.com)');
+      return;
+    }
+
     const mailtoLink = generateMailtoLink();
     window.location.href = mailtoLink;
-    onClose();
+    setStage('confirm');
+  };
+
+  const handleBackToEdit = () => {
+    setStage('form');
+    setApiError(null);
+  };
+
+  const handleConfirm = async () => {
+    setIsSubmitting(true);
+    setApiError(null);
+
+    const payload = {
+      projectId,
+      contact: {
+        email: contactEmail,
+        name: contactName || undefined,
+      },
+      deadline: deadline || null,
+      fields: [
+        {
+          dataPointId: fieldId || null,
+          fieldLabel: fieldLabel || null,
+          itemId: itemId || null,
+          group: group || null,
+        },
+      ],
+      mailtoPreview: preview,
+    };
+
+    try {
+      if (!isValidEmail(contactEmail)) {
+        setApiError('Contact email must be a valid email address');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const response = await fetch('/api/data-requests/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorPayload = await response
+          .json()
+          .catch(() => ({ error: 'Failed to log request' }));
+        const detailed = Array.isArray(errorPayload?.details) && errorPayload.details.length > 0
+          ? errorPayload.details[0]?.message
+          : null;
+        throw new Error(detailed || errorPayload?.error || 'Failed to log request');
+      }
+
+      alert('Data request logged (mock)');
+      if (onLogged) {
+        await onLogged();
+      }
+      resetAndClose();
+    } catch (error) {
+      console.error('Failed to log data request', error);
+      const message = error instanceof Error ? error.message : 'Failed to log request';
+      setApiError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -154,104 +243,163 @@ export function RequestDataModal({
           variant="ghost"
           size="sm"
           className="absolute top-4 right-4"
-          onClick={onClose}
+          onClick={resetAndClose}
         >
           <X className="h-4 w-4" />
         </Button>
 
         <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Mail className="h-6 w-6" />
-              Request Data
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              {isGroup
-                ? `Request all ${group} data`
-                : `Request data for: ${fieldLabel}`}
-            </p>
-            {fieldHint && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Hint: {fieldHint}
-              </p>
-            )}
-          </div>
+          {stage === 'form' ? (
+            <>
+              <div>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Mail className="h-6 w-6" />
+                  Request Data
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {isGroup
+                    ? `Request all ${group} data`
+                    : `Request data for: ${fieldLabel}`}
+                </p>
+                {fieldHint && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Hint: {fieldHint}
+                  </p>
+                )}
+              </div>
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="contactEmail">Contact Email *</Label>
-              <Input
-                id="contactEmail"
-                type="email"
-                placeholder="colleague@company.com"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                className="mt-1"
-              />
-            </div>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="contactEmail">Contact Email *</Label>
+                  <Input
+                    id="contactEmail"
+                    type="email"
+                    placeholder="colleague@company.com"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="contactName">Contact Name</Label>
-              <Input
-                id="contactName"
-                type="text"
-                placeholder="John Doe"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                className="mt-1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Optional - used in email greeting
-              </p>
-            </div>
+                <div>
+                  <Label htmlFor="contactName">Contact Name</Label>
+                  <Input
+                    id="contactName"
+                    type="text"
+                    placeholder="John Doe"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Optional - used in email greeting
+                  </p>
+                </div>
 
-            <div>
-              <Label htmlFor="deadline">Deadline</Label>
-              <Input
-                id="deadline"
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="mt-1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Optional - used to fill the {'{{deadline}}'} placeholder
-              </p>
-            </div>
+                <div>
+                  <Label htmlFor="deadline">Deadline</Label>
+                  <Input
+                    id="deadline"
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Optional - used to fill the {'{{deadline}}'} placeholder
+                  </p>
+                </div>
 
-            <div className="bg-muted p-4 rounded-md">
-              <p className="text-sm font-medium mb-2">Email Preview:</p>
-              <div className="text-xs space-y-1 text-muted-foreground">
+                <div className="bg-muted p-4 rounded-md">
+                  <p className="text-sm font-medium mb-2">Email Preview:</p>
+                  <div className="text-xs space-y-1 text-muted-foreground">
+                    <p>
+                      <strong>To:</strong> {contactEmail || '[email]'}
+                    </p>
+                    <p>
+                      <strong>Subject:</strong> {preview.subject}
+                    </p>
+                    {fieldId && (
+                      <p>
+                        <strong>Field ID:</strong> {fieldId}
+                      </p>
+                    )}
+                    <div className="mt-2">
+                      <strong>Body:</strong>
+                      <pre className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground bg-background/60 border rounded p-2">
+                        {preview.body}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" onClick={resetAndClose}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSend}>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Open Email Client
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <h2 className="text-2xl font-bold">Confirm Email</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Was the email sent successfully?
+                </p>
+              </div>
+
+              <div className="space-y-2 text-sm text-muted-foreground">
                 <p>
-                  <strong>To:</strong> {contactEmail || '[email]'}
+                  <strong>Contact:</strong> {contactName ? `${contactName} <${contactEmail}>` : contactEmail}
                 </p>
                 <p>
                   <strong>Subject:</strong> {preview.subject}
                 </p>
-                {fieldId && (
+                <div>
+                  <strong>Included Field:</strong>{' '}
+                  {fieldLabel || fieldId || 'Selected data point'}
+                  {itemId ? ` (Item ${itemId})` : ''}
+                </div>
+                {deadline && (
                   <p>
-                    <strong>Field ID:</strong> {fieldId}
+                    <strong>Deadline:</strong> {deadline}
                   </p>
                 )}
-                <div className="mt-2">
-                  <strong>Body:</strong>
-                  <pre className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground bg-background/60 border rounded p-2">
-                    {preview.body}
-                  </pre>
+              </div>
+
+              {apiError && (
+                <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">
+                  {apiError}
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Button variant="ghost" onClick={handleBackToEdit}>
+                  &lt; Back to edit
+                </Button>
+                <div className="flex gap-3 justify-end w-full sm:w-auto">
+                  <Button variant="outline" onClick={resetAndClose} disabled={isSubmitting}>
+                    No, cancel
+                  </Button>
+                  <Button onClick={handleConfirm} disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Logging...
+                      </span>
+                    ) : (
+                      'Yes, log request'
+                    )}
+                  </Button>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="flex gap-3 justify-end">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button onClick={handleSend}>
-              <Mail className="h-4 w-4 mr-2" />
-              Open Email Client
-            </Button>
-          </div>
+            </>
+          )}
         </div>
       </Card>
     </div>

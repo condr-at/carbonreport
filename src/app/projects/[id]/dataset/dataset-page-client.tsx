@@ -7,7 +7,7 @@
  * Now works with field definitions from database instead of templates
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { DatasetTable } from '@/components/dataset-table';
 import { RequestDataModal } from '@/components/request-data-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -49,6 +49,15 @@ export function DatasetPageClient({
     repeatableKey?: string | null;
     mailtoTemplate?: { subject: string; body: string } | null;
   } | null>(null);
+  const [dataRequests, setDataRequests] = useState<Array<{
+    id: string;
+    status: 'pending' | 'completed' | 'revoked';
+    requestedAt: string;
+    completedAt: string | null;
+    revokedAt: string | null;
+    contact?: { id?: string | null; name?: string | null; email?: string | null };
+    dataPoint?: { id?: string | null; label?: string | null };
+  }>>([]);
 
   const resolveMailtoTemplate = useCallback(
     (): { subject: string; body: string } | null => {
@@ -266,6 +275,31 @@ export function DatasetPageClient({
     [resolveMailtoTemplate]
   );
 
+  const refreshDataRequests = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/data-requests`, {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load data requests for project ${projectId}`);
+      }
+
+      const payload = await response.json();
+      if (Array.isArray(payload)) {
+        setDataRequests(payload);
+      } else {
+        setDataRequests([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch project data requests', error);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    refreshDataRequests();
+  }, [refreshDataRequests]);
+
   if (rows.length === 0) {
     return (
       <Card>
@@ -294,21 +328,25 @@ export function DatasetPageClient({
         <CardContent>
           <DatasetTable
             rows={rows}
+            dataRequests={dataRequests}
             onUpdate={handleUpdate}
             onDeleteItem={handleDeleteItem}
             onAddItem={handleAddItem}
             onRequestData={handleRequestData}
           />
         </CardContent>
+          projectId={projectId}
       </Card>
 
       {requestDataModal && (
         <RequestDataModal
+          projectId={projectId}
           projectName={projectName}
           projectOwnerName={projectOwnerName}
             fieldLabel={requestDataModal.fieldLabel}
             fieldId={requestDataModal.fieldId}
             itemId={requestDataModal.itemId}
+          onLogged={refreshDataRequests}
           fieldHint={requestDataModal.fieldHint}
             group={requestDataModal.repeatableKey || undefined}
             isGroup={false}
