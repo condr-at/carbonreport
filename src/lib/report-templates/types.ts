@@ -34,7 +34,7 @@ export interface ReportTemplateLayoutMeta extends JsonObject {
 export interface MailtoTemplate {
   subject: string
   body: string
-  // Variables: {{contact_name}}, {{user_name}}, {{data_point_label}}, {{deadline}}
+  // Variables: {{contact_name}}, {{user_name}}, {{field_display_name}}, {{field_list}}, {{deadline}}
 }
 
 export interface ReportTemplate {

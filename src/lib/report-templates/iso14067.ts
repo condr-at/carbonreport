@@ -93,18 +93,16 @@ export const ISO14067Template: ReportTemplate = {
   ],
   
   mailto: {
-    subject: 'Request for ISO 14067 Carbon Footprint Data',
+    subject: 'Carbon Reporting Data Request',
     body: `Dear {{contact_name}},
 
-We are currently preparing an ISO 14067 Carbon Footprint Report for our product and require your assistance with the following data point:
+We are compiling data for the {{project_name}} carbon footprint report and would appreciate your help with the following items:
 
-**Data Point:** {{data_point_label}}
+{{field_list}}
 
-This information is essential for accurately quantifying the greenhouse gas emissions associated with our product lifecycle.
+These inputs populate {{field_display_name}} so the report can reflect the latest and most accurate information.
 
-Could you please provide this information by {{deadline}}?
-
-If you have any questions or need clarification, please don't hesitate to reach out.
+Please send the requested data by {{deadline}}. If you have questions or need clarification, let me know and we will gladly assist.
 
 Best regards,
 {{user_name}}`

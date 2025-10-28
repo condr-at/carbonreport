@@ -79,20 +79,18 @@ export const CBAMTemplate: ReportTemplate = {
   ],
   
   mailto: {
-    subject: 'CBAM Data Request for EU Import Declaration',
+    subject: 'Carbon Reporting Data Request',
     body: `Dear {{contact_name}},
 
-We are preparing our EU CBAM (Carbon Border Adjustment Mechanism) declaration and require the following information from your facility:
+We are gathering data for the {{project_name}} carbon footprint report and need your help with the following items:
 
-**Data Point:** {{data_point_label}}
+{{field_list}}
 
-This data is mandatory for our quarterly CBAM reporting to EU customs authorities. We need verified emissions data for the goods we are importing.
+These details populate {{field_display_name}} in our reporting workspace and ensure the assessment reflects accurate upstream information.
 
-Please provide this information by {{deadline}}.
+Please share the data by {{deadline}}. If any of the items are unclear or you need additional context, feel free to reach out so we can clarify promptly.
 
-If you need clarification on what data is required, please contact us immediately as CBAM reporting deadlines are strict.
-
-Best regards,
+Thank you for your support,
 {{user_name}}`
   }
 }

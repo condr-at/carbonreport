@@ -427,14 +427,15 @@ This table shows which API endpoints each page uses:
 | **Report Print** | Same as Report Editor | Read-only view, no API calls on render |
 | **Files** | `GET /api/projects/:id/files`<br>`POST /api/projects/:id/files` | List files<br>Upload to S3 |
 | **Contacts** | `GET /api/contacts`<br>`POST /api/contacts` | List all user contacts<br>Create contact |
-| **Request Data** | `POST /api/data-requests` | Create request record, log to DB |
-| **Mailto Templates** | `GET /api/projects/:id/mailto-templates`<br>`PUT /api/projects/:id/mailto-templates/:fieldId` | Get all templates<br>Update specific template |
+| **Data Requests Board** | `GET /api/projects/:id/data-requests`<br>`POST /api/data-requests/bulk` | Table of requests per project<br>Create/update bulk assignments |
+| **Request Data (inline)** | `POST /api/data-requests/bulk` | Bulk or single request logging after mailto launch |
+| **Mailto Templates** | `GET /api/projects/:id/mailto-template`<br>`PUT /api/projects/:id/mailto-template`<br>`POST /api/projects/:id/mailto-template/reset` | Get current template<br>Update subject/body<br>Reset to default |
 | **Settings** | `GET /api/users/me`<br>`PUT /api/users/me` | Current user info<br>Update profile |
 
 **Key Patterns**:
 - **Optimistic Locking**: Dataset page sends `datasetVersion` with PUT, handles 409 Conflict
 - **Filtered Views**: Report Editor reads `Project.dataset`, filters by template field_ids
-- **Mailto Generation**: Client-side, no API call (uses template from `Project.mailtoTemplates`)
+- **Mailto Generation**: Client-side, no API call (uses `Project.mailto_template` with placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`)
 
 ---
 
@@ -615,26 +616,27 @@ sequenceDiagram
     Note over User,Report: Scenario 3a — Request data from Dataset
     User->>ProjectPage: Opens Dataset
     ProjectPage->>Dataset: Displays data point grid
-    User->>Dataset: Spots empty field “Energy Consumption”
-    User->>Dataset: Clicks "Request Data"
-    Dataset->>User: Opens contact selection dialog
-    User->>Contact: Picks “Ivan Petrov, Production Manager”
-    Contact->>Contact: Creates `data_requests` record
-    Contact->>User: Generates mailto link with template
-    User->>Contact: Opens email client
-    Note over Contact: Even if the template fails, the mail client opens with an empty body; the mailto link always exists.
-    Note over Contact: Email includes project name, field name, guidance, and context.
+  User->>Dataset: Spots several empty fields (“Energy Consumption”, “Grid Emission Factor”)
+  User->>Dataset: Selects them via checkboxes and clicks "Request Data"
+  Dataset->>User: Opens bulk dialog with contact picker and preview (using `{{field_list}}`)
+  User->>Contact: Picks “Ivan Petrov, Production Manager”
+  Contact->>Contact: Creates/updates `data_requests` rows (revoking previous assign if needed)
+  Contact->>User: Generates mailto link with bullet list of selected fields
+  User->>Contact: Opens email client
+  Note over Contact: Even if the template fails, the mail client opens with an empty body; the mailto link always exists.
+  Note over Contact: Email includes project name, a bullet list of fields, hints, and contextual guidance.
 
     Note over User,Report: Scenario 3b — Request data from report
     User->>ProjectPage: Opens Reports → ISO14067
     ProjectPage->>Report: Shows report form
-    User->>Report: Finds empty field “Total Energy Consumption”
-    User->>Report: Clicks "Request Data" next to the field
-    Report->>Contact: Opens contact selection dialog
-    User->>Contact: Selects contact
-    Contact->>User: Generates mailto link
-    User->>Contact: Opens email client
-    Note over Contact: Mailto link is independent of template content; if parsing fails the body stays empty but the email can still be sent.
+  User->>Report: Finds empty field “Total Energy Consumption”
+  User->>Report: Clicks "Request Data" next to the field (can also add the field to the bulk selection)
+  Report->>Contact: Opens dialog with the current assignee and options to reassign
+  User->>Contact: Selects the existing contact or reassigns to another person
+  Contact->>Contact: Updates `data_requests` (sets `revoked_at` for the previous assignee and creates a new record for the selected contact)
+  Contact->>User: Generates mailto link (single field or list depending on the selection)
+  User->>Contact: Opens email client
+  Note over Contact: Mailto link is independent of template content; if parsing fails the body stays empty but the email can still be sent.
 
     Note over User,Report: Scenario 4 — Complete and export report
     User->>ProjectPage: Navigates to Reports
@@ -657,7 +659,7 @@ sequenceDiagram
     Dataset->>User: Shows saving indicator with success or error toast
     User->>Dataset: Clicks "Export CSV"
     Dataset->>User: Displays export progress and downloads dataset.csv
-    Note over Dataset: Request Data actions are available directly from row or cell controls.
+  Note over Dataset: Request Data actions available for single rows and bulk selections; active fields display a badge with the contact name.
 
     Note over User,Report: Scenario 6 — Duplicate project
     User->>Dashboard: Reviews project list
@@ -728,13 +730,14 @@ graph TD
 ### Phase 3: Global Contacts
 1. `/contacts` — Global address book
 2. Contact CRUD operations
-3. View data-request history per contact
+3. View data-request history per contact (Requests tab with quick repeat/close actions)
 
 ### Phase 4: Dataset & Roadmap
-1. `/projects/:id/dataset` — Spreadsheet data capture (inline editing, filters, Request Data, CSV export)
-2. Associate data requests with contacts
-3. Highlight completion and status filters
-4. `/projects/:id/roadmap` — Roadmap checklist
+1. `/projects/:id/dataset` — Spreadsheet data capture (inline editing, filters, bulk Request Data, CSV export)
+2. Associate data requests with contacts; show badges "Requested from [Contact]" and an action "Change contact"
+3. `/projects/:id/data-requests` — Requests table with filters (active/closed/overdue) and actions "Repeat", "Change contact", "Close"
+4. Highlight completion and status filters
+5. `/projects/:id/roadmap` — Roadmap checklist
 
 ### Phase 5: Reports
 1. `/projects/:id/reports` — Project report list
@@ -768,6 +771,8 @@ src/app/
 │   ├── layout.tsx        # Layout with navigation
 │   ├── dashboard/
 │   ├── contacts/         # Global address book
+│   │   └── [id]/
+│   │       └── page.tsx  # Contact details with Requests tab
 │   ├── projects/
 │   │   ├── new/
 │   │   │   ├── page.tsx              # Step 1: Project name
@@ -776,7 +781,11 @@ src/app/
 │   │   └── [id]/
 │   │       ├── page.tsx              # Overview
 │   │       ├── dataset/
-│   │       │   └── page.tsx          # Dataset grid with Request Data
+│   │       │   └── page.tsx          # Dataset grid with single/bulk Request Data
+│   │       ├── data-requests/
+│   │       │   └── page.tsx          # Data request board & filters
+│   │       ├── mailto-templates/
+│   │       │   └── page.tsx          # Project-wide mailto editor
 │   │       ├── roadmap/
 │   │       ├── reports/
 │   │       │   ├── page.tsx          # Report list
@@ -788,11 +797,11 @@ src/app/
 │       ├── profile/
 │       └── password/
 └── api/                  # API Routes
-    ├── auth/
-    ├── contacts/
-    ├── projects/
-    ├── reports/
-    └── files/
+  ├── auth/
+  ├── contacts/
+  ├── projects/
+  ├── reports/
+  └── files/
 ```
 
 ### Route Protection

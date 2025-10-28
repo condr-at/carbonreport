@@ -45,7 +45,10 @@ export function RequestDataModal({
     const fallbackBody = [
       'Dear {{contact_name}},',
       '',
-      'We are working on the {{project_name}} carbon footprint report and need your help with {{data_point_label}}.',
+      'We are working on the {{project_name}} carbon footprint report and need your help with {{field_display_name}}.',
+      '',
+      'Could you please provide the following information?',
+      '{{field_list}}',
       '',
       'Please share the latest details by {{deadline}}.',
       '',
@@ -53,7 +56,7 @@ export function RequestDataModal({
       '{{user_name}}',
     ].join('\n');
 
-  const fallbackSubject = `Data Request for {{project_name}} - {{data_point_label}}`;
+    const fallbackSubject = `Data Request for {{project_name}} - {{field_display_name}}`;
 
     if (!mailtoTemplate) {
       return { subject: fallbackSubject, body: fallbackBody };
@@ -78,7 +81,7 @@ export function RequestDataModal({
       }
     })();
 
-    const dataPointLabel = (() => {
+    const displayName = (() => {
       if (!fieldLabel) {
         return 'the requested data point';
       }
@@ -88,10 +91,13 @@ export function RequestDataModal({
       return fieldLabel;
     })();
 
+    const fieldList = `- ${displayName}`;
+
     const replacements: Record<string, string> = {
       '{{contact_name}}': contactName || 'there',
       '{{project_name}}': projectName,
-      '{{data_point_label}}': dataPointLabel,
+      '{{field_display_name}}': displayName,
+      '{{field_list}}': fieldList,
       '{{deadline}}': deadlineLabel,
       '{{user_name}}': requesterName || 'Carbon Report Team',
     };

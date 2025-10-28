@@ -140,7 +140,8 @@ export function MailtoTemplatesClient({ projectId, projectName, template }: Mail
             <ul className="space-y-1 text-xs">
               <li><code className="bg-muted px-1 py-0.5 rounded">{'{{contact_name}}'}</code> — Name of the person you're contacting</li>
               <li><code className="bg-muted px-1 py-0.5 rounded">{'{{project_name}}'}</code> — {projectName}</li>
-              <li><code className="bg-muted px-1 py-0.5 rounded">{'{{data_point_label}}'}</code> — Field name (e.g., "Product Name")</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded">{'{{field_display_name}}'}</code> — Field name (e.g., "Product Name")</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded">{'{{field_list}}'}</code> — Bullet list of selected fields (for bulk requests)</li>
               <li><code className="bg-muted px-1 py-0.5 rounded">{'{{deadline}}'}</code> — Optional deadline date</li>
               <li><code className="bg-muted px-1 py-0.5 rounded">{'{{user_name}}'}</code> — Your name for the signature</li>
             </ul>
@@ -165,7 +166,7 @@ export function MailtoTemplatesClient({ projectId, projectName, template }: Mail
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 className="mt-1 h-64 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                placeholder={`Dear {{contact_name}},\n\nWe are working on the ${projectName} carbon footprint report and need your help with {{data_point_label}}.\n\nPlease share the latest details by {{deadline}}.\n\nThank you,\n{{user_name}}`}
+                placeholder={`Dear {{contact_name}},\n\nWe are working on the ${projectName} carbon footprint report and need your help with {{field_display_name}}.\n\nCould you please provide the following information?\n{{field_list}}\n\nPlease share the latest details by {{deadline}}.\n\nThank you,\n{{user_name}}`}
               />
             </div>
           </div>
@@ -216,7 +217,8 @@ export function MailtoTemplatesClient({ projectId, projectName, template }: Mail
               {subject
                 .replace(/\{\{contact_name\}\}/g, 'John Doe')
                 .replace(/\{\{project_name\}\}/g, projectName)
-                .replace(/\{\{data_point_label\}\}/g, 'Product Carbon Footprint')
+                .replace(/\{\{field_display_name\}\}/g, 'Product Carbon Footprint')
+                .replace(/\{\{field_list\}\}/g, '• Product Carbon Footprint\n• Grid Emission Factor')
                 .replace(/\{\{deadline\}\}/g, 'December 31, 2025')
                 .replace(/\{\{user_name\}\}/g, 'Carbon Report Team')}
             </p>
@@ -227,7 +229,8 @@ export function MailtoTemplatesClient({ projectId, projectName, template }: Mail
               {body
                 .replace(/\{\{contact_name\}\}/g, 'John Doe')
                 .replace(/\{\{project_name\}\}/g, projectName)
-                .replace(/\{\{data_point_label\}\}/g, 'Product Carbon Footprint')
+                .replace(/\{\{field_display_name\}\}/g, 'Product Carbon Footprint')
+                .replace(/\{\{field_list\}\}/g, '• Product Carbon Footprint\n• Grid Emission Factor')
                 .replace(/\{\{deadline\}\}/g, 'December 31, 2025')
                 .replace(/\{\{user_name\}\}/g, 'Carbon Report Team')}
             </pre>

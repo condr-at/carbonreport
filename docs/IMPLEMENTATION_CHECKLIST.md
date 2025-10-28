@@ -26,7 +26,7 @@ Use this checklist to track implementation of the architecture updates.
 - [x] Remove `Report.data` field
 - [x] Add `Report.metadata` field
 - [x] Add `Project.datasetVersion` field
-- [x] Add `Project.mailtoTemplates` field
+- [x] Add `Project.mailtoTemplate` field
 - [x] Apply migration to database (`npx prisma db push`)
 - [x] Verify migration with seed script (`npm run db:seed`)
 - [ ] Add GIN index for performance (optional, recommended after 100+ projects)
@@ -93,12 +93,12 @@ Use this checklist to track implementation of the architecture updates.
 
 - [x] `POST /api/projects` — Create project
   - [x] Initialize empty dataset: `{ data_points: [] }`
-  - [x] Initialize `mailtoTemplates` from template defaults
+- [x] Initialize `mailtoTemplate` (subject/body) from first available report template defaults
   - [x] Set `datasetVersion` to 0
   - [x] Create Report records for selected templates
 
 - [ ] `POST /api/projects/[id]/duplicate` — Duplicate project (not implemented)
-  - [ ] Copy `mailtoTemplates` to new project
+- [ ] Copy `mailtoTemplate` to new project
   - [ ] Reset `datasetVersion` to 0 in copy
 
 #### Report Endpoints ✅
@@ -120,17 +120,23 @@ Use this checklist to track implementation of the architecture updates.
 
 #### Mailto Endpoints ✅
 
-- [x] `GET /api/projects/[id]/mailto-templates` — Get all templates
-  - [x] Return `Project.mailtoTemplates` JSONB
+- [x] `GET /api/projects/[id]/mailto-template` — Get project-wide template
+   - [x] Return `{ subject, body }` (or null)
 
-- [x] `PUT /api/projects/[id]/mailto-templates/[fieldId]` — Update template
-   - [x] Validate `fieldId` exists in DB definitions
-  - [x] Validate structure with Zod
-  - [x] Update specific template in `Project.mailtoTemplates`
+- [x] `PUT /api/projects/[id]/mailto-template` — Update template
+   - [x] Validate structure with Zod (subject/body required)
+   - [x] Persist to `Project.mailtoTemplate`
 
-- [x] `POST /api/projects/[id]/mailto-templates` — Reset to defaults
-  - [x] Reload templates from code
-  - [x] Overwrite `Project.mailtoTemplates`
+- [x] `POST /api/projects/[id]/mailto-template/reset` — Reset to defaults
+   - [x] Reload template from first matching report config
+   - [x] Overwrite `Project.mailtoTemplate`
+
+#### Data Request Endpoints 🚧
+
+- [ ] `GET /api/projects/[id]/data-requests` — List project requests (fields, contacts, statuses)
+- [ ] `POST /api/data-requests/bulk` — Create/update records for the `dataPointIds` array and revoke previous contacts
+- [ ] `POST /api/data-requests/:id/close` (or PATCH) — Mark the request `completed_at`
+- [ ] Reserve endpoint for reminders (`POST /api/data-requests/remind`) — deferred, but interface and contract defined
 
 ### 3.3 Update Frontend Components
 
@@ -147,7 +153,10 @@ Use this checklist to track implementation of the architecture updates.
     }
     ```
   - [ ] Show optimistic UI updates
-   - [ ] Use DB-backed field IDs (snake_case) from `/api/dataset-fields`
+    - [ ] Use DB-backed field IDs (snake_case) from `/api/dataset-fields`
+   - [ ] Add checkboxes to select multiple rows and enable the bulk "Request Data" action
+   - [ ] Show a badge "Request sent [Contact]" and provide a "Change contact" button
+   - [ ] On modal confirmation call `POST /api/data-requests/bulk` and update local contact state
 
 #### Report Editor
 
@@ -155,40 +164,55 @@ Use this checklist to track implementation of the architecture updates.
   - [ ] Fetch data from GET endpoint (filters Project.dataset)
   - [ ] On field update, call dataset endpoint (not report endpoint)
   - [ ] Remove any references to `Report.data`
-  - [ ] Add "Request Data" button per field
-  - [ ] Use project-specific mailto template
+   - [ ] Add "Request Data" for a single field and allow adding the field to the bulk selection
+   - [ ] Show the current contact and the "Change" action (using `data_requests`)
+   - [ ] Use the project `mailtoTemplate` and `{{field_list}}`
+
+#### Data Requests Page
+
+- [ ] `app/projects/[id]/data-requests/page.tsx`
+   - [ ] Fetch `GET /api/projects/[id]/data-requests` and render a table (field, contact, dates, status)
+   - [ ] Provide filters: active, closed, overdue
+   - [ ] Actions: "Resend", "Change contact", "Close" (invoking the bulk API with matching parameters)
+   - [ ] Prepare the UI for future extensions (deadline column, status badges, bulk reminders)
+
+#### Contact Detail Page
+
+- [ ] `app/contacts/[id]/page.tsx`
+   - [ ] Add a "Requests" tab (table of projects/fields)
+   - [ ] Support quick actions "Resend" and "Close" via the bulk API
+   - [ ] Show history (requested_at, revoked_at, completed_at)
 
 #### Request Data Dialog
 
-- [ ] `components/RequestDataDialog.tsx` (or similar)
-  - [ ] Fetch mailto template from `Project.mailtoTemplates[fieldId]`
-  - [ ] Replace placeholders:
-    - `{contact_name}` → contact.name
-    - `{project_name}` → project.name
-    - `{field_label}` → field label from template
-    - `{user_name}` → current user name
-  - [ ] Generate `mailto:` link
-  - [ ] Log to `data_requests` table
+- [ ] `components/request-data-modal.tsx`
+   - [ ] Read the template from `Project.mailtoTemplate`
+   - [ ] Support a list of data points (single/bulk) and generate `{{field_list}}`
+   - [ ] Inject placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`
+   - [ ] Show an email preview (subject/body) with a bullet-formatted list
+   - [ ] After opening the mailto link call `POST /api/data-requests/bulk` to log/update requests
+   - [ ] Support selecting an existing contact or creating a new one, and capture the deadline
 
 #### Mailto Template Editor (Settings)
 
-- [ ] `app/projects/[id]/settings/mailto-templates/page.tsx`
-  - [ ] List all fields with templates
-  - [ ] Inline editor for each template
-  - [ ] Validate placeholders on save
-  - [ ] "Reset to Default" button per template
+- [ ] `app/projects/[id]/mailto-templates/page.tsx`
+   - [ ] Edit the shared template (subject/body)
+   - [ ] Validate allowed placeholders (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`)
+   - [ ] Show a preview with a representative bullet list
+   - [ ] Provide a "Reset to Default" button (POST reset endpoint)
 
 ### 3.4 Add Validation Helpers
 
 - [ ] Create `src/lib/mailto-validation.ts`:
   ```typescript
-  const ALLOWED_PLACEHOLDERS = [
-    '{contact_name}',
-    '{project_name}',
-    '{field_label}',
-    '{user_name}',
-    '{deadline}',
-  ]
+   const ALLOWED_PLACEHOLDERS = [
+      '{{contact_name}}',
+      '{{project_name}}',
+   '{{field_display_name}}',
+   '{{field_list}}',
+      '{{user_name}}',
+      '{{deadline}}',
+   ]
   
   export function validateMailtoTemplate(template: string): {
     valid: boolean
@@ -205,19 +229,21 @@ Use this checklist to track implementation of the architecture updates.
   export function replacePlaceholders(
     template: string,
     data: {
-      contactName: string
-      projectName: string
-      fieldLabel: string
-      userName: string
-      deadline?: string
+         contactName: string
+         projectName: string
+         fieldDisplayName: string
+         fieldList: string
+         userName: string
+         deadline?: string
     }
   ): string {
     return template
-      .replace(/{contact_name}/g, data.contactName)
-      .replace(/{project_name}/g, data.projectName)
-      .replace(/{field_label}/g, data.fieldLabel)
-      .replace(/{user_name}/g, data.userName)
-      .replace(/{deadline}/g, data.deadline || 'N/A')
+         .replace(/\{\{contact_name\}\}/g, data.contactName)
+         .replace(/\{\{project_name\}\}/g, data.projectName)
+         .replace(/\{\{field_display_name\}\}/g, data.fieldDisplayName)
+         .replace(/\{\{field_list\}\}/g, data.fieldList)
+         .replace(/\{\{user_name\}\}/g, data.userName)
+         .replace(/\{\{deadline\}\}/g, data.deadline || 'N/A')
   }
   ```
 
@@ -248,9 +274,9 @@ Use this checklist to track implementation of the architecture updates.
 ### Integration Tests
 
 - [ ] **Project creation**
-  - [ ] Creates with empty dataset
-  - [ ] Initializes mailtoTemplates from template defaults
-  - [ ] Sets datasetVersion to 0
+   - [ ] Creates with empty dataset
+   - [ ] Initializes mailtoTemplate from report defaults
+   - [ ] Sets datasetVersion to 0
 
 - [ ] **Dataset updates**
   - [ ] Increments datasetVersion on save
@@ -270,7 +296,7 @@ Use this checklist to track implementation of the architecture updates.
 
 ### Manual Testing
 
-- [ ] Create new project → verify mailtoTemplates populated
+- [ ] Create new project → verify mailtoTemplate populated
 - [ ] Edit dataset → verify datasetVersion increments
 - [ ] Concurrent edit (2 browser tabs) → verify conflict detected
 - [ ] View report → verify data appears correctly
@@ -344,7 +370,7 @@ Use this checklist to track implementation of the architecture updates.
 
 ### Mailto templates not appearing
 
-**Solution**: Check project creation seeding logic. Verify `mailtoTemplates` JSONB populated.
+**Solution**: Check project creation seeding logic. Verify `mailtoTemplate` JSON populated.
 
 ---
 
@@ -686,7 +712,7 @@ Use this checklist to track implementation of the architecture updates.
 
 7. [ ] Add "Request Data" action
    - Button per row
-   - Opens `<RequestDataDialog />` (stub for now)
+   - Opens `<RequestDataModal />` (stub for now)
 
 **API Used**: 
 - `GET /api/projects/:id/dataset`
@@ -731,7 +757,7 @@ Use this checklist to track implementation of the architecture updates.
 
 6. [ ] Add "Request Data" per field
    - Button next to empty fields
-   - Opens `<RequestDataDialog />` with field context
+   - Opens `<RequestDataModal />` with field context (single field mode)
 
 7. [ ] Calculate and display completion
    - Show progress bar at top: "67% Complete (12/18 fields)"
@@ -751,67 +777,44 @@ Use this checklist to track implementation of the architecture updates.
 
 ---
 
-### Iteration 8: Data Requests List
+### Iteration 8: Data Requests Board
 
-**Goal**: New section to track all data requests  
+**Goal**: Manage /projects/:id/data-requests from a dedicated board  
 **Time**: 3-4 hours  
 **Status**: ⬜ Not Started
 
 **Prerequisites**:
-- ⬜ **Need to build**: Backend API for data requests
-- ⬜ **Need to build**: Contact model and API
+- ⬜ Contacts CRUD complete
+- ⬜ Bulk mailto flow and request logging live
 
 **Tasks**:
-1. [ ] Create backend API for data requests
-   - `POST /api/data-requests` - Log new request
-   - `GET /api/data-requests` - List all (with filters)
-   - `PUT /api/data-requests/:id` - Update status
-   - Schema:
-     ```prisma
-     model DataRequest {
-       id          String   @id @default(uuid())
-       projectId   String
-       project     Project  @relation(fields: [projectId])
-       contactId   String?
-       contact     Contact? @relation(fields: [contactId])
-   fieldId     String   // DB-backed snake_case field id
-       status      String   @default("pending") // pending, fulfilled, cancelled
-       requestedAt DateTime @default(now())
-       fulfilledAt DateTime?
-       userId      String
-       user        User     @relation(fields: [userId])
-     }
-     ```
+1. [ ] Extend the `DataRequest` Prisma model
+   - Add `completedAt`, `deadline`, `status` (future enum), `reminders` JSONB
+   - Enforce uniqueness for active `(projectId, dataPointId)`
 
-2. [ ] Create Data Requests page
-   - Location: `app/(dashboard)/data-requests/page.tsx`
-   - Add to MainSidebar navigation
-   - Fetch: `GET /api/data-requests`
+2. [ ] Backend
+   - `GET /api/projects/:id/data-requests` → project list (field, contact, dates, status)
+   - `POST /api/data-requests/bulk` → already implemented; confirm it returns current records
+   - `POST /api/data-requests/:id/close` → set `completedAt`
 
-3. [ ] Create `<DataRequestCard />` component
-   - Location: `src/components/blocks/data-request-card.tsx`
-   - Shows: Project name, Field label, Contact name, Status, Date
-   - Actions: Mark as Fulfilled, Cancel, Resend (opens mailto again)
+3. [ ] UI `/projects/[id]/data-requests`
+   - Table with columns Field, Contact, Requested, Deadline, Status, Actions
+   - Filters: Active, Closed, Overdue
+   - Actions: "Resend" (re-open modal), "Change contact", "Close" (calls close endpoint)
+   - Pagination/search (basic)
 
-4. [ ] Add filtering
-   - By Status: All, Pending, Fulfilled, Cancelled
-   - By Project: Dropdown of all projects
-   - By Contact: Dropdown of all contacts
-   - Date range picker (optional)
+4. [ ] Modal integration
+   - Resend → open `RequestDataModal` with the prefilled selection
+   - Refresh the table after actions without full reload
 
-5. [ ] Add status update functionality
-   - Click "Mark as Fulfilled" → `PUT /api/data-requests/:id`
-   - Update status to "fulfilled", set fulfilledAt timestamp
-   - Show success toast
-
-6. [ ] Update Dashboard stats
-   - Add "Pending Requests" card
-   - Count where status = "pending"
+5. [ ] Future-proofing
+   - Include placeholder UI elements (Deadline column, status badges)
+   - Hooks for bulk reminders (disabled until API ships)
 
 **API Used**:
-- `POST /api/data-requests`
-- `GET /api/data-requests`
-- `PUT /api/data-requests/:id`
+- `GET /api/projects/:id/data-requests`
+- `POST /api/data-requests/bulk`
+- `POST /api/data-requests/:id/close`
 
 **Deliverable**: Data Requests section with list, filtering, status updates
 
@@ -860,50 +863,43 @@ Use this checklist to track implementation of the architecture updates.
    - POST/PUT to `/api/contacts`
    - Validation: Email format, required fields
 
-4. [ ] Create `<RequestDataDialog />` component
-   - Location: `src/components/blocks/request-data-dialog.tsx`
-   - Props: `{ projectId, fieldId, fieldLabel, onClose }`
-   - Steps:
-     1. Select contact (or create new)
-     2. Preview mailto template
-     3. Click "Send Request" → opens email client
+4. [ ] Create `<RequestDataModal />` component
+    - Location: `src/components/request-data-modal.tsx`
+    - Props: `{ projectId, projectName, dataPoints[], onClose }`
+    - Steps:
+       1. Select or create a contact, set the deadline, and confirm the requester name
+       2. Review the template (subject/body) with `{{field_list}}`
+       3. Click "Open Email" → launch mailto and perform the follow-up API call
 
-4. [ ] Implement mailto generation
-   - Fetch: `GET /api/projects/:id/mailto-templates`
-   - Get template for `fieldId`
-   - Replace placeholders:
-     ```typescript
-     const mailto = `mailto:${contact.email}?subject=${subject}&body=${body}`
-       .replace('{contact_name}', contact.name)
-       .replace('{project_name}', project.name)
-       .replace('{field_label}', fieldLabel)
-       .replace('{user_name}', currentUser.name)
-     ```
+5. [ ] Implement mailto generation
+    - Fetch: `GET /api/projects/:id/mailto-template`
+   - Replace placeholders (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`)
+   - Format the list as bullets (`•` + display name + hint)
 
-6. [ ] Log data request
-   - POST to `/api/data-requests` with:
-     ```json
-     {
-       "projectId": "uuid",
-       "contactId": "uuid",
-   "field_id": "product_name",
-       "status": "pending",
-       "requestedAt": "2025-10-13T..."
-     }
-     ```
+6. [ ] Log data request(s)
+   - POST to `/api/data-requests/bulk` with payload:
+       ```json
+       {
+          "projectId": "uuid",
+          "contactId": "uuid",
+          "dataPointIds": ["product_name", "energy_input_amount"],
+          "deadline": "2025-11-01"
+       }
+       ```
+   - API revokes previous links and returns the current records
 
 7. [ ] Integrate into Dataset and Reports
-   - Add "Request Data" button to `<DataPointRow />`
-   - Add "Request Data" button to report fields
-   - Both open `<RequestDataDialog />`
+   - Dataset: checkboxes, bulk bar, badges with contact name, "Change" action
+   - Reports: reuse the same modal plus quick access for a single field
+   - Both flows consume `<RequestDataModal />` and `POST /api/data-requests/bulk`
 
 **API Used**:
 - `POST /api/contacts`
 - `GET /api/contacts`
 - `PUT /api/contacts/:id`
 - `DELETE /api/contacts/:id`
-- `GET /api/projects/:id/mailto-templates`
-- `POST /api/data-requests`
+- `GET /api/projects/:id/mailto-template`
+- `POST /api/data-requests/bulk`
 
 **Deliverable**: Contact management, working mailto links, request logging
 
@@ -911,41 +907,39 @@ Use this checklist to track implementation of the architecture updates.
 
 ### Iteration 10: Mailto Template Editor
 
-**Goal**: Customize mailto templates per project  
+**Goal**: Customize project-wide mailto template  
 **Time**: 3-4 hours  
 **Status**: ⬜ Not Started
 
 **Tasks**:
-1. [ ] Create Settings/Templates page
-   - `app/(dashboard)/projects/[id]/settings/mailto-templates/page.tsx`
-   - Or integrate into Project Settings tab (if added)
+1. [ ] Create Mailto Template page
+   - `app/projects/[id]/mailto-templates/page.tsx`
+   - Accessible from the project sidebar
 
-2. [ ] Fetch templates
-   - `GET /api/projects/:id/mailto-templates`
-   - Display list of all fields with templates
+2. [ ] Fetch template
+   - `GET /api/projects/:id/mailto-template`
+   - Pre-populate inputs (subject/body)
 
-3. [ ] Create inline editor
-   - Textarea for subject
-   - Textarea for body
-   - Show allowed placeholders list
-   - Validate placeholders on save (client-side)
+3. [ ] Inline editor + preview
+   - Textareas for subject/body
+   - Placeholder reference (`{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`)
+   - Preview with substitutions (including a bullet list)
 
-4. [ ] Implement save
-   - `PUT /api/projects/:id/mailto-templates/:fieldId`
-   - Show success toast
-   - Update preview immediately
+4. [ ] Persist changes
+   - `PUT /api/projects/:id/mailto-template`
+   - Validate on the client and server
+   - Toast on successful save
 
-5. [ ] Add "Reset to Default" button
-   - Per template or global
-   - `POST /api/projects/:id/mailto-templates` (reset all)
-   - Confirm dialog before reset
+5. [ ] Reset to default
+   - "Reset" button → `POST /api/projects/:id/mailto-template/reset`
+   - Confirm before reset and refresh the UI
 
 **API Used**:
-- `GET /api/projects/:id/mailto-templates`
-- `PUT /api/projects/:id/mailto-templates/:fieldId`
-- `POST /api/projects/:id/mailto-templates` (reset)
+- `GET /api/projects/:id/mailto-template`
+- `PUT /api/projects/:id/mailto-template`
+- `POST /api/projects/:id/mailto-template/reset`
 
-**Deliverable**: Editable mailto templates with preview and reset
+**Deliverable**: Single project template editor with preview and reset
 
 ---
 

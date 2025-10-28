@@ -207,13 +207,13 @@ function createMockDataset(projectType: 'ebike' | 'steel') {
 }
 
 const defaultMailtoTemplate = {
-  subject: 'Data Request for {{project_name}}',
+  subject: 'Data Request for {{project_name}} - {{field_display_name}}',
   body: `Dear {{contact_name}},
 
-We are preparing a carbon footprint assessment for our project "{{project_name}}" and need your input.
+We are preparing a carbon footprint assessment for our project "{{project_name}}" and need your input on {{field_display_name}}.
 
-Could you please provide the following information:
-- {{data_point_label}}
+Could you please provide the following information?
+{{field_list}}
 
 This information is needed by {{deadline}}.
 

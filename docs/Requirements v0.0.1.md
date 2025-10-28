@@ -38,13 +38,13 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 ### 2.3. Reports
 
 * Reports are pre-built web templates containing input fields, labels, and contextual guidance.
-* **User-facing terminology**: Reports are called "Report Types" or "Report Standards" (e.g., "ISO 14067", "CBAM")
+| status            | Enum (planned)      | Reserved for future (`REQUESTED`, `RECEIVED`, `DECLINED`) |
 * **Technical terminology**: Internally called "templates" in code; template configurations stored as TypeScript/JSON in `src/lib/report-templates/`
 * **Template versioning**: Managed through Git version control; template code updates require deployment
 * Reports are **not user-editable structurally**; they are designed and maintained by administrators.
 * Users can:
   * Fill data directly in input fields.
-  * **Request data from contacts** directly from report fields (same functionality as in Dataset)
+  * **Request data from contacts** directly—either for a single field or a bulk selection (see §§2.4, 2.10).
   * Remove or add report types from the project.
   * Export reports (PDF via browser print) — all formatted according to official standards.
 * Deleting a report does not remove related data from the project dataset.
@@ -64,7 +64,7 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 **Format**: `snake_case` identifiers aligned with database columns
 
 **Examples**:
-- `product_name` — scalar field
+| reminders       | JSONB     | Reserved: array of reminder timestamps                    |
 - `product_description` — scalar field
 - `material_input_name` — repeatable group field (paired by `item_id`)
 - `material_input_amount` — repeatable group field (paired by `item_id`)
@@ -80,7 +80,8 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 
 * Single route `/projects/:id/dataset` renders a spreadsheet-like table with all project data points; there is no separate "advanced" or "normal" mode.
 * Inline cell editing, row insertion/removal, filtering, and sorting are available directly in the grid when supported by the UI library.
-* “Request Data” actions are surfaced from each relevant cell/row and share UX with report field requests.
+* "Request Data" works for single rows and bulk selections; chosen fields produce one email with a bullet list.
+* Rows with an active request show a "Request sent [Contact]" badge and a "Change contact" action.
 * CSV export runs from the same page and exposes loading and failure feedback.
 * Bulk edits, save operations, and exports display in-context loading indicators and non-blocking error toasts.
 
@@ -120,6 +121,7 @@ Simplified structure based on field-value pairs:
 - `item_id`: `null` for scalar fields; `"1"`, `"2"`, `"3"` etc. for repeatable rows
 - `value`: Always stored as string; type validation happens at application layer
 - Unique key: `(field_id, item_id)` within a project
+- Field-to-contact assignments and request deadlines are not stored in the JSON; the `data_requests` table (see §3.5) holds that metadata.
 
 ### 2.5. Project Dashboard
 
@@ -153,21 +155,17 @@ Simplified structure based on field-value pairs:
 
 #### Contact Usage
 
-* Each data point allows triggering a “Request Data” action.
-* On click, user selects a contact (existing or new) and a mailto link is generated using a predefined template.
-* Mail clients always open with a `mailto:` link; if template metadata is missing or malformed the body falls back to an empty message instead of failing the interaction.
-* System logs the request in `data_requests` with fields:
-
-  * `id`, `user_id`, `project_id`, `contact_id`, `data_point_id`, `requested_at`, `revoked_at`, `external_access` (default false).
-* If a link between contact and DP is removed, `revoked_at` timestamp is set.
+* Every field supports "Request Data" — individually or as part of a bulk selection.
+* The user picks a contact (from the address book or inline creation); the system generates a mailto using the project template, inserting `{{field_list}}` for multi-field requests.
+* Mail clients always open via `mailto:`; if template substitution fails the body remains empty so the action is not blocked.
+* The system logs requests in `data_requests` (see §3.5). When a field is reassigned to a new contact, the previous record receives `revoked_at` and stays in history.
 
 #### Contact Interface
 
-* In data entry view: shows the last contact associated with each data point.
-* In the address book: each contact card displays:
-
-  * Active requests.
-  * Historical (revoked) requests with timestamps.
+* In the data entry view: each row shows a badge with the current contact and a "Change contact" action.
+* In the address book the contact has a "Requests" tab containing:
+  * Active requests across all projects with a quick "Resend" action.
+  * History (revoked/completed) with timestamps and links to the project/data point.
 
 ### 2.8. File Repository (Project Files) ⏸️ Post-MVP
 
@@ -190,8 +188,17 @@ Simplified structure based on field-value pairs:
 * Completion percentage per report and overall project calculated dynamically based on filled data points.
 * All data points are weighted equally in completion calculation.
 * Linked data points synchronize progress across multiple reports.
+* Fields with an active request remain editable; the UI shows the current contact.
 
-### 2.10. Exports
+### 2.10. Data Request Management
+
+* The `/projects/:id/data-requests` screen lists all project requests in a table.
+* Status filters: **Active** (no `revoked_at`/`completed_at`), **Closed** (`revoked_at` or `completed_at` present), **Overdue** (deadline < now, no `completed_at`).
+* Columns: field (label + item), contact, dates (`requested_at`, `deadline`, `completed_at`), status.
+* Actions: "Resend request", "Change contact", "Close" (sets `completed_at`).
+* Architecture leaves room for future updates: reminders, `received/declined` statuses, bulk follow-ups, and report exports.
+
+### 2.11. Exports
 
 * Reports exportable via browser print-to-PDF functionality:
   * **PDF** — dedicated print-friendly page view, user saves via browser "Print → Save as PDF".
@@ -227,7 +234,7 @@ Simplified structure based on field-value pairs:
 | deleted_at        | Timestamp | Soft delete (30 days retention) |
 | dataset           | JSONB     | Dynamic data structure          |
 | dataset_version   | Integer   | Optimistic locking counter      |
-| mailto_templates  | JSONB     | Per-project mailto customization|
+| mailto_template   | JSONB     | Project-wide mailto template (subject/body)|
 | checklist         | JSONB     | Steps for roadmap               |
 | status            | Enum      | (active, archived, deleted)     |
 | twin_project_id   | UUID      | Nullable; FK to projects        |
@@ -266,16 +273,24 @@ Simplified structure based on field-value pairs:
 
 ### 3.5. Data Requests
 
-| Field           | Type      | Notes                |
-| --------------- | --------- | -------------------- |
-| id              | UUID      | Primary key          |
-| user_id         | UUID      | FK to users          |
-| project_id      | UUID      | FK to projects       |
-| contact_id      | UUID      | FK to contacts       |
-| data_point_id   | Text      | Data point reference |
-| requested_at    | Timestamp | —                    |
-| revoked_at      | Timestamp | Nullable             |
-| external_access | Boolean   | Default false        |
+| Field           | Type             | Notes                                                    |
+| --------------- | ---------------- | -------------------------------------------------------- |
+| id              | UUID             | Primary key                                              |
+| user_id         | UUID             | FK to users                                              |
+| project_id      | UUID             | FK to projects                                           |
+| contact_id      | UUID             | FK to contacts                                           |
+| data_point_id   | Text             | Data point reference                                     |
+| requested_at    | Timestamp        | —                                                        |
+| revoked_at      | Timestamp        | Nullable; set when the field is reassigned to another contact |
+| completed_at    | Timestamp        | Nullable; marks "data received"                          |
+| deadline        | Timestamp        | Nullable; used to highlight overdue requests             |
+| status          | Enum (planned)   | Reserved (`REQUESTED`, `RECEIVED`, `DECLINED`)           |
+| reminders       | JSONB            | Reserved: array of sent reminder timestamps              |
+| external_access | Boolean          | Default false                                            |
+
+**Notes**:
+- The current core uses `requested_at` and `revoked_at`; other fields are reserved for future iterations (see §2.10).
+- Enforce a single active request per `(project_id, data_point_id)` — one field can be linked to only one contact at a time.
 
 ### 3.6. Project Files ⏸️ Post-MVP
 
@@ -326,7 +341,7 @@ The following architectural and data model provisions must be included in MVP sc
 5. **Template Configuration Versioning** — Git-based versioning allows rollback and tracking of template changes; `template_code` stored in Reports for template evolution.
 6. **File Metadata extensibility** — structure allows adding `confidence` and `source_type` (OCR/Manual) fields post-MVP.
 7. **API routes** — designed to support eventual organization-level scoping and role-based access control.
-8. **Mailto templates** — stored in `Project.mailto_templates` JSONB; initialized from template defaults, customizable per project.
+8. **Mailto template** — stored in `Project.mailto_template` (JSONB, subject/body), seeded from report templates and supporting placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`.
 9. **Optimistic locking** — `Project.dataset_version` prevents concurrent edit conflicts in multi-user scenarios.
 
 ---
@@ -536,7 +551,7 @@ carbonreport/
 ✅ **Field ID naming convention**: snake_case with DB-backed identifiers  
 ✅ **Global contact management** (contacts shared across all user's projects)  
 ✅ Mailto-based data requests from data points (in Dataset or Reports)  
-✅ **Per-project mailto template customization** (stored in `Project.mailto_templates`)  
+✅ **Per-project mailto template customization** (stored in `Project.mailto_template`)  
 ✅ File repository with upload (10 MB limit, all file types) and linking  
 ✅ Progress tracking and completion calculation  
 ✅ Export to PDF via browser print functionality (dedicated print page)  
@@ -580,7 +595,7 @@ The MVP implements all user-facing features for project creation, report managem
 - **Project creation flow**: Multi-step process requiring at least one report type selection (via questionnaire or manual)
 - **First-time user experience**: Auto-redirect to project creation wizard after email verification (can exit to Dashboard)
 - **User-facing terminology**: "Report Types" or "Report Standards" (not "templates") for better UX
-- **Mailto template customization**: Per-project customization stored in `Project.mailto_templates` JSONB, initialized from template defaults
+- **Mailto template customization**: Project-wide template stored in `Project.mailto_template`, initialized from report templates, supports placeholders such as `{{field_display_name}}` and `{{field_list}}`, and can be edited at `/projects/:id/mailto-templates`.
 - **Data architecture**: All field values live in `Project.dataset`; Reports reference data via `template_code` and filter logic
 - **Field ID convention**: snake_case identifiers with database (DatasetFieldDefinition) as source of truth
 - **Optimistic locking**: `dataset_version` counter prevents concurrent edit conflicts

@@ -75,8 +75,10 @@ Important: field mapping uses `fieldId` (string), never DB UUIDs.
 
 ## Mailto defaults
 
-- Per-project `mailtoTemplates` stored in `Project.mailtoTemplates` (JSONB)
-- When creating a project or resetting mailto templates, we assign the same body to every `fieldId` present in selected templates unless overridden later
+- Project stores a single template `Project.mailtoTemplate` (JSONB with `subject`/`body`).
+- On project creation or when resetting the template we seed it from the first selected report template that defines `mailto` defaults.
+- Body supports placeholders: `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{user_name}}`.
+- Bulk requests rely on `{{field_list}}`, rendering a bullet list of selected fields.
 
 ---
 

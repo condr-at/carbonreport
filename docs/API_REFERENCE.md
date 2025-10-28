@@ -322,9 +322,11 @@ PUT /api/projects/:id/mailto-templates/:fieldId
 
 **Allowed Placeholders**:
 - `{{contact_name}}` — Recipient name
-- `{{user_name}}` — Current user name
-- `{{data_point_label}}` — Field label from template
+- `{{project_name}}` — Project name
+- `{{field_display_name}}` — Field label from the template
+- `{{field_list}}` — Bullet list of selected fields for bulk requests
 - `{{deadline}}` — Optional deadline date
+- `{{user_name}}` — Current user name
 
 **Validation**:
 - `subject`: Required, min 1 character
