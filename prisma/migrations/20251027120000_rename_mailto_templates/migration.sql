@@ -1,6 +1,17 @@
--- Rename mailto templates column to singular form
-ALTER TABLE "projects"
-  RENAME COLUMN "mailto_templates" TO "mailto_template";
+-- Rename column only if legacy plural name exists
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_name = 'projects'
+      AND column_name = 'mailto_templates'
+  ) THEN
+    ALTER TABLE "projects"
+      RENAME COLUMN "mailto_templates" TO "mailto_template";
+  END IF;
+END
+$$;
 
 -- Transform stored JSON from per-field map to single template structure
 WITH transformed AS (
