@@ -418,29 +418,6 @@ export function RequestDataModal({
                     Optional - used to fill the {'{{deadline}}'} placeholder
                   </p>
                 </div>
-
-                <div className="bg-muted p-4 rounded-md">
-                  <p className="text-sm font-medium mb-2">Email Preview:</p>
-                  <div className="text-xs space-y-1 text-muted-foreground">
-                    <p>
-                      <strong>To:</strong> {contactEmail || '[email]'}
-                    </p>
-                    <p>
-                      <strong>Subject:</strong> {preview.subject}
-                    </p>
-                    {fieldId && (
-                      <p>
-                        <strong>Field ID:</strong> {fieldId}
-                      </p>
-                    )}
-                    <div className="mt-2">
-                      <strong>Body:</strong>
-                      <pre className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground bg-background/60 border rounded p-2">
-                        {preview.body}
-                      </pre>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <div className="flex gap-3 justify-end">
