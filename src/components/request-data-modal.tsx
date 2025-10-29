@@ -306,7 +306,6 @@ export function RequestDataModal({
         throw new Error(detailed || errorPayload?.error || 'Failed to log request');
       }
 
-      alert('Data request logged (mock)');
       if (onLogged) {
         await onLogged();
       }

@@ -5,7 +5,7 @@
  * 
  * Unified editable table for all project data points with:
  * - Inline editing with validation
- * - Actions: Request Data, Add Item, Delete Item
+ * - Bulk data-request workflow
  * - Optimistic updates
  */
 
@@ -19,24 +19,14 @@ import {
 } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
-import { Mail, Trash2, Plus, Search, RefreshCcw, UserRound, CheckCircle } from 'lucide-react';
+import { Mail, Plus, Search } from 'lucide-react';
 import { TableRow } from '@/lib/dataset-utils-v2';
 import { cn } from '@/lib/utils';
 
 interface DatasetTableProps {
   rows: TableRow[];
   onUpdate: (fieldId: string, itemId: string | null, value: string) => Promise<void>;
-  onDeleteItem: (repeatableKey: string, itemId: string) => Promise<void>;
   onAddItem: (repeatableKey: string) => Promise<void>;
   onRequestData: (args: {
     fieldId: string;
@@ -56,7 +46,7 @@ interface DatasetTableProps {
 
 type RequestStatus = 'pending' | 'completed' | 'revoked';
 
-interface DataRequestSummary {
+export interface DataRequestSummary {
   id: string;
   status: RequestStatus;
   requestedAt: string;
@@ -79,7 +69,6 @@ interface DataRequestSummary {
 export function DatasetTable({
   rows: initialRows,
   onUpdate,
-  onDeleteItem,
   onAddItem,
   onRequestData,
   onRequestMultiple,
@@ -166,31 +155,6 @@ export function DatasetTable({
   );
 
   // Define table columns
-  const repeatableCounts = useMemo(() => {
-    const uniqueItemCounts = new Map<string, number>();
-    const seen = new Set<string>();
-
-    rows.forEach((row) => {
-      if (!row.isRepeatable || !row.repeatableKey || !row.itemId) return;
-      const key = row.repeatableKey;
-      const uniqueKey = `${key}::${row.itemId}`;
-      if (seen.has(uniqueKey)) return;
-      seen.add(uniqueKey);
-      uniqueItemCounts.set(key, (uniqueItemCounts.get(key) ?? 0) + 1);
-    });
-
-    return uniqueItemCounts;
-  }, [rows]);
-
-  const statusStyles: Record<RequestStatus, string> = useMemo(
-    () => ({
-      pending: 'bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100',
-      completed: 'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
-      revoked: 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-100',
-    }),
-    []
-  );
-
   const requestsByField = useMemo(() => {
     const map = new Map<string, DataRequestSummary[]>();
     dataRequests.forEach((request) => {
@@ -208,7 +172,6 @@ export function DatasetTable({
     });
     return map;
   }, [dataRequests]);
-
 
   const allRows = useMemo(() => rows, [rows]);
 
@@ -301,102 +264,13 @@ export function DatasetTable({
         accessorKey: 'fieldLabel',
         cell: ({ row }) => {
           const original = row.original;
-          const fieldKey = original.itemId
-            ? `${original.fieldId}::${original.itemId}`
-            : original.fieldId;
-          const requestBadges = requestsByField.get(fieldKey) ?? [];
-          const formatter = new Intl.DateTimeFormat(undefined, {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-          });
-
           return (
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-1">
               <span className="font-medium">{original.fieldLabel}</span>
               {original.fieldHint && (
                 <span className="text-xs text-muted-foreground">
                   {original.fieldHint}
                 </span>
-              )}
-              {requestBadges.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {requestBadges.map((request) => {
-                    const contactLabel = request.contact?.name?.trim() || request.contact?.email || 'Contact';
-                    const statusLabel = request.status.charAt(0).toUpperCase() + request.status.slice(1);
-                    const badgeClass = statusStyles[request.status] ?? statusStyles.pending;
-                    return (
-                      <DropdownMenu key={request.id}>
-                        <DropdownMenuTrigger asChild>
-                          <Badge
-                            variant="outline"
-                            className={cn('cursor-pointer transition-colors', badgeClass)}
-                          >
-                            Requested from {contactLabel}
-                          </Badge>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="w-56">
-                          <DropdownMenuLabel>
-                            {statusLabel} • {contactLabel}
-                          </DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <div className="px-2 pb-2 text-xs text-muted-foreground space-y-1">
-                            <p>
-                              Requested {formatter.format(new Date(request.requestedAt))}
-                            </p>
-                            {request.deadline && (
-                              <p>
-                                Deadline {formatter.format(new Date(request.deadline))}
-                              </p>
-                            )}
-                            {request.completedAt && (
-                              <p>
-                                Completed {formatter.format(new Date(request.completedAt))}
-                              </p>
-                            )}
-                            {request.revokedAt && (
-                              <p>
-                                Revoked {formatter.format(new Date(request.revokedAt))}
-                              </p>
-                            )}
-                            {request.contact?.email && (
-                              <p className="truncate">
-                                Email: {request.contact.email}
-                              </p>
-                            )}
-                          </div>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => {
-                              // TODO: Implement resend
-                              console.log('Resend request:', request.id);
-                            }}
-                          >
-                            <RefreshCcw className="h-4 w-4 mr-2" />
-                            Resend request
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              // TODO: Implement change contact
-                              console.log('Change contact:', request.id);
-                            }}
-                          >
-                            <UserRound className="h-4 w-4 mr-2" />
-                            Change contact
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              // TODO: Implement mark complete
-                              console.log('Mark complete:', request.id);
-                            }}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Mark as complete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    );
-                  })}
-                </div>
               )}
             </div>
           );
@@ -404,18 +278,25 @@ export function DatasetTable({
         size: 320,
       },
       {
-        id: 'item',
-        header: 'Item',
-        accessorKey: 'itemId',
+        id: 'responsible',
+        header: 'Responsible',
         cell: ({ row }) => {
-          const itemId = row.original.itemId;
-          return (
-            <div className="text-center text-muted-foreground">
-              {itemId ?? '—'}
-            </div>
-          );
+          const original = row.original;
+          const fieldKey = original.itemId
+            ? `${original.fieldId}::${original.itemId}`
+            : original.fieldId;
+          const relatedRequests = requestsByField.get(fieldKey) ?? [];
+          const pendingContacts = relatedRequests
+            .filter((request) => request.status === 'pending')
+            .map((request) => request.contact?.name?.trim() || request.contact?.email || null)
+            .filter((label): label is string => Boolean(label));
+
+          const uniqueContacts = Array.from(new Set(pendingContacts));
+          const displayValue = uniqueContacts.length > 0 ? uniqueContacts.join(', ') : '—';
+
+          return <span className="text-sm text-muted-foreground">{displayValue}</span>;
         },
-        size: 80,
+        size: 180,
       },
       {
         id: 'value',
@@ -424,56 +305,6 @@ export function DatasetTable({
         cell: ({ row }) => renderEditableCell(row.original),
         size: 300,
       },
-      {
-        id: 'actions',
-        header: 'Actions',
-        cell: ({ row }) => {
-          const currentRow = row.original;
-
-          const repeatableKey = currentRow.repeatableKey;
-          const itemId = currentRow.itemId;
-          const repeatableItemCount = repeatableKey
-            ? repeatableCounts.get(repeatableKey) ?? 0
-            : 0;
-          const canDelete = repeatableKey && itemId && repeatableItemCount > 1;
-
-          return (
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  onRequestData({
-                    fieldId: currentRow.fieldId,
-                    fieldLabel: currentRow.fieldLabel,
-                    fieldHint: currentRow.fieldHint,
-                    itemId: currentRow.itemId,
-                    repeatableKey: currentRow.repeatableKey,
-                  })
-                }
-                title="Request data"
-              >
-                <Mail className="h-4 w-4" />
-              </Button>
-              {canDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    currentRow.itemId &&
-                    currentRow.repeatableKey &&
-                    onDeleteItem(currentRow.repeatableKey, currentRow.itemId)
-                  }
-                  title="Delete item"
-                >
-                  <Trash2 className="h-4 w-4 text-destructive" />
-                </Button>
-              )}
-            </div>
-          );
-        },
-        size: 120,
-      },
     ],
     [
       headerCheckedState,
@@ -481,11 +312,7 @@ export function DatasetTable({
       selectedRowIds,
       setSelectedRowIds,
       requestsByField,
-      statusStyles,
       renderEditableCell,
-      repeatableCounts,
-      onRequestData,
-      onDeleteItem,
     ]
   );
 

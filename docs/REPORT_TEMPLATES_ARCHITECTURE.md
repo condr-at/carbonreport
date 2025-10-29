@@ -71,6 +71,12 @@ Important: field mapping uses `fieldId` (string), never DB UUIDs.
 - `blockType` in DB corresponds to `blockComponent` in code; it’s a render hint (e.g., `ghg-summary`, `repeatable-table`)
 - `config` can hold rendering hints such as `repeatableKey`
 
+### Repeatable blocks (dataset UI contract)
+- Любой блок с `repeatableKey` рендерится как одна строка в основной таблице, а фактические поля раскрываются внутри nested-table.
+- Nested-table содержит колонки `Field`, `Value`, `Responsible`, `Status / Deadline`, `Actions`; порядок полей задаётся `sortOrder` в `dataset_field_definitions`.
+- `Actions` покрывает добавление и удаление `item_id`, а также запуск Request Data по отдельным полям.
+- Появление новых полей в группе не требует кода: UI читает `dataset_field_definitions` и автоматически расширяет nested-table.
+
 ---
 
 ## Mailto defaults

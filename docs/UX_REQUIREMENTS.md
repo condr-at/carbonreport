@@ -743,6 +743,13 @@ graph TD
 4. Highlight completion and status filters
 5. `/projects/:id/roadmap` — Roadmap checklist
 
+#### Repeatable dataset groups
+- Плоская таблица отображает одну строку на repeatable-группу. Колонка `Value` остаётся пустой.
+- Внутри строки раскрывается вложенная таблица с колонками: `Field`, `Value`, `Responsible`, `Status / Deadline`, `Actions`.
+- Кнопка `Add item` и удаление элементов находятся внутри вложенной таблицы; действия доступны на уровне конкретного `item_id`.
+- Вложенная таблица повторяет inline-редактирование для значений и поддерживает массовые запросы (чекбоксы синхронизированы с верхним уровнем).
+- Для пустых групп показываем текст `No items yet` и предлагаем кнопку `Add item`.
+
 ### Phase 5: Reports
 1. `/projects/:id/reports` — Project report list
 2. Add/remove report types within project

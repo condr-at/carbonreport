@@ -8,7 +8,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { DatasetTable } from '@/components/dataset-table';
+import { DatasetTable, type DataRequestSummary } from '@/components/dataset-table';
 import { RequestDataModal } from '@/components/request-data-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Database } from 'lucide-react';
@@ -55,15 +55,7 @@ export function DatasetPageClient({
     }>;
     mailtoTemplate?: { subject: string; body: string } | null;
   } | null>(null);
-  const [dataRequests, setDataRequests] = useState<Array<{
-    id: string;
-    status: 'pending' | 'completed' | 'revoked';
-    requestedAt: string;
-    completedAt: string | null;
-    revokedAt: string | null;
-    contact?: { id?: string | null; name?: string | null; email?: string | null };
-    dataPoint?: { id?: string | null; label?: string | null };
-  }>>([]);
+  const [dataRequests, setDataRequests] = useState<DataRequestSummary[]>([]);
   const [contacts, setContacts] = useState<Array<{
     id: string;
     name: string;
@@ -172,55 +164,6 @@ export function DatasetPageClient({
     [projectId, datasetVersion, refreshRows]
   );
 
-  const handleDeleteItem = useCallback(
-    async (repeatableKey: string, itemId: string) => {
-      try {
-        const response = await fetch(
-          `/api/projects/${projectId}/dataset/items/${itemId}?datasetVersion=${datasetVersion}`,
-          {
-            method: 'DELETE',
-          }
-        );
-
-        if (!response.ok) {
-          let message = 'Failed to delete item';
-
-          try {
-            const errorPayload = await response.json();
-            if (errorPayload?.error) {
-              message = errorPayload.error;
-            }
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
-          }
-
-        if (response.status === 409) {
-          await refreshRows();
-        }
-
-          alert(message);
-          return;
-        }
-
-        const data = await response.json();
-        setDatasetVersion(data.datasetVersion);
-
-        setRows((prevRows) =>
-          prevRows.filter(
-            (row) => !(
-              row.repeatableKey === repeatableKey &&
-              row.itemId === itemId
-            )
-          )
-        );
-      } catch (error) {
-        console.error('Error deleting dataset item:', error);
-        alert('Failed to delete item');
-      }
-    },
-    [projectId, datasetVersion, refreshRows]
-  );
-
   const handleAddItem = useCallback(
     async (repeatableKey: string) => {
       try {
@@ -320,8 +263,8 @@ export function DatasetPageClient({
       }
 
       const payload = await response.json();
-      if (Array.isArray(payload)) {
-        setDataRequests(payload);
+      if (Array.isArray(payload?.requests)) {
+        setDataRequests(payload.requests as DataRequestSummary[]);
       } else {
         setDataRequests([]);
       }
@@ -389,7 +332,6 @@ export function DatasetPageClient({
             rows={rows}
             dataRequests={dataRequests}
             onUpdate={handleUpdate}
-            onDeleteItem={handleDeleteItem}
             onAddItem={handleAddItem}
             onRequestData={handleRequestData}
             onRequestMultiple={handleRequestMultiple}
