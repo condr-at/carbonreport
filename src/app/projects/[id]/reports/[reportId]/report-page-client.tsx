@@ -244,6 +244,55 @@ export function ReportPageClient({
     [projectId, datasetVersion, refreshRows]
   );
 
+  const handleDeleteItem = useCallback(
+    async (repeatableKey: string, itemId: string) => {
+      try {
+        const response = await fetch(
+          `/api/projects/${projectId}/dataset/items/${itemId}?datasetVersion=${datasetVersion}`,
+          {
+            method: 'DELETE',
+          }
+        );
+
+        if (!response.ok) {
+          let message = 'Failed to delete item';
+
+          try {
+            const errorPayload = await response.json();
+            if (errorPayload?.error) {
+              message = errorPayload.error;
+            }
+          } catch (parseError) {
+            console.error('Failed to parse error response:', parseError);
+          }
+
+          if (response.status === 409) {
+            await refreshRows();
+          }
+
+          alert(message);
+          return;
+        }
+
+        const data = await response.json();
+        setDatasetVersion(data.datasetVersion);
+        setRows((prevRows) =>
+          prevRows.filter(
+            (row) =>
+              !(
+                row.repeatableKey === repeatableKey &&
+                row.itemId === itemId
+              )
+          )
+        );
+      } catch (error) {
+        console.error('Error deleting dataset item:', error);
+        alert('Failed to delete item');
+      }
+    },
+    [projectId, datasetVersion, refreshRows]
+  );
+
   const handleRequestData = useCallback(
     ({
       fieldId,
@@ -389,6 +438,7 @@ export function ReportPageClient({
             rows={rows}
             dataRequests={dataRequests}
             onUpdate={handleUpdate}
+            onDeleteItem={handleDeleteItem}
             onAddItem={handleAddItem}
             onRequestData={handleRequestData}
           />

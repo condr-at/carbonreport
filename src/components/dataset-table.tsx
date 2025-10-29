@@ -9,7 +9,7 @@
  * - Optimistic updates
  */
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { Fragment, useState, useMemo, useCallback, useEffect } from 'react';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 import {
   useReactTable,
@@ -20,13 +20,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Mail, Plus, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Mail, Plus, Search, Trash2 } from 'lucide-react';
 import { TableRow } from '@/lib/dataset-utils-v2';
 import { cn } from '@/lib/utils';
 
 interface DatasetTableProps {
   rows: TableRow[];
   onUpdate: (fieldId: string, itemId: string | null, value: string) => Promise<void>;
+  onDeleteItem: (repeatableKey: string, itemId: string) => Promise<void>;
   onAddItem: (repeatableKey: string) => Promise<void>;
   onRequestData: (args: {
     fieldId: string;
@@ -66,9 +67,42 @@ export interface DataRequestSummary {
   };
 }
 
+type DisplayRow =
+  | {
+      kind: 'single';
+      id: string;
+      fieldLabel: string;
+      fieldHint: string | null;
+      data: TableRow;
+    }
+  | {
+      kind: 'group';
+      id: string;
+      repeatableKey: string;
+      fieldLabel: string;
+      fieldHint: string | null;
+      rows: TableRow[];
+      items: RepeatableGroupItem[];
+      matchedRowIds: Set<string>;
+    };
+
+interface RepeatableGroupItem {
+  itemId: string | null;
+  rows: TableRow[];
+  matchedRowIds: Set<string>;
+}
+
+const formatRepeatableKey = (key: string) =>
+  key
+    .split(/[_-]/)
+    .filter(Boolean)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .join(' ');
+
 export function DatasetTable({
   rows: initialRows,
   onUpdate,
+  onDeleteItem,
   onAddItem,
   onRequestData,
   onRequestMultiple,
@@ -79,10 +113,44 @@ export function DatasetTable({
   const [editValue, setEditValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setRows(initialRows);
   }, [initialRows]);
+
+  useEffect(() => {
+    const keys = new Set<string>();
+    initialRows.forEach((row) => {
+      if (row.isRepeatable && row.repeatableKey) {
+        keys.add(row.repeatableKey);
+      }
+    });
+    setExpandedGroups((prev) => {
+      const next = new Set<string>();
+      keys.forEach((key) => {
+        if (prev.has(key)) {
+          next.add(key);
+        } else {
+          next.add(key);
+        }
+      });
+      return next;
+    });
+  }, [initialRows]);
+
+  useEffect(() => {
+    const validIds = new Set(rows.map((row) => row.id));
+    setSelectedRowIds((prev) => {
+      const next = new Set<string>();
+      prev.forEach((id) => {
+        if (validIds.has(id)) {
+          next.add(id);
+        }
+      });
+      return next;
+    });
+  }, [rows]);
 
   // Optimistic update handler
   const handleCellSave = useCallback(
@@ -172,29 +240,125 @@ export function DatasetTable({
     });
     return map;
   }, [dataRequests]);
+  const matchedRowIds = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return null;
+    }
 
-  const allRows = useMemo(() => rows, [rows]);
+    const matchSet = new Set<string>();
+    rows.forEach((row) => {
+      const haystacks = [
+        row.fieldLabel,
+        row.value,
+        row.fieldHint ?? '',
+        row.repeatableKey ?? '',
+        row.itemId ?? '',
+      ];
 
-  // Filter rows based on search
-  const filteredRows = useMemo(() => {
-    if (!searchQuery) return allRows;
-    const query = searchQuery.toLowerCase();
-    return allRows.filter((row) =>
-      row.fieldLabel.toLowerCase().includes(query) ||
-      row.value.toLowerCase().includes(query) ||
-      (row.repeatableKey ?? '').toLowerCase().includes(query)
-    );
-  }, [allRows, searchQuery]);
+      if (haystacks.some((input) => input.toLowerCase().includes(query))) {
+        matchSet.add(row.id);
+      }
+    });
 
-  const visibleRowIds = useMemo(() => filteredRows.map((row) => row.id), [filteredRows]);
+    return matchSet;
+  }, [rows, searchQuery]);
+
+  const { displayRows, visibleFieldRowIds } = useMemo(() => {
+    const singles: DisplayRow[] = [];
+    const visibleIds: string[] = [];
+    const groupRowsByKey = new Map<string, TableRow[]>();
+    const repeatableOrder: string[] = [];
+
+    rows.forEach((row) => {
+      if (row.isRepeatable && row.repeatableKey) {
+        if (!groupRowsByKey.has(row.repeatableKey)) {
+          groupRowsByKey.set(row.repeatableKey, []);
+          repeatableOrder.push(row.repeatableKey);
+        }
+        groupRowsByKey.get(row.repeatableKey)!.push(row);
+      } else {
+        if (!matchedRowIds || matchedRowIds.has(row.id)) {
+          singles.push({
+            kind: 'single',
+            id: row.id,
+            fieldLabel: row.fieldLabel,
+            fieldHint: row.fieldHint ?? null,
+            data: row,
+          });
+          visibleIds.push(row.id);
+        }
+      }
+    });
+
+    const groupDisplayRows: DisplayRow[] = [];
+
+    repeatableOrder.forEach((key) => {
+      const groupRows = groupRowsByKey.get(key) ?? [];
+      const itemsMap = new Map<string, TableRow[]>();
+
+      groupRows.forEach((groupRow) => {
+        const itemKey = groupRow.itemId ?? '__empty__';
+        if (!itemsMap.has(itemKey)) {
+          itemsMap.set(itemKey, []);
+        }
+        itemsMap.get(itemKey)!.push(groupRow);
+      });
+
+      const items: RepeatableGroupItem[] = [];
+      itemsMap.forEach((itemRows) => {
+        const matchedSet = matchedRowIds
+          ? new Set(itemRows.filter((row) => matchedRowIds.has(row.id)).map((row) => row.id))
+          : new Set(itemRows.map((row) => row.id));
+
+        if (matchedRowIds && matchedSet.size === 0) {
+          return;
+        }
+
+        items.push({
+          itemId: itemRows[0]?.itemId ?? null,
+          rows: itemRows,
+          matchedRowIds: matchedSet,
+        });
+
+        itemRows.forEach((row) => {
+          visibleIds.push(row.id);
+        });
+      });
+
+      if (items.length === 0 && matchedRowIds) {
+        return;
+      }
+
+      const matchedSet = matchedRowIds
+        ? new Set(groupRows.filter((row) => matchedRowIds.has(row.id)).map((row) => row.id))
+        : new Set(groupRows.map((row) => row.id));
+
+      groupDisplayRows.push({
+        kind: 'group',
+        id: `group-${key}`,
+        repeatableKey: key,
+        fieldLabel: formatRepeatableKey(key),
+        fieldHint: groupRows.find((row) => row.fieldHint)?.fieldHint ?? null,
+        rows: groupRows,
+        items,
+        matchedRowIds: matchedSet,
+      });
+    });
+
+    return {
+      displayRows: [...singles, ...groupDisplayRows],
+      visibleFieldRowIds: visibleIds,
+    };
+  }, [rows, matchedRowIds]);
 
   const headerCheckedState = useMemo<CheckedState>(() => {
-    if (visibleRowIds.length === 0) {
+    if (visibleFieldRowIds.length === 0) {
       return false;
     }
 
     let selectedVisibleCount = 0;
-    for (const id of visibleRowIds) {
+    for (const id of visibleFieldRowIds) {
       if (selectedRowIds.has(id)) {
         selectedVisibleCount += 1;
       }
@@ -204,14 +368,74 @@ export function DatasetTable({
       return false;
     }
 
-    if (selectedVisibleCount === visibleRowIds.length) {
+    if (selectedVisibleCount === visibleFieldRowIds.length) {
       return true;
     }
 
     return 'indeterminate';
-  }, [visibleRowIds, selectedRowIds]);
+  }, [visibleFieldRowIds, selectedRowIds]);
 
-  const columns = useMemo<ColumnDef<TableRow>[]>(
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'medium',
+      }),
+    []
+  );
+
+  const getRequestsForRow = useCallback(
+    (row: TableRow) => {
+      const key = row.itemId ? `${row.fieldId}::${row.itemId}` : row.fieldId;
+      return requestsByField.get(key) ?? [];
+    },
+    [requestsByField]
+  );
+
+  const formatPendingContacts = useCallback((requests: DataRequestSummary[]) => {
+    const contacts = requests
+      .filter((request) => request.status === 'pending')
+      .map((request) => request.contact?.name?.trim() || request.contact?.email || null)
+      .filter((label): label is string => Boolean(label));
+
+    const unique = Array.from(new Set(contacts));
+    return unique.length > 0 ? unique.join(', ') : '—';
+  }, []);
+
+  const formatStatusSummary = useCallback(
+    (requests: DataRequestSummary[]) => {
+      if (requests.length === 0) {
+        return '—';
+      }
+
+      const pending = requests.filter((request) => request.status === 'pending');
+      if (pending.length > 0) {
+        const deadline = pending.find((request) => request.deadline)?.deadline;
+        if (deadline) {
+          return `Pending • due ${dateFormatter.format(new Date(deadline))}`;
+        }
+        return `Pending (${pending.length})`;
+      }
+
+      const completed = requests
+        .filter((request) => request.status === 'completed' && request.completedAt)
+        .sort((a, b) => new Date(b.completedAt ?? '').getTime() - new Date(a.completedAt ?? '').getTime());
+      if (completed.length > 0) {
+        return `Completed ${dateFormatter.format(new Date(completed[0].completedAt!))}`;
+      }
+
+      const revoked = requests
+        .filter((request) => request.status === 'revoked' && request.revokedAt)
+        .sort((a, b) => new Date(b.revokedAt ?? '').getTime() - new Date(a.revokedAt ?? '').getTime());
+      if (revoked.length > 0) {
+        return `Revoked ${dateFormatter.format(new Date(revoked[0].revokedAt!))}`;
+      }
+
+      return '—';
+    },
+    [dateFormatter]
+  );
+
+  const columns = useMemo<ColumnDef<DisplayRow>[]>(
     () => [
       {
         id: 'select',
@@ -223,7 +447,7 @@ export function DatasetTable({
               const shouldSelect = checked === true;
               setSelectedRowIds((prev) => {
                 const next = new Set(prev);
-                visibleRowIds.forEach((id) => {
+                visibleFieldRowIds.forEach((id) => {
                   if (shouldSelect) {
                     next.add(id);
                   } else {
@@ -236,19 +460,51 @@ export function DatasetTable({
           />
         ),
         cell: ({ row }) => {
-          const isChecked = selectedRowIds.has(row.original.id);
+          const original = row.original;
+
+          if (original.kind === 'group') {
+            const rowIds = original.items.flatMap((item) => item.rows.map((r) => r.id));
+            const selectedCount = rowIds.filter((id) => selectedRowIds.has(id)).length;
+            const isChecked = selectedCount > 0 && selectedCount === rowIds.length;
+            const state: CheckedState = selectedCount === 0 ? false : isChecked ? true : 'indeterminate';
+
+            return (
+              <Checkbox
+                aria-label={`Select ${original.fieldLabel}`}
+                checked={state}
+                onCheckedChange={(checked) => {
+                  const shouldSelect = checked === true;
+                  setSelectedRowIds((prev) => {
+                    const next = new Set(prev);
+                    rowIds.forEach((id) => {
+                      if (shouldSelect) {
+                        next.add(id);
+                      } else {
+                        next.delete(id);
+                      }
+                    });
+                    return next;
+                  });
+                }}
+              />
+            );
+          }
+
+          const fieldRow = original.data;
+          const isChecked = selectedRowIds.has(fieldRow.id);
+
           return (
             <Checkbox
-              aria-label={`Select ${row.original.fieldLabel}`}
+              aria-label={`Select ${fieldRow.fieldLabel}`}
               checked={isChecked}
               onCheckedChange={(checked) => {
                 const shouldSelect = checked === true;
                 setSelectedRowIds((prev) => {
                   const next = new Set(prev);
                   if (shouldSelect) {
-                    next.add(row.original.id);
+                    next.add(fieldRow.id);
                   } else {
-                    next.delete(row.original.id);
+                    next.delete(fieldRow.id);
                   }
                   return next;
                 });
@@ -260,17 +516,53 @@ export function DatasetTable({
       },
       {
         id: 'fieldName',
-        header: 'Field Name',
+        header: 'Field',
         accessorKey: 'fieldLabel',
         cell: ({ row }) => {
           const original = row.original;
+
+          if (original.kind === 'group') {
+            const isExpanded = expandedGroups.has(original.repeatableKey);
+            return (
+              <div className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  className="flex items-center gap-2 text-left"
+                  onClick={() => {
+                    setExpandedGroups((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(original.repeatableKey)) {
+                        next.delete(original.repeatableKey);
+                      } else {
+                        next.add(original.repeatableKey);
+                      }
+                      return next;
+                    });
+                  }}
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span className="font-medium">{original.fieldLabel}</span>
+                  <span className="text-xs text-muted-foreground">
+                    Items: {original.items.length}
+                  </span>
+                </button>
+                {original.fieldHint && (
+                  <span className="text-xs text-muted-foreground">{original.fieldHint}</span>
+                )}
+              </div>
+            );
+          }
+
+          const fieldRow = original.data;
           return (
             <div className="flex flex-col gap-1">
-              <span className="font-medium">{original.fieldLabel}</span>
-              {original.fieldHint && (
-                <span className="text-xs text-muted-foreground">
-                  {original.fieldHint}
-                </span>
+              <span className="font-medium">{fieldRow.fieldLabel}</span>
+              {fieldRow.fieldHint && (
+                <span className="text-xs text-muted-foreground">{fieldRow.fieldHint}</span>
               )}
             </div>
           );
@@ -282,57 +574,213 @@ export function DatasetTable({
         header: 'Responsible',
         cell: ({ row }) => {
           const original = row.original;
-          const fieldKey = original.itemId
-            ? `${original.fieldId}::${original.itemId}`
-            : original.fieldId;
-          const relatedRequests = requestsByField.get(fieldKey) ?? [];
-          const pendingContacts = relatedRequests
-            .filter((request) => request.status === 'pending')
-            .map((request) => request.contact?.name?.trim() || request.contact?.email || null)
-            .filter((label): label is string => Boolean(label));
 
-          const uniqueContacts = Array.from(new Set(pendingContacts));
-          const displayValue = uniqueContacts.length > 0 ? uniqueContacts.join(', ') : '—';
+          if (original.kind === 'group') {
+            const allRequests = original.rows.flatMap((groupRow) => getRequestsForRow(groupRow));
+            const displayValue = formatPendingContacts(allRequests);
+            return <span className="text-sm text-muted-foreground">{displayValue}</span>;
+          }
 
+          const fieldRow = original.data;
+          const requests = getRequestsForRow(fieldRow);
+          const displayValue = formatPendingContacts(requests);
           return <span className="text-sm text-muted-foreground">{displayValue}</span>;
         },
-        size: 180,
+        size: 200,
       },
       {
         id: 'value',
         header: 'Value',
         accessorKey: 'value',
-        cell: ({ row }) => renderEditableCell(row.original),
-        size: 300,
+        cell: ({ row }) => {
+          if (row.original.kind === 'group') {
+            return <span className="text-muted-foreground">—</span>;
+          }
+          return renderEditableCell(row.original.data);
+        },
+        size: 220,
       },
     ],
     [
       headerCheckedState,
-      visibleRowIds,
+      visibleFieldRowIds,
       selectedRowIds,
       setSelectedRowIds,
-      requestsByField,
+      expandedGroups,
+      setExpandedGroups,
       renderEditableCell,
+      getRequestsForRow,
+      formatPendingContacts,
     ]
   );
 
-  const repeatableGroups = useMemo(() => {
-    const groups = new Map<string, TableRow[]>();
-    rows.forEach((row) => {
-      if (!row.isRepeatable || !row.repeatableKey) return;
-      if (!groups.has(row.repeatableKey)) {
-        groups.set(row.repeatableKey, []);
+  const renderGroupContent = useCallback(
+    (group: Extract<DisplayRow, { kind: 'group' }>) => {
+      if (group.items.length === 0) {
+        return (
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">No items yet.</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onAddItem(group.repeatableKey)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add {group.fieldLabel} item
+            </Button>
+          </div>
+        );
       }
-      groups.get(row.repeatableKey)!.push(row);
-    });
-    return groups;
-  }, [rows]);
+
+      return (
+        <div className="space-y-4">
+          {group.items.map((item, index) => {
+            const itemLabel = item.itemId ? `Item ${item.itemId}` : `Item ${index + 1}`;
+            return (
+              <div
+                key={item.itemId ?? `new-${index}`}
+                className="rounded-md border bg-card text-foreground"
+              >
+                <div className="flex items-center justify-between border-b px-4 py-2">
+                  <div className="text-sm font-medium">{itemLabel}</div>
+                  <div className="flex items-center gap-2">
+                    {item.itemId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteItem(group.repeatableKey, item.itemId!)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1 text-destructive" />
+                        Delete item
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/40">
+                      <tr>
+                        <th className="px-3 py-2 w-10" />
+                        <th className="px-3 py-2 text-left">Field</th>
+                        <th className="px-3 py-2 text-left">Value</th>
+                        <th className="px-3 py-2 text-left">Responsible</th>
+                        <th className="px-3 py-2 text-left">Status / Deadline</th>
+                        <th className="px-3 py-2 text-left w-[150px]">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {item.rows.map((fieldRow) => {
+                        const requests = getRequestsForRow(fieldRow);
+                        const isSelected = selectedRowIds.has(fieldRow.id);
+                        const isMatched = searchQuery ? item.matchedRowIds.has(fieldRow.id) : false;
+                        return (
+                          <tr
+                            key={fieldRow.id}
+                            className={cn(
+                              'border-t align-top transition-colors',
+                              isSelected && 'bg-muted/40',
+                              !isSelected && isMatched && 'bg-accent/10'
+                            )}
+                          >
+                            <td className="px-3 py-2 align-top">
+                              <Checkbox
+                                aria-label={`Select ${fieldRow.fieldLabel}`}
+                                checked={isSelected}
+                                onCheckedChange={(checked) => {
+                                  const shouldSelect = checked === true;
+                                  setSelectedRowIds((prev) => {
+                                    const next = new Set(prev);
+                                    if (shouldSelect) {
+                                      next.add(fieldRow.id);
+                                    } else {
+                                      next.delete(fieldRow.id);
+                                    }
+                                    return next;
+                                  });
+                                }}
+                              />
+                            </td>
+                            <td className="px-3 py-2">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-medium text-sm text-foreground">
+                                  {fieldRow.fieldLabel}
+                                </span>
+                                {fieldRow.fieldHint && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {fieldRow.fieldHint}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-3 py-2">
+                              {renderEditableCell(fieldRow)}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-muted-foreground">
+                              {formatPendingContacts(requests)}
+                            </td>
+                            <td className="px-3 py-2 text-sm text-muted-foreground">
+                              {formatStatusSummary(requests)}
+                            </td>
+                            <td className="px-3 py-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  onRequestData({
+                                    fieldId: fieldRow.fieldId,
+                                    fieldLabel: fieldRow.fieldLabel,
+                                    fieldHint: fieldRow.fieldHint,
+                                    itemId: fieldRow.itemId,
+                                    repeatableKey: fieldRow.repeatableKey,
+                                  })
+                                }
+                              >
+                                <Mail className="h-4 w-4 mr-2" />
+                                Request
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })}
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onAddItem(group.repeatableKey)}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add {group.fieldLabel} item
+            </Button>
+          </div>
+        </div>
+      );
+    },
+    [
+      getRequestsForRow,
+      formatPendingContacts,
+      formatStatusSummary,
+      selectedRowIds,
+      setSelectedRowIds,
+      renderEditableCell,
+      onRequestData,
+      onAddItem,
+      onDeleteItem,
+      searchQuery,
+    ]
+  );
 
   const table = useReactTable({
-    data: filteredRows,
+    data: displayRows,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+  const columnCount = table.getVisibleLeafColumns().length;
 
   return (
     <div className="space-y-4">
@@ -403,55 +851,45 @@ export function DatasetTable({
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className={cn(
-                  'border-t transition-colors hover:bg-muted/50',
-                  selectedRowIds.has(row.original.id) && 'bg-muted/60'
-                )}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-2">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {table.getRowModel().rows.map((row) => {
+              const original = row.original;
+              const groupRow = original.kind === 'group' ? original : null;
+              const isSelected =
+                original.kind === 'group'
+                  ? original.items.some((item) =>
+                      item.rows.some((fieldRow) => selectedRowIds.has(fieldRow.id))
+                    )
+                  : selectedRowIds.has(original.data.id);
+
+              return (
+                <Fragment key={row.id}>
+                  <tr
+                    className={cn(
+                      'border-t transition-colors hover:bg-muted/50',
+                      isSelected && 'bg-muted/60'
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-4 py-2 align-top">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                  {groupRow && expandedGroups.has(groupRow.repeatableKey) && (
+                    <tr key={`${row.id}-details`} className="border-t">
+                      <td colSpan={columnCount} className="bg-muted/30 px-6 py-4">
+                        {renderGroupContent(groupRow)}
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {/* Add Item buttons for each repeatable group */}
-      <div className="space-y-2">
-        {Array.from(repeatableGroups.entries()).map(([repeatableKey, groupRows]) => {
-          const label = groupRows[0]?.fieldLabel.split(' ').slice(0, 3).join(' ') || repeatableKey;
-
-          return (
-            <div key={repeatableKey} className="p-4 rounded-md border bg-muted/30">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Repeatable group: {repeatableKey}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Items: {new Set(groupRows.map((row) => row.itemId).filter(Boolean)).size}
-                </span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onAddItem(repeatableKey)}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add {label} item
-              </Button>
-            </div>
-          );
-        })}
-      </div>
-
-      {filteredRows.length === 0 && (
+      {displayRows.length === 0 && (
         <div className="text-center py-12 text-muted-foreground">
           <p>No data points found.</p>
           <p className="text-sm mt-1">
