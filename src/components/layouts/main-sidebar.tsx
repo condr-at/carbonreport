@@ -7,8 +7,7 @@ import {
   FolderKanban, 
   Users, 
   Settings,
-  LogOut,
-  User
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';

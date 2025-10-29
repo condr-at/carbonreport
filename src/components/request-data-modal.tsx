@@ -27,12 +27,20 @@ interface RequestDataModalProps {
   projectId: string;
   projectName: string;
   projectOwnerName: string;
+  // Legacy single-field props (kept for backward compatibility)
   fieldLabel?: string;
   fieldHint?: string | null;
   fieldId?: string;
   itemId?: string | null;
   group?: string;
   isGroup?: boolean;
+  // New multi-field prop
+  fields?: Array<{
+    fieldId: string;
+    fieldLabel: string;
+    itemId?: string | null;
+    fieldHint?: string | null;
+  }>;
   mailtoTemplate?: { subject: string; body: string };
   onClose: () => void;
   onLogged?: () => void | Promise<void>;
@@ -54,6 +62,7 @@ export function RequestDataModal({
   itemId,
   group,
   isGroup = false,
+  fields,
   mailtoTemplate,
   onClose,
   onLogged,
@@ -67,6 +76,26 @@ export function RequestDataModal({
   const [stage, setStage] = useState<'form' | 'confirm'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // Normalize fields: use new fields prop or fallback to legacy single-field props
+  const requestFields = useMemo(() => {
+    if (fields && fields.length > 0) {
+      return fields;
+    }
+    // Fallback to legacy single-field mode
+    if (fieldId || fieldLabel) {
+      return [
+        {
+          fieldId: fieldId || '',
+          fieldLabel: fieldLabel || '',
+          itemId: itemId ?? null,
+          fieldHint: fieldHint ?? null,
+        },
+      ];
+    }
+    return [];
+  }, [fields, fieldId, fieldLabel, itemId, fieldHint]);
+
   const isValidEmail = useMemo(() => {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return (value: string) => emailPattern.test(value);
@@ -121,7 +150,7 @@ export function RequestDataModal({
     const body = mailtoTemplate.body?.trim() || fallbackBody;
 
     return { subject, body };
-  }, [mailtoTemplate, projectName]);
+  }, [mailtoTemplate]);
 
   const preview = useMemo(() => {
     const deadlineLabel = (() => {
@@ -137,16 +166,29 @@ export function RequestDataModal({
     })();
 
     const displayName = (() => {
-      if (!fieldLabel) {
+      if (requestFields.length === 0) {
         return 'the requested data point';
       }
-      if (itemId) {
-        return `${fieldLabel} (Item ${itemId})`;
+      if (requestFields.length === 1) {
+        const field = requestFields[0];
+        if (field.itemId) {
+          return `${field.fieldLabel} (Item ${field.itemId})`;
+        }
+        return field.fieldLabel;
       }
-      return fieldLabel;
+      return `${requestFields.length} data points`;
     })();
 
-    const fieldList = `- ${displayName}`;
+    const fieldList = requestFields
+      .map((field) => {
+        const label = field.fieldLabel || field.fieldId;
+        if (field.itemId) {
+          return `- ${label} (Item ${field.itemId})`;
+        }
+        return `- ${label}`;
+      })
+      .join('\n');
+
     const signature = (() => {
       const owner = projectOwnerName?.trim();
       const project = projectName?.trim();
@@ -181,7 +223,7 @@ export function RequestDataModal({
       subject: apply(template.subject),
       body: apply(template.body),
     };
-  }, [contactName, deadline, fieldLabel, itemId, projectName, projectOwnerName, template]);
+  }, [contactName, deadline, requestFields, projectName, projectOwnerName, template]);
 
   // Generate mailto template
   const generateMailtoLink = () => {
@@ -230,14 +272,12 @@ export function RequestDataModal({
         name: contactName || undefined,
       },
       deadline: deadline || null,
-      fields: [
-        {
-          dataPointId: fieldId || null,
-          fieldLabel: fieldLabel || null,
-          itemId: itemId || null,
-          group: group || null,
-        },
-      ],
+      fields: requestFields.map((field) => ({
+        dataPointId: field.fieldId || null,
+        fieldLabel: field.fieldLabel || null,
+        itemId: field.itemId || null,
+        group: group || null,
+      })),
       mailtoPreview: preview,
     };
 
@@ -303,12 +343,27 @@ export function RequestDataModal({
                 <p className="text-sm text-muted-foreground mt-1">
                   {isGroup
                     ? `Request all ${group} data`
-                    : `Request data for: ${fieldLabel}`}
+                    : requestFields.length === 1
+                    ? `Request data for: ${requestFields[0].fieldLabel}`
+                    : `Requesting ${requestFields.length} data points`}
                 </p>
-                {fieldHint && (
+                {requestFields.length === 1 && requestFields[0].fieldHint && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Hint: {fieldHint}
+                    Hint: {requestFields[0].fieldHint}
                   </p>
+                )}
+                {requestFields.length > 1 && (
+                  <div className="mt-3 space-y-1">
+                    <p className="text-xs font-medium">Fields:</p>
+                    <ul className="text-xs text-muted-foreground list-disc list-inside">
+                      {requestFields.map((field, idx) => (
+                        <li key={idx}>
+                          {field.fieldLabel}
+                          {field.itemId && ` (Item ${field.itemId})`}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
               </div>
 
@@ -447,9 +502,23 @@ export function RequestDataModal({
                   <strong>Subject:</strong> {preview.subject}
                 </p>
                 <div>
-                  <strong>Included Field:</strong>{' '}
-                  {fieldLabel || fieldId || 'Selected data point'}
-                  {itemId ? ` (Item ${itemId})` : ''}
+                  <strong>Included Fields:</strong>
+                  {requestFields.length === 1 ? (
+                    <span>
+                      {' '}
+                      {requestFields[0].fieldLabel}
+                      {requestFields[0].itemId && ` (Item ${requestFields[0].itemId})`}
+                    </span>
+                  ) : (
+                    <ul className="list-disc list-inside mt-1">
+                      {requestFields.map((field, idx) => (
+                        <li key={idx}>
+                          {field.fieldLabel}
+                          {field.itemId && ` (Item ${field.itemId})`}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 {deadline && (
                   <p>

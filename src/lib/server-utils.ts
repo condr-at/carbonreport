@@ -15,7 +15,7 @@ export async function getBaseUrl(): Promise<string> {
       const protocol = forwardedProto ?? (host.startsWith('localhost') ? 'http' : 'https')
       return `${protocol}://${host}`
     }
-  } catch (error) {
+  } catch {
     // headers() throws when used outside a request context (e.g. during build-time evaluation).
     // Fall back to environment-driven heuristics in those situations.
   }

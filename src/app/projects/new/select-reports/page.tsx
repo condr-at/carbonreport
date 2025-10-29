@@ -161,7 +161,7 @@ export default function SelectReportsPage() {
         // Optional: could update a transient error state in prefill
         console.error('Background project create failed', await response.json());
       } else {
-        const result = await response.json();
+        await response.json();
         // Server will hydrate via ProjectPrefillHydrator when page loads
       }
     } catch (error) {

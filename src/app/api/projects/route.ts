@@ -31,7 +31,7 @@ const CreateProjectSchema = z.object({
  * 
  * TODO: Filter by userId from JWT session
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // TODO: Get userId from JWT session
     // For now, return all projects
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     // ⚠️ TEMPORARY DEV WORKAROUND - Remove before production!
     // Auto-create user if doesn't exist (bypasses foreign key constraint for testing)
     // TODO: Replace with proper JWT session validation (see docs/API_REFERENCE.md)
-    const user = await prisma.user.upsert({
+    await prisma.user.upsert({
       where: { id: userId },
       update: {},
       create: {

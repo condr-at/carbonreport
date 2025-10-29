@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, ExternalLink, Copy, Archive, Clock, CheckCircle2 } from 'lucide-react';
+import { MoreHorizontal, ExternalLink, Copy, Archive } from 'lucide-react';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -45,7 +45,6 @@ export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProp
   }, [project.reports]);
 
   const statusColor = project.status === 'ACTIVE' ? 'default' : 'secondary';
-  const statusIcon = completion === 100 ? CheckCircle2 : Clock;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

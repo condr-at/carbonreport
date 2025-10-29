@@ -32,7 +32,6 @@ type ProjectFormData = z.infer<typeof projectSchema>;
 
 export default function NewProjectPage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [storedProgress, setStoredProgress] = useState(false);
   const exitTargetRef = useRef<string | null>(null);

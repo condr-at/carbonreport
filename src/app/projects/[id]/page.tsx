@@ -1,9 +1,6 @@
 import { ProjectLayout } from '@/components/layouts/project-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { CheckCircle2, Circle, FileText, Database, TrendingUp, MailQuestion } from 'lucide-react';
-import Link from 'next/link';
+import { FileText, Database, TrendingUp, MailQuestion } from 'lucide-react';
 import { ProjectRoadmap } from '@/components/project-roadmap';
 import { ProjectPrefillHydrator } from '@/components/project-prefill-hydrator';
 import ProjectLoading from './loading';
@@ -62,8 +59,6 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
     : 0;
 
   // Get incomplete roadmap items
-  const incompleteItems = project.checklist?.items?.filter((item: any) => !item.completed) || [];
-
   // Mock roadmap data (replace with real data from project.checklist when ready)
   const mockRoadmapItems = [
     { id: '1', title: 'Product Name', completed: true },

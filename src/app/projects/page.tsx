@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ProjectCard } from '@/components/blocks/project-card';
 import { EmptyState } from '@/components/blocks/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, FolderOpen, Search, SlidersHorizontal } from 'lucide-react';
+import { Plus, FolderOpen, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';

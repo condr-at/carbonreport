@@ -56,7 +56,6 @@ export function ReportPageClient({
   projectId,
   projectName,
   projectOwnerName,
-  reportId,
   reportName,
   templateCode,
   sections,

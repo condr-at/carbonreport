@@ -47,6 +47,12 @@ export function DatasetPageClient({
     fieldId?: string;
     itemId?: string | null;
     repeatableKey?: string | null;
+    fields?: Array<{
+      fieldId: string;
+      fieldLabel: string;
+      itemId: string | null;
+      fieldHint: string | null;
+    }>;
     mailtoTemplate?: { subject: string; body: string } | null;
   } | null>(null);
   const [dataRequests, setDataRequests] = useState<Array<{
@@ -281,6 +287,28 @@ export function DatasetPageClient({
     [resolveMailtoTemplate]
   );
 
+  const handleRequestMultiple = useCallback(
+    (fields: Array<{
+      fieldId: string;
+      fieldLabel: string;
+      itemId: string | null;
+      fieldHint: string | null;
+    }>) => {
+      const template = resolveMailtoTemplate();
+
+      setRequestDataModal({
+        fields,
+        fieldLabel: undefined,
+        fieldHint: undefined,
+        fieldId: undefined,
+        itemId: undefined,
+        repeatableKey: undefined,
+        mailtoTemplate: template,
+      });
+    },
+    [resolveMailtoTemplate]
+  );
+
   const refreshDataRequests = useCallback(async () => {
     try {
       const response = await fetch(`/api/projects/${projectId}/data-requests`, {
@@ -364,6 +392,7 @@ export function DatasetPageClient({
             onDeleteItem={handleDeleteItem}
             onAddItem={handleAddItem}
             onRequestData={handleRequestData}
+            onRequestMultiple={handleRequestMultiple}
           />
         </CardContent>
       </Card>
@@ -378,6 +407,7 @@ export function DatasetPageClient({
           fieldId={requestDataModal.fieldId}
           itemId={requestDataModal.itemId}
           group={requestDataModal.repeatableKey || undefined}
+          fields={requestDataModal.fields}
           isGroup={false}
           mailtoTemplate={requestDataModal.mailtoTemplate || undefined}
           contacts={contacts}

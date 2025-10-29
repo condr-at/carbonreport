@@ -7,11 +7,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { type Dataset } from '@/lib/dataset-validation'
-import { z } from 'zod'
-
-const DeleteItemSchema = z.object({
-  datasetVersion: z.number().int().min(0).optional(),
-})
 
 /**
  * DELETE /api/projects/[id]/dataset/items/[itemId]

@@ -9,7 +9,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { z } from 'zod'
-import { getReportTemplate } from '@/lib/report-templates'
 
 // Validation schema for mailto template
 const MailtoTemplateSchema = z.object({

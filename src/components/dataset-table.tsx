@@ -10,6 +10,7 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import type { CheckedState } from '@radix-ui/react-checkbox';
 import {
   useReactTable,
   getCoreRowModel,
@@ -19,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -43,6 +45,12 @@ interface DatasetTableProps {
     itemId: string | null;
     repeatableKey: string | null;
   }) => void;
+  onRequestMultiple?: (fields: Array<{
+    fieldId: string;
+    fieldLabel: string;
+    itemId: string | null;
+    fieldHint: string | null;
+  }>) => void;
   dataRequests?: DataRequestSummary[];
 }
 
@@ -71,12 +79,14 @@ export function DatasetTable({
   onDeleteItem,
   onAddItem,
   onRequestData,
+  onRequestMultiple,
   dataRequests = [],
 }: DatasetTableProps) {
   const [rows, setRows] = useState<TableRow[]>(initialRows);
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setRows(initialRows);
@@ -104,8 +114,6 @@ export function DatasetTable({
           )
         );
         console.error('Failed to update field:', error);
-        const message = error instanceof Error ? error.message : 'Failed to update field';
-        alert(message);
       }
 
       setEditingCell(null);
@@ -195,8 +203,92 @@ export function DatasetTable({
     return map;
   }, [dataRequests]);
 
+
+  const allRows = useMemo(() => rows, [rows]);
+
+  // Filter rows based on search
+  const filteredRows = useMemo(() => {
+    if (!searchQuery) return allRows;
+    const query = searchQuery.toLowerCase();
+    return allRows.filter((row) =>
+      row.fieldLabel.toLowerCase().includes(query) ||
+      row.value.toLowerCase().includes(query) ||
+      (row.repeatableKey ?? '').toLowerCase().includes(query)
+    );
+  }, [allRows, searchQuery]);
+
+  const visibleRowIds = useMemo(() => filteredRows.map((row) => row.id), [filteredRows]);
+
+  const headerCheckedState = useMemo<CheckedState>(() => {
+    if (visibleRowIds.length === 0) {
+      return false;
+    }
+
+    let selectedVisibleCount = 0;
+    for (const id of visibleRowIds) {
+      if (selectedRowIds.has(id)) {
+        selectedVisibleCount += 1;
+      }
+    }
+
+    if (selectedVisibleCount === 0) {
+      return false;
+    }
+
+    if (selectedVisibleCount === visibleRowIds.length) {
+      return true;
+    }
+
+    return 'indeterminate';
+  }, [visibleRowIds, selectedRowIds]);
+
   const columns = useMemo<ColumnDef<TableRow>[]>(
     () => [
+      {
+        id: 'select',
+        header: () => (
+          <Checkbox
+            aria-label={headerCheckedState === true ? 'Deselect all rows' : 'Select all rows'}
+            checked={headerCheckedState}
+            onCheckedChange={(checked) => {
+              const shouldSelect = checked === true;
+              setSelectedRowIds((prev) => {
+                const next = new Set(prev);
+                visibleRowIds.forEach((id) => {
+                  if (shouldSelect) {
+                    next.add(id);
+                  } else {
+                    next.delete(id);
+                  }
+                });
+                return next;
+              });
+            }}
+          />
+        ),
+        cell: ({ row }) => {
+          const isChecked = selectedRowIds.has(row.original.id);
+          return (
+            <Checkbox
+              aria-label={`Select ${row.original.fieldLabel}`}
+              checked={isChecked}
+              onCheckedChange={(checked) => {
+                const shouldSelect = checked === true;
+                setSelectedRowIds((prev) => {
+                  const next = new Set(prev);
+                  if (shouldSelect) {
+                    next.add(row.original.id);
+                  } else {
+                    next.delete(row.original.id);
+                  }
+                  return next;
+                });
+              }}
+            />
+          );
+        },
+        size: 40,
+      },
       {
         id: 'fieldName',
         header: 'Field Name',
@@ -260,22 +352,31 @@ export function DatasetTable({
                           </div>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            onClick={() => alert('Resend request coming soon')}
+                            onClick={() => {
+                              // TODO: Implement resend
+                              console.log('Resend request:', request.id);
+                            }}
                           >
-                            <RefreshCcw className="h-4 w-4" />
+                            <RefreshCcw className="h-4 w-4 mr-2" />
                             Resend request
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => alert('Change contact coming soon')}
+                            onClick={() => {
+                              // TODO: Implement change contact
+                              console.log('Change contact:', request.id);
+                            }}
                           >
-                            <UserRound className="h-4 w-4" />
+                            <UserRound className="h-4 w-4 mr-2" />
                             Change contact
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => alert('Mark complete coming soon')}
+                            onClick={() => {
+                              // TODO: Implement mark complete
+                              console.log('Mark complete:', request.id);
+                            }}
                           >
-                            <CheckCircle className="h-4 w-4" />
-                            Mark complete
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Mark as complete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -360,21 +461,19 @@ export function DatasetTable({
         size: 120,
       },
     ],
-    [renderEditableCell, onRequestData, onDeleteItem, repeatableCounts, requestsByField, statusStyles]
+    [
+      headerCheckedState,
+      visibleRowIds,
+      selectedRowIds,
+      setSelectedRowIds,
+      requestsByField,
+      statusStyles,
+      renderEditableCell,
+      repeatableCounts,
+      onRequestData,
+      onDeleteItem,
+    ]
   );
-
-  const allRows = useMemo(() => rows, [rows]);
-
-  // Filter rows based on search
-  const filteredRows = useMemo(() => {
-    if (!searchQuery) return allRows;
-    const query = searchQuery.toLowerCase();
-    return allRows.filter((row) =>
-      row.fieldLabel.toLowerCase().includes(query) ||
-      row.value.toLowerCase().includes(query) ||
-      (row.repeatableKey ?? '').toLowerCase().includes(query)
-    );
-  }, [allRows, searchQuery]);
 
   const repeatableGroups = useMemo(() => {
     const groups = new Map<string, TableRow[]>();
@@ -396,7 +495,7 @@ export function DatasetTable({
 
   return (
     <div className="space-y-4">
-      {/* Search and Filters */}
+      {/* Toolbar */}
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -407,6 +506,38 @@ export function DatasetTable({
             className="pl-9"
           />
         </div>
+        {selectedRowIds.size > 0 && (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => {
+              const selectedRows = rows.filter((r) => selectedRowIds.has(r.id));
+              const fields = selectedRows.map((row) => ({
+                fieldId: row.fieldId,
+                fieldLabel: row.fieldLabel,
+                itemId: row.itemId ?? null,
+                fieldHint: row.fieldHint ?? null,
+              }));
+              
+              if (onRequestMultiple) {
+                onRequestMultiple(fields);
+              } else if (fields.length > 0) {
+                // Fallback for backward compat
+                onRequestData({
+                  fieldId: fields[0].fieldId,
+                  fieldLabel: `${fields.length} fields`,
+                  fieldHint: null,
+                  itemId: null,
+                  repeatableKey: null,
+                });
+              }
+              setSelectedRowIds(new Set());
+            }}
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Request Selected ({selectedRowIds.size})
+          </Button>
+        )}
       </div>
 
       {/* Table */}
@@ -435,7 +566,8 @@ export function DatasetTable({
               <tr
                 key={row.id}
                 className={cn(
-                  'border-t transition-colors hover:bg-muted/50'
+                  'border-t transition-colors hover:bg-muted/50',
+                  selectedRowIds.has(row.original.id) && 'bg-muted/60'
                 )}
               >
                 {row.getVisibleCells().map((cell) => (

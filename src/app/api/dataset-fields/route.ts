@@ -9,7 +9,7 @@
  * - Cached for performance
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
 // Simple in-memory cache (for development)
@@ -38,7 +38,7 @@ const CACHE_TTL = 60 * 5 * 1000 // 5 minutes
  *   ]
  * }
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check cache
     const now = Date.now()
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
  * POST /api/dataset-fields/invalidate-cache
  * Invalidate the field definitions cache (admin only)
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     cachedFields = null
     cacheTimestamp = 0
@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
       message: 'Cache invalidated',
     })
   } catch (error) {
+    console.error('Error invalidating field definitions cache:', error)
     return NextResponse.json(
       { error: 'Failed to invalidate cache' },
       { status: 500 }
