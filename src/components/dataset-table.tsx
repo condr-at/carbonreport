@@ -62,6 +62,7 @@ interface DataRequestSummary {
   requestedAt: string;
   completedAt: string | null;
   revokedAt: string | null;
+  deadline?: string | null;
   contact?: {
     id?: string | null;
     name?: string | null;
@@ -70,6 +71,8 @@ interface DataRequestSummary {
   dataPoint?: {
     id?: string | null;
     label?: string | null;
+    hint?: string | null;
+    itemId?: string | null;
   };
 }
 
@@ -195,10 +198,13 @@ export function DatasetTable({
       if (!key) {
         return;
       }
-      if (!map.has(key)) {
-        map.set(key, []);
+      const compoundKey = request.dataPoint?.itemId
+        ? `${key}::${request.dataPoint.itemId}`
+        : key;
+      if (!map.has(compoundKey)) {
+        map.set(compoundKey, []);
       }
-      map.get(key)!.push(request);
+      map.get(compoundKey)!.push(request);
     });
     return map;
   }, [dataRequests]);
@@ -295,7 +301,10 @@ export function DatasetTable({
         accessorKey: 'fieldLabel',
         cell: ({ row }) => {
           const original = row.original;
-          const requestBadges = requestsByField.get(original.fieldId) ?? [];
+          const fieldKey = original.itemId
+            ? `${original.fieldId}::${original.itemId}`
+            : original.fieldId;
+          const requestBadges = requestsByField.get(fieldKey) ?? [];
           const formatter = new Intl.DateTimeFormat(undefined, {
             dateStyle: 'medium',
             timeStyle: 'short',
@@ -334,6 +343,11 @@ export function DatasetTable({
                             <p>
                               Requested {formatter.format(new Date(request.requestedAt))}
                             </p>
+                            {request.deadline && (
+                              <p>
+                                Deadline {formatter.format(new Date(request.deadline))}
+                              </p>
+                            )}
                             {request.completedAt && (
                               <p>
                                 Completed {formatter.format(new Date(request.completedAt))}

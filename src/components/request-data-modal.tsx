@@ -535,7 +535,7 @@ export function RequestDataModal({
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Button variant="ghost" onClick={handleBackToEdit}>
-                  &lt; Back to edit
+                  &lt; Change details
                 </Button>
                 <div className="flex gap-3 justify-end w-full sm:w-auto">
                   <Button variant="outline" onClick={resetAndClose} disabled={isSubmitting}>

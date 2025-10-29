@@ -1,6 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
+import type { Prisma } from '@prisma/client';
+import prisma from '@/lib/db';
 
 const paramsSchema = z.object({
   params: z.object({
@@ -8,61 +10,10 @@ const paramsSchema = z.object({
   }),
 });
 
-const mockRequests = [
-  {
-    id: 'mock-req-1',
-    projectId: 'any-project',
-    contact: {
-      id: 'contact-1',
-      name: 'Alex Johnson',
-      email: 'alex.johnson@example.com',
-    },
-    dataPoint: {
-      id: 'organization_name',
-      label: 'Organization name',
-      hint: 'Legal entity responsible for the report.',
-    },
-    requestedAt: '2025-10-15T09:30:00.000Z',
-    completedAt: null,
-    revokedAt: null,
-  },
-  {
-    id: 'mock-req-2',
-    projectId: 'any-project',
-    contact: {
-      id: 'contact-2',
-      name: 'Priya Desai',
-      email: 'priya.desai@example.com',
-    },
-    dataPoint: {
-      id: 'total_cfp_co2e',
-      label: 'Total CFP (kg CO₂e)',
-      hint: 'Total carbon footprint result for the functional unit.',
-    },
-    requestedAt: '2025-10-10T14:15:00.000Z',
-    completedAt: '2025-10-12T16:45:00.000Z',
-    revokedAt: null,
-  },
-  {
-    id: 'mock-req-3',
-    projectId: 'any-project',
-    contact: {
-      id: 'contact-3',
-      name: 'Maria Garcia',
-      email: 'maria.garcia@example.com',
-    },
-    dataPoint: {
-      id: 'material_input_name',
-      label: 'Material name',
-      hint: 'Name of the input material used in production.',
-    },
-    requestedAt: '2025-09-05T11:00:00.000Z',
-    completedAt: null,
-    revokedAt: '2025-09-12T09:05:00.000Z',
-  },
-];
+const statusParamSchema = z.enum(['active', 'closed', 'overdue', 'all']);
+const sortParamSchema = z.enum(['requested_at', 'deadline', 'field_id']);
 
-function deriveStatus(request: { completedAt: string | null; revokedAt: string | null }) {
+function computeStatus(request: { revokedAt: Date | null; completedAt: Date | null }) {
   if (request.revokedAt) {
     return 'revoked';
   }
@@ -74,32 +25,119 @@ function deriveStatus(request: { completedAt: string | null; revokedAt: string |
   return 'pending';
 }
 
-export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const paramsInput = await context.params;
     const { params } = paramsSchema.parse({ params: paramsInput });
 
-    console.info('Mock data requests queried for project', params.id);
+    const url = new URL(request.url);
+  const statusParamInput = (url.searchParams.get('status') ?? 'active').toLowerCase();
+  const sortParamInput = (url.searchParams.get('sort') ?? 'requested_at').toLowerCase();
 
-    const result = mockRequests.map((entry) => ({
-      id: entry.id,
-      status: deriveStatus(entry),
-      requestedAt: entry.requestedAt,
-      completedAt: entry.completedAt,
-      revokedAt: entry.revokedAt,
-      contact: entry.contact,
-      dataPoint: entry.dataPoint,
+  const parsedStatus = statusParamSchema.safeParse(statusParamInput);
+  const statusParam = parsedStatus.success ? parsedStatus.data : 'active';
+
+  const parsedSort = sortParamSchema.safeParse(sortParamInput);
+  const sortParam = parsedSort.success ? parsedSort.data : 'requested_at';
+    const contactFilter = url.searchParams.get('contact');
+
+    const where: Prisma.DataRequestWhereInput = {
       projectId: params.id,
-    }));
+    };
 
-    return NextResponse.json(result, { status: 200 });
+    const now = new Date();
+
+    switch (statusParam) {
+      case 'active':
+        where.revokedAt = null;
+        where.completedAt = null;
+        break;
+      case 'closed':
+        where.OR = [
+          { revokedAt: { not: null } },
+          { completedAt: { not: null } },
+        ];
+        break;
+      case 'overdue':
+        where.revokedAt = null;
+        where.completedAt = null;
+        where.deadline = { not: null, lt: now };
+        break;
+      case 'all':
+      default:
+        break;
+    }
+
+    if (contactFilter) {
+      where.contactId = contactFilter;
+    }
+
+    const orderBy: Prisma.DataRequestOrderByWithRelationInput = (() => {
+      switch (sortParam) {
+        case 'deadline':
+          return { deadline: 'asc' };
+        case 'field_id':
+          return { dataPointId: 'asc' };
+        case 'requested_at':
+        default:
+          return { requestedAt: 'desc' };
+      }
+    })();
+
+    const requests = await prisma.dataRequest.findMany({
+      where,
+      include: {
+        contact: true,
+      },
+      orderBy,
+    });
+
+    const fieldIds = Array.from(new Set(requests.map((request) => request.dataPointId))).filter((id) => !!id);
+    const fieldDefinitions = fieldIds.length
+      ? await prisma.datasetFieldDefinition.findMany({
+          where: { fieldId: { in: fieldIds } },
+          select: { fieldId: true, label: true, hint: true },
+        })
+      : [];
+
+    const fieldMeta = new Map(fieldDefinitions.map((definition) => [definition.fieldId, definition]));
+
+    const responsePayload = {
+      requests: requests.map((request) => {
+        const definition = fieldMeta.get(request.dataPointId);
+        return {
+          id: request.id,
+          status: computeStatus(request),
+          requestedAt: request.requestedAt.toISOString(),
+          completedAt: request.completedAt?.toISOString() ?? null,
+          revokedAt: request.revokedAt?.toISOString() ?? null,
+          deadline: request.deadline?.toISOString() ?? null,
+          contact: request.contact
+            ? {
+                id: request.contact.id,
+                name: request.contact.name,
+                email: request.contact.email,
+                position: request.contact.position,
+              }
+            : null,
+          dataPoint: {
+            id: request.dataPointId,
+            itemId: request.itemId,
+            label: request.fieldLabel ?? definition?.label ?? null,
+            hint: definition?.hint ?? null,
+          },
+        };
+      }),
+    };
+
+    return NextResponse.json(responsePayload, { status: 200 });
   } catch (error) {
-    console.error('Failed to serve mock data requests', error);
+    console.error('Failed to fetch data requests', error);
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
-          error: 'Invalid project id',
+          error: 'Invalid request parameters',
           details: error.issues,
         },
         { status: 400 }

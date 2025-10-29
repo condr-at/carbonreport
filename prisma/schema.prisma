@@ -179,8 +179,12 @@ model DataRequest {
   projectId      String    @map("project_id")
   contactId      String    @map("contact_id")
   dataPointId    String    @map("data_point_id") // field_id from dataset
+  itemId         String?   @map("item_id")
+  fieldLabel     String?   @map("field_label")
   requestedAt    DateTime  @default(now()) @map("requested_at")
   revokedAt      DateTime? @map("revoked_at")
+  completedAt    DateTime? @map("completed_at")
+  deadline       DateTime? @map("deadline")
   externalAccess Boolean   @default(false) @map("external_access") // Reserved for future
 
   // Relations
