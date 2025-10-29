@@ -99,6 +99,19 @@ const formatRepeatableKey = (key: string) =>
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
     .join(' ');
 
+const REPEATABLE_GROUP_HINTS: Record<string, string> = {
+  material_input:
+    'Track each material input for the product, including quantity, unit, origin, and data source.',
+  energy_input:
+    'Capture each energy source consumed during production with its amount, unit, and renewable share.',
+  transport_segment:
+    'Describe every transport leg with mode, distance, load factor, and related metrics.',
+  waste_stream:
+    'List waste streams generated during production along with quantities and treatment routes.',
+  review_team:
+    'Document members of the critical review team, their affiliation, and scope of review.',
+};
+
 export function DatasetTable({
   rows: initialRows,
   onUpdate,
@@ -334,12 +347,14 @@ export function DatasetTable({
         ? new Set(groupRows.filter((row) => matchedRowIds.has(row.id)).map((row) => row.id))
         : new Set(groupRows.map((row) => row.id));
 
+      const groupHint = REPEATABLE_GROUP_HINTS[key] ?? groupRows.find((row) => row.fieldHint)?.fieldHint ?? null;
+
       groupDisplayRows.push({
         kind: 'group',
         id: `group-${key}`,
         repeatableKey: key,
         fieldLabel: formatRepeatableKey(key),
-        fieldHint: groupRows.find((row) => row.fieldHint)?.fieldHint ?? null,
+        fieldHint: groupHint,
         rows: groupRows,
         items,
         matchedRowIds: matchedSet,
@@ -504,12 +519,11 @@ export function DatasetTable({
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   )}
                   <span className="font-medium">{original.fieldLabel}</span>
-                  <span className="text-xs text-muted-foreground">
-                    Items: {original.items.length}
-                  </span>
                 </button>
                 {original.fieldHint && (
-                  <span className="text-xs text-muted-foreground">{original.fieldHint}</span>
+                  <span className="text-xs text-muted-foreground leading-relaxed">
+                    {original.fieldHint}
+                  </span>
                 )}
               </div>
             );
@@ -552,7 +566,12 @@ export function DatasetTable({
         accessorKey: 'value',
         cell: ({ row }) => {
           if (row.original.kind === 'group') {
-            return <span className="text-muted-foreground">—</span>;
+            const count = row.original.items.length;
+            return (
+              <span className="text-sm text-muted-foreground">
+                {count} {count === 1 ? 'item' : 'items'}
+              </span>
+            );
           }
           return renderEditableCell(row.original.data);
         },
@@ -601,7 +620,6 @@ export function DatasetTable({
                 <thead className="bg-muted/40">
                   <tr>
                     <th className="px-3 py-2 w-10" />
-                    <th className="px-3 py-2 text-left">Item</th>
                     {fieldColumns.map((fieldRow) => (
                       <th key={fieldRow.fieldId} className="px-3 py-2 text-left">
                         <div className="flex flex-col gap-1">
@@ -620,7 +638,6 @@ export function DatasetTable({
                 <tbody>
                   {group.items.map((item, index) => {
                     const itemLabel = item.itemId ? `Item ${item.itemId}` : `Item ${index + 1}`;
-                    const itemRequests = item.rows.flatMap((row) => getRequestsForRow(row));
                     const isAnySelected = item.rows.some((row) => selectedRowIds.has(row.id));
                     const isAllSelected = item.rows.every((row) => selectedRowIds.has(row.id));
                     const rowCheckState: CheckedState = isAllSelected
@@ -656,14 +673,6 @@ export function DatasetTable({
                               });
                             }}
                           />
-                        </td>
-                        <td className="px-3 py-2 align-top">
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium text-sm">{itemLabel}</span>
-                            <div className="text-xs text-muted-foreground">
-                              {formatPendingContacts(itemRequests)}
-                            </div>
-                          </div>
                         </td>
                         {fieldColumns.map((fieldCol) => {
                           const fieldRow = item.rows.find((r) => r.fieldId === fieldCol.fieldId);
@@ -714,8 +723,6 @@ export function DatasetTable({
       );
     },
     [
-      getRequestsForRow,
-      formatPendingContacts,
       selectedRowIds,
       setSelectedRowIds,
       renderEditableCell,
