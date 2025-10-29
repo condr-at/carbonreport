@@ -4,6 +4,7 @@ import { z } from 'zod';
 const requestSchema = z.object({
   projectId: z.string().min(1, 'projectId is required'),
   contact: z.object({
+    id: z.string().min(1).optional(),
     email: z.string().email('contact.email must be a valid email'),
     name: z.string().min(1).optional(),
   }),

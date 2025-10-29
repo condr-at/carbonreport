@@ -58,6 +58,12 @@ export function DatasetPageClient({
     contact?: { id?: string | null; name?: string | null; email?: string | null };
     dataPoint?: { id?: string | null; label?: string | null };
   }>>([]);
+  const [contacts, setContacts] = useState<Array<{
+    id: string;
+    name: string;
+    email: string;
+    position?: string | null;
+  }>>([]);
 
   const resolveMailtoTemplate = useCallback(
     (): { subject: string; body: string } | null => {
@@ -300,6 +306,31 @@ export function DatasetPageClient({
     refreshDataRequests();
   }, [refreshDataRequests]);
 
+  const refreshContacts = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/contacts`, {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load contacts for project ${projectId}`);
+      }
+
+      const payload = await response.json();
+      if (Array.isArray(payload?.contacts)) {
+        setContacts(payload.contacts);
+      } else {
+        setContacts([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch project contacts', error);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    refreshContacts();
+  }, [refreshContacts]);
+
   if (rows.length === 0) {
     return (
       <Card>
@@ -335,7 +366,6 @@ export function DatasetPageClient({
             onRequestData={handleRequestData}
           />
         </CardContent>
-          projectId={projectId}
       </Card>
 
       {requestDataModal && (
@@ -343,15 +373,16 @@ export function DatasetPageClient({
           projectId={projectId}
           projectName={projectName}
           projectOwnerName={projectOwnerName}
-            fieldLabel={requestDataModal.fieldLabel}
-            fieldId={requestDataModal.fieldId}
-            itemId={requestDataModal.itemId}
-          onLogged={refreshDataRequests}
+          fieldLabel={requestDataModal.fieldLabel}
           fieldHint={requestDataModal.fieldHint}
-            group={requestDataModal.repeatableKey || undefined}
-            isGroup={false}
+          fieldId={requestDataModal.fieldId}
+          itemId={requestDataModal.itemId}
+          group={requestDataModal.repeatableKey || undefined}
+          isGroup={false}
           mailtoTemplate={requestDataModal.mailtoTemplate || undefined}
+          contacts={contacts}
           onClose={() => setRequestDataModal(null)}
+          onLogged={refreshDataRequests}
         />
       )}
     </>

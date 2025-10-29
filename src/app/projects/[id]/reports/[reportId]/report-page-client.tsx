@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DatasetTable } from '@/components/dataset-table';
@@ -68,6 +68,28 @@ export function ReportPageClient({
 }: ReportPageClientProps) {
   const [rows, setRows] = useState<TableRow[]>(initialRows);
   const [datasetVersion, setDatasetVersion] = useState(initialVersion);
+  const [dataRequests, setDataRequests] = useState<{
+    id: string;
+    status: 'pending' | 'completed' | 'revoked';
+    requestedAt: string;
+    completedAt: string | null;
+    revokedAt: string | null;
+    contact?: {
+      id?: string | null;
+      name?: string | null;
+      email?: string | null;
+    };
+    dataPoint?: {
+      id?: string | null;
+      label?: string | null;
+    };
+  }[]>([]);
+  const [contacts, setContacts] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    position?: string | null;
+  }[]>([]);
   const [requestModal, setRequestModal] = useState<RequestModalState>(null);
 
   const fieldIdSet = useMemo(
@@ -313,6 +335,56 @@ export function ReportPageClient({
     [resolveMailtoTemplate]
   );
 
+  const refreshDataRequests = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/data-requests`, {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load data requests for project ${projectId}`);
+      }
+
+      const payload = await response.json();
+      if (Array.isArray(payload)) {
+        setDataRequests(payload);
+      } else {
+        setDataRequests([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch project data requests', error);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    refreshDataRequests();
+  }, [refreshDataRequests]);
+
+  const refreshContacts = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/contacts`, {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load contacts for project ${projectId}`);
+      }
+
+      const payload = await response.json();
+      if (Array.isArray(payload?.contacts)) {
+        setContacts(payload.contacts);
+      } else {
+        setContacts([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch project contacts', error);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    refreshContacts();
+  }, [refreshContacts]);
+
   return (
     <div className="space-y-6">
       <Card>
@@ -379,6 +451,7 @@ export function ReportPageClient({
         <CardContent>
           <DatasetTable
             rows={rows}
+            dataRequests={dataRequests}
             onUpdate={handleUpdate}
             onDeleteItem={handleDeleteItem}
             onAddItem={handleAddItem}
@@ -399,6 +472,8 @@ export function ReportPageClient({
           group={requestModal.repeatableKey || undefined}
           isGroup={false}
           mailtoTemplate={requestModal.mailtoTemplate || undefined}
+          contacts={contacts}
+          onLogged={refreshDataRequests}
           onClose={() => setRequestModal(null)}
         />
       )}

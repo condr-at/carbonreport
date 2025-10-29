@@ -6,12 +6,22 @@
  * Opens email client with pre-filled template for requesting data from contacts
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { X, Mail, Loader2 } from 'lucide-react';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { X, Mail, Loader2, ChevronsUpDown, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface RequestDataModalProps {
   projectId: string;
@@ -26,6 +36,12 @@ interface RequestDataModalProps {
   mailtoTemplate?: { subject: string; body: string };
   onClose: () => void;
   onLogged?: () => void | Promise<void>;
+  contacts?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    position?: string | null;
+  }>;
 }
 
 export function RequestDataModal({
@@ -41,10 +57,13 @@ export function RequestDataModal({
   mailtoTemplate,
   onClose,
   onLogged,
+  contacts = [],
 }: RequestDataModalProps) {
   const [contactEmail, setContactEmail] = useState('');
   const [contactName, setContactName] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
+  const [contactPickerOpen, setContactPickerOpen] = useState(false);
   const [stage, setStage] = useState<'form' | 'confirm'>('form');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -52,6 +71,30 @@ export function RequestDataModal({
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return (value: string) => emailPattern.test(value);
   }, []);
+
+  const contactOptions = useMemo(
+    () =>
+      contacts.map((contact) => ({
+        id: contact.id,
+        name: (contact.name ?? '').trim() || contact.email,
+        email: contact.email,
+        position: contact.position ?? null,
+      })),
+    [contacts]
+  );
+
+  const selectedContact = useMemo(
+    () => contactOptions.find((option) => option.id === selectedContactId) ?? null,
+    [contactOptions, selectedContactId]
+  );
+
+  useEffect(() => {
+    if (!selectedContact) {
+      return;
+    }
+    setContactEmail(selectedContact.email);
+    setContactName(selectedContact.name);
+  }, [selectedContact]);
 
   const template = useMemo(() => {
     const fallbackBody = [
@@ -182,6 +225,7 @@ export function RequestDataModal({
     const payload = {
       projectId,
       contact: {
+        id: selectedContactId || undefined,
         email: contactEmail,
         name: contactName || undefined,
       },
@@ -269,6 +313,65 @@ export function RequestDataModal({
               </div>
 
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contact-picker">Contact</Label>
+                  <Popover open={contactPickerOpen} onOpenChange={setContactPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={contactPickerOpen}
+                        className="w-full justify-between"
+                      >
+                        {selectedContact ? (
+                          <span className="truncate">
+                            {selectedContact.name}
+                          </span>
+                        ) : (
+                          "Select contact..."
+                        )}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-0 p-0" align="start" sideOffset={4}>
+                      <Command>
+                        <CommandInput placeholder="Search contact..." />
+                        <CommandList>
+                          <CommandEmpty>No contact found.</CommandEmpty>
+                          <CommandGroup>
+                            {contactOptions.map((option) => (
+                              <CommandItem
+                                key={option.id}
+                                value={option.email}
+                                onSelect={(currentValue) => {
+                                  const selected = contactOptions.find((c) => c.email === currentValue);
+                                  setSelectedContactId(
+                                    selected?.id === selectedContactId ? null : selected?.id ?? null
+                                  );
+                                  setContactPickerOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedContactId === option.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {option.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">
+                    {contactOptions.length > 0
+                      ? 'Select a saved contact or enter email manually below.'
+                      : 'No saved contacts. Add them in project settings or enter email manually.'}
+                  </p>
+                </div>
+
                 <div>
                   <Label htmlFor="contactEmail">Contact Email *</Label>
                   <Input
@@ -276,7 +379,10 @@ export function RequestDataModal({
                     type="email"
                     placeholder="colleague@company.com"
                     value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedContactId(null);
+                      setContactEmail(e.target.value);
+                    }}
                     className="mt-1"
                   />
                 </div>
@@ -288,7 +394,10 @@ export function RequestDataModal({
                     type="text"
                     placeholder="John Doe"
                     value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedContactId(null);
+                      setContactName(e.target.value);
+                    }}
                     className="mt-1"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
