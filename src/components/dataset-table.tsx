@@ -375,14 +375,6 @@ export function DatasetTable({
     return 'indeterminate';
   }, [visibleFieldRowIds, selectedRowIds]);
 
-  const dateFormatter = useMemo(
-    () =>
-      new Intl.DateTimeFormat(undefined, {
-        dateStyle: 'medium',
-      }),
-    []
-  );
-
   const getRequestsForRow = useCallback(
     (row: TableRow) => {
       const key = row.itemId ? `${row.fieldId}::${row.itemId}` : row.fieldId;
@@ -400,40 +392,6 @@ export function DatasetTable({
     const unique = Array.from(new Set(contacts));
     return unique.length > 0 ? unique.join(', ') : '—';
   }, []);
-
-  const formatStatusSummary = useCallback(
-    (requests: DataRequestSummary[]) => {
-      if (requests.length === 0) {
-        return '—';
-      }
-
-      const pending = requests.filter((request) => request.status === 'pending');
-      if (pending.length > 0) {
-        const deadline = pending.find((request) => request.deadline)?.deadline;
-        if (deadline) {
-          return `Pending • due ${dateFormatter.format(new Date(deadline))}`;
-        }
-        return `Pending (${pending.length})`;
-      }
-
-      const completed = requests
-        .filter((request) => request.status === 'completed' && request.completedAt)
-        .sort((a, b) => new Date(b.completedAt ?? '').getTime() - new Date(a.completedAt ?? '').getTime());
-      if (completed.length > 0) {
-        return `Completed ${dateFormatter.format(new Date(completed[0].completedAt!))}`;
-      }
-
-      const revoked = requests
-        .filter((request) => request.status === 'revoked' && request.revokedAt)
-        .sort((a, b) => new Date(b.revokedAt ?? '').getTime() - new Date(a.revokedAt ?? '').getTime());
-      if (revoked.length > 0) {
-        return `Revoked ${dateFormatter.format(new Date(revoked[0].revokedAt!))}`;
-      }
-
-      return '—';
-    },
-    [dateFormatter]
-  );
 
   const columns = useMemo<ColumnDef<DisplayRow>[]>(
     () => [
@@ -632,122 +590,116 @@ export function DatasetTable({
         );
       }
 
+      // Build field columns from first item
+      const fieldColumns = group.items[0]?.rows ?? [];
+
       return (
         <div className="space-y-4">
-          {group.items.map((item, index) => {
-            const itemLabel = item.itemId ? `Item ${item.itemId}` : `Item ${index + 1}`;
-            return (
-              <div
-                key={item.itemId ?? `new-${index}`}
-                className="rounded-md border bg-card text-foreground"
-              >
-                <div className="flex items-center justify-between border-b px-4 py-2">
-                  <div className="text-sm font-medium">{itemLabel}</div>
-                  <div className="flex items-center gap-2">
-                    {item.itemId && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDeleteItem(group.repeatableKey, item.itemId!)}
+          <div className="rounded-md border bg-card">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/40">
+                  <tr>
+                    <th className="px-3 py-2 w-10" />
+                    <th className="px-3 py-2 text-left">Item</th>
+                    {fieldColumns.map((fieldRow) => (
+                      <th key={fieldRow.fieldId} className="px-3 py-2 text-left">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-sm">{fieldRow.fieldLabel}</span>
+                          {fieldRow.fieldHint && (
+                            <span className="text-xs font-normal text-muted-foreground">
+                              {fieldRow.fieldHint}
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="px-3 py-2 text-left w-[100px]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.items.map((item, index) => {
+                    const itemLabel = item.itemId ? `Item ${item.itemId}` : `Item ${index + 1}`;
+                    const itemRequests = item.rows.flatMap((row) => getRequestsForRow(row));
+                    const isAnySelected = item.rows.some((row) => selectedRowIds.has(row.id));
+                    const isAllSelected = item.rows.every((row) => selectedRowIds.has(row.id));
+                    const rowCheckState: CheckedState = isAllSelected
+                      ? true
+                      : isAnySelected
+                      ? 'indeterminate'
+                      : false;
+
+                    return (
+                      <tr
+                        key={item.itemId ?? `new-${index}`}
+                        className={cn(
+                          'border-t align-top transition-colors',
+                          isAnySelected && 'bg-muted/40'
+                        )}
                       >
-                        <Trash2 className="h-4 w-4 mr-1 text-destructive" />
-                        Delete item
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/40">
-                      <tr>
-                        <th className="px-3 py-2 w-10" />
-                        <th className="px-3 py-2 text-left">Field</th>
-                        <th className="px-3 py-2 text-left">Value</th>
-                        <th className="px-3 py-2 text-left">Responsible</th>
-                        <th className="px-3 py-2 text-left">Status / Deadline</th>
-                        <th className="px-3 py-2 text-left w-[150px]">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {item.rows.map((fieldRow) => {
-                        const requests = getRequestsForRow(fieldRow);
-                        const isSelected = selectedRowIds.has(fieldRow.id);
-                        const isMatched = searchQuery ? item.matchedRowIds.has(fieldRow.id) : false;
-                        return (
-                          <tr
-                            key={fieldRow.id}
-                            className={cn(
-                              'border-t align-top transition-colors',
-                              isSelected && 'bg-muted/40',
-                              !isSelected && isMatched && 'bg-accent/10'
-                            )}
-                          >
-                            <td className="px-3 py-2 align-top">
-                              <Checkbox
-                                aria-label={`Select ${fieldRow.fieldLabel}`}
-                                checked={isSelected}
-                                onCheckedChange={(checked) => {
-                                  const shouldSelect = checked === true;
-                                  setSelectedRowIds((prev) => {
-                                    const next = new Set(prev);
-                                    if (shouldSelect) {
-                                      next.add(fieldRow.id);
-                                    } else {
-                                      next.delete(fieldRow.id);
-                                    }
-                                    return next;
-                                  });
-                                }}
-                              />
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="flex flex-col gap-1">
-                                <span className="font-medium text-sm text-foreground">
-                                  {fieldRow.fieldLabel}
-                                </span>
-                                {fieldRow.fieldHint && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {fieldRow.fieldHint}
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2">
+                        <td className="px-3 py-2 align-top">
+                          <Checkbox
+                            aria-label={`Select ${itemLabel}`}
+                            checked={rowCheckState}
+                            onCheckedChange={(checked) => {
+                              const shouldSelect = checked === true;
+                              setSelectedRowIds((prev) => {
+                                const next = new Set(prev);
+                                item.rows.forEach((row) => {
+                                  if (shouldSelect) {
+                                    next.add(row.id);
+                                  } else {
+                                    next.delete(row.id);
+                                  }
+                                });
+                                return next;
+                              });
+                            }}
+                          />
+                        </td>
+                        <td className="px-3 py-2 align-top">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium text-sm">{itemLabel}</span>
+                            <div className="text-xs text-muted-foreground">
+                              {formatPendingContacts(itemRequests)}
+                            </div>
+                          </div>
+                        </td>
+                        {fieldColumns.map((fieldCol) => {
+                          const fieldRow = item.rows.find((r) => r.fieldId === fieldCol.fieldId);
+                          if (!fieldRow) {
+                            return (
+                              <td key={fieldCol.fieldId} className="px-3 py-2 align-top">
+                                <span className="text-muted-foreground">—</span>
+                              </td>
+                            );
+                          }
+
+                          return (
+                            <td key={fieldRow.id} className="px-3 py-2 align-top">
                               {renderEditableCell(fieldRow)}
                             </td>
-                            <td className="px-3 py-2 text-sm text-muted-foreground">
-                              {formatPendingContacts(requests)}
-                            </td>
-                            <td className="px-3 py-2 text-sm text-muted-foreground">
-                              {formatStatusSummary(requests)}
-                            </td>
-                            <td className="px-3 py-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  onRequestData({
-                                    fieldId: fieldRow.fieldId,
-                                    fieldLabel: fieldRow.fieldLabel,
-                                    fieldHint: fieldRow.fieldHint,
-                                    itemId: fieldRow.itemId,
-                                    repeatableKey: fieldRow.repeatableKey,
-                                  })
-                                }
-                              >
-                                <Mail className="h-4 w-4 mr-2" />
-                                Request
-                              </Button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })}
+                          );
+                        })}
+                        <td className="px-3 py-2 align-top">
+                          {item.itemId && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onDeleteItem(group.repeatableKey, item.itemId!)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1 text-destructive" />
+                              Delete
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
           <div className="flex justify-end">
             <Button
               variant="outline"
@@ -764,14 +716,11 @@ export function DatasetTable({
     [
       getRequestsForRow,
       formatPendingContacts,
-      formatStatusSummary,
       selectedRowIds,
       setSelectedRowIds,
       renderEditableCell,
-      onRequestData,
       onAddItem,
       onDeleteItem,
-      searchQuery,
     ]
   );
 

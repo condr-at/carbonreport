@@ -461,7 +461,8 @@ Use this checklist to track implementation of the architecture updates.
 **Priority 2 (Important)**:
 4. ✅ ~~Implement mailto template seeding on project creation~~ (DONE)
 5. Add Request Data functionality with project templates (Frontend)
-6. Write integration tests
+6. Добавить оптимистичные обновления для добавления/удаления repeatable items в датасете
+7. Write integration tests
 
 **Priority 3 (Nice to have)**:
 7. Add mailto template editor UI (Frontend)
