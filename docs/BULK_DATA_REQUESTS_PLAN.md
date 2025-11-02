@@ -83,6 +83,11 @@ _Out of scope:_ reminder flows, pagination/virtualisation, report/dataset badge 
    - Remove redundant contact refresh if cache ensures fresh data.
    - Update feedback messages (e.g. "Marked 3 requests as completed").
 
+6. **Instrumentation & UI performance**
+   - Add lightweight timing logs (`console.time`) around service methods and GET handlers to pinpoint latency.
+   - Document current response times and revisit connection pooling if Prisma timeouts persist.
+   - Evaluate need for table virtualisation once row counts regularly exceed ~200 (note in UX spec).
+
 6. **Testing & Verification**
    - Write unit tests for service methods covering:
      - Deduplication by `(dataPointId, itemId)`.
@@ -103,8 +108,11 @@ _Out of scope:_ reminder flows, pagination/virtualisation, report/dataset badge 
 - Deadlines parse failure → validation error before transaction.
 - Contact deletion between prepare and execute → transaction throws; respond 404 and prompt refresh.
 - Large payload (>200 fields) → service should chunk `createMany` if necessary (placeholder TODO comment).
+- Optimistic UI attempts → keep a local snapshot so failures can revert state; always schedule a post-success refetch to avoid drift.
 
 ## 7. Future Extensions
 - Add `bulkRemind` handler using same service contract.
 - Plug Redis/Upstash for distributed cache without changing service API.
 - Emit metrics to DataDog once infra ready (hooks already stubbed).
+- Evaluate optimistic UI for bulk actions (spec outlines in UX doc; requires staged rollout and robust rollback routine).
+- Add table virtualisation (e.g. `react-window`) when UI datasets grow beyond performant thresholds.

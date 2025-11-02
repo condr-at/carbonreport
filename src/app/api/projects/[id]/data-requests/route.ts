@@ -14,9 +14,20 @@ const paramsSchema = z.object({
 
 const statusParamSchema = z.enum(['active', 'closed', 'overdue', 'all']);
 const sortParamSchema = z.enum(['requested_at', 'deadline', 'field_id']);
+const ENABLE_TIMING = process.env.NODE_ENV !== 'production';
+
+function logTiming(label: string, start: bigint) {
+  if (!ENABLE_TIMING) {
+    return;
+  }
+
+  const duration = Number(process.hrtime.bigint() - start) / 1_000_000;
+  console.info(`[data-requests] ${label} took ${duration.toFixed(2)}ms`);
+}
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const startedAt = ENABLE_TIMING ? process.hrtime.bigint() : BigInt(0);
     const paramsInput = await context.params;
     const { params } = paramsSchema.parse({ params: paramsInput });
 
@@ -35,7 +46,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     const cached = getCacheValue<{ requests: unknown[] }>(cacheKey);
 
     if (cached) {
-      return NextResponse.json(cached, { status: 200 });
+  logTiming(`GET /projects/${params.id}/data-requests (cache hit)`, startedAt);
+  return NextResponse.json(cached, { status: 200 });
     }
 
     const where: Prisma.DataRequestWhereInput = {
@@ -129,7 +141,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
   setCacheValue(cacheKey, responsePayload);
 
-  return NextResponse.json(responsePayload, { status: 200 });
+    const response = NextResponse.json(responsePayload, { status: 200 });
+    logTiming(`GET /projects/${params.id}/data-requests`, startedAt);
+    return response;
   } catch (error) {
     console.error('Failed to fetch data requests', error);
 

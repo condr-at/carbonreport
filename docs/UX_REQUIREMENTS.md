@@ -436,6 +436,16 @@ This table shows which API endpoints each page uses:
 | **Mailto Templates** | `GET /api/projects/:id/mailto-template`<br>`PUT /api/projects/:id/mailto-template`<br>`POST /api/projects/:id/mailto-template/reset` | Get current template<br>Update subject/body<br>Reset to default |
 | **Settings** | `GET /api/users/me`<br>`PUT /api/users/me` | Current user info<br>Update profile |
 
+### Data Requests Board (Project-level view)
+- **Purpose**: centralise outstanding/past requests per project with filtering, bulk actions, and quick status review.
+- **Columns**: Field (label + optional item id + hint), Contact (name + email), Status badge (pending/completed/revoked), timestamps (requested/completed/revoked), deadline.
+- **Filters**: Status pill group (All/Pending/Completed/Revoked, future Overdue), contact dropdown, search (future).
+- **Bulk actions**: Resend email, Mark complete, Revoke, Clear selection. Disable when selection invalid (e.g., zero pending). Display count summary `“3 selected · 2 pending”`.
+- **Feedback**: Inline success/error toasts; keep selection on error; clear selection on success.
+- **Optimistic UI (planned)**: allow immediate visual updates while API runs; maintain snapshot for rollback and trigger refetch after success.
+- **Performance**: measure handler durations via instrumentation; migrate to row virtualisation (e.g., `react-window`) once row count regularly exceeds ~200 to keep scroll responsive.
+- **Empty state**: dashed card with explanatory copy, CTA to adjust filters or request data.
+
 **Key Patterns**:
 - **Optimistic Locking**: Dataset page sends `datasetVersion` with PUT, handles 409 Conflict
 - **Filtered Views**: Report Editor reads `Project.dataset`, filters by template field_ids

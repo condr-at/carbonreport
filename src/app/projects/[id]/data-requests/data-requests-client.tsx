@@ -306,55 +306,83 @@ export function DataRequestsPageClient({
       console.error('Failed to refresh contacts', error);
     }
   }, [projectId, normalizeContact]);
+  const applyUpdates = useCallback((next: DataRequestSummary[]) => {
+    if (next.length === 0) {
+      return;
+    }
+
+    const updates = new Map(next.map((request) => [request.id, request]));
+    setRequests((prev) => prev.map((item) => updates.get(item.id) ?? item));
+  }, []);
+
   const handleBulkComplete = useCallback(async () => {
     if (pendingSelected.length === 0) {
       setMessage({ type: 'error', text: 'Select at least one pending request to mark complete.' });
       return;
     }
 
-    setIsBulkCompleting(true);
     setMessage(null);
 
+    const ids = pendingSelected.map((request) => request.id);
+    const snapshots = new Map(pendingSelected.map((request) => [request.id, request]));
+    const revertSelection = new Set(ids);
+    const optimisticCompletedAt = new Date().toISOString();
+
+    setIsBulkCompleting(true);
+
+    // Optimistic status swap so the table responds immediately.
+    setRequests((prev) =>
+      prev.map((item) =>
+        snapshots.has(item.id)
+          ? {
+              ...item,
+              status: 'completed',
+              completedAt: optimisticCompletedAt,
+              revokedAt: null,
+            }
+          : item
+      )
+    );
+    setSelectedIds(new Set());
+
     try {
-      const updates = new Map<string, DataRequestSummary>();
+      const response = await fetch('/api/data-requests/complete-bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids }),
+      });
 
-      for (const request of pendingSelected) {
-        const response = await fetch(`/api/data-requests/${request.id}/complete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({}),
-        });
-
-        const payload = await response.json().catch(() => null);
-        if (!response.ok) {
-          const errorMessage = payload?.error ?? `Failed to mark request ${request.id} complete`;
-          throw new Error(errorMessage);
-        }
-
-        const updated = payload?.request as DataRequestSummary | undefined;
-        if (updated) {
-          updates.set(updated.id, updated);
-        }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const errorMessage = payload?.error ?? 'Failed to mark requests complete';
+        throw new Error(errorMessage);
       }
 
-      if (updates.size > 0) {
-        setRequests((prev) => prev.map((item) => updates.get(item.id) ?? item));
-      }
+      const updatedRequests = Array.isArray(payload?.requests)
+        ? (payload.requests as DataRequestSummary[])
+        : [];
+
+      applyUpdates(updatedRequests);
+
+      const updatedCount = typeof payload?.updated === 'number' ? payload.updated : updatedRequests.length;
 
       setMessage({
         type: 'success',
-        text: `Marked ${updates.size} request${updates.size === 1 ? '' : 's'} as completed.`,
+        text: `Marked ${updatedCount} request${updatedCount === 1 ? '' : 's'} as completed.`,
       });
-      setSelectedIds(new Set());
     } catch (error) {
       const messageText = error instanceof Error ? error.message : 'Failed to mark requests complete';
+      setRequests((prev) =>
+        prev.map((item) => (snapshots.has(item.id) ? snapshots.get(item.id)! : item))
+      );
+      setSelectedIds(revertSelection);
       setMessage({ type: 'error', text: messageText });
     } finally {
       setIsBulkCompleting(false);
     }
-  }, [pendingSelected]);
+  }, [applyUpdates, pendingSelected]);
 
   const handleBulkRevoke = useCallback(async () => {
     if (pendingSelected.length === 0) {
@@ -362,49 +390,68 @@ export function DataRequestsPageClient({
       return;
     }
 
-    setIsBulkRevoking(true);
     setMessage(null);
 
+    const ids = pendingSelected.map((request) => request.id);
+    const snapshots = new Map(pendingSelected.map((request) => [request.id, request]));
+    const revertSelection = new Set(ids);
+    const optimisticRevokedAt = new Date().toISOString();
+
+    setIsBulkRevoking(true);
+
+    // Optimistic status swap mirrors the backend update to avoid perceived lag.
+    setRequests((prev) =>
+      prev.map((item) =>
+        snapshots.has(item.id)
+          ? {
+              ...item,
+              status: 'revoked',
+              revokedAt: optimisticRevokedAt,
+              completedAt: null,
+            }
+          : item
+      )
+    );
+    setSelectedIds(new Set());
+
     try {
-      const updates = new Map<string, DataRequestSummary>();
+      const response = await fetch('/api/data-requests/revoke-bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids }),
+      });
 
-      for (const request of pendingSelected) {
-        const response = await fetch(`/api/data-requests/${request.id}/revoke`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({}),
-        });
-
-        const payload = await response.json().catch(() => null);
-        if (!response.ok) {
-          const errorMessage = payload?.error ?? `Failed to revoke request ${request.id}`;
-          throw new Error(errorMessage);
-        }
-
-        const updated = payload?.request as DataRequestSummary | undefined;
-        if (updated) {
-          updates.set(updated.id, updated);
-        }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const errorMessage = payload?.error ?? 'Failed to revoke requests';
+        throw new Error(errorMessage);
       }
 
-      if (updates.size > 0) {
-        setRequests((prev) => prev.map((item) => updates.get(item.id) ?? item));
-      }
+      const updatedRequests = Array.isArray(payload?.requests)
+        ? (payload.requests as DataRequestSummary[])
+        : [];
+
+      applyUpdates(updatedRequests);
+
+      const updatedCount = typeof payload?.updated === 'number' ? payload.updated : updatedRequests.length;
 
       setMessage({
         type: 'success',
-        text: `Revoked ${updates.size} request${updates.size === 1 ? '' : 's'}.`,
+        text: `Revoked ${updatedCount} request${updatedCount === 1 ? '' : 's'}.`,
       });
-      setSelectedIds(new Set());
     } catch (error) {
       const messageText = error instanceof Error ? error.message : 'Failed to revoke requests';
+      setRequests((prev) =>
+        prev.map((item) => (snapshots.has(item.id) ? snapshots.get(item.id)! : item))
+      );
+      setSelectedIds(revertSelection);
       setMessage({ type: 'error', text: messageText });
     } finally {
       setIsBulkRevoking(false);
     }
-  }, [pendingSelected]);
+  }, [applyUpdates, pendingSelected]);
 
   const handleBulkResend = useCallback(() => {
     if (pendingSelected.length === 0) {
@@ -534,7 +581,7 @@ export function DataRequestsPageClient({
                 onClick={handleBulkComplete}
                 disabled={bulkBusy || pendingCount === 0}
               >
-                {isBulkCompleting ? (
+                {isBulkCompleting && pendingCount > 0 ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <CheckCircle2 className="mr-2 h-4 w-4" />
@@ -547,7 +594,7 @@ export function DataRequestsPageClient({
                 onClick={handleBulkRevoke}
                 disabled={bulkBusy || pendingCount === 0}
               >
-                {isBulkRevoking ? (
+                {isBulkRevoking && pendingCount > 0 ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <XCircle className="mr-2 h-4 w-4" />

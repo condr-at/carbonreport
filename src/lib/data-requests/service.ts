@@ -43,6 +43,11 @@ export interface BulkExecutionResult {
   createdIds: string[];
 }
 
+export interface BulkStatusResult {
+  updated: number;
+  requests: SerializedRequest[];
+}
+
 export interface SerializedRequest {
   id: string;
   status: DataRequestStatus;
@@ -66,6 +71,29 @@ export interface SerializedRequest {
 
 const DATA_REQUEST_CACHE_PREFIX = 'project:data-requests:';
 const CONTACT_CACHE_PREFIX = 'project:contacts:';
+const ENABLE_TIMING = process.env.NODE_ENV !== 'production';
+
+type Timer = { label: string; start: bigint } | null;
+
+function startTimer(label: string): Timer {
+  if (!ENABLE_TIMING) {
+    return null;
+  }
+
+  return {
+    label,
+    start: process.hrtime.bigint(),
+  };
+}
+
+function endTimer(timer: Timer): void {
+  if (!timer) {
+    return;
+  }
+
+  const duration = Number(process.hrtime.bigint() - timer.start) / 1_000_000;
+  console.info(`[data-requests] ${timer.label} took ${duration.toFixed(2)}ms`);
+}
 
 class DataRequestServiceError extends Error {
   status: number;
@@ -143,6 +171,7 @@ export async function prepareBulk(
   input: BulkRequestInput,
   client?: PrismaClient
 ): Promise<BulkWorkPlan> {
+  const timer = startTimer(`prepareBulk project=${input.projectId}`);
   const prisma = getClient(client);
   const now = input.now ?? new Date();
 
@@ -150,112 +179,121 @@ export async function prepareBulk(
     throw new DataRequestServiceError('fields array must include at least one entry', 400, 'VALIDATION_FAILED');
   }
 
-  const uniqueFields = new Map<string, { dataPointId: string; itemId: string | null; fieldLabel: string | null; group: string | null }>();
+  try {
+    const uniqueFields = new Map<string, { dataPointId: string; itemId: string | null; fieldLabel: string | null; group: string | null }>();
 
-  for (const field of input.fields) {
-    const key = fieldKey(field.dataPointId, field.itemId ?? null);
+    for (const field of input.fields) {
+      const key = fieldKey(field.dataPointId, field.itemId ?? null);
 
-    if (!uniqueFields.has(key)) {
-      uniqueFields.set(key, {
+      if (!uniqueFields.has(key)) {
+        uniqueFields.set(key, {
+          dataPointId: field.dataPointId,
+          itemId: field.itemId ?? null,
+          fieldLabel: field.fieldLabel ?? null,
+          group: field.group ?? null,
+        });
+      }
+    }
+
+    const contact = await resolveContact(prisma, input.userId, input.contact);
+
+    const activeRequests = uniqueFields.size
+      ? await prisma.dataRequest.findMany({
+          where: {
+            projectId: input.projectId,
+            revokedAt: null,
+            completedAt: null,
+            OR: Array.from(uniqueFields.values()).map((field) => ({
+              dataPointId: field.dataPointId,
+              itemId: field.itemId,
+            })),
+          },
+          select: {
+            id: true,
+            dataPointId: true,
+            itemId: true,
+            contactId: true,
+          },
+        })
+      : [];
+
+    const revocationIds: string[] = [];
+
+    for (const request of activeRequests) {
+      if (request.contactId !== contact.id) {
+        revocationIds.push(request.id);
+      }
+    }
+
+    const insertRows: Array<Prisma.DataRequestCreateManyInput & { id: string }> = [];
+
+    for (const field of uniqueFields.values()) {
+      insertRows.push({
+        id: randomUUID(),
+        projectId: input.projectId,
+        userId: input.userId,
+        contactId: contact.id,
         dataPointId: field.dataPointId,
-        itemId: field.itemId ?? null,
-        fieldLabel: field.fieldLabel ?? null,
-        group: field.group ?? null,
+        itemId: field.itemId,
+        fieldLabel: field.fieldLabel,
+        deadline: input.deadline,
       });
     }
-  }
 
-  const contact = await resolveContact(prisma, input.userId, input.contact);
-
-  const activeRequests = uniqueFields.size
-    ? await prisma.dataRequest.findMany({
-        where: {
-          projectId: input.projectId,
-          revokedAt: null,
-          completedAt: null,
-          OR: Array.from(uniqueFields.values()).map((field) => ({
-            dataPointId: field.dataPointId,
-            itemId: field.itemId,
-          })),
-        },
-        select: {
-          id: true,
-          dataPointId: true,
-          itemId: true,
-          contactId: true,
-        },
-      })
-    : [];
-
-  const revocationIds: string[] = [];
-
-  for (const request of activeRequests) {
-    if (request.contactId !== contact.id) {
-      revocationIds.push(request.id);
-    }
-  }
-
-  const insertRows: Array<Prisma.DataRequestCreateManyInput & { id: string }> = [];
-
-  for (const field of uniqueFields.values()) {
-    insertRows.push({
-      id: randomUUID(),
+    return {
       projectId: input.projectId,
       userId: input.userId,
-      contactId: contact.id,
-      dataPointId: field.dataPointId,
-      itemId: field.itemId,
-      fieldLabel: field.fieldLabel,
+      contact,
       deadline: input.deadline,
-    });
+      now,
+      revocationIds,
+      insertRows,
+    };
+  } finally {
+    endTimer(timer);
   }
-
-  return {
-    projectId: input.projectId,
-    userId: input.userId,
-    contact,
-    deadline: input.deadline,
-    now,
-    revocationIds,
-    insertRows,
-  };
 }
 
 export async function executeBulk(
   plan: BulkWorkPlan,
   client?: PrismaClient
 ): Promise<BulkExecutionResult> {
+  const timer = startTimer(`executeBulk project=${plan.projectId} inserts=${plan.insertRows.length} revokes=${plan.revocationIds.length}`);
   const prisma = getClient(client);
 
-  const result = await prisma.$transaction(async (tx) => {
-    let revokedCount = 0;
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      let revokedCount = 0;
 
-    if (plan.revocationIds.length > 0) {
-      const { count } = await tx.dataRequest.updateMany({
-        where: { id: { in: plan.revocationIds } },
-        data: { revokedAt: plan.now },
-      });
-      revokedCount = count;
-    }
+      if (plan.revocationIds.length > 0) {
+        const { count } = await tx.dataRequest.updateMany({
+          where: { id: { in: plan.revocationIds } },
+          data: { revokedAt: plan.now },
+        });
+        revokedCount = count;
+      }
 
-    if (plan.insertRows.length > 0) {
-      await tx.dataRequest.createMany({ data: plan.insertRows });
-    }
+      if (plan.insertRows.length > 0) {
+        await tx.dataRequest.createMany({ data: plan.insertRows });
+      }
+
+      return {
+        revokedCount,
+        createdCount: plan.insertRows.length,
+      };
+    });
+
+    invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${plan.projectId}`);
+    invalidateByPrefix(`${CONTACT_CACHE_PREFIX}${plan.projectId}`);
 
     return {
-      revokedCount,
-      createdCount: plan.insertRows.length,
+      createdCount: result.createdCount,
+      revokedCount: result.revokedCount,
+      createdIds: plan.insertRows.map((row) => row.id),
     };
-  });
-
-  invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${plan.projectId}`);
-  invalidateByPrefix(`${CONTACT_CACHE_PREFIX}${plan.projectId}`);
-
-  return {
-    createdCount: result.createdCount,
-    revokedCount: result.revokedCount,
-    createdIds: plan.insertRows.map((row) => row.id),
-  };
+  } finally {
+    endTimer(timer);
+  }
 }
 
 export async function serializeRequests(
@@ -266,40 +304,45 @@ export async function serializeRequests(
     return [];
   }
 
+  const timer = startTimer(`serializeRequests count=${ids.length}`);
   const prisma = getClient(client);
   const order = new Map<string, number>();
   ids.forEach((id, index) => order.set(id, index));
 
-  const requests = await prisma.dataRequest.findMany({
-    where: { id: { in: ids } },
-    include: { contact: true },
-  });
+  try {
+    const requests = await prisma.dataRequest.findMany({
+      where: { id: { in: ids } },
+      include: { contact: true },
+    });
 
-  if (requests.length === 0) {
-    return [];
+    if (requests.length === 0) {
+      return [];
+    }
+
+    const fieldIds = Array.from(new Set(requests.map((request) => request.dataPointId))).filter(Boolean);
+
+    const definitions = fieldIds.length
+      ? await prisma.datasetFieldDefinition.findMany({
+          where: { fieldId: { in: fieldIds } },
+          select: { fieldId: true, label: true, hint: true },
+        })
+      : [];
+
+    const fieldMap = new Map(definitions.map((definition) => [definition.fieldId, definition]));
+
+    const sorted = [...requests].sort((a, b) => {
+      const aIndex = order.get(a.id) ?? 0;
+      const bIndex = order.get(b.id) ?? 0;
+      return aIndex - bIndex;
+    });
+
+    return sorted.map((request) => {
+      const definition = fieldMap.get(request.dataPointId ?? '') ?? null;
+      return serializeRequestRecord(request, definition);
+    });
+  } finally {
+    endTimer(timer);
   }
-
-  const fieldIds = Array.from(new Set(requests.map((request) => request.dataPointId))).filter(Boolean);
-
-  const definitions = fieldIds.length
-    ? await prisma.datasetFieldDefinition.findMany({
-        where: { fieldId: { in: fieldIds } },
-        select: { fieldId: true, label: true, hint: true },
-      })
-    : [];
-
-  const fieldMap = new Map(definitions.map((definition) => [definition.fieldId, definition]));
-
-  const sorted = [...requests].sort((a, b) => {
-    const aIndex = order.get(a.id) ?? 0;
-    const bIndex = order.get(b.id) ?? 0;
-    return aIndex - bIndex;
-  });
-
-  return sorted.map((request) => {
-    const definition = fieldMap.get(request.dataPointId ?? '') ?? null;
-    return serializeRequestRecord(request, definition);
-  });
 }
 
 export async function completeRequest(
@@ -307,39 +350,44 @@ export async function completeRequest(
   completedAt: Date,
   client?: PrismaClient
 ): Promise<SerializedRequest> {
+  const timer = startTimer(`completeRequest id=${id}`);
   const prisma = getClient(client);
 
-  const existing = await prisma.dataRequest.findUnique({
-    where: { id },
-    include: { contact: true },
-  });
+  try {
+    const existing = await prisma.dataRequest.findUnique({
+      where: { id },
+      include: { contact: true },
+    });
 
-  if (!existing) {
-    throw new DataRequestServiceError('Data request not found', 404, 'NOT_FOUND');
+    if (!existing) {
+      throw new DataRequestServiceError('Data request not found', 404, 'NOT_FOUND');
+    }
+
+    if (existing.revokedAt) {
+      throw new DataRequestServiceError('Cannot complete a revoked request', 409, 'CONFLICT');
+    }
+
+    const updated = existing.completedAt
+      ? existing
+      : await prisma.dataRequest.update({
+          where: { id },
+          data: { completedAt, revokedAt: null },
+          include: { contact: true },
+        });
+
+    invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${updated.projectId}`);
+
+    const definition = updated.dataPointId
+      ? await prisma.datasetFieldDefinition.findUnique({
+          where: { fieldId: updated.dataPointId },
+          select: { label: true, hint: true },
+        })
+      : null;
+
+    return serializeRequestRecord(updated, definition);
+  } finally {
+    endTimer(timer);
   }
-
-  if (existing.revokedAt) {
-    throw new DataRequestServiceError('Cannot complete a revoked request', 409, 'CONFLICT');
-  }
-
-  const updated = existing.completedAt
-    ? existing
-    : await prisma.dataRequest.update({
-        where: { id },
-        data: { completedAt, revokedAt: null },
-        include: { contact: true },
-      });
-
-  invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${updated.projectId}`);
-
-  const definition = updated.dataPointId
-    ? await prisma.datasetFieldDefinition.findUnique({
-        where: { fieldId: updated.dataPointId },
-        select: { label: true, hint: true },
-      })
-    : null;
-
-  return serializeRequestRecord(updated, definition);
 }
 
 export async function revokeRequest(
@@ -347,39 +395,176 @@ export async function revokeRequest(
   revokedAt: Date,
   client?: PrismaClient
 ): Promise<SerializedRequest> {
+  const timer = startTimer(`revokeRequest id=${id}`);
   const prisma = getClient(client);
 
-  const existing = await prisma.dataRequest.findUnique({
-    where: { id },
-    include: { contact: true },
-  });
+  try {
+    const existing = await prisma.dataRequest.findUnique({
+      where: { id },
+      include: { contact: true },
+    });
 
-  if (!existing) {
-    throw new DataRequestServiceError('Data request not found', 404, 'NOT_FOUND');
+    if (!existing) {
+      throw new DataRequestServiceError('Data request not found', 404, 'NOT_FOUND');
+    }
+
+    if (existing.completedAt) {
+      throw new DataRequestServiceError('Cannot revoke a completed request', 409, 'CONFLICT');
+    }
+
+    const updated = existing.revokedAt
+      ? existing
+      : await prisma.dataRequest.update({
+          where: { id },
+          data: { revokedAt, completedAt: null },
+          include: { contact: true },
+        });
+
+    invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${updated.projectId}`);
+
+    const definition = updated.dataPointId
+      ? await prisma.datasetFieldDefinition.findUnique({
+          where: { fieldId: updated.dataPointId },
+          select: { label: true, hint: true },
+        })
+      : null;
+
+    return serializeRequestRecord(updated, definition);
+  } finally {
+    endTimer(timer);
+  }
+}
+
+export async function completeRequestsBulk(
+  ids: string[],
+  completedAt: Date,
+  client?: PrismaClient
+): Promise<BulkStatusResult> {
+  if (ids.length === 0) {
+    return { updated: 0, requests: [] };
   }
 
-  if (existing.completedAt) {
-    throw new DataRequestServiceError('Cannot revoke a completed request', 409, 'CONFLICT');
-  }
+  const timer = startTimer(`completeRequestsBulk count=${ids.length}`);
+  const prisma = getClient(client);
 
-  const updated = existing.revokedAt
-    ? existing
-    : await prisma.dataRequest.update({
-        where: { id },
-        data: { revokedAt, completedAt: null },
-        include: { contact: true },
+  try {
+    const existing = await prisma.dataRequest.findMany({
+      where: { id: { in: ids } },
+      include: { contact: true },
+    });
+
+    if (existing.length !== ids.length) {
+      const foundIds = new Set(existing.map((request) => request.id));
+      const missing = ids.filter((id) => !foundIds.has(id));
+      throw new DataRequestServiceError(
+        `Data request(s) not found: ${missing.join(', ')}`,
+        404,
+        'NOT_FOUND'
+      );
+    }
+
+    const revoked = existing.filter((request) => request.revokedAt);
+    if (revoked.length > 0) {
+      throw new DataRequestServiceError(
+        'Cannot complete revoked request(s)',
+        409,
+        'CONFLICT'
+      );
+    }
+
+    const toUpdate = existing.filter((request) => !request.completedAt);
+
+    if (toUpdate.length > 0) {
+      await prisma.dataRequest.updateMany({
+        where: {
+          id: { in: toUpdate.map((request) => request.id) },
+          revokedAt: null,
+          completedAt: null,
+        },
+        data: { completedAt, revokedAt: null },
       });
+    }
 
-  invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${updated.projectId}`);
+    const projectIds = new Set(existing.map((request) => request.projectId));
+    projectIds.forEach((projectId) => {
+      invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${projectId}`);
+    });
 
-  const definition = updated.dataPointId
-    ? await prisma.datasetFieldDefinition.findUnique({
-        where: { fieldId: updated.dataPointId },
-        select: { label: true, hint: true },
-      })
-    : null;
+    const serialized = await serializeRequests(ids, prisma);
 
-  return serializeRequestRecord(updated, definition);
+    return {
+      updated: toUpdate.length,
+      requests: serialized,
+    };
+  } finally {
+    endTimer(timer);
+  }
+}
+
+export async function revokeRequestsBulk(
+  ids: string[],
+  revokedAt: Date,
+  client?: PrismaClient
+): Promise<BulkStatusResult> {
+  if (ids.length === 0) {
+    return { updated: 0, requests: [] };
+  }
+
+  const timer = startTimer(`revokeRequestsBulk count=${ids.length}`);
+  const prisma = getClient(client);
+
+  try {
+    const existing = await prisma.dataRequest.findMany({
+      where: { id: { in: ids } },
+      include: { contact: true },
+    });
+
+    if (existing.length !== ids.length) {
+      const foundIds = new Set(existing.map((request) => request.id));
+      const missing = ids.filter((id) => !foundIds.has(id));
+      throw new DataRequestServiceError(
+        `Data request(s) not found: ${missing.join(', ')}`,
+        404,
+        'NOT_FOUND'
+      );
+    }
+
+    const completed = existing.filter((request) => request.completedAt);
+    if (completed.length > 0) {
+      throw new DataRequestServiceError(
+        'Cannot revoke completed request(s)',
+        409,
+        'CONFLICT'
+      );
+    }
+
+    const toUpdate = existing.filter((request) => !request.revokedAt);
+
+    if (toUpdate.length > 0) {
+      await prisma.dataRequest.updateMany({
+        where: {
+          id: { in: toUpdate.map((request) => request.id) },
+          completedAt: null,
+          revokedAt: null,
+        },
+        data: { revokedAt, completedAt: null },
+      });
+    }
+
+    const projectIds = new Set(existing.map((request) => request.projectId));
+    projectIds.forEach((projectId) => {
+      invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${projectId}`);
+    });
+
+    const serialized = await serializeRequests(ids, prisma);
+
+    return {
+      updated: toUpdate.length,
+      requests: serialized,
+    };
+  } finally {
+    endTimer(timer);
+  }
 }
 
 export function serializeRequestRecord(
