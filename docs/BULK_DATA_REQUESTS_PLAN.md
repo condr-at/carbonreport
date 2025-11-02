@@ -82,6 +82,7 @@ _Out of scope:_ reminder flows, pagination/virtualisation, report/dataset badge 
    - Align Data Requests page to read `success` + counts from new API.
    - Remove redundant contact refresh if cache ensures fresh data.
    - Route user feedback through the shared `notifications` (Sonner) service instead of inline alerts.
+   - Make `RequestDataModal` confirmation optimistic (close immediately, surface progress via toast promise).
 
 6. **Instrumentation & UI performance**
    - Add lightweight timing logs (`console.time`) around service methods and GET handlers to pinpoint latency.

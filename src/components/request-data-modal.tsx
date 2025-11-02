@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/command';
 import { X, Mail, Loader2, ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { notifications } from '@/components/ui/notifications';
 
 interface RequestDataModalProps {
   projectId: string;
@@ -297,9 +298,15 @@ export function RequestDataModal({
     setApiError(null);
   };
 
-  const handleConfirm = async () => {
-    setIsSubmitting(true);
+  const handleConfirm = () => {
     setApiError(null);
+
+    if (!isValidEmail(contactEmail)) {
+      setApiError('Contact email must be a valid email address');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     const payload = {
       projectId,
@@ -318,13 +325,7 @@ export function RequestDataModal({
       mailtoPreview: preview,
     };
 
-    try {
-      if (!isValidEmail(contactEmail)) {
-        setApiError('Contact email must be a valid email address');
-        setIsSubmitting(false);
-        return;
-      }
-
+    const logRequestPromise = (async () => {
       const response = await fetch('/api/data-requests/bulk', {
         method: 'POST',
         headers: {
@@ -346,14 +347,19 @@ export function RequestDataModal({
       if (onLogged) {
         await onLogged();
       }
-      resetAndClose();
-    } catch (error) {
+    })();
+
+    notifications.promise(logRequestPromise, {
+      loading: 'Logging data request...',
+      success: 'Data request logged successfully.',
+      error: (error) => (error instanceof Error ? error.message : 'Failed to log request'),
+    });
+
+    resetAndClose();
+
+    logRequestPromise.catch((error) => {
       console.error('Failed to log data request', error);
-      const message = error instanceof Error ? error.message : 'Failed to log request';
-      setApiError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   };
 
   return (

@@ -481,7 +481,6 @@ export function DataRequestsPageClient({
 
   const handleModalLogged = useCallback(async () => {
     await Promise.all([refreshRequests(), refreshContacts()]);
-    notifications.success('Data request logged successfully.');
   }, [refreshContacts, refreshRequests]);
 
   return (
