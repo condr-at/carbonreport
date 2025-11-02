@@ -155,7 +155,7 @@ Guidelines:
 
 #### Feedback and Status
 - **Alert** - inline notifications (success/warning/error/info)
-- **Toast** (`sonner`) - transient notifications
+- **Toast** (`sonner`) - transient notifications (trigger via `notifications` helper for consistency)
 - **Progress** - linear progress bars (completion %)
 - **Badge** - status chips (Active, Archived, 67% Complete)
 - **Skeleton** - loading placeholder skeletons

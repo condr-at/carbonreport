@@ -16,6 +16,7 @@ import { RequestDataModal } from '@/components/request-data-modal';
 import type { DataRequestSummary } from '@/components/dataset-table';
 import { Loader2, Mail, RefreshCw, CheckCircle2, XCircle, Inbox } from 'lucide-react';
 import type { CheckedState } from '@radix-ui/react-checkbox';
+import { notifications } from '@/components/ui/notifications';
 
 interface ContactSummary {
   id: string;
@@ -54,11 +55,6 @@ type ModalConfig = {
     email?: string;
     name?: string | null;
   };
-};
-
-type FeedbackMessage = {
-  type: 'success' | 'error';
-  text: string;
 };
 
 const STATUS_OPTIONS: Array<{ value: StatusFilter; label: string }> = [
@@ -122,7 +118,6 @@ export function DataRequestsPageClient({
   const [contactFilter, setContactFilter] = useState<string>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [modalConfig, setModalConfig] = useState<ModalConfig | null>(null);
-  const [message, setMessage] = useState<FeedbackMessage | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkCompleting, setIsBulkCompleting] = useState(false);
   const [isBulkRevoking, setIsBulkRevoking] = useState(false);
@@ -134,15 +129,6 @@ export function DataRequestsPageClient({
   useEffect(() => {
     setContacts(initialContacts.map((contact) => normalizeContact(contact)));
   }, [initialContacts, normalizeContact]);
-
-  useEffect(() => {
-    if (!message) {
-      return;
-    }
-
-    const timer = setTimeout(() => setMessage(null), 5000);
-    return () => clearTimeout(timer);
-  }, [message]);
 
   const resolvedMailtoTemplate = useMemo(() => {
     if (!mailtoTemplate) {
@@ -280,7 +266,7 @@ export function DataRequestsPageClient({
       setSelectedIds(new Set());
     } catch (error) {
       const messageText = error instanceof Error ? error.message : 'Failed to refresh data requests';
-      setMessage({ type: 'error', text: messageText });
+      notifications.error(messageText);
     } finally {
       setIsRefreshing(false);
     }
@@ -317,11 +303,9 @@ export function DataRequestsPageClient({
 
   const handleBulkComplete = useCallback(async () => {
     if (pendingSelected.length === 0) {
-      setMessage({ type: 'error', text: 'Select at least one pending request to mark complete.' });
+      notifications.error('Select at least one pending request to mark complete.');
       return;
     }
-
-    setMessage(null);
 
     const ids = pendingSelected.map((request) => request.id);
     const snapshots = new Map(pendingSelected.map((request) => [request.id, request]));
@@ -368,17 +352,16 @@ export function DataRequestsPageClient({
 
       const updatedCount = typeof payload?.updated === 'number' ? payload.updated : updatedRequests.length;
 
-      setMessage({
-        type: 'success',
-        text: `Marked ${updatedCount} request${updatedCount === 1 ? '' : 's'} as completed.`,
-      });
+      notifications.success(
+        `Marked ${updatedCount} request${updatedCount === 1 ? '' : 's'} as completed.`
+      );
     } catch (error) {
       const messageText = error instanceof Error ? error.message : 'Failed to mark requests complete';
       setRequests((prev) =>
         prev.map((item) => (snapshots.has(item.id) ? snapshots.get(item.id)! : item))
       );
       setSelectedIds(revertSelection);
-      setMessage({ type: 'error', text: messageText });
+      notifications.error(messageText);
     } finally {
       setIsBulkCompleting(false);
     }
@@ -386,11 +369,9 @@ export function DataRequestsPageClient({
 
   const handleBulkRevoke = useCallback(async () => {
     if (pendingSelected.length === 0) {
-      setMessage({ type: 'error', text: 'Select at least one pending request to revoke.' });
+      notifications.error('Select at least one pending request to revoke.');
       return;
     }
-
-    setMessage(null);
 
     const ids = pendingSelected.map((request) => request.id);
     const snapshots = new Map(pendingSelected.map((request) => [request.id, request]));
@@ -437,17 +418,14 @@ export function DataRequestsPageClient({
 
       const updatedCount = typeof payload?.updated === 'number' ? payload.updated : updatedRequests.length;
 
-      setMessage({
-        type: 'success',
-        text: `Revoked ${updatedCount} request${updatedCount === 1 ? '' : 's'}.`,
-      });
+      notifications.success(`Revoked ${updatedCount} request${updatedCount === 1 ? '' : 's'}.`);
     } catch (error) {
       const messageText = error instanceof Error ? error.message : 'Failed to revoke requests';
       setRequests((prev) =>
         prev.map((item) => (snapshots.has(item.id) ? snapshots.get(item.id)! : item))
       );
       setSelectedIds(revertSelection);
-      setMessage({ type: 'error', text: messageText });
+      notifications.error(messageText);
     } finally {
       setIsBulkRevoking(false);
     }
@@ -455,7 +433,7 @@ export function DataRequestsPageClient({
 
   const handleBulkResend = useCallback(() => {
     if (pendingSelected.length === 0) {
-      setMessage({ type: 'error', text: 'Select at least one pending request to resend.' });
+      notifications.error('Select at least one pending request to resend.');
       return;
     }
 
@@ -465,7 +443,7 @@ export function DataRequestsPageClient({
     for (const request of pendingSelected) {
       const fieldId = request.dataPoint?.id ?? '';
       if (!fieldId) {
-        setMessage({ type: 'error', text: 'Selected request is missing field metadata.' });
+        notifications.error('Selected request is missing field metadata.');
         return;
       }
 
@@ -482,10 +460,7 @@ export function DataRequestsPageClient({
     }
 
     if (contactKeys.size > 1) {
-      setMessage({
-        type: 'error',
-        text: 'Select requests that share the same contact before resending.',
-      });
+      notifications.error('Select requests that share the same contact before resending.');
       return;
     }
 
@@ -506,7 +481,7 @@ export function DataRequestsPageClient({
 
   const handleModalLogged = useCallback(async () => {
     await Promise.all([refreshRequests(), refreshContacts()]);
-    setMessage({ type: 'success', text: 'Data request logged successfully.' });
+    notifications.success('Data request logged successfully.');
   }, [refreshContacts, refreshRequests]);
 
   return (
@@ -610,18 +585,6 @@ export function DataRequestsPageClient({
                 Clear selection
               </Button>
             </div>
-          </div>
-        )}
-
-        {message && (
-          <div
-            className={
-              message.type === 'error'
-                ? 'mb-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive'
-                : 'mb-4 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700'
-            }
-          >
-            {message.text}
           </div>
         )}
 
