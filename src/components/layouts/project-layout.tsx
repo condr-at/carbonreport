@@ -27,6 +27,7 @@ interface ProjectLayoutProps {
 const TABS = [
   { id: 'overview', label: 'Overview', href: '' },
   { id: 'dataset', label: 'Dataset', href: '/dataset' },
+  { id: 'requests', label: 'Data Requests', href: '/data-requests' },
   { id: 'reports', label: 'Reports', href: '/reports' },
   { id: 'emails', label: 'Email Templates', href: '/mailto-templates' },
   { id: 'files', label: 'Files', href: '/files' },
@@ -42,6 +43,7 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
   const getActiveTab = () => {
     if (pathname === baseHref) return 'overview';
   if (pathname.includes('/dataset')) return 'dataset';
+  if (pathname.includes('/data-requests')) return 'requests';
   if (pathname.includes('/reports')) return 'reports';
   if (pathname.includes('/mailto-templates')) return 'emails';
   if (pathname.includes('/files')) return 'files';

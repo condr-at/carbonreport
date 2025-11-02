@@ -1,7 +1,7 @@
 # API Reference
 
 **Version**: 0.0.1  
-**Last Updated**: October 12, 2025  
+**Last Updated**: October 30, 2025  
 **Base URL**: `/api`
 
 ---
@@ -370,46 +370,75 @@ POST /api/projects/:id/mailto-templates
 POST /api/data-requests/bulk
 ```
 
-**Purpose**: Logs data requests after user opens mailto link. Creates one `data_requests` record per field, revoking previous assignments when a field is reassigned to a new contact.
+Logs outgoing email requests and manages active assignments per field.
 
 **Request Body**:
 ```json
 {
   "projectId": "uuid",
-  "contactId": "uuid",
-  "fieldIds": ["product_name", "total_cfp_co2e"],
-  "deadline": "2025-11-15T00:00:00Z"
+  "contact": {
+    "id": "uuid",
+    "email": "alex@example.com",
+    "name": "Alex Johnson"
+  },
+  "deadline": "2025-11-15",
+  "fields": [
+    {
+      "dataPointId": "material_input_name",
+      "itemId": "1",
+      "fieldLabel": "Material name"
+    },
+    {
+      "dataPointId": "material_input_amount",
+      "itemId": "1"
+    }
+  ],
+  "mailtoPreview": {
+    "subject": "Carbon data request",
+    "body": "Hi {{contact_name}}, ..."
+  }
 }
 ```
 
 **Response**:
 ```json
 {
-  "success": true,
-  "created": 2,
-  "revoked": 1,
   "requests": [
     {
       "id": "uuid",
-      "dataPointId": "product_name",
-      "contactId": "uuid",
-      "requestedAt": "2025-10-28T10:00:00Z",
-      "deadline": "2025-11-15T00:00:00Z"
+      "status": "pending",
+      "requestedAt": "2025-10-29T21:22:51.276Z",
+      "completedAt": null,
+      "revokedAt": null,
+      "deadline": "2025-11-15T00:00:00.000Z",
+      "contact": {
+        "id": "uuid",
+        "name": "Alex Johnson",
+        "email": "alex@example.com",
+        "position": null
+      },
+      "dataPoint": {
+        "id": "material_input_name",
+        "itemId": "1",
+        "label": "Material name",
+        "hint": "Source of data for the material"
+      }
     }
   ]
 }
 ```
 
 **Behavior**:
-- For each `fieldId`: check if an active request exists (`revoked_at IS NULL`)
-- If found and `contactId` differs: set `revoked_at = NOW()` on old request
-- Insert new request with `requested_at = NOW()`
-- `deadline` is optional; used for overdue highlighting
+- Each field generates exactly one active request; previous assignments are revoked automatically (`revoked_at = NOW()`).
+- Contact is resolved by ID (if provided) or looked up/created by email.
+- Deadline accepts ISO date strings; plain dates are normalized to midnight UTC.
+- `mailtoPreview` payload is required but currently ignored server-side (reserved for future logging).
 
 **Validation**:
-- `projectId`, `contactId`: Valid UUIDs, must exist
-- `fieldIds`: Array of strings, min 1 item
-- `deadline`: ISO 8601 timestamp (optional)
+- `projectId`: Required UUID belonging to the authenticated user (dev-mode auto user).
+- `contact`: Email required; `id` optional and must belong to project owner if supplied.
+- `fields`: Non-empty array. Each entry needs `dataPointId`; `fieldLabel`, `itemId`, `group` optional.
+- `deadline`: Optional ISO-8601 date or date-time string.
 
 ---
 
@@ -422,7 +451,7 @@ GET /api/projects/:id/data-requests?status=active&contact=uuid
 **Query Parameters**:
 - `status`: `active` (default) | `closed` | `overdue` | `all`
 - `contact`: Filter by contact UUID (optional)
-- `sort`: `requested_at` | `deadline` | `field_id` (default: `requested_at DESC`)
+- `sort`: `requested_at` | `deadline` | `field_id` (default `requested_at DESC`)
 
 **Response**:
 ```json
@@ -430,26 +459,33 @@ GET /api/projects/:id/data-requests?status=active&contact=uuid
   "requests": [
     {
       "id": "uuid",
-      "dataPointId": "product_name",
+      "status": "pending",
+      "requestedAt": "2025-10-29T21:22:51.276Z",
+      "completedAt": null,
+      "revokedAt": null,
+      "deadline": null,
       "contact": {
         "id": "uuid",
-        "name": "Ivan Petrov",
-        "email": "ivan@company.com"
+        "name": "Alex Johnson",
+        "email": "alex@example.com",
+        "position": null
       },
-      "requestedAt": "2025-10-28T10:00:00Z",
-      "deadline": "2025-11-15T00:00:00Z",
-      "revokedAt": null,
-      "completedAt": null,
-      "status": "active"
+      "dataPoint": {
+        "id": "material_input_name",
+        "itemId": "1",
+        "label": "Material name",
+        "hint": "Source of data for the material"
+      }
     }
   ]
 }
 ```
 
 **Status Logic**:
-- `active`: `revoked_at IS NULL AND completed_at IS NULL`
-- `closed`: `revoked_at IS NOT NULL OR completed_at IS NOT NULL`
-- `overdue`: `active` + `deadline < NOW()`
+- `pending`: Neither `completed_at` nor `revoked_at` set.
+- `completed`: `completed_at` present.
+- `revoked`: `revoked_at` present.
+- `overdue` filter overlays `pending` requests whose deadline has passed.
 
 ---
 
@@ -459,15 +495,90 @@ GET /api/projects/:id/data-requests?status=active&contact=uuid
 POST /api/data-requests/:id/complete
 ```
 
-**Response**:
+**Request Body** (optional):
 ```json
 {
-  "success": true,
-  "completedAt": "2025-10-28T14:30:00Z"
+  "completedAt": "2025-10-30T09:13:22.029Z"
 }
 ```
 
-**Behavior**: Sets `completed_at = NOW()`
+**Response**:
+```json
+{
+  "request": {
+    "id": "uuid",
+    "status": "completed",
+    "requestedAt": "2025-10-29T21:22:51.276Z",
+    "completedAt": "2025-10-30T09:13:22.029Z",
+    "revokedAt": null,
+    "deadline": null,
+    "contact": {
+      "id": "uuid",
+      "name": "Alex Johnson",
+      "email": "alex@example.com",
+      "position": null
+    },
+    "dataPoint": {
+      "id": "material_input_name",
+      "itemId": "1",
+      "label": "Material name",
+      "hint": "Source of data for the material"
+    }
+  }
+}
+```
+
+**Behavior**:
+- Defaults `completedAt` to the current timestamp if omitted or blank.
+- Idempotent: subsequent calls return the same payload without mutating timestamps.
+- Returns `409 Conflict` when attempting to complete a revoked request.
+
+---
+
+### Revoke Request
+
+```http
+POST /api/data-requests/:id/revoke
+```
+
+**Request Body** (optional):
+```json
+{
+  "revokedAt": "2025-10-30T09:15:00Z"
+}
+```
+
+**Response**:
+```json
+{
+  "request": {
+    "id": "uuid",
+    "status": "revoked",
+    "requestedAt": "2025-10-29T21:22:51.276Z",
+    "completedAt": null,
+    "revokedAt": "2025-10-30T09:15:00.000Z",
+    "deadline": null,
+    "contact": {
+      "id": "uuid",
+      "name": "Alex Johnson",
+      "email": "alex@example.com",
+      "position": null
+    },
+    "dataPoint": {
+      "id": "material_input_name",
+      "itemId": "1",
+      "label": "Material name",
+      "hint": "Source of data for the material"
+    }
+  }
+}
+```
+
+**Behavior**:
+- Defaults `revokedAt` to the current timestamp if omitted or blank.
+- Clears any accidental completion timestamp (`completed_at` set to null).
+- Idempotent: re-running returns the original data without changing timestamps.
+- Returns `409 Conflict` when attempting to revoke a completed request.
 
 ---
 
@@ -591,6 +702,10 @@ const template = getReportTemplate('ISO14067')
 | `GET /api/projects/:id/mailto-templates` | ✅ Complete | Returns JSONB |
 | `PUT /api/projects/:id/mailto-templates/:fieldId` | ✅ Complete | Zod validation |
 | `POST /api/projects/:id/mailto-templates` | ✅ Complete | Resets to defaults |
+| `GET /api/projects/:id/data-requests` | ✅ Complete | Filters, sorting, status flags |
+| `POST /api/data-requests/bulk` | ✅ Complete | Creates/reassigns data requests |
+| `POST /api/data-requests/:id/complete` | ✅ Complete | Idempotent completion handler |
+| `POST /api/data-requests/:id/revoke` | ✅ Complete | Idempotent revoke handler |
 
 **Not Implemented (Optional)**:
 - `POST /api/projects/:id/duplicate` — Clone project
@@ -659,6 +774,6 @@ curl -X PUT http://localhost:3000/api/projects/:id/dataset \
 
 ---
 
-**Last Updated**: October 18, 2025  
+**Last Updated**: October 30, 2025  
 **Maintained By**: Development Team  
 **Questions**: Refer to `Requirements v0.0.1.md` or `IMPLEMENTATION_CHECKLIST.md`

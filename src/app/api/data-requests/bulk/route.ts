@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import {
+  DataRequestServiceError,
+  executeBulk,
+  prepareBulk,
+  serializeRequests,
+} from '@/lib/data-requests/service';
 
 const fieldSchema = z.object({
   dataPointId: z.string().min(1, 'fieldId is required'),
@@ -42,12 +48,6 @@ function parseDeadline(deadline: ParsedRequest['deadline']) {
   return parsed;
 }
 
-function computeStatus(request: { revokedAt: Date | null; completedAt: Date | null }) {
-  if (request.revokedAt) return 'revoked';
-  if (request.completedAt) return 'completed';
-  return 'pending';
-}
-
 export async function POST(request: Request) {
   try {
     const rawPayload = await request.json();
@@ -65,96 +65,30 @@ export async function POST(request: Request) {
     const deadlineDate = parseDeadline(payload.deadline);
     const now = new Date();
 
-    const contactRecord = await resolveContact(payload.contact, project.userId);
+    const plan = await prepareBulk(
+      {
+        projectId: payload.projectId,
+        userId: project.userId,
+        contact: payload.contact,
+        deadline: deadlineDate,
+        fields: payload.fields,
+        now,
+      },
+      prisma
+    );
 
-    const createdRequests = await prisma.$transaction(async (tx) => {
-      const results = [] as Array<{
-        id: string;
-        dataPointId: string;
-        itemId: string | null;
-        fieldLabel: string | null;
-        requestedAt: Date;
-        revokedAt: Date | null;
-        completedAt: Date | null;
-        deadline: Date | null;
-      }>;
+    const result = await executeBulk(plan, prisma);
+    const serialized = await serializeRequests(result.createdIds, prisma);
 
-      for (const field of payload.fields) {
-        await tx.dataRequest.updateMany({
-          where: {
-            projectId: payload.projectId,
-            dataPointId: field.dataPointId,
-            itemId: field.itemId ?? null,
-            revokedAt: null,
-            completedAt: null,
-            contactId: { not: contactRecord.id },
-          },
-          data: { revokedAt: now },
-        });
-
-        const created = await tx.dataRequest.create({
-          data: {
-            projectId: payload.projectId,
-            userId: project.userId,
-            contactId: contactRecord.id,
-            dataPointId: field.dataPointId,
-            itemId: field.itemId ?? null,
-            fieldLabel: field.fieldLabel ?? null,
-            deadline: deadlineDate,
-          },
-          select: {
-            id: true,
-            dataPointId: true,
-            itemId: true,
-            fieldLabel: true,
-            requestedAt: true,
-            revokedAt: true,
-            completedAt: true,
-            deadline: true,
-          },
-        });
-
-        results.push(created);
-      }
-
-      return results;
-    });
-
-    const fieldIds = Array.from(new Set(createdRequests.map((r) => r.dataPointId)));
-    const fieldDefinitions = await prisma.datasetFieldDefinition.findMany({
-      where: { fieldId: { in: fieldIds } },
-      select: { fieldId: true, label: true, hint: true },
-    });
-
-    const fieldMeta = new Map(fieldDefinitions.map((def) => [def.fieldId, def]));
-
-    const responsePayload = {
-      requests: createdRequests.map((request) => {
-        const definition = fieldMeta.get(request.dataPointId);
-        return {
-          id: request.id,
-          status: computeStatus(request),
-          requestedAt: request.requestedAt.toISOString(),
-          completedAt: request.completedAt?.toISOString() ?? null,
-          revokedAt: request.revokedAt?.toISOString() ?? null,
-          deadline: request.deadline?.toISOString() ?? null,
-          contact: {
-            id: contactRecord.id,
-            name: contactRecord.name,
-            email: contactRecord.email,
-            position: contactRecord.position,
-          },
-          dataPoint: {
-            id: request.dataPointId,
-            itemId: request.itemId,
-            label: request.fieldLabel ?? definition?.label ?? null,
-            hint: definition?.hint ?? null,
-          },
-        };
-      }),
-    };
-
-    return NextResponse.json(responsePayload, { status: 201 });
+    return NextResponse.json(
+      {
+        success: true,
+        created: result.createdCount,
+        revoked: result.revokedCount,
+        requests: serialized,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Failed to log data requests', error);
 
@@ -168,6 +102,16 @@ export async function POST(request: Request) {
       );
     }
 
+    if (error instanceof DataRequestServiceError) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          code: error.code,
+        },
+        { status: error.status }
+      );
+    }
+
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Unexpected error while logging data request',
@@ -175,38 +119,4 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
-}
-
-async function resolveContact(contact: ParsedRequest['contact'], userId: string) {
-  if (contact.id) {
-    const existing = await prisma.contact.findUnique({ where: { id: contact.id } });
-
-    if (!existing || existing.userId !== userId) {
-      throw new Error('Contact not found for current project');
-    }
-
-    return existing;
-  }
-
-  const existingByEmail = await prisma.contact.findFirst({
-    where: {
-      userId,
-      email: contact.email,
-    },
-  });
-
-  if (existingByEmail) {
-    return existingByEmail;
-  }
-
-  const name = contact.name?.trim();
-
-  return prisma.contact.create({
-    data: {
-      userId,
-      email: contact.email,
-      name: name && name.length > 0 ? name : contact.email,
-      position: null,
-    },
-  });
 }

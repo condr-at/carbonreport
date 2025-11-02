@@ -90,76 +90,33 @@ const user = await prisma.user.upsert({
 
 ## 🟢 Low Priority (Nice to Have)
 
-### 4. Request Data Modal — Single-Field Limitation
+### 4. Request Data Modal — Multi-Field Support
 
-**Location**: `src/components/request-data-modal.tsx`
+**Status**: ✅ Completed (Oct 2025)
 
-**Current State**:
-- Modal accepts only one `fieldId` and `itemId`
-- Generates `{{field_list}}` with a single bullet point
-- Cannot handle bulk/multi-field data requests
-
-**Impact**:
-- Users must open modal separately for each field
-- No support for "Request all materials data" or similar grouped requests
-
-**Action Required**:
-1. Extend modal props to accept `fieldIds: string[]` and `itemIds: (string | null)[]`
-2. Update `{{field_list}}` generation to iterate over selected fields
-3. Add multi-select UI to DatasetTable (checkboxes + bulk action bar)
-
-**Related**: IMPLEMENTATION_CHECKLIST.md § Data Requests (multi-select flow)
-
-**Estimated Effort**: 3-4 hours
+**Details**:
+- Modal accepts multi-field payloads, populates contact info, and logs via bulk endpoint.
+- Edge cases and UX rules captured in `docs/BULK_DATA_REQUESTS_PLAN.md`.
 
 ---
 
-### 5. DatasetTable — No Multi-Select Support
+### 5. DatasetTable — Multi-Select Support
 
-**Location**: `src/components/dataset-table.tsx`
+**Status**: ✅ Completed (Oct 2025)
 
-**Current State**:
-- Table renders rows with inline actions only
-- No checkboxes or selection state management
-- "Request Data" button opens modal for single field only
-
-**Impact**:
-- Cannot select multiple fields for bulk mailto generation
-- Poor UX for requesting related data (e.g., all material inputs at once)
-
-**Action Required**:
-1. Add checkbox column with `react-table` row selection
-2. Show bulk action bar when selections exist (e.g., "Request Data for 5 fields")
-3. Pass selected field array to RequestDataModal
-
-**Related**: IMPLEMENTATION_CHECKLIST.md § Data Requests (multi-select flow)
-
-**Estimated Effort**: 2-3 hours
+**Details**:
+- Checkbox column + bulk toolbar in place; integrates with request modal multi-field flow.
+- Remaining enhancements (badges, reminders) tracked in `docs/NEXT_STEPS.md`.
 
 ---
 
-### 6. Data Requests Logging — Not Implemented
+### 6. Data Requests Logging — Service Layer
 
-**Location**: `src/components/request-data-modal.tsx` (after mailto link opened)
+**Status**: ✅ Completed (Nov 2025)
 
-**Current State**:
-- Modal generates mailto link and opens email client
-- No API call to log the request in `data_requests` table
-- No tracking of which fields were requested from which contacts
-
-**Impact**:
-- Cannot display "Last requested from [Contact]" badges in tables
-- No data-request history for contacts or projects
-- Cannot implement reminder/follow-up flows
-
-**Action Required**:
-1. Implement `POST /api/data-requests/bulk` endpoint
-2. Call API after `window.location.href = mailtoLink` to log requests
-3. Handle revoke logic (set `revoked_at` on old requests when contact changes)
-
-**Related**: API_REFERENCE.md § Data Requests, IMPLEMENTATION_CHECKLIST.md
-
-**Estimated Effort**: 2-3 hours
+**Details**:
+- Bulk endpoint, complete, and revoke routes now use shared service with cache invalidation.
+- Remaining work: reminders + dataset/report badge surfacing (see `docs/NEXT_STEPS.md`).
 
 ---
 

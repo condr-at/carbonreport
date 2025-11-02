@@ -50,6 +50,11 @@ interface RequestDataModalProps {
     email: string;
     position?: string | null;
   }>;
+  initialContact?: {
+    id?: string | null;
+    email?: string;
+    name?: string | null;
+  };
 }
 
 export function RequestDataModal({
@@ -67,6 +72,7 @@ export function RequestDataModal({
   onClose,
   onLogged,
   contacts = [],
+  initialContact,
 }: RequestDataModalProps) {
   const [contactEmail, setContactEmail] = useState('');
   const [contactName, setContactName] = useState('');
@@ -124,6 +130,37 @@ export function RequestDataModal({
     setContactEmail(selectedContact.email);
     setContactName(selectedContact.name);
   }, [selectedContact]);
+
+  useEffect(() => {
+    if (!initialContact) {
+      setSelectedContactId(null);
+      setContactEmail('');
+      setContactName('');
+    }
+  }, [initialContact]);
+
+  useEffect(() => {
+    if (!initialContact) {
+      return;
+    }
+
+    if (initialContact.id) {
+      const match = contacts.find((candidate) => candidate.id === initialContact.id);
+      if (match) {
+        setSelectedContactId(match.id);
+        setContactEmail(match.email);
+        setContactName(match.name);
+        return;
+      }
+    }
+
+    const normalizedEmail = (initialContact.email ?? '').trim();
+    const normalizedName = (initialContact.name ?? '').trim();
+
+    setSelectedContactId(null);
+    setContactEmail(normalizedEmail);
+    setContactName(normalizedName || normalizedEmail);
+  }, [initialContact, contacts]);
 
   const template = useMemo(() => {
     const fallbackBody = [

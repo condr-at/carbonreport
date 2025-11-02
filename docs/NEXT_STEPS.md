@@ -1,7 +1,7 @@
 # Next Steps: Data Request Features Implementation
 
-**Status**: Ready for Phase 1  
-**Last Updated**: 2025-10-28
+**Status**: Phase 7 in Progress  
+**Last Updated**: 2025-10-31
 
 ## Overview
 
@@ -14,88 +14,46 @@ This document outlines the implementation plan for completing the data request f
 
 ---
 
-## Phase 1: Confirmation Dialog (30 min) ✅ READY
+## ✅ Phase 1: Confirmation Dialog (complete)
 
-**Goal**: Add post-mailto confirmation dialog to log data requests
+**Outcome**: Post-mailto confirmation flow ships in `RequestDataModal` and calls the real bulk endpoint.
 
 **Files to modify**:
 - `src/components/request-data-modal.tsx`
 
-**Implementation**:
-1. Add state for showing confirmation dialog after mailto link opens
-2. Create dialog with question: "Was the email sent?"
-3. Add three buttons:
-   - "Yes, log request" → Call temporary `POST /api/data-requests/bulk` endpoint, close modal, show success toast
-   - "No, cancel" → Close modal
-   - "< Back to edit" → Return to form
-4. Add a lightweight API route (same path as Phase 6) that validates payload shape and responds with 200 without touching the database
-
-**Testing**: Click mailto → Open form → Click "Request Data" → See confirmation → Test all three buttons (mock endpoint logs payload)
-
-**Acceptance Criteria**:
-- Dialog appears immediately after mailto link opens
-- "Yes" button triggers API call (can be mock endpoint initially)
-- "No" button closes modal cleanly
-- "Back" button returns to editable form state
+**Notes**:
+- Confirmation dialog is live with "Yes/No/Back" actions.
+- "Yes" now hits the production `/api/data-requests/bulk` endpoint (see Phase 6).
+- Modal resets cleanly after logging requests.
 
 ---
 
-## Phase 2: Mock Data Requests API (20 min)
+## ✅ Phase 2: Data Requests API (complete)
 
-**Goal**: Create GET endpoint returning fake request data
+**Outcome**: `/api/projects/[id]/data-requests` returns real Prisma data with status filters and sorting.
 
-**Files to create**:
-- `src/app/api/projects/[id]/data-requests/route.ts`
-
-**Implementation**:
-1. Create basic GET handler (re-use status derivation logic from Phase 3)
-2. Return hardcoded array of 2-3 sample requests with different statuses
-3. Include contact info, field info, timestamps
-
-**Testing**: Open browser DevTools → Navigate to dataset page → Check Network tab for API call
-
-**Sample Response**:
-```json
-[
-  {
-    "id": "123",
-    "dataPointId": "dp-1",
-    "contactId": "contact-1",
-    "status": "pending",
-    "requestedAt": "2025-10-20T10:00:00Z",
-    "contact": {"name": "John Doe", "email": "john@example.com"},
-    "dataPoint": {"label": "Total Emissions"}
-  }
-]
-```
+**Notes**:
+- GET handler ships with Prisma integration, contact joins, status/ordering logic.
+- Supports `status`, `contact`, and `sort` query params.
 
 ---
 
-## Phase 3: Request Badges in Dataset Table (45 min)
+## ✅ Phase 3: Dataset Table Integration (complete)
 
-**Goal**: Show visual indicators for requested data points
+**Outcome**: Dataset table consumes live request summaries (count/status/contacts) and exposes bulk actions.
 
-**Files to modify**:
 - `src/components/dataset-table.tsx`
 - `src/app/projects/[id]/dataset/dataset-page-client.tsx`
 
-**Implementation**:
-1. Fetch data requests in dataset page
-2. Pass requests array to DatasetTable
-3. Add badge component to each row: "Requested from [Contact Name]"
-4. Color code by computed status: yellow (pending), green (completed)
-5. Add popover on badge click with actions: "Resend", "Change Contact", "Mark Complete"
-
-**Testing**: 
-- Mock API returns request for field → Badge appears
-- Click badge → Popover shows
-- Test each action button
+**Notes**:
+- Row-level selection, request summaries, and modal hand-off are wired.
+- Dedicated badge UI is deferred; summaries live in the table for now.
 
 ---
 
-## Phase 4: Contact Selector Dropdown (30 min)
+## ✅ Phase 4: Contact Selector Dropdown (complete)
 
-**Goal**: Replace radio group with searchable dropdown
+**Outcome**: Request modal uses a searchable combobox with automatic email/name fill.
 
 **Files to modify**:
 - `src/components/request-data-modal.tsx`
@@ -110,9 +68,9 @@ This document outlines the implementation plan for completing the data request f
 
 ---
 
-## Phase 5: Multi-field Support with Checkboxes (1 hour)
+## ✅ Phase 5: Multi-field Support (complete)
 
-**Goal**: Allow requesting multiple fields at once
+**Outcome**: Checkbox selection and modal now handle multi-field requests end-to-end.
 
 **Files to modify**:
 - `src/components/dataset-table.tsx` (add checkboxes to rows)
@@ -132,56 +90,50 @@ This document outlines the implementation plan for completing the data request f
 
 ---
 
-## Phase 6: Real API Implementation (1.5 hours)
+## ✅ Phase 6: Real API Implementation (complete)
 
-**Goal**: Replace mock with Prisma-based CRUD operations
+**Goal**: Finish Prisma-backed CRUD flows and management endpoints
 
 **Files to modify**:
 - `src/app/api/projects/[id]/data-requests/route.ts` (enhance GET)
 - `src/app/api/data-requests/bulk/route.ts` (new POST endpoint)
 - `src/app/api/data-requests/[id]/complete/route.ts` (new POST endpoint)
+- `src/app/api/data-requests/[id]/revoke/route.ts` (new POST endpoint)
 
 **Implementation**:
-1. Create POST `/api/data-requests/bulk` handler:
-   - Validate input (project, contact, fields array)
-   - Check for existing active requests (same project + data point, regardless of contact) → Set `revoked_at` on older records
-   - Create new DataRequest records
-   - Return created records with relations
+✅ Bulk creation + automatic revocation shipped.  
+✅ GET endpoint upgraded with filters/sorting.  
+✅ `POST /api/data-requests/[id]/complete` marks requests done, validates optional timestamp, and returns serialized payload.  
+✅ `POST /api/data-requests/[id]/revoke` records manual revocations with idempotent safeguards.
 
-2. Enhance GET `/api/projects/[id]/data-requests`:
-   - Query Prisma with filters (status, field, contact)
-   - Include contact + dataPoint relations
-   - Order by requestedAt DESC
-
-3. Create POST `/api/data-requests/[id]/complete`:
-   - Update `completedAt` timestamp
-   - Validate ownership
-
-**Testing**:
-- Send real request → Check database
-- Revoke test: Request field A from Contact 1 → Request field A from Contact 2 → Verify Contact 1 request has `revoked_at`
-- Complete request → Verify timestamp + badge updates
+**Testing targets**:
+- Send bulk request → verify DB writes and automatic revocation.
+- Manual revoke endpoint → request transitions to `revoked`.
+- Manual complete endpoint → request transitions to `completed`.
 
 ---
 
-## Phase 7: Dedicated Data Requests Page (1 hour)
+## 🚧 Phase 7: Dedicated Data Requests Page (in progress)
 
 **Goal**: Centralized view of all requests
 
-**Files to create**:
-- `src/app/projects/[id]/data-requests/page.tsx`
-- `src/app/projects/[id]/data-requests/data-requests-client.tsx`
+**Initial delivery (shipped)**:
+- New route at `app/projects/[id]/data-requests/page.tsx` with client component wiring.
+- Live table showing Field, Contact, Status, Requested/Completed/Revoked timestamps, and deadlines.
+- Status pills + filters (All/Pending/Completed/Revoked) and contact dropdown filtering.
+- Bulk action toolbar replacing row buttons: resend (opens RequestDataModal with contact guardrails), mark complete, revoke, and clear selection.
+- Shared service layer + caching (`src/lib/data-requests/service.ts`, `src/lib/cache.ts`) backing all endpoints.
+- Empty-state messaging and manual refresh control.
 
-**Implementation**:
-1. Create table showing all requests with columns: Field, Contact, Status, Requested Date
-2. Add filters: Status (All/Pending/Completed), Contact (dropdown)
-3. Add bulk actions: "Mark Selected Complete", "Resend All Pending"
-4. Add link in project sidebar
+**Still outstanding**:
+- Column sorting (requested_at/deadline/field).
+- Surface active badge summaries back into dataset/report tables once reminders UI exists.
 
-**Testing**:
-- Navigate to page → See all requests
-- Apply filters → Verify results
-- Select multiple → Mark complete → Verify updates
+**Testing ideas**:
+- Navigate to `/projects/:id/data-requests` → verify summaries load.
+- Filter by status/contact → ensure rows adjust without reload.
+- Trigger bulk complete/revoke → observe badge + timestamp updates.
+- Resend via modal → confirm `/api/data-requests/bulk` logs new entry.
 
 ---
 

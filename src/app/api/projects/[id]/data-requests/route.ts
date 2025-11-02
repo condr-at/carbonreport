@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import prisma from '@/lib/db';
+import { computeStatus } from '@/lib/data-requests/service';
+import { getCacheValue, setCacheValue } from '@/lib/cache';
 
 const paramsSchema = z.object({
   params: z.object({
@@ -13,33 +15,28 @@ const paramsSchema = z.object({
 const statusParamSchema = z.enum(['active', 'closed', 'overdue', 'all']);
 const sortParamSchema = z.enum(['requested_at', 'deadline', 'field_id']);
 
-function computeStatus(request: { revokedAt: Date | null; completedAt: Date | null }) {
-  if (request.revokedAt) {
-    return 'revoked';
-  }
-
-  if (request.completedAt) {
-    return 'completed';
-  }
-
-  return 'pending';
-}
-
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const paramsInput = await context.params;
     const { params } = paramsSchema.parse({ params: paramsInput });
 
     const url = new URL(request.url);
-  const statusParamInput = (url.searchParams.get('status') ?? 'active').toLowerCase();
-  const sortParamInput = (url.searchParams.get('sort') ?? 'requested_at').toLowerCase();
+    const statusParamInput = (url.searchParams.get('status') ?? 'active').toLowerCase();
+    const sortParamInput = (url.searchParams.get('sort') ?? 'requested_at').toLowerCase();
 
-  const parsedStatus = statusParamSchema.safeParse(statusParamInput);
-  const statusParam = parsedStatus.success ? parsedStatus.data : 'active';
+    const parsedStatus = statusParamSchema.safeParse(statusParamInput);
+    const statusParam = parsedStatus.success ? parsedStatus.data : 'active';
 
-  const parsedSort = sortParamSchema.safeParse(sortParamInput);
-  const sortParam = parsedSort.success ? parsedSort.data : 'requested_at';
+    const parsedSort = sortParamSchema.safeParse(sortParamInput);
+    const sortParam = parsedSort.success ? parsedSort.data : 'requested_at';
     const contactFilter = url.searchParams.get('contact');
+
+    const cacheKey = `project:data-requests:${params.id}:${statusParam}:${contactFilter ?? 'all'}:${sortParam}`;
+    const cached = getCacheValue<{ requests: unknown[] }>(cacheKey);
+
+    if (cached) {
+      return NextResponse.json(cached, { status: 200 });
+    }
 
     const where: Prisma.DataRequestWhereInput = {
       projectId: params.id,
@@ -130,7 +127,9 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       }),
     };
 
-    return NextResponse.json(responsePayload, { status: 200 });
+  setCacheValue(cacheKey, responsePayload);
+
+  return NextResponse.json(responsePayload, { status: 200 });
   } catch (error) {
     console.error('Failed to fetch data requests', error);
 

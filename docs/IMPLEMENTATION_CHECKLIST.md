@@ -152,11 +152,11 @@ Use this checklist to track implementation of the architecture updates.
       router.refresh()
     }
     ```
-   - [ ] Show optimistic UI updates
-      - [ ] Use DB-backed field IDs (snake_case) from `/api/dataset-fields`
-      - [ ] Add checkboxes to select multiple rows and enable the bulk "Request Data" action
-      - [ ] Show a badge "Request sent · [Contact]" linking to request history and provide an inline "Change contact" control
-      - [ ] On modal confirmation call `POST /api/data-requests/bulk` and update local contact state (including badge contact name)
+   - [x] Show optimistic UI updates (simplified)
+      - [x] Use DB-backed field IDs (snake_case) from `/api/dataset-fields`
+      - [x] Add checkboxes to select multiple rows and enable the bulk "Request Data" action
+      - [x] Show a badge "Request sent · [Contact]" linking to request history and provide an inline "Change contact" control *(represented via inline summaries; dedicated badge UI deferred)*
+      - [x] On modal confirmation call `POST /api/data-requests/bulk` and update local contact state (including badge contact name)
 
 #### Report Editor
 
@@ -190,12 +190,12 @@ Use this checklist to track implementation of the architecture updates.
    - [x] Read the template from `Project.mailtoTemplate`
    - [x] Inject placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{requester_signature}}` (auto from project owner + project name)
    - [x] Show an email preview (subject/body) with sample bullet list
-   - [ ] **Extend to multi-select**: Accept `fieldIds: string[]` and `itemIds: (string | null)[]`
-   - [ ] **Expand `{{field_list}}` generation**: Iterate over selected fields, format as real bullet list
-   - [ ] **API integration**: After opening mailto link call `POST /api/data-requests/bulk` to log/update requests
-   - [ ] **Contact auto-fill**: Wire to Contacts store so email/name populate automatically when selecting existing contact
-   - [ ] **Inline contact creation**: Support adding new contact without leaving modal
-   - [ ] **Deadline capture**: Add optional deadline field and pass to API
+   - [x] **Extend to multi-select**: Accept `fieldIds: string[]` and `itemIds: (string | null)[]`
+   - [x] **Expand `{{field_list}}` generation**: Iterate over selected fields, format as real bullet list
+   - [x] **API integration**: After opening mailto link call `POST /api/data-requests/bulk` to log/update requests
+   - [x] **Contact auto-fill**: Wire to Contacts store so email/name populate automatically when selecting existing contact
+   - [x] **Inline contact creation**: Support adding new contact without leaving modal
+   - [x] **Deadline capture**: Add optional deadline field and pass to API
 
 #### Mailto Template Editor (Settings)
 
@@ -208,41 +208,48 @@ Use this checklist to track implementation of the architecture updates.
 
 #### DatasetTable — Multi-Select Support
 
-- [ ] `components/dataset-table.tsx`
-   - [ ] Add checkbox column with `react-table` row selection API
-   - [ ] Manage selection state (`selectedRows: Set<string>`)
-   - [ ] Show bulk action bar when selections exist: "Request Data for X fields"
-   - [ ] Pass `fieldIds` array to `RequestDataModal` when bulk button clicked
-   - [ ] Clear selection after successful bulk action
+- [x] `components/dataset-table.tsx`
+   - [x] Add checkbox column with `react-table` row selection API
+   - [x] Manage selection state (`selectedRows: Set<string>`)
+   - [x] Show bulk action bar when selections exist: "Request Data for X fields"
+   - [x] Pass `fieldIds` array to `RequestDataModal` when bulk button clicked
+   - [x] Clear selection after successful bulk action
 
 #### Data Requests API
 
-- [ ] `app/api/data-requests/bulk/route.ts` — `POST /api/data-requests/bulk`
-   - [ ] Accept `{ projectId, contactId, fieldIds[], deadline? }`
-   - [ ] For each `fieldId`: check if active request exists (`revoked_at IS NULL`)
-   - [ ] If found and `contactId` differs: set `revoked_at = NOW()` on old request
-   - [ ] Insert new request(s) with `requested_at = NOW()`
-   - [ ] Return `{ success, created, revoked, requests[] }`
-   - [ ] Validate `projectId`, `contactId` exist in DB
-   - [ ] Validate `fieldIds` non-empty array
+- [x] `src/lib/data-requests/service.ts`
+   - [x] Consolidate contact resolution, revocation, creation, and serialization helpers.
+   - [x] Expose `prepareBulk`, `executeBulk`, `completeRequest`, `revokeRequest` with Prisma injection support.
+   - [x] Invalidate cache prefixes (`project:data-requests:*`, `project:contacts:*`) after mutations.
 
-- [ ] `app/api/projects/[id]/data-requests/route.ts` — `GET /api/projects/:id/data-requests`
-   - [ ] Query params: `status=active|closed|overdue|all`, `contact=uuid`, `sort=requested_at|deadline|field_id`
-   - [ ] Return list with contact info, field labels, timestamps
-   - [ ] Implement status logic (active, closed, overdue)
+- [x] `src/lib/cache.ts`
+   - [x] Simple TTL cache utility with prefix invalidation for server-side fetches.
 
-- [ ] `app/api/data-requests/[id]/complete/route.ts` — `POST /api/data-requests/:id/complete`
-   - [ ] Set `completed_at = NOW()`
-   - [ ] Return success response
+- [x] `app/api/data-requests/bulk/route.ts` — `POST /api/data-requests/bulk`
+   - [x] Accept `{ projectId, contact, fields[], deadline? }` payload (Zod validated).
+   - [x] Use service to batch revoke/create with a single transaction.
+   - [x] Return `{ success, created, revoked, requests[] }` payload.
 
-#### Data Requests Page
+- [x] `app/api/projects/[id]/data-requests/route.ts` — `GET /api/projects/:id/data-requests`
+   - [x] Query params: `status=active|closed|overdue|all`, `contact=uuid`, `sort=requested_at|deadline|field_id`.
+   - [x] Add cache layer (`project:data-requests` key) with 30s TTL.
 
-- [ ] `app/projects/[id]/data-requests/page.tsx`
-   - [ ] Table with columns: field (label + item), contact, requested_at, deadline, status
-   - [ ] Status filters: Active, Closed, Overdue
-   - [ ] Actions per row: Resend (opens mailto modal), Change contact, Close (mark complete)
+- [x] `app/api/data-requests/[id]/complete/route.ts` — `POST /api/data-requests/:id/complete`
+   - [x] Delegate to service helper with shared conflict handling.
+   - [x] Return `{ success, request }` payload.
+
+- [x] `app/api/data-requests/[id]/revoke/route.ts` — `POST /api/data-requests/:id/revoke`
+   - [x] Delegate to service helper with shared conflict handling.
+   - [x] Return `{ success, request }` payload.
+
+#### Data Requests Page 🚧
+
+- [x] `app/projects/[id]/data-requests/page.tsx`
+   - [x] Table with columns: field (label + item), contact, requested/completed/revoked timestamps, deadline
+   - [x] Status filters: All, Pending, Completed, Revoked (Overdue pending deadline logic)
+   - [x] Bulk action toolbar: Resend, Change contact via modal, Mark complete, Revoke (replaces per-row buttons)
    - [ ] Sorting by requested_at/deadline/field
-   - [ ] Empty state when no requests
+   - [x] Empty state when no requests
 
 #### Dataset/Report Tables — Request Badges
 

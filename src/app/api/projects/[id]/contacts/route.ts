@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import db from '@/lib/db';
+import { getCacheValue, setCacheValue } from '@/lib/cache';
 
 const paramsSchema = z.object({
   id: z.string().min(1, 'Project id is required'),
@@ -23,6 +24,13 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
+    const cacheKey = `project:contacts:${project.id}`;
+    const cached = getCacheValue<{ contacts: unknown[] }>(cacheKey);
+
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     const contacts = await db.contact.findMany({
       where: {
         userId: project.userId,
@@ -37,7 +45,10 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
       },
     });
 
-    return NextResponse.json({ contacts });
+    const payload = { contacts } as const;
+    setCacheValue(cacheKey, payload);
+
+    return NextResponse.json(payload);
   } catch (error) {
     console.error('Failed to load project contacts', error);
 
