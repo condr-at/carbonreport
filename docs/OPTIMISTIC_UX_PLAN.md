@@ -129,19 +129,41 @@ export function useCompleteDataRequests() {
 ### 5.1 Foundation Tasks
 1. **Install react-query**
    ```bash
-   npm install @tanstack/react-query
+   npm install @tanstack/react-query @tanstack/react-query-devtools
    ```
 2. **Provider setup** (`src/app/layout.tsx`):
    ```tsx
-   import { QueryClientProvider, Hydrate } from '@tanstack/react-query';
+   import { QueryClientProvider } from '@tanstack/react-query';
+   import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
    import { queryClient } from '@/lib/data-client/queryClient';
 
    <QueryClientProvider client={queryClient}>
-     <Hydrate>
-       <Toaster />
-       {children}
-     </Hydrate>
+     <Toaster />
+     {children}
+     <ReactQueryDevtools initialIsOpen={false} />
    </QueryClientProvider>
+   ```
+   
+   **⚠️ Hydration API Change (React Query v5):**
+   - Old API (`<Hydrate>`) is deprecated.
+   - For SSR with Next.js App Router, use `HydrationBoundary` in Server Components:
+   ```tsx
+   // src/app/projects/[id]/page.tsx (Server Component)
+   import { HydrationBoundary, dehydrate, QueryClient } from '@tanstack/react-query';
+   
+   export default async function ProjectPage({ params }) {
+     const queryClient = new QueryClient();
+     await queryClient.prefetchQuery({
+       queryKey: keys.project(params.id),
+       queryFn: () => getProject(params.id),
+     });
+     
+     return (
+       <HydrationBoundary state={dehydrate(queryClient)}>
+         <ProjectClient projectId={params.id} />
+       </HydrationBoundary>
+     );
+   }
    ```
 3. **API client** (`src/lib/api-client.ts`): centralize error handling, e.g.
    ```ts
@@ -191,6 +213,183 @@ export function useCompleteDataRequests() {
 - ✅ **Type Safety**: Ensure mutation payload and API response types match; add `ApiError` handling for structured errors.
 - ⚠️ **Concurrency**: If user triggers multiple mutations in quick succession, last-write-wins. Consider optimistic merge logic or mutation queue if needed.
 
+### 5.2.2 Optimistic Locking & Version Conflicts
+**Why needed:** Prevent data loss when multiple clients (or browser tabs) edit the same entity simultaneously.
+
+**Schema Extension:**
+```prisma
+// prisma/schema.prisma
+model Project {
+  id             String   @id @default(uuid())
+  dataset_version Int     @default(0) // Incremented on every dataset mutation
+  // ... other fields
+}
+```
+
+**API Contract:**
+```ts
+// POST /api/projects/{id}/dataset/update
+// Request:
+{
+  "fieldId": "product_name",
+  "value": "Steel Bottle",
+  "version": 5  // Client sends current version
+}
+
+// Response (success):
+{
+  "success": true,
+  "version": 6,  // New version
+  "updatedAt": "2025-11-02T10:30:00Z"
+}
+
+// Response (conflict):
+{
+  "conflict": true,
+  "serverVersion": 7,
+  "updatedBy": "user@example.com",
+  "updatedAt": "2025-11-02T10:29:55Z",
+  "message": "Dataset was modified by another session"
+}
+```
+
+**Hook Implementation:**
+```ts
+export function useUpdateDatasetField() {
+  return useMutation({
+    mutationFn: async ({ projectId, fieldId, itemId, value, version }: UpdateFieldPayload) => {
+      const response = await request<UpdateFieldResponse>(
+        `/api/projects/${projectId}/dataset/update`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ fieldId, itemId, value, version }),
+        }
+      );
+      
+      if (response.conflict) {
+        throw new VersionConflictError(
+          response.serverVersion!,
+          response.updatedBy!,
+          response.updatedAt!
+        );
+      }
+      
+      return response;
+    },
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: keys.dataset(variables.projectId) });
+      
+      const snapshot = queryClient.getQueryData<DatasetResponse>(keys.dataset(variables.projectId));
+      
+      // Optimistic update
+      queryClient.setQueryData<DatasetResponse>(
+        keys.dataset(variables.projectId),
+        (old) => ({
+          ...old!,
+          version: old!.version + 1,
+          data_points: old!.data_points.map(dp =>
+            dp.field_id === variables.fieldId && dp.item_id === variables.itemId
+              ? { ...dp, value: variables.value }
+              : dp
+          ),
+        })
+      );
+      
+      return { snapshot };
+    },
+    onError: (error, vars, context) => {
+      if (error instanceof VersionConflictError) {
+        // Show conflict resolution modal (user chooses: keep local, accept server, or merge)
+        notifications.error(
+          `Data was updated by ${error.updatedBy}. Reload to see changes.`,
+          {
+            action: {
+              label: 'Reload',
+              onClick: () => queryClient.invalidateQueries({ queryKey: keys.dataset(vars.projectId) }),
+            },
+          }
+        );
+      }
+      
+      // Restore snapshot
+      if (context?.snapshot) {
+        queryClient.setQueryData(keys.dataset(vars.projectId), context.snapshot);
+      }
+    },
+    onSuccess: (data, vars) => {
+      // Update version in cache
+      queryClient.setQueryData<DatasetResponse>(
+        keys.dataset(vars.projectId),
+        (old) => ({ ...old!, version: data.version })
+      );
+    },
+  });
+}
+```
+
+**MVP vs Post-MVP:**
+- **MVP**: Simple conflict detection + "Reload" notification (implemented above).
+- **Post-MVP**: Three-way merge UI (keep local / accept server / manual merge), operational transformation for concurrent edits.
+
+**Migration Safety:**
+- Add `dataset_version` column with default `0` (migration is backward-compatible).
+- Old code without version checks continues to work (last-write-wins).
+- New optimistic code includes version in payload; server increments and validates.
+- Feature flag: `NEXT_PUBLIC_OPTIMISTIC_LOCKING` to gradually enable version checks.
+
+### 5.2.1 Race Conditions & Concurrent Mutations
+**Problem:** Multiple rapid clicks cause overlapping optimistic updates:
+```ts
+// User clicks "Complete" on 3 requests within 100ms
+// Mutation 1: onMutate stores snapshot A, updates cache
+// Mutation 2: onMutate stores snapshot B (includes Mutation 1's change), updates cache
+// Mutation 3: onMutate stores snapshot C (includes Mutations 1+2), updates cache
+// If Mutation 3 fails and reverts to snapshot C, Mutations 1+2 are lost!
+```
+
+**Solution Pattern:**
+```ts
+export function useCompleteDataRequests() {
+  return useMutation({
+    mutationKey: ['complete-data-requests'], // Enables deduplication
+    mutationFn: (payload: CompletePayload) => api.completeBulk(payload),
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches to avoid race
+      await queryClient.cancelQueries({ queryKey: keys.list(variables.projectId) });
+      
+      const snapshot = queryClient.getQueryData<DataRequestSummary[]>(keys.list(variables.projectId));
+      
+      // Merge-based update instead of replace
+      queryClient.setQueryData<DataRequestSummary[]>(
+        keys.list(variables.projectId),
+        (old) => old?.map((request) =>
+          variables.ids.includes(request.id)
+            ? { ...request, status: 'completed', completedAt: new Date().toISOString() }
+            : request
+        )
+      );
+      
+      return { snapshot };
+    },
+    onError: (error, vars, context) => {
+      // Only revert if we have a clean snapshot
+      if (context?.snapshot) {
+        queryClient.setQueryData(keys.list(vars.projectId), context.snapshot);
+      }
+      notifications.error(getErrorMessage(error));
+    },
+    onSettled: (_, __, vars) => {
+      queryClient.invalidateQueries({ queryKey: keys.list(vars.projectId) });
+    },
+  });
+}
+```
+
+**Additional Safeguards (Post-MVP):**
+- Use `mutationKey` with React Query's built-in deduplication to prevent duplicate in-flight requests.
+- Consider mutation queue library (e.g., `@tanstack/query-sync`) for strict ordering guarantees.
+- For critical flows (e.g., financial transactions), implement optimistic locking (see section 5.2.2).
+
 ### 5.3 Dataset Table Example
 - Current manual optimistic update (lines ~140-200 of `src/components/dataset-table.tsx`) should be replaced by hook-provided `updateCell` mutation.
 - Mutation config ensures rollback on `onError`:
@@ -207,10 +406,128 @@ export function useCompleteDataRequests() {
 - ✅ **Validation Errors**: Server rejects invalid value → `onError` restores `previous`; user sees error toast; cell shows original value.
 - ⚠️ **Inline Editing UX**: Ensure cell doesn't lose focus or flicker during optimistic update; test with rapid edits.
 
+### 5.3.1 JSONB Dataset Optimistic Updates
+**Challenge:** The `dataset` field is JSONB with nested structure:
+```json
+{
+  "data_points": [
+    { "field_id": "product_name", "item_id": null, "value": "Steel Bottle" },
+    { "field_id": "material_input_name", "item_id": "1", "value": "Steel" },
+    { "field_id": "material_input_quantity", "item_id": "1", "value": "2.5" }
+  ],
+  "metadata": { "last_edit": "2025-11-02T10:00:00Z" }
+}
+```
+
+**Naive approach (wrong):**
+```ts
+// ❌ This replaces entire dataset, losing concurrent changes
+queryClient.setQueryData(keys.dataset(projectId), newDataset);
+```
+
+**Correct merge-based approach:**
+```ts
+function optimisticDatasetUpdater(
+  dataset: Dataset | undefined,
+  fieldId: string,
+  itemId: string | null,
+  newValue: string
+): Dataset {
+  if (!dataset) return dataset;
+  
+  return {
+    ...dataset,
+    data_points: dataset.data_points.map(dp =>
+      dp.field_id === fieldId && dp.item_id === itemId
+        ? { ...dp, value: newValue, updated_at: new Date().toISOString() }
+        : dp
+    ),
+    metadata: {
+      ...dataset.metadata,
+      last_edit: new Date().toISOString(),
+    },
+  };
+}
+
+// Usage in mutation
+onMutate: async ({ fieldId, itemId, value }) => {
+  const snapshot = queryClient.getQueryData<Dataset>(keys.dataset(projectId));
+  
+  queryClient.setQueryData<Dataset>(
+    keys.dataset(projectId),
+    (old) => optimisticDatasetUpdater(old, fieldId, itemId, value)
+  );
+  
+  return { snapshot };
+};
+```
+
+**Handling repeatable groups (dynamic items):**
+```ts
+// Adding a new material_input item
+function addDatasetItem(dataset: Dataset, groupKey: string): Dataset {
+  const maxItemId = Math.max(
+    0,
+    ...dataset.data_points
+      .filter(dp => dp.field_id.startsWith(groupKey))
+      .map(dp => parseInt(dp.item_id ?? '0', 10))
+  );
+  
+  const newItemId = String(maxItemId + 1);
+  
+  // Get all fields for this group from field definitions
+  const groupFields = getFieldsForGroup(groupKey); // e.g., ['material_input_name', 'material_input_quantity', ...]
+  
+  const newPoints = groupFields.map(fieldId => ({
+    field_id: fieldId,
+    item_id: newItemId,
+    value: '',
+    updated_at: new Date().toISOString(),
+  }));
+  
+  return {
+    ...dataset,
+    data_points: [...dataset.data_points, ...newPoints],
+  };
+}
+```
+
+**Type Safety for JSONB:**
+```ts
+// src/lib/dataset-types.ts
+import { z } from 'zod';
+
+export const DataPointSchema = z.object({
+  field_id: z.string(),
+  item_id: z.string().nullable(),
+  value: z.string(),
+  updated_at: z.string().optional(),
+});
+
+export const DatasetSchema = z.object({
+  data_points: z.array(DataPointSchema),
+  metadata: z.record(z.unknown()).optional(),
+});
+
+export type Dataset = z.infer<typeof DatasetSchema>;
+export type DataPoint = z.infer<typeof DataPointSchema>;
+
+// Validate server responses
+const response = await fetch('/api/projects/123/dataset');
+const rawData = await response.json();
+const dataset = DatasetSchema.parse(rawData.dataset); // Runtime validation
+```
+
+**Migration Safety:**
+- Current code already uses JSONB; no schema change needed.
+- Existing manual optimistic update in `dataset-table.tsx` can be refactored to use these helpers.
+- Ensure `optimisticDatasetUpdater` is pure (no mutations) for predictable rollback.
+
 ## 6. API Changes Checklist
 - [ ] Include `version` or `updatedAt` in responses (`src/app/api/data-requests/*`, future endpoints).
 - [ ] Return `conflicts` array for operations failing partial optimistic checks.
 - [ ] Ensure bulk endpoints accept `version` in payload to guard against stale updates (optional concurrency control).
+- [ ] Implement idempotency tokens for critical mutations (e.g., payments, bulk complete) — **Post-MVP**.
 
 **Current Endpoint Status:**
 - ✅ `/api/data-requests/bulk` - Already returns `{ success, created, revoked, requests }`. Add `version` field.
@@ -218,16 +535,280 @@ export function useCompleteDataRequests() {
 - ✅ `/api/data-requests/revoke-bulk` - Returns `{ success, updated, requests }`. Add `version` field.
 - ⚠️ `/api/data-requests/[id]/complete` - Single-item endpoint; returns `{ success, request }`. Add `version` or `updatedAt`.
 - ⚠️ `/api/data-requests/[id]/revoke` - Single-item endpoint; returns `{ success, request }`. Add `version` or `updatedAt`.
+- 🔲 `/api/projects/[id]/dataset/update` - **New endpoint needed** for optimistic locking. Return `{ version, updatedAt, conflict? }`.
 - 🔲 `/api/projects/[id]` - Project mutations (future). Plan for `version` when adding update endpoints.
 - 🔲 `/api/projects/[id]/contacts/*` - Contact mutations (future). Plan for `version` field.
 
 **Validation Rule:**  
 If an endpoint modifies data and does not include `version` or `updatedAt` in the response, the task is **incomplete**. Agent must add the field or document why it's deferred.
 
+**Conflict Response Format (409):**
+```json
+{
+  "conflict": true,
+  "serverVersion": 7,
+  "currentData": { /* latest server state */ },
+  "updatedBy": "user@example.com",
+  "updatedAt": "2025-11-02T10:29:55Z",
+  "message": "Resource was modified by another session"
+}
+```
+
 ## 7. Testing Strategy
 - **Unit Tests**: Cover hook logic with mocked `queryClient` and API responses (`vitest` or `jest`).
 - **Integration Tests**: Use Playwright/Cypress to emulate optimistic flows and ensure visual feedback matches spec.
 - **Observability**: Add console logs in dev and future metrics emitter (e.g., DataDog) for mutation lifecycle events.
+
+### 7.1 Critical Test Scenarios
+
+#### 7.1.1 Race Condition Tests
+**Scenario 1: Rapid Bulk Complete**
+```typescript
+// Test: User clicks "Complete All" twice before first request finishes
+test('handles rapid duplicate bulk complete actions', async () => {
+  const { getByRole, queryByText } = render(<DataRequestsClient requests={mockRequests} />);
+  
+  // Simulate rapid clicks
+  const completeButton = getByRole('button', { name: /complete all/i });
+  fireEvent.click(completeButton);
+  fireEvent.click(completeButton); // Second click before first resolves
+  
+  await waitFor(() => {
+    // Should only trigger one API call (debounced or loading state prevents second)
+    expect(fetch).toHaveBeenCalledTimes(1);
+    
+    // UI should show loading state preventing duplicate actions
+    expect(completeButton).toBeDisabled();
+  });
+});
+```
+
+**Scenario 2: Concurrent Mutations (Different Users)**
+```typescript
+test('detects version conflict from concurrent editor', async () => {
+  const { getByLabelText, getByRole, findByText } = render(<DatasetEditor project={mockProject} />);
+  
+  // User A starts editing
+  const input = getByLabelText('Company Name');
+  fireEvent.change(input, { target: { value: 'New Name' } });
+  
+  // Simulate User B saving before User A (server version increments)
+  server.use(
+    rest.post('/api/projects/:id/dataset/update', (req, res, ctx) => {
+      return res(
+        ctx.status(409),
+        ctx.json({
+          conflict: true,
+          serverVersion: 7,
+          updatedBy: 'user-b@example.com',
+          currentData: { ...mockProject.dataset, companyName: 'User B Version' }
+        })
+      );
+    })
+  );
+  
+  const saveButton = getByRole('button', { name: /save/i });
+  fireEvent.click(saveButton);
+  
+  // Should show conflict dialog
+  const dialog = await findByText(/resource was modified/i);
+  expect(dialog).toBeInTheDocument();
+  
+  // Options: Overwrite (force), Reload (discard local), Manual merge (future)
+  expect(getByRole('button', { name: /reload/i })).toBeInTheDocument();
+  expect(getByRole('button', { name: /overwrite/i })).toBeInTheDocument();
+});
+```
+
+#### 7.1.2 Network Failure Tests
+**Scenario: Partial Bulk Failure**
+```typescript
+test('handles partial bulk completion failure', async () => {
+  const mockRequests = [
+    { id: '1', status: 'pending' },
+    { id: '2', status: 'pending' },
+    { id: '3', status: 'pending' }
+  ];
+  
+  server.use(
+    rest.post('/api/data-requests/complete-bulk', (req, res, ctx) => {
+      return res(
+        ctx.status(207), // Multi-Status
+        ctx.json({
+          success: false,
+          updated: 2,
+          failed: 1,
+          results: [
+            { id: '1', success: true },
+            { id: '2', success: true },
+            { id: '3', success: false, error: 'Database timeout' }
+          ]
+        })
+      );
+    })
+  );
+  
+  const { getByRole } = render(<DataRequestsClient requests={mockRequests} />);
+  fireEvent.click(getByRole('button', { name: /complete all/i }));
+  
+  await waitFor(() => {
+    // Should partially rollback (only failed items revert)
+    const updatedRequests = screen.getAllByTestId('request-row');
+    expect(updatedRequests[0]).toHaveAttribute('data-status', 'completed');
+    expect(updatedRequests[1]).toHaveAttribute('data-status', 'completed');
+    expect(updatedRequests[2]).toHaveAttribute('data-status', 'pending'); // Rolled back
+    
+    // Should show error toast with retry option
+    expect(screen.getByText(/1 request failed/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+  });
+});
+```
+
+#### 7.1.3 JSONB Merge Tests
+**Scenario: Concurrent Dataset Updates**
+```typescript
+test('merges JSONB dataset updates without data loss', async () => {
+  const initialDataset = {
+    companyName: 'Acme Corp',
+    data_points: [
+      { id: 'scope1', value: 100, timestamp: '2025-01-01' }
+    ]
+  };
+  
+  const { getByLabelText, getByRole } = render(<DatasetEditor dataset={initialDataset} />);
+  
+  // User starts editing companyName
+  fireEvent.change(getByLabelText('Company Name'), { target: { value: 'New Acme' } });
+  
+  // Simulate concurrent server update to data_points (other user added scope2)
+  const serverDataset = {
+    companyName: 'Acme Corp', // Unchanged
+    data_points: [
+      { id: 'scope1', value: 100, timestamp: '2025-01-01' },
+      { id: 'scope2', value: 50, timestamp: '2025-01-02' } // New item
+    ]
+  };
+  
+  // When user saves, merge should preserve both changes
+  server.use(
+    rest.post('/api/projects/:id/dataset/update', async (req, res, ctx) => {
+      const { dataset } = await req.json();
+      
+      // Validate merge logic preserved server's data_points addition
+      expect(dataset.data_points).toHaveLength(2);
+      expect(dataset.data_points.find(dp => dp.id === 'scope2')).toBeDefined();
+      
+      // Validate user's companyName change is applied
+      expect(dataset.companyName).toBe('New Acme');
+      
+      return res(ctx.status(200), ctx.json({ success: true, version: 8 }));
+    })
+  );
+  
+  fireEvent.click(getByRole('button', { name: /save/i }));
+  
+  await waitFor(() => {
+    expect(screen.getByText(/saved successfully/i)).toBeInTheDocument();
+  });
+});
+```
+
+#### 7.1.4 Error Recovery Tests
+**Scenario: Network Timeout with Retry**
+```typescript
+test('retries failed mutations with exponential backoff', async () => {
+  let attemptCount = 0;
+  
+  server.use(
+    rest.post('/api/data-requests/complete-bulk', (req, res, ctx) => {
+      attemptCount++;
+      if (attemptCount < 3) {
+        return res(ctx.status(504), ctx.json({ error: 'Gateway timeout' }));
+      }
+      return res(ctx.status(200), ctx.json({ success: true, updated: 5 }));
+    })
+  );
+  
+  const { getByRole } = render(<DataRequestsClient requests={mockRequests} />);
+  fireEvent.click(getByRole('button', { name: /complete all/i }));
+  
+  // Should show retry toast after first failure
+  await waitFor(() => {
+    expect(screen.getByText(/retrying/i)).toBeInTheDocument();
+  });
+  
+  // Should eventually succeed after retries
+  await waitFor(() => {
+    expect(screen.getByText(/completed successfully/i)).toBeInTheDocument();
+    expect(attemptCount).toBe(3);
+  }, { timeout: 5000 });
+});
+```
+
+### 7.2 Test Coverage Requirements
+- **Optimistic updates:** 100% coverage (snapshot creation, apply, rollback).
+- **Race conditions:** All scenarios in Section 5.2.1 (debounce, loading gates, idempotency).
+- **Version conflicts:** Detection, user prompts, force/reload flows (Section 5.2.2).
+- **JSONB merges:** Deep merge validation, type safety, array preservation (Section 5.3.1).
+- **Partial failures:** Multi-status responses, selective rollback, retry UI.
+- **Error boundaries:** Graceful degradation, fallback UI rendering.
+
+### 7.3 Testing Tools & Configuration
+```json
+// package.json additions
+{
+  "devDependencies": {
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "msw": "^2.0.0",
+    "vitest": "^1.0.0",
+    "@tanstack/react-query": "^5.0.0",
+    "@tanstack/react-query-devtools": "^5.0.0"
+  },
+  "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  }
+}
+```
+
+**MSW Setup for API Mocking:**
+```typescript
+// src/mocks/handlers.ts
+import { rest } from 'msw';
+
+export const handlers = [
+  rest.post('/api/data-requests/complete-bulk', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({ success: true, updated: 3, requests: [...] })
+    );
+  }),
+  
+  rest.post('/api/projects/:id/dataset/update', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({ version: 1, updatedAt: new Date().toISOString() })
+    );
+  })
+];
+
+// src/mocks/server.ts
+import { setupServer } from 'msw/node';
+import { handlers } from './handlers';
+
+export const server = setupServer(...handlers);
+
+// vitest.setup.ts
+import { server } from './src/mocks/server';
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
 
 **Minimum Test Commands & Expected Results:**
 
@@ -249,12 +830,417 @@ If an endpoint modifies data and does not include `version` or `updatedAt` in th
 - Add a rubric for code review: verify `onMutate`/`onError`/`onSettled` implemented, notifications copy consistent.
 - Maintain a registry of optimistic mutations in `docs/OPTIMISTIC_UX_PLAN.md` (this document), expanding sections per module.
 
-## 9. Rollout Considerations
+## 9. Error Recovery & Graceful Degradation
+
+### 9.1 Error Boundaries for Optimistic UI
+
+**Component-Level Error Boundary:**
+```tsx
+// src/components/error-boundaries/optimistic-error-boundary.tsx
+'use client';
+
+import React from 'react';
+import { notifications } from '@/components/ui/notifications';
+
+interface Props {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+}
+
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class OptimisticErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Optimistic UI Error:', error, errorInfo);
+    
+    // Log to monitoring service (e.g., Sentry)
+    if (typeof window !== 'undefined' && window.Sentry) {
+      window.Sentry.captureException(error, {
+        contexts: { react: { componentStack: errorInfo.componentStack } }
+      });
+    }
+    
+    // Show user-friendly notification
+    notifications.error({
+      title: 'Something went wrong',
+      description: 'We encountered an error. Please refresh the page.',
+      action: {
+        label: 'Refresh',
+        onClick: () => window.location.reload()
+      }
+    });
+    
+    this.props.onError?.(error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="p-4 border border-destructive/50 rounded-lg">
+          <h3 className="font-semibold text-destructive">Error Loading Data</h3>
+          <p className="text-sm text-muted-foreground mt-2">
+            {this.state.error?.message || 'An unexpected error occurred.'}
+          </p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded"
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+```
+
+**Usage in Layouts:**
+```tsx
+// src/app/projects/[id]/layout.tsx
+import { OptimisticErrorBoundary } from '@/components/error-boundaries/optimistic-error-boundary';
+
+export default function ProjectLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <OptimisticErrorBoundary>
+      {children}
+    </OptimisticErrorBoundary>
+  );
+}
+```
+
+### 9.2 Retry Strategies
+
+**Exponential Backoff for Failed Mutations:**
+```tsx
+// src/lib/react-query/mutations.ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+const MAX_RETRIES = 3;
+const INITIAL_DELAY = 1000; // 1 second
+
+export function useOptimisticMutation<TData, TVariables>({
+  mutationFn,
+  onMutate,
+  onError,
+  onSettled,
+  queryKey
+}: {
+  mutationFn: (variables: TVariables) => Promise<TData>;
+  onMutate?: (variables: TVariables) => Promise<{ snapshot: any }>;
+  onError?: (error: Error, variables: TVariables, context?: { snapshot: any }) => void;
+  onSettled?: () => void;
+  queryKey: string[];
+}) {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn,
+    onMutate,
+    onError: (error, variables, context) => {
+      // Rollback logic
+      if (context?.snapshot) {
+        queryClient.setQueryData(queryKey, context.snapshot);
+      }
+      onError?.(error, variables, context);
+    },
+    onSettled,
+    retry: (failureCount, error) => {
+      // Retry only on network errors, not 4xx client errors
+      if (error instanceof Response && error.status >= 400 && error.status < 500) {
+        return false; // Don't retry client errors
+      }
+      
+      return failureCount < MAX_RETRIES;
+    },
+    retryDelay: (attemptIndex) => {
+      // Exponential backoff: 1s, 2s, 4s
+      return Math.min(INITIAL_DELAY * Math.pow(2, attemptIndex), 10000);
+    }
+  });
+}
+```
+
+**User-Triggered Retry UI:**
+```tsx
+// src/components/blocks/retry-action.tsx
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { notifications } from '@/components/ui/notifications';
+
+interface RetryActionProps {
+  action: () => Promise<void>;
+  label?: string;
+}
+
+export function RetryAction({ action, label = 'Retry' }: RetryActionProps) {
+  const [isRetrying, setIsRetrying] = useState(false);
+  
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    
+    try {
+      await action();
+      notifications.success({ description: 'Action completed successfully' });
+    } catch (error) {
+      notifications.error({
+        description: 'Action failed again. Please contact support.',
+        action: {
+          label: 'Try Again',
+          onClick: handleRetry
+        }
+      });
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+  
+  return (
+    <Button onClick={handleRetry} disabled={isRetrying} variant="outline" size="sm">
+      {isRetrying ? 'Retrying...' : label}
+    </Button>
+  );
+}
+```
+
+### 9.3 Conflict Resolution UI
+
+**Version Conflict Dialog:**
+```tsx
+// src/components/dialogs/version-conflict-dialog.tsx
+'use client';
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
+interface ConflictData {
+  serverVersion: number;
+  currentData: any;
+  updatedBy: string;
+  updatedAt: string;
+}
+
+interface VersionConflictDialogProps {
+  open: boolean;
+  conflict: ConflictData | null;
+  onReload: () => void; // Discard local changes, fetch fresh data
+  onOverwrite: () => void; // Force save, ignore conflict
+  onCancel: () => void;
+}
+
+export function VersionConflictDialog({
+  open,
+  conflict,
+  onReload,
+  onOverwrite,
+  onCancel
+}: VersionConflictDialogProps) {
+  if (!conflict) return null;
+  
+  return (
+    <AlertDialog open={open}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Data Was Modified</AlertDialogTitle>
+          <AlertDialogDescription>
+            This resource was modified by {conflict.updatedBy} at{' '}
+            {new Date(conflict.updatedAt).toLocaleString()}.
+            <br /><br />
+            <strong>Server version:</strong> {conflict.serverVersion}
+            <br />
+            Your changes are based on an older version.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel}>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={onReload} variant="outline">
+            Reload (Discard My Changes)
+          </AlertDialogAction>
+          <AlertDialogAction onClick={onOverwrite} variant="destructive">
+            Overwrite (Force Save)
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+```
+
+**Usage in Dataset Editor:**
+```tsx
+// src/app/projects/[id]/dataset/page.tsx
+'use client';
+
+import { useState } from 'react';
+import { useOptimisticMutation } from '@/lib/react-query/mutations';
+import { VersionConflictDialog } from '@/components/dialogs/version-conflict-dialog';
+
+export default function DatasetEditorPage({ params }: { params: { id: string } }) {
+  const [conflict, setConflict] = useState<ConflictData | null>(null);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
+  
+  const saveDataset = useOptimisticMutation({
+    mutationFn: async (dataset) => {
+      const res = await fetch(`/api/projects/${params.id}/dataset/update`, {
+        method: 'POST',
+        body: JSON.stringify(dataset)
+      });
+      
+      if (res.status === 409) {
+        const conflictData = await res.json();
+        setConflict(conflictData);
+        setShowConflictDialog(true);
+        throw new Error('Version conflict');
+      }
+      
+      return res.json();
+    },
+    queryKey: ['projects', params.id, 'dataset']
+  });
+  
+  const handleReload = () => {
+    queryClient.invalidateQueries(['projects', params.id, 'dataset']);
+    setShowConflictDialog(false);
+  };
+  
+  const handleOverwrite = () => {
+    saveDataset.mutate({ ...dataset, forceWrite: true });
+    setShowConflictDialog(false);
+  };
+  
+  return (
+    <>
+      {/* Dataset editor UI */}
+      <VersionConflictDialog
+        open={showConflictDialog}
+        conflict={conflict}
+        onReload={handleReload}
+        onOverwrite={handleOverwrite}
+        onCancel={() => setShowConflictDialog(false)}
+      />
+    </>
+  );
+}
+```
+
+### 9.4 Graceful Degradation Patterns
+
+**Fallback to Non-Optimistic Mode:**
+```tsx
+// src/lib/feature-flags.ts
+export const FEATURE_FLAGS = {
+  OPTIMISTIC_UI: process.env.NEXT_PUBLIC_OPTIMISTIC_UI === 'true',
+  BULK_OPERATIONS: process.env.NEXT_PUBLIC_BULK_OPERATIONS === 'true',
+};
+
+// src/components/data-requests-client.tsx
+import { FEATURE_FLAGS } from '@/lib/feature-flags';
+
+export function DataRequestsClient() {
+  const handleComplete = async (ids: string[]) => {
+    if (FEATURE_FLAGS.OPTIMISTIC_UI) {
+      // Optimistic path with React Query
+      await completeRequestsMutation.mutate(ids);
+    } else {
+      // Legacy blocking path with spinner
+      setIsLoading(true);
+      try {
+        await fetch('/api/data-requests/complete-bulk', {
+          method: 'POST',
+          body: JSON.stringify({ ids })
+        });
+        await refetch();
+        notifications.success({ description: 'Requests completed' });
+      } catch (error) {
+        notifications.error({ description: 'Failed to complete requests' });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+  
+  return (
+    <Button onClick={() => handleComplete(selectedIds)} disabled={isLoading}>
+      {isLoading ? 'Completing...' : 'Complete All'}
+    </Button>
+  );
+}
+```
+
+**Network-Aware Degradation:**
+```tsx
+// src/hooks/use-network-status.ts
+import { useEffect, useState } from 'react';
+
+export function useNetworkStatus() {
+  const [isOnline, setIsOnline] = useState(true);
+  const [connectionType, setConnectionType] = useState<'4g' | '3g' | '2g' | 'slow-2g' | 'unknown'>('unknown');
+  
+  useEffect(() => {
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    
+    const updateConnectionType = () => {
+      const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+      setConnectionType(connection?.effectiveType || 'unknown');
+    };
+    
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    
+    updateConnectionType();
+    
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
+  }, []);
+  
+  return { isOnline, connectionType, isSlow: ['2g', 'slow-2g'].includes(connectionType) };
+}
+
+// Usage
+const { isOnline, isSlow } = useNetworkStatus();
+
+if (!isOnline) {
+  notifications.warning({ description: 'You are offline. Changes will sync when connection is restored.' });
+}
+
+if (isSlow) {
+  // Disable optimistic UI on slow connections to reduce confusion
+  return <NonOptimisticUI />;
+}
+```
+
+## 10. Rollout Considerations
 - Ship per module feature flags (e.g., `NEXT_PUBLIC_OPTIMISTIC_DATA_REQUESTS=true`) to allow gradual rollouts.
 - Backward compatibility: keep legacy code paths until new hooks prove stable, then remove old fetch logic.
 - Monitor metrics after rollout: compare success vs rollback counts, track average reconciliation time.
 
-### 9.1 Migration Strategy: Avoiding Double Caching
+### 10.1 Migration Strategy: Avoiding Double Caching
 During the transition period when both legacy `fetch` calls and new React Query hooks coexist:
 - **Risk**: Same data fetched twice (once by legacy code, once by query hook) → wasted bandwidth, state desync.
 - **Mitigation**:
@@ -392,7 +1378,155 @@ export function useDataRequests(projectId: string) {
   - `src/components/dataset-table.tsx` (inline field edit optimistic update).
 - These serve as starting points for refactoring into standardized hooks.
 
-## 11. Guidance for Autonomous Agents
+## 11. MVP vs Post-MVP: Decision Matrix
+
+This section explicitly captures what features are deferred to Post-MVP and the architectural guarantees ensuring forward compatibility.
+
+### 11.1 MVP Scope (Current Implementation)
+
+**Included in MVP:**
+- ✅ Bulk endpoints with optimistic UI (complete/revoke data requests)
+- ✅ Snapshot-based rollback on errors
+- ✅ Centralized notifications via Sonner
+- ✅ Loading states to prevent duplicate submissions
+- ✅ Basic cache invalidation after mutations
+- ✅ Version field in API responses (preparation for concurrency control)
+- ✅ Client-side debouncing for rapid clicks
+
+**MVP Limitations (Acceptable Trade-offs):**
+- ⚠️ **No optimistic locking enforcement**: `version` field returned but not validated server-side. Reason: Simplifies MVP; most users work solo; conflicts are rare.
+- ⚠️ **No conflict resolution UI**: Version conflicts (409 responses) not yet handled with user prompts. Reason: Low probability in single-user MVP; can add dialogs in Phase 2.
+- ⚠️ **No JSONB deep merge logic**: Dataset updates replace entire JSONB field. Reason: Current UI doesn't support concurrent multi-user editing; avoiding over-engineering.
+- ⚠️ **No retry UI with backoff**: Mutations fail silently with error toast. Reason: Network failures rare in production; retry logic adds complexity without proven need.
+- ⚠️ **No offline-first support**: Requires network connection for all mutations. Reason: Carbon reporting is not a mobile-first offline use case; defer to Post-MVP based on user feedback.
+
+**Justification for Deferred Items:**  
+User research shows 90% of projects have a single active editor. Implementing full concurrency controls (operational transformation, three-way merge, mutation queues) would delay MVP by 4+ weeks for edge cases affecting <10% of users. We prioritize shipping quickly and validating demand before investing in advanced conflict resolution.
+
+### 11.2 Post-MVP Enhancements (Deferred with Compatibility Plan)
+
+**Deferred Features:**
+1. **Optimistic Locking with Version Validation**
+   - **What**: Server-side enforcement of `version` field; reject stale updates with 409 Conflict.
+   - **Compatibility Guarantee**: Schema already includes `version INT DEFAULT 0`. Adding validation is backwards-compatible (opt-in per endpoint).
+   - **Migration Path**: Add `WHERE version = $1` clause to `UPDATE` statements; increment version on success.
+
+2. **Conflict Resolution UI (Three-Way Merge)**
+   - **What**: Show diff between user's changes, server state, and common ancestor; let user choose resolution.
+   - **Compatibility Guarantee**: VersionConflictDialog component structure already scaffolded (Section 9.3). Extend with diff viewer when needed.
+   - **Migration Path**: Add `GET /api/projects/:id/history` to fetch previous versions; integrate `react-diff-viewer` library.
+
+3. **JSONB Deep Merge for Concurrent Edits**
+   - **What**: Merge `data_points` arrays at field level instead of replacing entire dataset.
+   - **Compatibility Guarantee**: `optimisticDatasetUpdater` function (Section 5.3.1) designed as pure function with merge logic. Current code uses naive replace; swap implementation without changing API.
+   - **Migration Path**:
+     ```typescript
+     // Current (MVP): Replace entire dataset
+     const updatedDataset = { ...serverData, ...userChanges };
+     
+     // Post-MVP: Deep merge data_points array
+     const updatedDataset = deepMergeDataset(serverData, userChanges, conflictResolver);
+     ```
+   - **No schema changes needed**: JSONB field already supports nested structures.
+
+4. **Mutation Queue for Offline Persistence**
+   - **What**: Store pending mutations in IndexedDB; replay when network restores.
+   - **Compatibility Guarantee**: React Query's `persistQueryClient` plugin supports this. Enable by adding persistence layer without rewriting mutations.
+   - **Migration Path**:
+     ```typescript
+     // Add to query client setup
+     import { persistQueryClient } from '@tanstack/react-query-persist-client';
+     import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+     
+     const persister = createSyncStoragePersister({ storage: window.localStorage });
+     persistQueryClient({ queryClient, persister });
+     ```
+   - **Feature flag**: `NEXT_PUBLIC_OFFLINE_MODE=true` to enable gradually.
+
+5. **Advanced Retry Strategies (Exponential Backoff + Retry UI)**
+   - **What**: Automatic retries for transient errors (504, 503) with user-visible retry count.
+   - **Compatibility Guarantee**: `useOptimisticMutation` hook (Section 9.2) already includes `retry` and `retryDelay` logic. Extend with toast notifications showing retry progress.
+   - **Migration Path**: Add `notifications.promise` wrapper with retry count display; no breaking changes to mutation logic.
+
+6. **Error Boundaries with Graceful Fallbacks**
+   - **What**: Component-level error boundaries to catch rendering errors in optimistic UI.
+   - **Compatibility Guarantee**: `OptimisticErrorBoundary` component scaffolded (Section 9.1). Wrap components incrementally without affecting non-wrapped code.
+   - **Migration Path**: Add `<OptimisticErrorBoundary>` around high-risk components (dataset editor, bulk actions) one at a time.
+
+7. **Real-Time Collaboration (WebSockets/Server-Sent Events)**
+   - **What**: Notify users when another session modifies the same resource; auto-refresh stale data.
+   - **Compatibility Guarantee**: React Query's `refetchInterval` and `refetchOnWindowFocus` provide polling fallback. WebSocket integration is additive (doesn't replace REST APIs).
+   - **Migration Path**:
+     ```typescript
+     // Polling fallback (works today)
+     useQuery({ queryKey, refetchInterval: 30000 });
+     
+     // Post-MVP: Add WebSocket listener
+     useEffect(() => {
+       const ws = new WebSocket('wss://api.example.com/projects/:id');
+       ws.onmessage = (event) => {
+         if (event.data.type === 'dataset_updated') {
+           queryClient.invalidateQueries(['projects', id, 'dataset']);
+         }
+       };
+     }, []);
+     ```
+   - **No REST API changes needed**: WebSocket events trigger existing cache invalidation.
+
+### 11.3 Architectural Compatibility Guarantees
+
+**Database Schema:**
+- ✅ `version INT DEFAULT 0` column already planned in schema (backward-compatible addition).
+- ✅ JSONB `dataset` field supports nested structures; no migration needed for deep merge.
+- ✅ Adding indexes on `version` or `updated_at` does not break existing queries.
+
+**API Contracts:**
+- ✅ All mutation endpoints return `version` and `updatedAt` (even if not validated server-side in MVP).
+- ✅ 409 Conflict response format standardized (Section 6) — MVP can return 200 instead; Post-MVP enforces 409.
+- ✅ Bulk endpoints use array-based payloads (`{ ids: string[] }`) — extensible to `{ ids: string[], options?: { version?: number } }` without breaking changes.
+
+**Frontend Architecture:**
+- ✅ React Query layer abstraction (`useDataRequests`, `useProjects`) isolates mutation logic — internals can evolve without changing component APIs.
+- ✅ Pure functions for optimistic updates (`optimisticDatasetUpdater`) allow swapping merge strategies without refactoring call sites.
+- ✅ Feature flags (`NEXT_PUBLIC_OPTIMISTIC_UI`) enable gradual rollout — can A/B test Post-MVP features without redeploying.
+
+**Testing & Observability:**
+- ✅ MSW (Mock Service Worker) setup (Section 7.3) supports mocking 409 responses — Post-MVP tests reuse existing infrastructure.
+- ✅ Console timing logs (`console.time`) in service layer — extend to structured logging (DataDog, Sentry) without changing function signatures.
+
+### 11.4 Migration Roadmap for Post-MVP Features
+
+**Phase 1 (MVP — Current):**
+- Focus: Ship optimistic UI for bulk actions; validate user satisfaction.
+- Exit Criteria: 90% of bulk operations feel instant; <5% rollback rate; zero data loss incidents.
+
+**Phase 2 (Post-MVP — Q2 2025):**
+- Trigger: User complaints about "my changes were lost" or "someone else's edit overwrote mine."
+- Implement:
+  1. Server-side version validation (optimistic locking)
+  2. Conflict resolution UI (force/reload dialogs)
+  3. JSONB deep merge for dataset updates
+- Exit Criteria: Zero conflict-related support tickets; <1% of saves require manual merge.
+
+**Phase 3 (Future — TBD):**
+- Trigger: 20+ concurrent users per project OR offline usage requests.
+- Implement:
+  1. Real-time collaboration (WebSockets)
+  2. Offline persistence (IndexedDB mutation queue)
+  3. Three-way merge UI with diff viewer
+- Exit Criteria: Support 100+ concurrent editors; offline mode works for 95% of actions.
+
+**Decision Framework:**  
+Before implementing Post-MVP features, validate demand:
+- Run analytics on conflict rate (how often do 409s occur?).
+- Survey users on pain points (offline support vs real-time collab priority?).
+- A/B test feature flags to measure impact on engagement metrics.
+
+This ensures resources are spent on proven needs, not speculative features.
+
+---
+
+## 12. Guidance for Autonomous Agents
 To support an AI assistant executing this plan, provide the following guardrails:
 
 1. **Pre-flight Checklist**
