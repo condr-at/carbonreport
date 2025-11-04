@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ChevronDown, ChevronRight, Mail, Plus, Search, Trash2 } from 'lucide-react';
+import type { DataRequestSummary } from '@/lib/data-requests/types';
 import { TableRow } from '@/lib/dataset-utils-v2';
 import { cn } from '@/lib/utils';
 
@@ -43,28 +44,6 @@ interface DatasetTableProps {
     fieldHint: string | null;
   }>) => void;
   dataRequests?: DataRequestSummary[];
-}
-
-type RequestStatus = 'pending' | 'completed' | 'revoked';
-
-export interface DataRequestSummary {
-  id: string;
-  status: RequestStatus;
-  requestedAt: string;
-  completedAt: string | null;
-  revokedAt: string | null;
-  deadline?: string | null;
-  contact?: {
-    id?: string | null;
-    name?: string | null;
-    email?: string | null;
-  };
-  dataPoint?: {
-    id?: string | null;
-    label?: string | null;
-    hint?: string | null;
-    itemId?: string | null;
-  };
 }
 
 type DisplayRow =
@@ -858,3 +837,5 @@ export function DatasetTable({
     </div>
   );
 }
+
+export type { DataRequestSummary } from '@/lib/data-requests/types';
