@@ -16,6 +16,11 @@ const AddItemSchema = z.object({
   datasetVersion: z.number().int().min(0).optional(),
 })
 
+function buildMetadata(version: number) {
+  const updatedAt = new Date().toISOString()
+  return { version, updatedAt }
+}
+
 /**
  * POST /api/projects/[id]/dataset/items
  * Add new repeatable item with empty values for specified fields
@@ -125,11 +130,14 @@ export async function POST(
       },
     })
 
+    const metadata = buildMetadata(updatedProject.datasetVersion)
+
     return NextResponse.json({
       success: true,
       datasetVersion: updatedProject.datasetVersion,
       itemId: newItemId,
       createdDataPoints: newDataPoints,
+      ...metadata,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

@@ -1,6 +1,6 @@
 # Optimistic UX: System-Wide Implementation Plan
 
-_Last updated: 2025-11-02_
+_Last updated: 2025-11-05_
 
 ## 1. Goal & Scope
 - Provide consistent optimistic interactions across the app (requests, dataset edits, project management, contacts) while keeping the UI responsive even under slow network or database load.
@@ -119,10 +119,21 @@ export function useCompleteDataRequests() {
 | | Align API routes (`src/app/api/data-requests/*.ts`) to return `version` metadata. | existing API files | All mutation endpoints return `{ success, updated, requests: [...], version?: string }`. Version field present or documented as optional. |
 | **2. Dataset Table** | Convert inline optimistic update (currently manual in `src/components/dataset-table.tsx`) to hook-based pattern. | `src/components/dataset-table.tsx`, `src/lib/data-client/dataset.ts`. | `dataset-table.tsx` uses `useUpdateCell` mutation hook; manual `setRows` optimistic logic removed; rollback handled in hook `onError`. |
 | | Ensure rollback for validation errors by restoring previous value from mutation context. | same | Validation error causes revert; user sees notification; cell value returns to pre-edit state. |
+| **2a. Server Prefetch & Hydration** | Replace API round-trips in server components with direct Prisma reads and pass data via `HydrationBoundary` + dehydrated cache. | `src/app/projects/[id]/data-requests/page.tsx`, `src/app/projects/[id]/dataset/page.tsx`, `src/lib/db.ts`, `src/lib/data-client/keys.ts`. | Server components call Prisma helpers instead of `request(...)`; client components receive `initialData` via React Query dehydrate. No duplicate network requests on first render. |
+| | Ensure cached queries use the same keys/hooks as client mutations to avoid mismatch. | same + `src/lib/data-client/data-requests.ts`, `src/lib/data-client/dataset.ts`. | Prefetched data hydrates `useDataRequests` / `useDataset` without refetch; React Query DevTools shows cache hit on mount. |
 | **3. Contacts / Projects** | Wrap contact mutations in optimistic hooks. | `src/app/projects/[id]/contacts`, new data hooks | Contact create/update/delete use hooks; optimistic cache updates + rollback in place. |
 | | Apply consistent notifications. | UI components | All contact mutations surface feedback via `notifications` service; no inline alert divs remain. |
 | **4. System Integration** | Add global dev tooling: log optimistic starts/failures (e.g., `console.debug('optimistic:start', key)` behind a flag). | `src/lib/data-client/logging.ts`. | Logging utility exists; mutations call it on lifecycle events (start/success/error); logs visible in dev console. |
 | | Document new coding standard: no direct `fetch` in components; use data-client hooks. Update lint rule / codemod if needed. | `docs/IMPLEMENTATION_CHECKLIST.md`, `.eslintrc`. | Coding standard documented; optional ESLint rule added to warn on direct `fetch()` in component files. |
+| | Add lightweight navigation feedback for server-prefetched pages (button disabled states, skeletons matching cached data). | `src/app/projects/[id]/data-requests/data-requests-client.tsx`, `src/components/dataset-table.tsx`, `src/components/ui/skeleton.tsx`. | Buttons and critical actions use `isPending` flags from existing hooks; skeletons render only during first load; no redundant spinners once optimistic update starts. |
+
+> **Status Update (2025-11-04)**
+> Phase 1 complete. Key artifacts:
+> - `src/lib/data-client/data-requests.ts` — shared queries and optimistic mutations.
+> - `src/app/api/data-requests/{bulk,complete-bulk,revoke-bulk,resend-bulk}/route.ts` — unified metadata responses and new resend endpoint.
+> - `src/lib/data-requests/service.ts` — centralized bulk/resend logic with metadata helpers.
+> - `src/app/projects/[id]/data-requests/data-requests-client.tsx` — refactored to consume hooks (no direct fetch calls).
+> - Next milestone: Phase 2a brings server-prefetch alignment for `projects/[id]/data-requests` and `projects/[id]/dataset` pages using `HydrationBoundary` to remove duplicate fetches.
 
 ## 5. Detailed Tasks & Examples
 
@@ -522,6 +533,23 @@ const dataset = DatasetSchema.parse(rawData.dataset); // Runtime validation
 - Current code already uses JSONB; no schema change needed.
 - Existing manual optimistic update in `dataset-table.tsx` can be refactored to use these helpers.
 - Ensure `optimisticDatasetUpdater` is pure (no mutations) for predictable rollback.
+
+### 5.4 Server Prefetch & Hydration Alignment
+- **Objective:** eliminate redundant API round-trips for SSR routes by sourcing data directly from Prisma, hydrating React Query with matching cache keys, and using lightweight in-flight feedback.
+- **Server components** (`src/app/projects/[id]/data-requests/page.tsx`, `src/app/projects/[id]/dataset/page.tsx`):
+  - Import query helpers from `src/lib/db.ts` or domain-specific services (e.g. `src/lib/data-requests/service.ts`).
+  - Instantiate a `QueryClient`, prefetch using existing `keys.list(projectId)` / `keys.dataset(projectId)` factories, and wrap the client entrypoint with `<HydrationBoundary state={dehydrate(queryClient)}>…</HydrationBoundary>`.
+  - Remove `request()`/`fetch()` calls on the server; Prisma is already available via `db` exports.
+- **Client components** (`src/app/projects/[id]/data-requests/data-requests-client.tsx`, `src/components/dataset-table.tsx`):
+  - Pass `initialData` derived from the dehydrated state into `useDataRequests` / `useDataset` so the first render is cache-backed and does not trigger a duplicate GET.
+  - Verify mutations reuse those keys so cache invalidation keeps preloaded data fresh.
+- **Navigation feedback:**
+  - Map existing `isPending`/`isMutating` flags to button disabled states and inline loaders instead of global page spinners.
+  - Keep skeletons (`src/components/ui/skeleton.tsx`) for initial SSR render only; optimistic updates should handle subsequent transitions.
+- **Acceptance checklist:**
+  1. DevTools network tab proves a single request per dataset/data-request on initial load.
+  2. React Query DevTools report prefetched queries as `status: success` immediately after hydration.
+  3. Navigating between project sub-pages reuses cache instead of flashing empty states.
 
 ## 6. API Changes Checklist
 - [ ] Include `version` or `updatedAt` in responses (`src/app/api/data-requests/*`, future endpoints).

@@ -86,6 +86,8 @@ export async function POST(request: Request) {
         created: result.createdCount,
         revoked: result.revokedCount,
         requests: serialized,
+        version: result.version,
+        updatedAt: result.updatedAt,
       },
       { status: 201 }
     );

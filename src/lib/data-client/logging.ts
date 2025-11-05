@@ -10,6 +10,5 @@ export function logOptimistic(event: Lifecycle, payload?: LogPayload): void {
   }
 
   const time = new Date().toISOString();
-  // eslint-disable-next-line no-console
   console.debug(`[optimistic:${event}]`, time, payload ?? {});
 }

@@ -2,12 +2,11 @@ import { notFound } from 'next/navigation';
 import { ProjectLayout } from '@/components/layouts/project-layout';
 import { ReportPageClient } from './report-page-client';
 import {
-  enrichDataPoints,
-  flattenToTableRows,
   type DataPoint,
   type FieldDefinition,
 } from '@/lib/dataset-utils-v2';
 import { initializeFullDataset } from '@/lib/dataset-init';
+import type { Dataset } from '@/lib/dataset-validation';
 import { getBaseUrl } from '@/lib/server-utils';
 
 interface PageProps {
@@ -94,8 +93,6 @@ export default async function ReportPage({ params }: PageProps) {
 
   const existingDataPoints = (reportResponse.dataset?.data_points || []) as DataPoint[];
   const completeDataPoints = initializeFullDataset(filteredFieldDefinitions, existingDataPoints);
-  const enrichedDataPoints = enrichDataPoints(completeDataPoints, filteredFieldDefinitions);
-  const tableRows = flattenToTableRows(enrichedDataPoints);
 
   const requiredFields = reportResponse.template.sections
     .flatMap((section: any) => section.fields)
@@ -137,9 +134,9 @@ export default async function ReportPage({ params }: PageProps) {
             isRequired: Boolean(field.isRequired),
           })),
         }))}
-        initialRows={tableRows}
         fieldDefinitions={filteredFieldDefinitions}
-        datasetVersion={reportResponse.datasetVersion ?? 0}
+          initialDataset={reportResponse.dataset as Dataset}
+          initialDatasetVersion={reportResponse.datasetVersion ?? 0}
         completion={{
           filled: filledCount,
           required: requiredCount,

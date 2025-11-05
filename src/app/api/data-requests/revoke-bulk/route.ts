@@ -39,6 +39,8 @@ export async function POST(request: Request) {
         success: true,
         updated: result.updated,
         requests: result.requests,
+        version: result.version,
+        updatedAt: result.updatedAt,
       },
       { status: 200 }
     );

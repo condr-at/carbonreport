@@ -16,6 +16,7 @@ interface DataRequestsResponse {
 interface BulkMutationPayload {
   ids: string[];
   completedAt?: string | null;
+  requestedAt?: string | null;
 }
 
 interface BulkMutationResult {
@@ -169,6 +170,95 @@ export function useRevokeDataRequests(projectId: string) {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: dataRequestKeys.list(projectId, 'all') });
       logOptimistic('mutate:settled', { action: 'revoke', projectId });
+    },
+  });
+}
+
+export function useResendDataRequests(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ['data-requests', 'resend', projectId],
+    mutationFn: (payload: BulkMutationPayload) =>
+      request<BulkMutationResult>('/api/data-requests/resend-bulk', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: dataRequestKeys.list(projectId, 'all') });
+      const snapshot = queryClient.getQueryData<DataRequestSummary[]>(dataRequestKeys.list(projectId, 'all'));
+
+      const requestedAt = variables.requestedAt ?? new Date().toISOString();
+
+      if (!snapshot) {
+        logOptimistic('mutate:start', { action: 'resend', projectId, ids: variables.ids });
+        return { snapshot: undefined, requestedAt };
+      }
+
+      const optimistic = snapshot.map((request) =>
+        variables.ids.includes(request.id)
+          ? {
+              ...request,
+              status: 'pending',
+              requestedAt,
+              completedAt: null,
+              revokedAt: null,
+            }
+          : request
+      );
+
+      queryClient.setQueryData(dataRequestKeys.list(projectId, 'all'), optimistic);
+      logOptimistic('mutate:start', { action: 'resend', projectId, ids: variables.ids });
+
+      return { snapshot, requestedAt };
+    },
+    onError: (error, variables, context) => {
+      if (context?.snapshot) {
+        queryClient.setQueryData(dataRequestKeys.list(projectId, 'all'), context.snapshot);
+      }
+
+      const message = error instanceof ApiError ? error.message : 'Failed to resend requests.';
+      notifications.error(message);
+      logOptimistic('mutate:error', { action: 'resend', projectId, ids: variables.ids, error: message });
+    },
+    onSuccess: (data, variables, context) => {
+      if (data?.requests?.length) {
+        queryClient.setQueryData<DataRequestSummary[]>(dataRequestKeys.list(projectId, 'all'), (current) => {
+          if (!current) {
+            return data.requests;
+          }
+
+          const updates = new Map(data.requests.map((request) => [request.id, request]));
+          return current.map((request) => updates.get(request.id) ?? request);
+        });
+      } else if (context?.requestedAt) {
+        // Ensure requestedAt stays updated even without response payload
+        queryClient.setQueryData<DataRequestSummary[]>(dataRequestKeys.list(projectId, 'all'), (current) => {
+          if (!current) {
+            return current;
+          }
+
+          return current.map((request) =>
+            variables.ids.includes(request.id)
+              ? {
+                  ...request,
+                  status: 'pending',
+                  requestedAt: context.requestedAt!,
+                  completedAt: null,
+                  revokedAt: null,
+                }
+              : request
+          );
+        });
+      }
+
+      const updatedCount = typeof data?.updated === 'number' ? data.updated : variables.ids.length;
+      notifications.success(`Resent ${updatedCount} request${updatedCount === 1 ? '' : 's'}.`);
+      logOptimistic('mutate:success', { action: 'resend', projectId, ids: variables.ids });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: dataRequestKeys.list(projectId, 'all') });
+      logOptimistic('mutate:settled', { action: 'resend', projectId });
     },
   });
 }

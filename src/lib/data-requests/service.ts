@@ -41,11 +41,15 @@ export interface BulkExecutionResult {
   createdCount: number;
   revokedCount: number;
   createdIds: string[];
+  updatedAt: string;
+  version: number;
 }
 
 export interface BulkStatusResult {
   updated: number;
   requests: SerializedRequest[];
+  updatedAt: string;
+  version: number;
 }
 
 export interface SerializedRequest {
@@ -93,6 +97,12 @@ function endTimer(timer: Timer): void {
 
   const duration = Number(process.hrtime.bigint() - timer.start) / 1_000_000;
   console.info(`[data-requests] ${timer.label} took ${duration.toFixed(2)}ms`);
+}
+
+function buildMutationMetadata(reference?: Date): { updatedAt: string; version: number } {
+  const timestamp = reference?.getTime() ?? Date.now();
+  const updatedAt = new Date(timestamp).toISOString();
+  return { updatedAt, version: timestamp };
 }
 
 class DataRequestServiceError extends Error {
@@ -286,10 +296,13 @@ export async function executeBulk(
     invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${plan.projectId}`);
     invalidateByPrefix(`${CONTACT_CACHE_PREFIX}${plan.projectId}`);
 
+    const metadata = buildMutationMetadata(plan.now);
+
     return {
       createdCount: result.createdCount,
       revokedCount: result.revokedCount,
       createdIds: plan.insertRows.map((row) => row.id),
+      ...metadata,
     };
   } finally {
     endTimer(timer);
@@ -441,7 +454,8 @@ export async function completeRequestsBulk(
   client?: PrismaClient
 ): Promise<BulkStatusResult> {
   if (ids.length === 0) {
-    return { updated: 0, requests: [] };
+    const metadata = buildMutationMetadata(completedAt);
+    return { updated: 0, requests: [], ...metadata };
   }
 
   const timer = startTimer(`completeRequestsBulk count=${ids.length}`);
@@ -492,9 +506,12 @@ export async function completeRequestsBulk(
 
     const serialized = await serializeRequests(ids, prisma);
 
+    const metadata = buildMutationMetadata(completedAt);
+
     return {
       updated: toUpdate.length,
       requests: serialized,
+      ...metadata,
     };
   } finally {
     endTimer(timer);
@@ -507,7 +524,8 @@ export async function revokeRequestsBulk(
   client?: PrismaClient
 ): Promise<BulkStatusResult> {
   if (ids.length === 0) {
-    return { updated: 0, requests: [] };
+    const metadata = buildMutationMetadata(revokedAt);
+    return { updated: 0, requests: [], ...metadata };
   }
 
   const timer = startTimer(`revokeRequestsBulk count=${ids.length}`);
@@ -558,9 +576,70 @@ export async function revokeRequestsBulk(
 
     const serialized = await serializeRequests(ids, prisma);
 
+    const metadata = buildMutationMetadata(revokedAt);
+
     return {
       updated: toUpdate.length,
       requests: serialized,
+      ...metadata,
+    };
+  } finally {
+    endTimer(timer);
+  }
+}
+
+export async function resendRequestsBulk(
+  ids: string[],
+  requestedAt: Date,
+  client?: PrismaClient
+): Promise<BulkStatusResult> {
+  if (ids.length === 0) {
+    const metadata = buildMutationMetadata(requestedAt);
+    return { updated: 0, requests: [], ...metadata };
+  }
+
+  const timer = startTimer(`resendRequestsBulk count=${ids.length}`);
+  const prisma = getClient(client);
+
+  try {
+    const existing = await prisma.dataRequest.findMany({
+      where: { id: { in: ids } },
+      include: { contact: true },
+    });
+
+    if (existing.length !== ids.length) {
+      const foundIds = new Set(existing.map((request) => request.id));
+      const missing = ids.filter((id) => !foundIds.has(id));
+      throw new DataRequestServiceError(
+        `Data request(s) not found: ${missing.join(', ')}`,
+        404,
+        'NOT_FOUND'
+      );
+    }
+
+    const { count } = await prisma.dataRequest.updateMany({
+      where: {
+        id: { in: ids },
+      },
+      data: {
+        requestedAt,
+        completedAt: null,
+        revokedAt: null,
+      },
+    });
+
+    const projectIds = new Set(existing.map((request) => request.projectId));
+    projectIds.forEach((projectId) => {
+      invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${projectId}`);
+    });
+
+    const serialized = await serializeRequests(ids, prisma);
+    const metadata = buildMutationMetadata(requestedAt);
+
+    return {
+      updated: count,
+      requests: serialized,
+      ...metadata,
     };
   } finally {
     endTimer(timer);

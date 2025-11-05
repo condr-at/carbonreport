@@ -1,13 +1,6 @@
-'use client';
+"use client";
 
-/**
- * Dataset Page Client Component
- * 
- * Handles client-side state and interactions for the dataset table
- * Now works with field definitions from database instead of templates
- */
-
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { DatasetTable, type DataRequestSummary } from '@/components/dataset-table';
 import { RequestDataModal } from '@/components/request-data-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,28 +12,36 @@ import {
   enrichDataPoints,
   flattenToTableRows,
 } from '@/lib/dataset-utils-v2';
+import { initializeFullDataset } from '@/lib/dataset-init';
+import type { Dataset } from '@/lib/dataset-validation';
+import type { ContactSummary } from '@/lib/contacts/types';
+import { useProjectDataset, type ProjectDataset } from '@/lib/data-client/dataset';
+import { useDataRequests } from '@/lib/data-client/data-requests';
+import { useProjectContacts } from '@/lib/data-client/contacts';
 
 interface DatasetPageClientProps {
   projectId: string;
   projectName: string;
   projectOwnerName: string;
-  initialRows: TableRow[];
-  datasetVersion: number;
+  initialDataset: Dataset | null;
+  initialDatasetVersion: number;
   fieldDefinitions: FieldDefinition[];
   mailtoTemplate: { subject?: string; body?: string } | null;
+  initialDataRequests: DataRequestSummary[];
+  initialContacts: ContactSummary[];
 }
 
 export function DatasetPageClient({
   projectId,
   projectName,
   projectOwnerName,
-  initialRows,
-  datasetVersion: initialVersion,
+  initialDataset,
+  initialDatasetVersion,
   fieldDefinitions,
   mailtoTemplate,
+  initialDataRequests,
+  initialContacts,
 }: DatasetPageClientProps) {
-  const [rows, setRows] = useState<TableRow[]>(initialRows);
-  const [datasetVersion, setDatasetVersion] = useState(initialVersion);
   const [requestDataModal, setRequestDataModal] = useState<{
     fieldLabel?: string;
     fieldHint?: string | null;
@@ -55,13 +56,28 @@ export function DatasetPageClient({
     }>;
     mailtoTemplate?: { subject: string; body: string } | null;
   } | null>(null);
-  const [dataRequests, setDataRequests] = useState<DataRequestSummary[]>([]);
-  const [contacts, setContacts] = useState<Array<{
-    id: string;
-    name: string;
-    email: string;
-    position?: string | null;
-  }>>([]);
+
+  const initialDatasetPayload = useMemo<ProjectDataset>(
+    () => ({
+      projectId,
+      projectName,
+      dataset: initialDataset ?? ({ data_points: [] } as Dataset),
+      datasetVersion: initialDatasetVersion,
+      version: initialDatasetVersion,
+      updatedAt: new Date().toISOString(),
+    }),
+    [projectId, projectName, initialDataset, initialDatasetVersion]
+  );
+
+  const datasetQuery = useProjectDataset(projectId, { initialData: initialDatasetPayload });
+  const datasetVersion = datasetQuery.data?.datasetVersion ?? initialDatasetVersion;
+
+  const rows = useMemo<TableRow[]>(() => {
+    const dataPoints = (datasetQuery.data?.dataset?.data_points ?? []) as DataPoint[];
+    const complete = initializeFullDataset(fieldDefinitions, dataPoints);
+    const enriched = enrichDataPoints(complete, fieldDefinitions);
+    return flattenToTableRows(enriched);
+  }, [datasetQuery.data?.dataset, fieldDefinitions]);
 
   const resolveMailtoTemplate = useCallback(
     (): { subject: string; body: string } | null => {
@@ -82,179 +98,6 @@ export function DatasetPageClient({
       };
     },
     [mailtoTemplate, projectName]
-  );
-
-  const refreshRows = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/dataset`, {
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to refresh dataset');
-      }
-
-      const payload = await response.json();
-      const dataPoints = (payload.dataset?.data_points || []) as DataPoint[];
-      const enriched = enrichDataPoints(dataPoints, fieldDefinitions);
-      const rebuiltRows = flattenToTableRows(enriched);
-
-      setRows(rebuiltRows);
-      setDatasetVersion(payload.datasetVersion ?? 0);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [projectId, fieldDefinitions]);
-
-  // Update single field
-  const handleUpdate = useCallback(
-    async (fieldId: string, itemId: string | null, value: string) => {
-      try {
-        const response = await fetch(`/api/projects/${projectId}/dataset`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            field_id: fieldId,
-            item_id: itemId,
-            value,
-            datasetVersion,
-          }),
-        });
-
-        if (!response.ok) {
-          let message = 'Failed to update field';
-          let parsed: any = null;
-
-          try {
-            parsed = await response.json();
-            if (parsed?.error) {
-              message = parsed.error;
-            }
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
-          }
-
-          if (response.status === 409) {
-            await refreshRows();
-            throw new Error(message || 'Dataset version conflict. Please refresh.');
-          }
-
-          throw new Error(message);
-        }
-
-        const data = await response.json();
-        setDatasetVersion(data.datasetVersion);
-
-        setRows((prevRows) =>
-          prevRows.map((row) => {
-            if (row.fieldId === fieldId && row.itemId === itemId) {
-              return { ...row, value };
-            }
-            return row;
-          })
-        );
-      } catch (error) {
-        console.error('Error updating data point:', error);
-        if (error instanceof Error) {
-          throw error;
-        }
-        throw new Error('Failed to update field');
-      }
-    },
-    [projectId, datasetVersion, refreshRows]
-  );
-
-  const handleAddItem = useCallback(
-    async (repeatableKey: string) => {
-      try {
-        const response = await fetch(`/api/projects/${projectId}/dataset/items`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            repeatableKey,
-            datasetVersion,
-          }),
-        });
-
-        if (!response.ok) {
-          let message = 'Failed to add item';
-
-          try {
-            const errorPayload = await response.json();
-            if (errorPayload?.error) {
-              message = errorPayload.error;
-            }
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
-          }
-
-          if (response.status === 409) {
-            await refreshRows();
-          }
-
-          alert(message);
-          return;
-        }
-
-        const data = await response.json();
-        setDatasetVersion(data.datasetVersion);
-
-        await refreshRows();
-      } catch (error) {
-        console.error('Error adding dataset item:', error);
-        alert('Failed to add item');
-      }
-    },
-    [projectId, datasetVersion, refreshRows]
-  );
-
-  const handleDeleteItem = useCallback(
-    async (repeatableKey: string, itemId: string) => {
-      try {
-        const response = await fetch(
-          `/api/projects/${projectId}/dataset/items/${itemId}?datasetVersion=${datasetVersion}`,
-          {
-            method: 'DELETE',
-          }
-        );
-
-        if (!response.ok) {
-          let message = 'Failed to delete item';
-
-          try {
-            const errorPayload = await response.json();
-            if (errorPayload?.error) {
-              message = errorPayload.error;
-            }
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
-          }
-
-          if (response.status === 409) {
-            await refreshRows();
-          }
-
-          alert(message);
-          return;
-        }
-
-        const data = await response.json();
-        setDatasetVersion(data.datasetVersion);
-        setRows((prevRows) =>
-          prevRows.filter(
-            (row) =>
-              !(
-                row.repeatableKey === repeatableKey &&
-                row.itemId === itemId
-              )
-          )
-        );
-      } catch (error) {
-        console.error('Error deleting dataset item:', error);
-        alert('Failed to delete item');
-      }
-    },
-    [projectId, datasetVersion, refreshRows]
   );
 
   const handleRequestData = useCallback(
@@ -301,55 +144,23 @@ export function DatasetPageClient({
     [resolveMailtoTemplate]
   );
 
-  const refreshDataRequests = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/data-requests`, {
-        cache: 'no-store',
-      });
+  const dataRequestsQuery = useDataRequests(projectId, {
+    status: 'all',
+    initialData: initialDataRequests,
+  });
+  const dataRequests = dataRequestsQuery.data ?? [];
 
-      if (!response.ok) {
-        throw new Error(`Failed to load data requests for project ${projectId}`);
-      }
-
-      const payload = await response.json();
-      if (Array.isArray(payload?.requests)) {
-        setDataRequests(payload.requests as DataRequestSummary[]);
-      } else {
-        setDataRequests([]);
-      }
-    } catch (error) {
-      console.error('Failed to fetch project data requests', error);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    refreshDataRequests();
-  }, [refreshDataRequests]);
-
-  const refreshContacts = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/contacts`, {
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load contacts for project ${projectId}`);
-      }
-
-      const payload = await response.json();
-      if (Array.isArray(payload?.contacts)) {
-        setContacts(payload.contacts);
-      } else {
-        setContacts([]);
-      }
-    } catch (error) {
-      console.error('Failed to fetch project contacts', error);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    refreshContacts();
-  }, [refreshContacts]);
+  const { data: contactsData = [] } = useProjectContacts(projectId, initialContacts);
+  const normalizedContacts = useMemo(
+    () =>
+      contactsData.map((contact) => ({
+        id: contact.id,
+        name: (contact.name ?? '').trim() || contact.email,
+        email: contact.email,
+        position: contact.position ?? null,
+      })),
+    [contactsData]
+  );
 
   if (rows.length === 0) {
     return (
@@ -378,11 +189,9 @@ export function DatasetPageClient({
         </CardHeader>
         <CardContent>
           <DatasetTable
+            projectId={projectId}
             rows={rows}
             dataRequests={dataRequests}
-            onUpdate={handleUpdate}
-            onDeleteItem={handleDeleteItem}
-            onAddItem={handleAddItem}
             onRequestData={handleRequestData}
             onRequestMultiple={handleRequestMultiple}
           />
@@ -402,9 +211,11 @@ export function DatasetPageClient({
           fields={requestDataModal.fields}
           isGroup={false}
           mailtoTemplate={requestDataModal.mailtoTemplate || undefined}
-          contacts={contacts}
+          contacts={normalizedContacts}
           onClose={() => setRequestDataModal(null)}
-          onLogged={refreshDataRequests}
+          onLogged={async () => {
+            await dataRequestsQuery.refetch();
+          }}
         />
       )}
     </>

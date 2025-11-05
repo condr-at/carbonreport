@@ -43,11 +43,11 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     const contactFilter = url.searchParams.get('contact');
 
     const cacheKey = `project:data-requests:${params.id}:${statusParam}:${contactFilter ?? 'all'}:${sortParam}`;
-    const cached = getCacheValue<{ requests: unknown[] }>(cacheKey);
+    const cached = getCacheValue<{ requests: unknown[]; updatedAt: string; version: number }>(cacheKey);
 
     if (cached) {
-  logTiming(`GET /projects/${params.id}/data-requests (cache hit)`, startedAt);
-  return NextResponse.json(cached, { status: 200 });
+      logTiming(`GET /projects/${params.id}/data-requests (cache hit)`, startedAt);
+      return NextResponse.json(cached, { status: 200 });
     }
 
     const where: Prisma.DataRequestWhereInput = {
@@ -111,35 +111,57 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     const fieldMeta = new Map(fieldDefinitions.map((definition) => [definition.fieldId, definition]));
 
+    let latestTimestamp = 0;
+    const requestSummaries = requests.map((request) => {
+      const definition = fieldMeta.get(request.dataPointId);
+      const candidateTimes = [request.requestedAt, request.completedAt, request.revokedAt, request.deadline].filter(
+        (value): value is Date => value instanceof Date
+      );
+      candidateTimes.forEach((value) => {
+        const unix = value.getTime();
+        if (unix > latestTimestamp) {
+          latestTimestamp = unix;
+        }
+      });
+
+      return {
+        id: request.id,
+        status: computeStatus(request),
+        requestedAt: request.requestedAt.toISOString(),
+        completedAt: request.completedAt?.toISOString() ?? null,
+        revokedAt: request.revokedAt?.toISOString() ?? null,
+        deadline: request.deadline?.toISOString() ?? null,
+        contact: request.contact
+          ? {
+              id: request.contact.id,
+              name: request.contact.name,
+              email: request.contact.email,
+              position: request.contact.position,
+            }
+          : null,
+        dataPoint: {
+          id: request.dataPointId,
+          itemId: request.itemId,
+          label: request.fieldLabel ?? definition?.label ?? null,
+          hint: definition?.hint ?? null,
+        },
+      };
+    });
+
+    if (latestTimestamp === 0) {
+      latestTimestamp = Date.now();
+    }
+
+    const updatedAt = new Date(latestTimestamp).toISOString();
+    const version = latestTimestamp;
+
     const responsePayload = {
-      requests: requests.map((request) => {
-        const definition = fieldMeta.get(request.dataPointId);
-        return {
-          id: request.id,
-          status: computeStatus(request),
-          requestedAt: request.requestedAt.toISOString(),
-          completedAt: request.completedAt?.toISOString() ?? null,
-          revokedAt: request.revokedAt?.toISOString() ?? null,
-          deadline: request.deadline?.toISOString() ?? null,
-          contact: request.contact
-            ? {
-                id: request.contact.id,
-                name: request.contact.name,
-                email: request.contact.email,
-                position: request.contact.position,
-              }
-            : null,
-          dataPoint: {
-            id: request.dataPointId,
-            itemId: request.itemId,
-            label: request.fieldLabel ?? definition?.label ?? null,
-            hint: definition?.hint ?? null,
-          },
-        };
-      }),
+      requests: requestSummaries,
+      updatedAt,
+      version,
     };
 
-  setCacheValue(cacheKey, responsePayload);
+    setCacheValue(cacheKey, responsePayload);
 
     const response = NextResponse.json(responsePayload, { status: 200 });
     logTiming(`GET /projects/${params.id}/data-requests`, startedAt);

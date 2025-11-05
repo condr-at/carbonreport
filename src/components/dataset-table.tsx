@@ -20,16 +20,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronDown, ChevronRight, Mail, Plus, Search, Trash2 } from 'lucide-react';
+import { ChevronDown, ChevronRight, Loader2, Mail, Plus, Search, Trash2 } from 'lucide-react';
 import type { DataRequestSummary } from '@/lib/data-requests/types';
 import { TableRow } from '@/lib/dataset-utils-v2';
 import { cn } from '@/lib/utils';
+import {
+  useAddDatasetItem,
+  useDeleteDatasetItem,
+  useUpdateDatasetField,
+} from '@/lib/data-client/dataset';
 
 interface DatasetTableProps {
+  projectId: string;
   rows: TableRow[];
-  onUpdate: (fieldId: string, itemId: string | null, value: string) => Promise<void>;
-  onDeleteItem: (repeatableKey: string, itemId: string) => Promise<void>;
-  onAddItem: (repeatableKey: string) => Promise<void>;
   onRequestData: (args: {
     fieldId: string;
     fieldLabel: string;
@@ -92,15 +95,15 @@ const REPEATABLE_GROUP_HINTS: Record<string, string> = {
 };
 
 export function DatasetTable({
-  rows: initialRows,
-  onUpdate,
-  onDeleteItem,
-  onAddItem,
+  projectId,
+  rows,
   onRequestData,
   onRequestMultiple,
   dataRequests = [],
 }: DatasetTableProps) {
-  const [rows, setRows] = useState<TableRow[]>(initialRows);
+  const updateFieldMutation = useUpdateDatasetField(projectId);
+  const addItemMutation = useAddDatasetItem(projectId);
+  const deleteItemMutation = useDeleteDatasetItem(projectId);
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,28 +111,28 @@ export function DatasetTable({
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    setRows(initialRows);
-  }, [initialRows]);
-
-  useEffect(() => {
-    const keys = new Set<string>();
-    initialRows.forEach((row) => {
+    const availableKeys = new Set<string>();
+    rows.forEach((row) => {
       if (row.isRepeatable && row.repeatableKey) {
-        keys.add(row.repeatableKey);
+        availableKeys.add(row.repeatableKey);
       }
     });
+
     setExpandedGroups((prev) => {
+      if (prev.size === 0) {
+        return new Set(availableKeys);
+      }
+
       const next = new Set<string>();
-      keys.forEach((key) => {
+      availableKeys.forEach((key) => {
         if (prev.has(key)) {
-          next.add(key);
-        } else {
           next.add(key);
         }
       });
+
       return next;
     });
-  }, [initialRows]);
+  }, [rows]);
 
   useEffect(() => {
     const validIds = new Set(rows.map((row) => row.id));
@@ -144,74 +147,89 @@ export function DatasetTable({
     });
   }, [rows]);
 
-  // Optimistic update handler
   const handleCellSave = useCallback(
     async (row: TableRow, newValue: string) => {
-      const oldValue = row.value;
-
-      // Optimistic update
-      setRows((prev) =>
-        prev.map((r) =>
-          r.id === row.id ? { ...r, value: newValue } : r
-        )
-      );
-
-      try {
-        await onUpdate(row.fieldId, row.itemId, newValue);
-      } catch (error) {
-        // Revert on error
-        setRows((prev) =>
-          prev.map((r) =>
-            r.id === row.id ? { ...r, value: oldValue } : r
-          )
-        );
-        console.error('Failed to update field:', error);
+      if (updateFieldMutation.isPending) {
+        return;
       }
 
-      setEditingCell(null);
+      const currentValue = row.value ?? '';
+      const nextValue = newValue ?? '';
+
+      if (nextValue === currentValue) {
+        setEditingCell(null);
+        return;
+      }
+
+      try {
+        await updateFieldMutation.mutateAsync({
+          fieldId: row.fieldId,
+          itemId: row.itemId ?? null,
+          value: nextValue,
+        });
+      } finally {
+        setEditingCell(null);
+      }
     },
-    [onUpdate]
+    [updateFieldMutation]
   );
 
   const renderEditableCell = useCallback(
     (row: TableRow) => {
       const isEditing = editingCell === row.id;
+      const isUpdating =
+        updateFieldMutation.isPending &&
+        updateFieldMutation.variables?.fieldId === row.fieldId &&
+        (updateFieldMutation.variables?.itemId ?? null) === (row.itemId ?? null);
 
       if (isEditing) {
         return (
-          <Input
-            type={row.type === 'number' ? 'number' : 'text'}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onBlur={() => handleCellSave(row, editValue)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleCellSave(row, editValue);
-              } else if (e.key === 'Escape') {
-                setEditingCell(null);
-              }
-            }}
-            autoFocus
-            className="h-8"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              type={row.type === 'number' ? 'number' : 'text'}
+              value={editValue}
+              disabled={isUpdating}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={() => handleCellSave(row, editValue)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleCellSave(row, editValue);
+                } else if (e.key === 'Escape') {
+                  setEditingCell(null);
+                }
+              }}
+              autoFocus
+              className="h-8"
+            />
+            {isUpdating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          </div>
         );
       }
 
       return (
-        <div
-          className="cursor-pointer hover:bg-muted/50 px-2 py-1 rounded min-h-[32px] flex items-center"
+        <button
+          type="button"
+          disabled={isUpdating}
+          className={cn(
+            'flex min-h-[32px] w-full items-center gap-2 rounded px-2 py-1 text-left transition hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring',
+            isUpdating && 'cursor-wait opacity-80'
+          )}
           onClick={() => {
             setEditingCell(row.id);
-            setEditValue(row.value);
+            setEditValue(row.value ?? '');
           }}
         >
-          {row.value || (
-            <span className="text-muted-foreground italic">Click to edit</span>
+          {isUpdating ? (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          ) : row.value ? (
+            row.value
+          ) : (
+            <span className="italic text-muted-foreground">Click to edit</span>
           )}
-        </div>
+        </button>
       );
     },
-    [editingCell, editValue, handleCellSave]
+    [editingCell, editValue, handleCellSave, updateFieldMutation]
   );
 
   // Define table columns
@@ -572,6 +590,17 @@ export function DatasetTable({
 
   const renderGroupContent = useCallback(
     (group: Extract<DisplayRow, { kind: 'group' }>) => {
+      const handleAddItem = () => {
+        if (!group.repeatableKey || addItemMutation.isPending) {
+          return;
+        }
+        addItemMutation.mutate({ repeatableKey: group.repeatableKey });
+      };
+
+      const isAdding =
+        addItemMutation.isPending &&
+        addItemMutation.variables?.repeatableKey === group.repeatableKey;
+
       if (group.items.length === 0) {
         return (
           <div className="flex items-center justify-between">
@@ -579,9 +608,14 @@ export function DatasetTable({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onAddItem(group.repeatableKey)}
+              disabled={addItemMutation.isPending}
+              onClick={handleAddItem}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              {isAdding ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
               Add {group.fieldLabel} item
             </Button>
           </div>
@@ -674,10 +708,27 @@ export function DatasetTable({
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => onDeleteItem(group.repeatableKey, item.itemId!)}
+                              disabled={deleteItemMutation.isPending}
+                              onClick={() => {
+                                if (!item.itemId || deleteItemMutation.isPending) {
+                                  return;
+                                }
+                                deleteItemMutation.mutate({
+                                  repeatableKey: group.repeatableKey,
+                                  itemId: item.itemId,
+                                });
+                              }}
                             >
-                              <Trash2 className="h-4 w-4 mr-1 text-destructive" />
-                              Delete
+                              {deleteItemMutation.isPending &&
+                              deleteItemMutation.variables?.itemId === item.itemId &&
+                              deleteItemMutation.variables?.repeatableKey === group.repeatableKey ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                              ) : (
+                                <>
+                                  <Trash2 className="mr-1 h-4 w-4 text-destructive" />
+                                  Delete
+                                </>
+                              )}
                             </Button>
                           )}
                         </td>
@@ -692,9 +743,14 @@ export function DatasetTable({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onAddItem(group.repeatableKey)}
+              disabled={addItemMutation.isPending}
+              onClick={handleAddItem}
             >
-              <Plus className="h-4 w-4 mr-2" />
+              {isAdding ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Plus className="mr-2 h-4 w-4" />
+              )}
               Add {group.fieldLabel} item
             </Button>
           </div>
@@ -705,8 +761,8 @@ export function DatasetTable({
       selectedRowIds,
       setSelectedRowIds,
       renderEditableCell,
-      onAddItem,
-      onDeleteItem,
+      addItemMutation,
+      deleteItemMutation,
     ]
   );
 

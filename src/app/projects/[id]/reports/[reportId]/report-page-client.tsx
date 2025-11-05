@@ -13,6 +13,8 @@ import {
   flattenToTableRows,
 } from '@/lib/dataset-utils-v2';
 import { initializeFullDataset } from '@/lib/dataset-init';
+import type { Dataset } from '@/lib/dataset-validation';
+import { useProjectDataset, type ProjectDataset } from '@/lib/data-client/dataset';
 import { Database, RefreshCcw, FileText } from 'lucide-react';
 
 interface ReportSectionSummary {
@@ -36,9 +38,9 @@ interface ReportPageClientProps {
     description?: string;
     fields: Array<{ fieldId: string; isRequired?: boolean }>;
   }>;
-  initialRows: TableRow[];
   fieldDefinitions: FieldDefinition[];
-  datasetVersion: number;
+  initialDataset: Dataset | null;
+  initialDatasetVersion: number;
   completion: { filled: number; required: number; percentage: number };
   mailtoTemplate: { subject?: string; body?: string } | null;
 }
@@ -59,14 +61,12 @@ export function ReportPageClient({
   reportName,
   templateCode,
   sections,
-  initialRows,
+  initialDataset,
   fieldDefinitions,
-  datasetVersion: initialVersion,
+  initialDatasetVersion,
   completion,
   mailtoTemplate,
 }: ReportPageClientProps) {
-  const [rows, setRows] = useState<TableRow[]>(initialRows);
-  const [datasetVersion, setDatasetVersion] = useState(initialVersion);
   const [dataRequests, setDataRequests] = useState<DataRequestSummary[]>([]);
   const [contacts, setContacts] = useState<{
     id: string;
@@ -95,6 +95,31 @@ export function ReportPageClient({
     });
   }, [sections]);
 
+  const initialDatasetPayload = useMemo<ProjectDataset>(
+    () => ({
+      projectId,
+      projectName,
+      dataset: initialDataset ?? ({ data_points: [] } as Dataset),
+      datasetVersion: initialDatasetVersion,
+      version: initialDatasetVersion,
+      updatedAt: new Date().toISOString(),
+    }),
+    [projectId, projectName, initialDataset, initialDatasetVersion]
+  );
+
+  const datasetQuery = useProjectDataset(projectId, {
+    initialData: initialDatasetPayload,
+  });
+  const datasetVersion = datasetQuery.data?.datasetVersion ?? initialDatasetVersion;
+
+  const rows = useMemo<TableRow[]>(() => {
+    const dataPoints = (datasetQuery.data?.dataset?.data_points ?? []) as DataPoint[];
+    const filtered = dataPoints.filter((point) => fieldIdSet.has(point.field_id));
+    const complete = initializeFullDataset(fieldDefinitions, filtered);
+    const enriched = enrichDataPoints(complete, fieldDefinitions);
+    return flattenToTableRows(enriched);
+  }, [datasetQuery.data?.dataset, fieldDefinitions, fieldIdSet]);
+
   const resolveMailtoTemplate = useCallback(
     (): { subject: string; body: string } | null => {
       if (!mailtoTemplate) {
@@ -116,182 +141,6 @@ export function ReportPageClient({
     [mailtoTemplate, projectName]
   );
 
-  const buildRows = useCallback(
-    (dataPoints: DataPoint[]): TableRow[] => {
-      const filtered = dataPoints.filter((dp) => fieldIdSet.has(dp.field_id));
-      const complete = initializeFullDataset(fieldDefinitions, filtered);
-      const enriched = enrichDataPoints(complete, fieldDefinitions);
-      return flattenToTableRows(enriched);
-    },
-    [fieldDefinitions, fieldIdSet]
-  );
-
-  const refreshRows = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/dataset`, {
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to refresh dataset');
-      }
-
-      const payload = await response.json();
-      const dataPoints = (payload.dataset?.data_points || []) as DataPoint[];
-      const refreshedRows = buildRows(dataPoints);
-      setRows(refreshedRows);
-      setDatasetVersion(payload.datasetVersion ?? 0);
-    } catch (error) {
-      console.error('Error refreshing dataset:', error);
-    }
-  }, [projectId, buildRows]);
-
-  const handleUpdate = useCallback(
-    async (fieldId: string, itemId: string | null, value: string) => {
-      try {
-        const response = await fetch(`/api/projects/${projectId}/dataset`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            field_id: fieldId,
-            item_id: itemId,
-            value,
-            datasetVersion,
-          }),
-        });
-
-        if (!response.ok) {
-          let message = 'Failed to update field';
-
-          try {
-            const parsed = await response.json();
-            if (parsed?.error) {
-              message = parsed.error;
-            }
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
-          }
-
-          if (response.status === 409) {
-            await refreshRows();
-            throw new Error(message || 'Dataset version conflict. Refreshed data.');
-          }
-
-          throw new Error(message);
-        }
-
-        const data = await response.json();
-        setDatasetVersion(data.datasetVersion);
-        setRows((prev) =>
-          prev.map((row) => {
-            if (row.fieldId === fieldId && row.itemId === itemId) {
-              return { ...row, value };
-            }
-            return row;
-          })
-        );
-      } catch (error) {
-        console.error('Error updating data point:', error);
-        if (error instanceof Error) {
-          throw error;
-        }
-        throw new Error('Failed to update field');
-      }
-    },
-    [projectId, datasetVersion, refreshRows]
-  );
-
-  const handleAddItem = useCallback(
-    async (repeatableKey: string) => {
-      try {
-        const response = await fetch(`/api/projects/${projectId}/dataset/items`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            repeatableKey,
-            datasetVersion,
-          }),
-        });
-
-        if (!response.ok) {
-          let message = 'Failed to add item';
-
-          try {
-            const errorPayload = await response.json();
-            if (errorPayload?.error) {
-              message = errorPayload.error;
-            }
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
-          }
-
-          if (response.status === 409) {
-            await refreshRows();
-          }
-
-          alert(message);
-          return;
-        }
-
-        const data = await response.json();
-        setDatasetVersion(data.datasetVersion);
-        await refreshRows();
-      } catch (error) {
-        console.error('Error adding dataset item:', error);
-        alert('Failed to add item');
-      }
-    },
-    [projectId, datasetVersion, refreshRows]
-  );
-
-  const handleDeleteItem = useCallback(
-    async (repeatableKey: string, itemId: string) => {
-      try {
-        const response = await fetch(
-          `/api/projects/${projectId}/dataset/items/${itemId}?datasetVersion=${datasetVersion}`,
-          {
-            method: 'DELETE',
-          }
-        );
-
-        if (!response.ok) {
-          let message = 'Failed to delete item';
-
-          try {
-            const errorPayload = await response.json();
-            if (errorPayload?.error) {
-              message = errorPayload.error;
-            }
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
-          }
-
-          if (response.status === 409) {
-            await refreshRows();
-          }
-
-          alert(message);
-          return;
-        }
-
-        const data = await response.json();
-        setDatasetVersion(data.datasetVersion);
-        setRows((prevRows) =>
-          prevRows.filter(
-            (row) =>
-              !(
-                row.repeatableKey === repeatableKey &&
-                row.itemId === itemId
-              )
-          )
-        );
-      } catch (error) {
-        console.error('Error deleting dataset item:', error);
-        alert('Failed to delete item');
-      }
-    },
-    [projectId, datasetVersion, refreshRows]
-  );
 
   const handleRequestData = useCallback(
     ({
@@ -435,11 +284,9 @@ export function ReportPageClient({
         </CardHeader>
         <CardContent>
           <DatasetTable
+            projectId={projectId}
             rows={rows}
             dataRequests={dataRequests}
-            onUpdate={handleUpdate}
-            onDeleteItem={handleDeleteItem}
-            onAddItem={handleAddItem}
             onRequestData={handleRequestData}
           />
         </CardContent>

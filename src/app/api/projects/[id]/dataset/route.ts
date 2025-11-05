@@ -31,6 +31,11 @@ const UpdateDatasetSchema = z.object({
   datasetVersion: z.number().int().min(0),
 })
 
+function buildMetadata(version: number) {
+  const updatedAt = new Date().toISOString()
+  return { version, updatedAt }
+}
+
 /**
  * GET /api/projects/[id]/dataset
  * Returns project dataset with current version
@@ -63,21 +68,26 @@ export async function GET(
     try {
       const validatedDataset = validateDataset(project.dataset)
       
+      const metadata = buildMetadata(project.datasetVersion)
+
       return NextResponse.json({
         projectId: project.id,
         projectName: project.name,
         dataset: validatedDataset,
         datasetVersion: project.datasetVersion,
+        ...metadata,
       })
     } catch (validationError) {
       // Dataset is malformed - return as-is with warning
       console.error('Dataset validation failed:', validationError)
+      const metadata = buildMetadata(project.datasetVersion)
       return NextResponse.json({
         projectId: project.id,
         projectName: project.name,
         dataset: project.dataset,
         datasetVersion: project.datasetVersion,
         warning: 'Dataset structure validation failed',
+        ...metadata,
       })
     }
   } catch (error) {
@@ -143,11 +153,14 @@ export async function PUT(
         },
       })
 
+      const metadata = buildMetadata(updatedProject.datasetVersion)
+
       return NextResponse.json({
         success: true,
         projectId: updatedProject.id,
         datasetVersion: updatedProject.datasetVersion, // Return new version
         message: 'Dataset updated successfully',
+        ...metadata,
       })
     } catch (prismaError: any) {
       // Check if update failed due to version mismatch (WHERE clause didn't match)
@@ -254,10 +267,13 @@ export async function PATCH(
       },
     })
 
+    const metadata = buildMetadata(updatedProject.datasetVersion)
+
     return NextResponse.json({
       success: true,
       datasetVersion: updatedProject.datasetVersion,
       updatedDataPoint,
+      ...metadata,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

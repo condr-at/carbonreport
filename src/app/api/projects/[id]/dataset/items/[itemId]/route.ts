@@ -8,6 +8,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { type Dataset } from '@/lib/dataset-validation'
 
+function buildMetadata(version: number) {
+  const updatedAt = new Date().toISOString()
+  return { version, updatedAt }
+}
+
 /**
  * DELETE /api/projects/[id]/dataset/items/[itemId]
  * Delete all data points with the specified item_id
@@ -76,10 +81,13 @@ export async function DELETE(
       },
     })
 
+    const metadata = buildMetadata(updatedProject.datasetVersion)
+
     return NextResponse.json({
       success: true,
       datasetVersion: updatedProject.datasetVersion,
       deletedCount,
+      ...metadata,
     })
   } catch (error) {
     console.error('Error deleting item:', error)
