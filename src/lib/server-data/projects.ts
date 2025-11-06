@@ -4,6 +4,7 @@ import type { DataRequestSummary } from '@/lib/data-requests/types';
 import type { ContactSummary } from '@/lib/contacts/types';
 import type { FieldDefinition } from '@/lib/dataset-utils-v2';
 import { validateDataset, type Dataset } from '@/lib/dataset-validation';
+import type { ServerTimingTracker } from '@/lib/server-data/metrics';
 
 export interface ProjectSummary {
   id: string;
@@ -21,7 +22,11 @@ export interface ProjectDatasetPayload {
   warning?: string;
 }
 
-export async function getProjectSummary(projectId: string): Promise<ProjectSummary | null> {
+export async function getProjectSummary(
+  projectId: string,
+  tracker?: ServerTimingTracker
+): Promise<ProjectSummary | null> {
+  const stopQuery = tracker?.start('db:project-summary');
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     select: {
@@ -38,12 +43,14 @@ export async function getProjectSummary(projectId: string): Promise<ProjectSumma
       },
     },
   });
+  stopQuery?.();
 
   if (!project) {
     return null;
   }
 
-  return {
+  const stopTransform = tracker?.start('transform:project-summary');
+  const result = {
     id: project.id,
     name: project.name,
     status: project.status,
@@ -52,20 +59,29 @@ export async function getProjectSummary(projectId: string): Promise<ProjectSumma
     mailtoTemplate: (project.mailtoTemplate as Record<string, unknown> | null) ?? null,
     ownerName: project.user?.name ?? null,
   };
+  stopTransform?.();
+
+  return result;
 }
 
-export async function getProjectContacts(projectId: string): Promise<ContactSummary[]> {
+export async function getProjectContacts(
+  projectId: string,
+  tracker?: ServerTimingTracker
+): Promise<ContactSummary[]> {
+  const stopProjectQuery = tracker?.start('db:project-for-contacts');
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     select: {
       userId: true,
     },
   });
+  stopProjectQuery?.();
 
   if (!project) {
     return [];
   }
 
+  const stopContactsQuery = tracker?.start('db:contacts');
   const contacts = await prisma.contact.findMany({
     where: {
       userId: project.userId,
@@ -79,16 +95,25 @@ export async function getProjectContacts(projectId: string): Promise<ContactSumm
       position: true,
     },
   });
+  stopContactsQuery?.();
 
-  return contacts.map((contact) => ({
+  const stopTransform = tracker?.start('transform:contacts');
+  const summaries = contacts.map((contact) => ({
     id: contact.id,
     name: contact.name,
     email: contact.email,
     position: contact.position ?? null,
   }));
+  stopTransform?.();
+
+  return summaries;
 }
 
-export async function getProjectDataRequests(projectId: string): Promise<DataRequestSummary[]> {
+export async function getProjectDataRequests(
+  projectId: string,
+  tracker?: ServerTimingTracker
+): Promise<DataRequestSummary[]> {
+  const stopRequestsQuery = tracker?.start('db:data-requests');
   const requests = await prisma.dataRequest.findMany({
     where: { projectId },
     include: {
@@ -96,6 +121,7 @@ export async function getProjectDataRequests(projectId: string): Promise<DataReq
     },
     orderBy: [{ requestedAt: 'desc' }],
   });
+  stopRequestsQuery?.();
 
   if (requests.length === 0) {
     return [];
@@ -106,15 +132,21 @@ export async function getProjectDataRequests(projectId: string): Promise<DataReq
   );
 
   const definitions = fieldIds.length
-    ? await prisma.datasetFieldDefinition.findMany({
-        where: { fieldId: { in: fieldIds } },
-        select: { fieldId: true, label: true, hint: true },
-      })
+    ? await (async () => {
+        const stopDefinitionsQuery = tracker?.start('db:data-request-field-definitions');
+        const result = await prisma.datasetFieldDefinition.findMany({
+          where: { fieldId: { in: fieldIds } },
+          select: { fieldId: true, label: true, hint: true },
+        });
+        stopDefinitionsQuery?.();
+        return result;
+      })()
     : [];
 
   const fieldMeta = new Map(definitions.map((definition) => [definition.fieldId, definition]));
 
-  return requests.map((request) => {
+  const stopTransform = tracker?.start('transform:data-requests');
+  const summaries = requests.map((request) => {
     const fieldDefinition = request.dataPointId ? fieldMeta.get(request.dataPointId) : null;
 
     const summary: DataRequestSummary = {
@@ -141,14 +173,21 @@ export async function getProjectDataRequests(projectId: string): Promise<DataReq
 
     return summary;
   });
+
+  stopTransform?.();
+
+  return summaries;
 }
 
-export async function getDatasetFieldDefinitions(): Promise<FieldDefinition[]> {
+export async function getDatasetFieldDefinitions(tracker?: ServerTimingTracker): Promise<FieldDefinition[]> {
+  const stopDefinitionsQuery = tracker?.start('db:dataset-field-definitions');
   const definitions = await prisma.datasetFieldDefinition.findMany({
     orderBy: [{ sortOrder: 'asc' }, { label: 'asc' }],
   });
+  stopDefinitionsQuery?.();
 
-  return definitions.map((definition) => ({
+  const stopTransform = tracker?.start('transform:dataset-field-definitions');
+  const result = definitions.map((definition) => ({
     field_id: definition.fieldId,
     label: definition.label,
     hint: definition.hint ?? null,
@@ -159,9 +198,17 @@ export async function getDatasetFieldDefinitions(): Promise<FieldDefinition[]> {
     repeatable_key: definition.repeatableKey ?? null,
     sort_order: definition.sortOrder ?? null,
   }));
+
+  stopTransform?.();
+
+  return result;
 }
 
-export async function getProjectDataset(projectId: string): Promise<ProjectDatasetPayload | null> {
+export async function getProjectDataset(
+  projectId: string,
+  tracker?: ServerTimingTracker
+): Promise<ProjectDatasetPayload | null> {
+  const stopDatasetQuery = tracker?.start('db:project-dataset');
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     select: {
@@ -169,6 +216,7 @@ export async function getProjectDataset(projectId: string): Promise<ProjectDatas
       datasetVersion: true,
     },
   });
+  stopDatasetQuery?.();
 
   if (!project) {
     return null;
@@ -182,10 +230,17 @@ export async function getProjectDataset(projectId: string): Promise<ProjectDatas
   }
 
   try {
+    const stopValidation = tracker?.start('validate:dataset');
     const dataset = validateDataset(project.dataset);
-    return {
+    stopValidation?.();
+    const stopTransform = tracker?.start('transform:dataset');
+    const payload = {
       dataset,
       datasetVersion: project.datasetVersion,
+    };
+    stopTransform?.();
+    return {
+      ...payload,
     };
   } catch (error) {
     console.warn('Dataset validation failed, returning raw dataset', error);

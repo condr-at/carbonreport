@@ -1,7 +1,7 @@
 # Next Steps: Data Request Features Implementation
 
 **Status**: Phase 7 in Progress  
-**Last Updated**: 2025-10-31
+**Last Updated**: 2025-11-06
 
 ## Overview
 
@@ -128,6 +128,7 @@ This document outlines the implementation plan for completing the data request f
 **Still outstanding**:
 - Column sorting (requested_at/deadline/field).
 - Surface active badge summaries back into dataset/report tables once reminders UI exists.
+- Close the loop with Phase 2b of `docs/Loading perfomance optimization plan.md`: payload instrumentation now ships (`ServerTimingTracker` + hydration logs). Baselines captured on 2025-11-06 — dataset page (176 KB raw / 25.9 KB gzip, DOMContentLoaded ≈5.6 s) and data-requests page (1.01 MB raw / 35.7 KB gzip, DOMContentLoaded ≈9.2 s). `NEXT_PUBLIC_LAZY_DATA_REQUESTS` can now disable SSR hydration for the table; flip it on in staging, profile the client fetch, and then decide whether further trimming (chunking/virtualization) is required.
 
 **Testing ideas**:
 - Navigate to `/projects/:id/data-requests` → verify summaries load.
@@ -177,6 +178,7 @@ This document outlines the implementation plan for completing the data request f
 
 ## Related Documentation
 
+- [Loading perfomance optimization plan.md](./Loading%20perfomance%20optimization%20plan.md) - Phase breakdown for SSR payload vs optimistic UX work
 - [Requirements v0.0.1.md](./Requirements%20v0.0.1.md) - §3.5 Data Requests
 - [API_REFERENCE.md](./API_REFERENCE.md) - Data Requests endpoints
 - [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md) - DataPointRow component spec

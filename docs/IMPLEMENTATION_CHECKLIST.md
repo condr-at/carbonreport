@@ -1,9 +1,11 @@
 # Implementation Checklist
 
 **Status**: 🟡 In Progress (Backend Complete, Frontend Pending)  
-**Last Updated**: October 17, 2025
+**Last Updated**: November 6, 2025
 
-Use this checklist to track implementation of the architecture updates.
+Use this checklist to track implementation of the architecture updates. Cross-reference Phase 2a/2b milestones in `docs/Loading perfomance optimization plan.md` when sequencing SSR prefetching, payload trimming, and virtualization.
+
+> Phase 2b instrumentation update (2025-11-06): Server-side timing + hydration payload logs now live via `src/lib/server-data/metrics.ts`. HAR baselines — dataset page 176 KB raw / 25.9 KB gzip (DOMContentLoaded ≈5.6 s) and data-requests page 1.01 MB raw / 35.7 KB gzip (DOMContentLoaded ≈9.2 s). Flag `NEXT_PUBLIC_LAZY_DATA_REQUESTS` ships to skip SSR hydration; enable it, capture new metrics, and then pursue additional trimming (virtualization/query refactors) if needed.
 
 ---
 

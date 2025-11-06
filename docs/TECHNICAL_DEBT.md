@@ -1,6 +1,6 @@
 # Technical Debt & TODOs
 
-**Last Updated**: October 17, 2025
+**Last Updated**: November 6, 2025
 
 This document tracks known shortcuts, workarounds, and "TODO" items that need to be addressed before production deployment.
 
@@ -85,6 +85,19 @@ const user = await prisma.user.upsert({
 3. Document database wake-up procedure for developers
 
 **Estimated Effort**: 1-2 hours (if keeping Supabase)
+
+### 4. SSR Payload Instrumentation Gap
+
+**Location**: `src/app/projects/[id]/dataset/page.tsx`, `src/app/projects/[id]/data-requests/page.tsx`
+
+**Issue**: Heavy HTML responses (~40KB gzip) slow dataset/data-request initial loads. Instrumentation hooks (Server-Timing headers, HAR baselines) are not yet in place, so regression detection relies on manual HAR inspection.
+
+**Action Required**:
+1. ✅ Implement lightweight `serverTiming()` helpers in `src/lib/server-data/*` to expose Prisma query timings and render cost (`ServerTimingTracker`, 2025-11-06).
+2. ✅ Add per-route logging (console + telemetry stub) for payload size and hydration cost (dataset/data-requests pages now emit payload totals).
+3. ⏳ Document baseline measurements in `docs/Loading perfomance optimization plan.md` (dataset + data-requests HARs logged 2025-11-06; `NEXT_PUBLIC_LAZY_DATA_REQUESTS` ready for client-only fetch tests; next step is payload trimming / alert wiring) and wire alerts once metrics pipeline exists.
+
+**Estimated Effort**: 2-3 hours to instrument, plus follow-up for alerting once observability stack lands.
 
 ---
 

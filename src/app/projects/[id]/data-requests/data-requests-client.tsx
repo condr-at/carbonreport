@@ -25,14 +25,16 @@ import {
 import { useProjectContacts } from '@/lib/data-client/contacts';
 import type { DataRequestSummary } from '@/lib/data-requests/types';
 import type { ContactSummary } from '@/lib/contacts/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DataRequestsPageClientProps {
   projectId: string;
   projectName: string;
   projectOwnerName: string;
-  initialRequests: DataRequestSummary[];
+  initialRequests?: DataRequestSummary[] | null;
   initialContacts: ContactSummary[];
   mailtoTemplate: { subject?: string; body?: string } | null;
+  isInitialLazyLoad?: boolean;
 }
 
 type StatusFilter = 'all' | 'pending' | 'completed' | 'revoked';
@@ -99,6 +101,7 @@ export function DataRequestsPageClient({
   initialRequests,
   initialContacts,
   mailtoTemplate,
+  isInitialLazyLoad = false,
 }: DataRequestsPageClientProps) {
   const normalizeContact = useCallback(
     (contact: ContactSummary): NormalizedContact => {
@@ -124,7 +127,25 @@ export function DataRequestsPageClient({
     data: requests = [],
     isFetching: isFetchingRequests,
     refetch: refetchRequests,
-  } = useDataRequests(projectId, { status: 'all', initialData: initialRequests });
+    status: requestsStatus,
+  } = useDataRequests(projectId, {
+    status: 'all',
+    initialData: isInitialLazyLoad ? undefined : initialRequests ?? undefined,
+  });
+
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(!isInitialLazyLoad);
+
+  useEffect(() => {
+    if (!isInitialLazyLoad || hasLoadedInitialData) {
+      return;
+    }
+
+    if (requestsStatus !== 'pending') {
+      setHasLoadedInitialData(true);
+    }
+  }, [hasLoadedInitialData, isInitialLazyLoad, requestsStatus]);
+
+  const showInitialLoadingState = isInitialLazyLoad && !hasLoadedInitialData;
 
   const {
     data: contactsData = [],
@@ -508,7 +529,9 @@ export function DataRequestsPageClient({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span>
-                {requests.length} request{requests.length === 1 ? '' : 's'}
+                {showInitialLoadingState
+                  ? 'Loading…'
+                  : `${requests.length} request${requests.length === 1 ? '' : 's'}`}
               </span>
               {hasSelection && (
                 <span>
@@ -580,7 +603,9 @@ export function DataRequestsPageClient({
                 </tr>
               </thead>
               <tbody>
-                {filteredRequests.length === 0 ? (
+                {showInitialLoadingState ? (
+                  <DataRequestsTableSkeleton />
+                ) : filteredRequests.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-muted-foreground">
                       <div className="flex flex-col items-center gap-2">
@@ -714,5 +739,50 @@ export function DataRequestsPageClient({
         />
       )}
     </div>
+  );
+}
+
+function DataRequestsTableSkeleton({ rows = 6 }: { rows?: number }) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, index) => (
+        <tr key={index} className="border-b last:border-b-0">
+          <td className="py-3 pr-3 align-top">
+            <Skeleton className="h-4 w-4" />
+          </td>
+          <td className="py-3 pr-3 align-top">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-44" />
+              <Skeleton className="h-3 w-56" />
+            </div>
+          </td>
+          <td className="py-3 pr-3 align-top">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-3 w-48" />
+            </div>
+          </td>
+          <td className="py-3 pr-3 align-top">
+            <Skeleton className="h-4 w-28" />
+          </td>
+          <td className="py-3 pr-3 align-top">
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </td>
+          <td className="py-3 pr-3 align-top">
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-36" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+          </td>
+          <td className="py-3 pl-3 align-top text-right">
+            <div className="flex justify-end gap-2">
+              <Skeleton className="h-7 w-16" />
+              <Skeleton className="h-7 w-20" />
+              <Skeleton className="h-7 w-20" />
+            </div>
+          </td>
+        </tr>
+      ))}
+    </>
   );
 }

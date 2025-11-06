@@ -1,9 +1,10 @@
 # Optimistic UX: System-Wide Implementation Plan
 
-_Last updated: 2025-11-05_
+_Last updated: 2025-11-06_
 
 ## 1. Goal & Scope
 - Provide consistent optimistic interactions across the app (requests, dataset edits, project management, contacts) while keeping the UI responsive even under slow network or database load.
+- Balance SSR prefetching with payload size so first render is quick and cache-friendly without overwhelming the browser.
 - Ensure every optimistic action has a deterministic rollback path, shared notification contract, and observability hooks.
 - Align frontend (Next.js/React) and backend (Prisma/Next API routes) on a single data contract that exposes enough metadata for confirmation/reconciliation.
 
@@ -121,6 +122,9 @@ export function useCompleteDataRequests() {
 | | Ensure rollback for validation errors by restoring previous value from mutation context. | same | Validation error causes revert; user sees notification; cell value returns to pre-edit state. |
 | **2a. Server Prefetch & Hydration** | Replace API round-trips in server components with direct Prisma reads and pass data via `HydrationBoundary` + dehydrated cache. | `src/app/projects/[id]/data-requests/page.tsx`, `src/app/projects/[id]/dataset/page.tsx`, `src/lib/db.ts`, `src/lib/data-client/keys.ts`. | Server components call Prisma helpers instead of `request(...)`; client components receive `initialData` via React Query dehydrate. No duplicate network requests on first render. |
 | | Ensure cached queries use the same keys/hooks as client mutations to avoid mismatch. | same + `src/lib/data-client/data-requests.ts`, `src/lib/data-client/dataset.ts`. | Prefetched data hydrates `useDataRequests` / `useDataset` without refetch; React Query DevTools shows cache hit on mount. |
+| **2b. Payload Optimization & Virtualization** | Measure SSR payload size and TTFB; split heavy datasets/data-request payloads into optional lazy-loaded queries when they slow first paint. | `src/app/projects/[id]/dataset/page.tsx`, `src/app/projects/[id]/data-requests/page.tsx`, `src/lib/data-client/*`, metrics tooling | First render ships only essentials (project summary, skeletons); large tables fetch via client queries without blocking HTML stream. Metrics document confirms <250ms TTFB and manageable HTML size. |
+| | Introduce table virtualization or chunked rendering once payload splitting is in place. | `src/components/dataset-table.tsx`, `src/components/data-requests-table.tsx` (if exists) | Virtualized lists render correctly with hydrated data; scrolling remains smooth with large datasets; verified in dev tools. |
+| | Update plan/checklists with instrumentation steps (React Query Devtools, Server-Timing headers). | `docs/Loading perfomance optimization plan.md`, `src/lib/server-data/*` | Observability steps recorded; developers know how to re-measure if regressions appear. |
 | **3. Contacts / Projects** | Wrap contact mutations in optimistic hooks. | `src/app/projects/[id]/contacts`, new data hooks | Contact create/update/delete use hooks; optimistic cache updates + rollback in place. |
 | | Apply consistent notifications. | UI components | All contact mutations surface feedback via `notifications` service; no inline alert divs remain. |
 | **4. System Integration** | Add global dev tooling: log optimistic starts/failures (e.g., `console.debug('optimistic:start', key)` behind a flag). | `src/lib/data-client/logging.ts`. | Logging utility exists; mutations call it on lifecycle events (start/success/error); logs visible in dev console. |
@@ -551,6 +555,32 @@ const dataset = DatasetSchema.parse(rawData.dataset); // Runtime validation
   2. React Query DevTools report prefetched queries as `status: success` immediately after hydration.
   3. Navigating between project sub-pages reuses cache instead of flashing empty states.
 
+### 5.5 SSR Payload Tuning & Virtualized Rendering (Phase 2b)
+- **Trigger:** Initial instrumentation shows slow HTML receive (>2s) or large compressed payloads (>40 KB) even after Phase 2a.
+- **Server-side throttling:**
+  - Measure payload size and TTFB with DevTools HAR + `console.time`/`Server-Timing` in server helpers (`src/lib/server-data/*`).
+  - Keep the project summary and other must-have hero data in SSR, but move bulky collections (`initialDataRequests`, full dataset tables, full field definition dictionaries) behind lazy client queries when they dominate payload size.
+  - Document split points (e.g., limit to first N rows, fetch rest via `useQuery` immediately after mount) so both optimised and fallback paths stay in sync.
+- **Client hydration adjustments:**
+  - Provide lightweight skeletons/spinners that mirror the upcoming list shape; ensure React Query queries kick off on mount with `initialData` only when beneficial.
+  - Use feature flags (e.g., `NEXT_PUBLIC_LAZY_DATASET`) if rollout needs to be incremental across environments.
+- **Table virtualization:**
+  - Once payload is trimmed, integrate a virtualization helper (`@tanstack/react-virtual` or equivalent) inside `DatasetTable`/similar components to render only visible rows while maintaining keyboard navigation.
+  - Confirm virtualization coexists with optimistic row updates (rows should re-render correctly after cache mutations).
+- **Acceptance checkpoints:**
+  1. HTML response size and receive time fall within target budgets in HAR captures.
+  2. First contentful paint happens before heavy lists finish loading; skeletons show instead of blank screens.
+  3. Virtualized lists scroll smoothly with 1k+ rows and keep optimistic updates visible without jank.
+  4. Plan sections and implementation checklists updated to capture the measurement/rollback playbook.
+
+> **Phase 2b status · 2025-11-06**
+> - Instrumentation landed: `src/lib/server-data/metrics.ts` provides `ServerTimingTracker`, and both `projects/[id]/dataset/page.tsx` and `projects/[id]/data-requests/page.tsx` now emit `[dataset-page]` / `[data-requests-page]` timing + payload summaries and attempt to append `Server-Timing` headers.
+> - Hydration payload logging captures dataset, data-request, contact, and field-definition footprints per request and reports totals; use these logs when exporting HARs to correlate payload spikes.
+> - Dataset baseline (HAR 2025-11-06): `projects/[id]/dataset` HTML payload 176 045 B raw / 25 973 B transferred (gzip), TTFB ≈109 ms, receive 5.52 s → DOMContentLoaded 5.64 s / load 6.03 s. Size sits inside the 40 KB gzip target, but long receive window suggests SSR streaming is waiting on downstream data work—investigate Prisma/query timing before reaching for virtualization.
+> - Data-requests baseline (HAR 2025-11-06): `projects/[id]/data-requests` HTML payload 1 010 018 B raw / 35 673 B transferred (gzip), TTFB ≈106 ms, receive 9.10 s → DOMContentLoaded 9.22 s / load 9.99 s. The raw SSR payload is an order of magnitude over target and streaming stalls for ~9 s, pointing to either oversized serialized tables or expensive server transforms — prioritize lazy-loading/virtualization investigation here.
+> - Feature flag `NEXT_PUBLIC_LAZY_DATA_REQUESTS` now skips SSR hydration for the data-requests table, shifting the heavy list behind a client query. Enable it in staging, capture a follow-up HAR, and confirm the gzip payload and receive window drop before layering in virtualization.
+> - Virtualization decision deferred until telemetry shows payload totals above threshold or we confirm streaming waits stem from table rendering; keep watch on the logged `payloads` sections before enabling `NEXT_PUBLIC_LAZY_DATASET` or related flags.
+
 ## 6. API Changes Checklist
 - [ ] Include `version` or `updatedAt` in responses (`src/app/api/data-requests/*`, future endpoints).
 - [ ] Return `conflicts` array for operations failing partial optimistic checks.
@@ -856,7 +886,7 @@ afterAll(() => server.close());
 ## 8. Documentation & Governance
 - Update `docs/IMPLEMENTATION_CHECKLIST.md` with new rules: "All new data mutations must use the data-client layer and provide optimistic handlers."
 - Add a rubric for code review: verify `onMutate`/`onError`/`onSettled` implemented, notifications copy consistent.
-- Maintain a registry of optimistic mutations in `docs/OPTIMISTIC_UX_PLAN.md` (this document), expanding sections per module.
+- Maintain a registry of optimistic mutations in `docs/Loading perfomance optimization plan.md` (this document), expanding sections per module.
 
 ## 9. Error Recovery & Graceful Degradation
 
@@ -1558,7 +1588,7 @@ This ensures resources are spent on proven needs, not speculative features.
 To support an AI assistant executing this plan, provide the following guardrails:
 
 1. **Pre-flight Checklist**
-  - Read (or re-read) `docs/OPTIMISTIC_UX_PLAN.md` and relevant source files before making changes.
+  - Read (or re-read) `docs/Loading perfomance optimization plan.md` and relevant source files before making changes.
   - Confirm dependency status (`package.json`, installed packages) before installing new modules.
 
 2. **Step-by-Step Execution**
@@ -1586,3 +1616,12 @@ These instructions help mitigate context loss and hallucinations, keeping the ag
 
 ---
 This plan should be treated as a living document. Update as new modules adopt the shared data layer or as we discover additional edge cases.
+
+## Related Documentation
+- `docs/NEXT_STEPS.md` – prioritized follow-up tasks after each phase exits (updated 2025-11-06 to align with this plan).
+- `docs/IMPLEMENTATION_CHECKLIST.md` – release checklist ensuring new code aligns with shared data layer standards (refreshed 2025-11-06 with SSR payload tasks).
+- `docs/TECHNICAL_DEBT.md` – backlog of structural issues that may influence sequencing or scope adjustments (includes new SSR payload watch item).
+- `docs/UX_REQUIREMENTS.md` – UX flows and component expectations that inform optimistic interactions and loading states.
+- `docs/BULK_DATA_REQUESTS_PLAN.md` – deep dive on request workflows powering data-requests mutations and SSR payload decisions.
+- `docs/API_REFERENCE.md` – authoritative contract for endpoints touched by phases in this plan.
+- `docs/Requirements v0.0.1.md` – baseline product requirements that must remain satisfied as we optimize loading behaviour.
