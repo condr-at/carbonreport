@@ -90,12 +90,12 @@ const user = await prisma.user.upsert({
 
 **Location**: `src/app/projects/[id]/dataset/page.tsx`, `src/app/projects/[id]/data-requests/page.tsx`
 
-**Issue**: Heavy HTML responses (~40KB gzip) slow dataset/data-request initial loads. Instrumentation hooks (Server-Timing headers, HAR baselines) are not yet in place, so regression detection relies on manual HAR inspection.
+**Issue**: Heavy HTML responses (~40KB gzip) previously slowed dataset/data-request initial loads. Instrumentation hooks now emit to an `x-server-timing` header plus console logs, but we must keep capturing HAR snapshots to detect regressions.
 
 **Action Required**:
-1. ✅ Implement lightweight `serverTiming()` helpers in `src/lib/server-data/*` to expose Prisma query timings and render cost (`ServerTimingTracker`, 2025-11-06).
+1. ✅ Implement lightweight `serverTiming()` helpers in `src/lib/server-data/*` to expose Prisma query timings and render cost (`ServerTimingTracker`, 2025-11-06) — now emitting via `x-server-timing` with console fallback.
 2. ✅ Add per-route logging (console + telemetry stub) for payload size and hydration cost (dataset/data-requests pages now emit payload totals).
-3. ⏳ Document baseline measurements in `docs/Loading perfomance optimization plan.md` (dataset + data-requests HARs logged 2025-11-06; `NEXT_PUBLIC_LAZY_DATA_REQUESTS` ready for client-only fetch tests; next step is payload trimming / alert wiring) and wire alerts once metrics pipeline exists.
+3. ✅ Document baseline measurements in `docs/Loading perfomance optimization plan.md` (dataset 153 KB raw / 16.4 KB transferred, data-requests 56 KB raw / 8.7 KB transferred with lazy flag on). Keep `NEXT_PUBLIC_LAZY_DATA_REQUESTS` enabled in staging/production and wire alerting once metrics pipeline exists.
 
 **Estimated Effort**: 2-3 hours to instrument, plus follow-up for alerting once observability stack lands.
 

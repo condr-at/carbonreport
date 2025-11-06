@@ -128,7 +128,7 @@ This document outlines the implementation plan for completing the data request f
 **Still outstanding**:
 - Column sorting (requested_at/deadline/field).
 - Surface active badge summaries back into dataset/report tables once reminders UI exists.
-- Close the loop with Phase 2b of `docs/Loading perfomance optimization plan.md`: payload instrumentation now ships (`ServerTimingTracker` + hydration logs). Baselines captured on 2025-11-06 — dataset page (176 KB raw / 25.9 KB gzip, DOMContentLoaded ≈5.6 s) and data-requests page (1.01 MB raw / 35.7 KB gzip, DOMContentLoaded ≈9.2 s). `NEXT_PUBLIC_LAZY_DATA_REQUESTS` can now disable SSR hydration for the table; flip it on in staging, profile the client fetch, and then decide whether further trimming (chunking/virtualization) is required.
+- Phase 2b follow-through from `docs/Loading perfomance optimization plan.md`: instrumentation now targets the custom `x-server-timing` header and lazy mode is live. Latest HARs (2025-11-06) show dataset page at 153 KB raw / 16.4 KB transferred with load ≈0.98 s, and data-requests page at 56 KB raw / 8.7 KB transferred with load ≈1.0 s while the table hydrates on the client. Keep `NEXT_PUBLIC_LAZY_DATA_REQUESTS=true` in staging/production, record new HARs after large schema changes, and revisit virtualization only if client fetches regress beyond the current sub-200 ms window.
 
 **Testing ideas**:
 - Navigate to `/projects/:id/data-requests` → verify summaries load.

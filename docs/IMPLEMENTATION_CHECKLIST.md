@@ -5,7 +5,7 @@
 
 Use this checklist to track implementation of the architecture updates. Cross-reference Phase 2a/2b milestones in `docs/Loading perfomance optimization plan.md` when sequencing SSR prefetching, payload trimming, and virtualization.
 
-> Phase 2b instrumentation update (2025-11-06): Server-side timing + hydration payload logs now live via `src/lib/server-data/metrics.ts`. HAR baselines — dataset page 176 KB raw / 25.9 KB gzip (DOMContentLoaded ≈5.6 s) and data-requests page 1.01 MB raw / 35.7 KB gzip (DOMContentLoaded ≈9.2 s). Flag `NEXT_PUBLIC_LAZY_DATA_REQUESTS` ships to skip SSR hydration; enable it, capture new metrics, and then pursue additional trimming (virtualization/query refactors) if needed.
+> Phase 2b instrumentation update (2025-11-06): `src/lib/server-data/metrics.ts` now reports timings/payloads and writes to an `x-server-timing` header (with console fallback when App Router headers are immutable). Fresh HARs — dataset page 153 KB raw / 16.4 KB transferred, load ≈0.98 s; data-requests page 56 KB raw / 8.7 KB transferred, load ≈1.0 s with follow-up client fetches ≈180 ms. `NEXT_PUBLIC_LAZY_DATA_REQUESTS` remains enabled in staging to keep the table lazy-loaded; record new HARs after major schema changes and only revisit virtualization if receive times drift beyond the 250 ms target.
 
 ---
 

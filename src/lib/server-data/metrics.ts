@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { performance } from 'node:perf_hooks';
 
-const HEADER_NAME = 'Server-Timing';
+const HEADER_NAME = 'x-server-timing';
 const TOKEN_SANITIZE_REGEX = /[^A-Za-z0-9_-]/g;
 const QUOTE_REGEX = /"/g;
 
@@ -20,6 +20,7 @@ export class ServerTimingTracker {
   private readonly entries: ServerTimingEntry[] = [];
   private readonly payloads: PayloadMetric[] = [];
   private readonly prefix?: string;
+  private headerAttachFailed = false;
 
   constructor(prefix?: string) {
     this.prefix = prefix;
@@ -57,26 +58,39 @@ export class ServerTimingTracker {
   }
 
   async commit(): Promise<void> {
-    if (this.entries.length === 0) {
+    const headerValue = this.getHeaderValue();
+    if (!headerValue) {
       return;
     }
-
-    const headerValue = this.entries.map(formatHeaderEntry).join(', ');
 
     try {
       const headerList = await headers();
       const mutable = headerList as unknown as Headers;
-      if (typeof mutable.get === 'function' && typeof mutable.set === 'function') {
+
+      if (typeof mutable?.get === 'function' && typeof (mutable as any)?.set === 'function') {
         const existing = mutable.get(HEADER_NAME);
         const combined = existing ? `${existing}, ${headerValue}` : headerValue;
-        mutable.set(HEADER_NAME, combined);
-      } else if (process.env.NODE_ENV !== 'production') {
-        console.debug('[server-timing] header object is read-only; skipping set');
+
+        try {
+          mutable.set(HEADER_NAME, combined);
+          return;
+        } catch (setError) {
+          if (!this.headerAttachFailed && process.env.NODE_ENV !== 'production') {
+            console.debug(`[server-timing] failed to set ${HEADER_NAME} header`, setError);
+          }
+          this.headerAttachFailed = true;
+        }
       }
+
+      if (!this.headerAttachFailed && process.env.NODE_ENV !== 'production') {
+        console.debug('[server-timing] header object is not mutable; skipping set');
+      }
+      this.headerAttachFailed = true;
     } catch (error) {
-      if (process.env.NODE_ENV !== 'production') {
+      if (!this.headerAttachFailed && process.env.NODE_ENV !== 'production') {
         console.debug('[server-timing] header update skipped', error);
       }
+      this.headerAttachFailed = true;
     }
   }
 
@@ -128,6 +142,14 @@ export class ServerTimingTracker {
 
   getPayloads(): PayloadMetric[] {
     return [...this.payloads];
+  }
+
+  getHeaderValue(): string | null {
+    if (this.entries.length === 0) {
+      return null;
+    }
+
+    return this.entries.map(formatHeaderEntry).join(', ');
   }
 }
 

@@ -574,12 +574,12 @@ const dataset = DatasetSchema.parse(rawData.dataset); // Runtime validation
   4. Plan sections and implementation checklists updated to capture the measurement/rollback playbook.
 
 > **Phase 2b status · 2025-11-06**
-> - Instrumentation landed: `src/lib/server-data/metrics.ts` provides `ServerTimingTracker`, and both `projects/[id]/dataset/page.tsx` and `projects/[id]/data-requests/page.tsx` now emit `[dataset-page]` / `[data-requests-page]` timing + payload summaries and attempt to append `Server-Timing` headers.
-> - Hydration payload logging captures dataset, data-request, contact, and field-definition footprints per request and reports totals; use these logs when exporting HARs to correlate payload spikes.
-> - Dataset baseline (HAR 2025-11-06): `projects/[id]/dataset` HTML payload 176 045 B raw / 25 973 B transferred (gzip), TTFB ≈109 ms, receive 5.52 s → DOMContentLoaded 5.64 s / load 6.03 s. Size sits inside the 40 KB gzip target, but long receive window suggests SSR streaming is waiting on downstream data work—investigate Prisma/query timing before reaching for virtualization.
-> - Data-requests baseline (HAR 2025-11-06): `projects/[id]/data-requests` HTML payload 1 010 018 B raw / 35 673 B transferred (gzip), TTFB ≈106 ms, receive 9.10 s → DOMContentLoaded 9.22 s / load 9.99 s. The raw SSR payload is an order of magnitude over target and streaming stalls for ~9 s, pointing to either oversized serialized tables or expensive server transforms — prioritize lazy-loading/virtualization investigation here.
-> - Feature flag `NEXT_PUBLIC_LAZY_DATA_REQUESTS` now skips SSR hydration for the data-requests table, shifting the heavy list behind a client query. Enable it in staging, capture a follow-up HAR, and confirm the gzip payload and receive window drop before layering in virtualization.
-> - Virtualization decision deferred until telemetry shows payload totals above threshold or we confirm streaming waits stem from table rendering; keep watch on the logged `payloads` sections before enabling `NEXT_PUBLIC_LAZY_DATASET` or related flags.
+> - Instrumentation landed: `src/lib/server-data/metrics.ts` now emits `[dataset-page]` / `[data-requests-page]` timing + payload summaries and writes the encoded value to an `x-server-timing` response header (while still logging to the console when headers are immutable in Server Components).
+> - Hydration payload logging captures dataset, data-request, contact, and field-definition footprints per request; correlate these console summaries with HAR exports to spot regressions.
+> - Latest dataset HAR (2025-11-06, lazy flag on): `projects/[id]/dataset` HTML payload 152 892 B raw / 16 416 B transferred (br), request completes in 563 ms, DOMContentLoaded 568 ms, load 985 ms. Streaming now completes inside 1 s with steady 245 ms receive window.
+> - Latest data-requests HAR (2025-11-06, lazy flag on): `projects/[id]/data-requests` HTML payload 56 047 B raw / 8 751 B transferred (br), initial document 401 ms total, DOMContentLoaded 436 ms, load 1.03 s. Follow-up client fetches land at 180 ms without blocking first paint.
+> - `NEXT_PUBLIC_LAZY_DATA_REQUESTS` is enabled in staging and aggressively trims the SSR payload; keep it enabled for production unless downstream analytics require the eager data. Capture additional HARs after major schema changes to confirm the savings persist.
+> - Virtualization remains optional. Revisit once table row counts or client fetches threaten the <250 ms receive budget; for now the lazy path meets the payload target without extra complexity.
 
 ## 6. API Changes Checklist
 - [ ] Include `version` or `updatedAt` in responses (`src/app/api/data-requests/*`, future endpoints).
