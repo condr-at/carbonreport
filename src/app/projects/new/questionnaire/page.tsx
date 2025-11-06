@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowRight, ArrowLeft, X } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef } from 'react';
 import { 
   WIZARD_QUESTIONNAIRE, 
   getNextQuestion, 
@@ -27,6 +27,27 @@ import {
 import { clearWizardProgress, hasAnyWizardProgress } from '@/lib/wizard-progress';
 
 export default function QuestionnairePage() {
+  return (
+    <Suspense
+      fallback={(
+        <DashboardLayout>
+          <div className="max-w-2xl mx-auto space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Loading questionnaire…</CardTitle>
+              </CardHeader>
+              <CardContent>Пожалуйста, подождите.</CardContent>
+            </Card>
+          </div>
+        </DashboardLayout>
+      )}
+    >
+      <QuestionnaireContent />
+    </Suspense>
+  );
+}
+
+function QuestionnaireContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const resumeMode = searchParams.get('resume') === '1';

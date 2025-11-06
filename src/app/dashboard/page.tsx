@@ -5,6 +5,8 @@ import { Plus, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { NextStepsWidget } from '@/components/blocks/next-steps-widget';
 
+export const dynamic = 'force-dynamic';
+
 // Mock user for now (will be replaced with real auth)
 const MOCK_USER = {
   id: '550e8400-e29b-41d4-a716-446655440000',
