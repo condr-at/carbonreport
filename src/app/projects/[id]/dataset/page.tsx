@@ -16,6 +16,8 @@ import { createServerTimingTracker } from '@/lib/server-data/metrics';
 import { resolveLazyHydration } from '@/lib/server-data/lazy-hydration';
 import { featureFlags } from '@/lib/config';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
