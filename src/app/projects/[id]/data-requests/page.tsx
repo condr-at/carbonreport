@@ -10,8 +10,8 @@ import {
   getProjectContacts,
 } from '@/lib/server-data/projects';
 import { createServerTimingTracker } from '@/lib/server-data/metrics';
+import { resolveLazyHydration } from '@/lib/server-data/lazy-hydration';
 import { featureFlags } from '@/lib/config';
-import type { DataRequestSummary } from '@/lib/data-requests/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -26,28 +26,22 @@ export default async function DataRequestsPage({ params }: PageProps) {
     notFound();
   }
 
-  const shouldLazyLoadRequests = featureFlags.lazyDataRequests;
-
-  const requestsPromise: Promise<DataRequestSummary[] | null> = shouldLazyLoadRequests
-    ? Promise.resolve(null)
-    : getProjectDataRequests(project.id, tracker);
-
-  const [initialRequests, initialContacts] = await Promise.all([
-    requestsPromise,
-    getProjectContacts(project.id, tracker),
-  ]);
-
   const queryClient = new QueryClient(queryClientOptions);
-  if (!shouldLazyLoadRequests && initialRequests) {
-    queryClient.setQueryData(dataRequestKeys.list(project.id, 'all'), initialRequests);
-  }
-  queryClient.setQueryData(projectKeys.contacts(project.id), initialContacts);
 
-  if (shouldLazyLoadRequests) {
-    tracker.recordPayload('hydrate:data-requests', { lazy: true, count: 0 });
-  } else {
-    tracker.recordPayload('hydrate:data-requests', initialRequests ?? []);
-  }
+  const contactsPromise = getProjectContacts(project.id, tracker);
+
+  const { data: resolvedRequests, isLazy: isLazyRequests } = await resolveLazyHydration({
+    flagEnabled: featureFlags.lazyDataRequests,
+    fetcher: () => getProjectDataRequests(project.id, tracker),
+    queryClient,
+    queryKey: dataRequestKeys.list(project.id, 'all'),
+    tracker,
+    payloadLabel: 'hydrate:data-requests',
+    lazyPayloadMetadata: { lazy: true, count: 0 },
+  });
+
+  const initialContacts = await contactsPromise;
+  queryClient.setQueryData(projectKeys.contacts(project.id), initialContacts);
   tracker.recordPayload('hydrate:contacts', initialContacts);
 
   await tracker.commit();
@@ -69,10 +63,10 @@ export default async function DataRequestsPage({ params }: PageProps) {
           projectId={project.id}
           projectName={project.name}
           projectOwnerName={ownerName}
-          initialRequests={shouldLazyLoadRequests ? undefined : initialRequests ?? []}
+          initialRequests={isLazyRequests ? undefined : resolvedRequests ?? []}
           initialContacts={initialContacts}
           mailtoTemplate={project.mailtoTemplate as { subject?: string; body?: string } | null}
-          isInitialLazyLoad={shouldLazyLoadRequests}
+          isInitialLazyLoad={isLazyRequests}
         />
       </HydrationBoundary>
     </ProjectLayout>

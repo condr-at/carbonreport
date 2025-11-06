@@ -99,6 +99,19 @@ const user = await prisma.user.upsert({
 
 **Estimated Effort**: 2-3 hours to instrument, plus follow-up for alerting once observability stack lands.
 
+### 5. Lazy Payload Helper & Metric Automation
+
+**Location**: `src/app/projects/[id]/dataset/page.tsx`, `src/app/projects/[id]/data-requests/page.tsx`, `src/lib/server-data/metrics.ts`
+
+**Issue**: Lazy SSR + client hydration pattern is duplicated inline and gated by a single feature flag. There is no shared helper or codified adoption checklist, so extending the optimization to new routes risks drift, and payload checks rely on manual HAR collection.
+
+**Action Required**:
+1. ✅ Extract reusable helper covering flag detection + deferred hydration logging (`src/lib/server-data/lazy-hydration.ts`, 2025-11-06).
+2. ✅ Publish command sequence via `npm run metrics:collect -- <url>` and update docs so teams log `x-server-timing` snapshots consistently.
+3. 🚧 Consider deeper automation (scheduled Lighthouse/HAR run) if manual snapshots stop scaling; evaluate tooling once observability budget allows.
+
+**Estimated Effort**: Remaining automation exploration ~2 hours to scope; full CI integration TBD.
+
 ---
 
 ## 🟢 Low Priority (Nice to Have)

@@ -345,6 +345,7 @@ The following architectural and data model provisions must be included in MVP sc
 7. **API routes** — designed to support eventual organization-level scoping and role-based access control.
 8. **Mailto template** — stored in `Project.mailto_template` (JSONB, subject/body), seeded from report templates and supporting placeholders `{{contact_name}}`, `{{project_name}}`, `{{field_display_name}}`, `{{field_list}}`, `{{deadline}}`, `{{requester_signature}}` (auto-composed from the project owner and project name).
 9. **Optimistic locking** — `Project.dataset_version` prevents concurrent edit conflicts in multi-user scenarios.
+10. **Lazy payload infrastructure** — feature flags, reusable lazy SSR helpers, and `x-server-timing` instrumentation must ship with MVP routes so payload trimming can be extended to additional pages without reinventing the pattern.
 
 ---
 

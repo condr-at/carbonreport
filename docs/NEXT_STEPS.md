@@ -129,6 +129,7 @@ This document outlines the implementation plan for completing the data request f
 - Column sorting (requested_at/deadline/field).
 - Surface active badge summaries back into dataset/report tables once reminders UI exists.
 - Phase 2b follow-through from `docs/Loading perfomance optimization plan.md`: instrumentation now targets the custom `x-server-timing` header and lazy mode is live. Latest HARs (2025-11-06) show dataset page at 153 KB raw / 16.4 KB transferred with load ≈0.98 s, and data-requests page at 56 KB raw / 8.7 KB transferred with load ≈1.0 s while the table hydrates on the client. Keep `NEXT_PUBLIC_LAZY_DATA_REQUESTS=true` in staging/production, record new HARs after large schema changes, and revisit virtualization only if client fetches regress beyond the current sub-200 ms window.
+- Enable `NEXT_PUBLIC_LAZY_DATASET` in staging, validate the dataset page with `npm run metrics:collect -- <url>` + HAR snapshots, and document the rollout recipe so other heavy routes can reuse the helper when metrics flag them.
 
 **Testing ideas**:
 - Navigate to `/projects/:id/data-requests` → verify summaries load.

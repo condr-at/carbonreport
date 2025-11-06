@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DatasetTable, type DataRequestSummary } from '@/components/dataset-table';
 import { RequestDataModal } from '@/components/request-data-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,17 +18,19 @@ import type { ContactSummary } from '@/lib/contacts/types';
 import { useProjectDataset, type ProjectDataset } from '@/lib/data-client/dataset';
 import { useDataRequests } from '@/lib/data-client/data-requests';
 import { useProjectContacts } from '@/lib/data-client/contacts';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DatasetPageClientProps {
   projectId: string;
   projectName: string;
   projectOwnerName: string;
-  initialDataset: Dataset | null;
-  initialDatasetVersion: number;
+  initialDataset?: Dataset | null;
+  initialDatasetVersion?: number;
   fieldDefinitions: FieldDefinition[];
   mailtoTemplate: { subject?: string; body?: string } | null;
   initialDataRequests: DataRequestSummary[];
   initialContacts: ContactSummary[];
+  isInitialLazyLoad?: boolean;
 }
 
 export function DatasetPageClient({
@@ -41,6 +43,7 @@ export function DatasetPageClient({
   mailtoTemplate,
   initialDataRequests,
   initialContacts,
+  isInitialLazyLoad = false,
 }: DatasetPageClientProps) {
   const [requestDataModal, setRequestDataModal] = useState<{
     fieldLabel?: string;
@@ -57,20 +60,37 @@ export function DatasetPageClient({
     mailtoTemplate?: { subject: string; body: string } | null;
   } | null>(null);
 
-  const initialDatasetPayload = useMemo<ProjectDataset>(
-    () => ({
+  const initialDatasetPayload = useMemo<ProjectDataset | undefined>(() => {
+    if (initialDataset === undefined || initialDatasetVersion === undefined) {
+      return undefined;
+    }
+
+    return {
       projectId,
       projectName,
       dataset: initialDataset ?? ({ data_points: [] } as Dataset),
       datasetVersion: initialDatasetVersion,
       version: initialDatasetVersion,
       updatedAt: new Date().toISOString(),
-    }),
-    [projectId, projectName, initialDataset, initialDatasetVersion]
-  );
+    };
+  }, [projectId, projectName, initialDataset, initialDatasetVersion]);
 
   const datasetQuery = useProjectDataset(projectId, { initialData: initialDatasetPayload });
-  const datasetVersion = datasetQuery.data?.datasetVersion ?? initialDatasetVersion;
+  const datasetVersion = datasetQuery.data?.datasetVersion ?? initialDatasetVersion ?? 0;
+
+  const [hasLoadedInitialDataset, setHasLoadedInitialDataset] = useState(!isInitialLazyLoad);
+
+  useEffect(() => {
+    if (!isInitialLazyLoad || hasLoadedInitialDataset) {
+      return;
+    }
+
+    if (datasetQuery.status !== 'pending') {
+      setHasLoadedInitialDataset(true);
+    }
+  }, [datasetQuery.status, hasLoadedInitialDataset, isInitialLazyLoad]);
+
+  const isLoadingInitialDataset = isInitialLazyLoad && !hasLoadedInitialDataset;
 
   const rows = useMemo<TableRow[]>(() => {
     const dataPoints = (datasetQuery.data?.dataset?.data_points ?? []) as DataPoint[];
@@ -161,6 +181,22 @@ export function DatasetPageClient({
       })),
     [contactsData]
   );
+
+  if (isLoadingInitialDataset) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="mt-2 h-4 w-24" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={`dataset-skeleton-${index}`} className="h-10 w-full" />
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (rows.length === 0) {
     return (
