@@ -195,6 +195,87 @@ Status: `409 Conflict`
 - `item_id` can be null or string
 - `value` must be string
 
+**Response (Invalid Field)**:
+```json
+{
+  "error": "Unknown dataset field_id",
+  "code": "UNKNOWN_FIELD_ID",
+  "fieldIds": ["invalid_field"]
+}
+```
+Status: `400 Bad Request`
+
+### Update Single Data Point
+
+```http
+PATCH /api/projects/:id/dataset
+```
+
+**Request Body**:
+```json
+{
+  "field_id": "product_name",
+  "item_id": null,
+  "value": "Updated Value",
+  "datasetVersion": 6
+}
+```
+
+**Response (Success)**:
+```json
+{
+  "success": true,
+  "datasetVersion": 7,
+  "updatedDataPoint": {
+    "field_id": "product_name",
+    "item_id": null,
+    "value": "Updated Value"
+  }
+}
+```
+
+**Response (Invalid Field)**:
+```json
+{
+  "error": "Unknown dataset field_id",
+  "code": "UNKNOWN_FIELD_ID",
+  "fieldIds": ["product_name_typo"]
+}
+```
+Status: `400 Bad Request`
+
+**Response (Conflict)**: Same as PUT endpoint (`409 VERSION_CONFLICT`) when `datasetVersion` is stale.
+
+### Delete Repeatable Item
+
+```http
+DELETE /api/projects/:id/dataset/items/:itemId?datasetVersion=6
+```
+
+**Response (Success)**:
+```json
+{
+  "success": true,
+  "datasetVersion": 7,
+  "deletedCount": 3
+}
+```
+
+**Response (Invalid Field)**:
+```json
+{
+  "error": "Unknown dataset field_id",
+  "code": "UNKNOWN_FIELD_ID",
+  "fieldIds": ["material_input_legacy"]
+}
+```
+Status: `400 Bad Request`
+
+**Notes**:
+- Requires latest `datasetVersion` (supplied via query parameter) for optimistic locking.
+- Removes every data point with the matching `item_id`.
+- Returns `404` if the item does not exist.
+
 ---
 
 ## Reports

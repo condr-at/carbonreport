@@ -12,8 +12,7 @@ import {
 import { createServerTimingTracker } from '@/lib/server-data/metrics';
 import { resolveLazyHydration } from '@/lib/server-data/lazy-hydration';
 import { featureFlags } from '@/lib/config';
-
-export const dynamic = 'force-dynamic';
+import type { DataRequestSummary } from '@/lib/data-requests/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -42,6 +41,10 @@ export default async function DataRequestsPage({ params }: PageProps) {
     lazyPayloadMetadata: { lazy: true, count: 0 },
   });
 
+  const typedRequests = Array.isArray(resolvedRequests)
+    ? (resolvedRequests as DataRequestSummary[])
+    : undefined;
+
   const initialContacts = await contactsPromise;
   queryClient.setQueryData(projectKeys.contacts(project.id), initialContacts);
   tracker.recordPayload('hydrate:contacts', initialContacts);
@@ -65,7 +68,7 @@ export default async function DataRequestsPage({ params }: PageProps) {
           projectId={project.id}
           projectName={project.name}
           projectOwnerName={ownerName}
-          initialRequests={isLazyRequests ? undefined : resolvedRequests ?? []}
+          initialRequests={isLazyRequests ? undefined : typedRequests ?? []}
           initialContacts={initialContacts}
           mailtoTemplate={project.mailtoTemplate as { subject?: string; body?: string } | null}
           isInitialLazyLoad={isLazyRequests}

@@ -81,7 +81,7 @@ The MVP focuses on single-user functionality, modular architecture, and strong f
 * Single route `/projects/:id/dataset` renders a spreadsheet-like table with all project data points; there is no separate "advanced" or "normal" mode.
 * Inline cell editing, row insertion/removal, filtering, and sorting are available directly in the grid when supported by the UI library.
 * "Request Data" works for single rows and bulk selections; chosen fields produce one email with a bullet list.
-* Rows with an active request show a "Request sent [Contact]" badge and a "Change contact" action.
+* Rows with an active request show a "Responsible" summary listing the assigned contact and a "Change contact" action.
 * CSV export runs from the same page and exposes loading and failure feedback.
 * Bulk edits, save operations, and exports display in-context loading indicators and non-blocking error toasts.
 
@@ -162,7 +162,7 @@ Simplified structure based on field-value pairs:
 
 #### Contact Interface
 
-* In the data entry view: each row shows a badge with the current contact and a "Change contact" action.
+* In the data entry view: each row shows a "Responsible" summary with the current contact and a "Change contact" action.
 * In the address book the contact has a "Requests" tab containing:
   * Active requests across all projects with a quick "Resend" action.
   * History (revoked/completed) with timestamps and links to the project/data point.

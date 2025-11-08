@@ -13,10 +13,6 @@ import {
   getDatasetFieldDefinitions,
 } from '@/lib/server-data/projects';
 import { createServerTimingTracker } from '@/lib/server-data/metrics';
-import { resolveLazyHydration } from '@/lib/server-data/lazy-hydration';
-import { featureFlags } from '@/lib/config';
-
-export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -31,55 +27,32 @@ export default async function DatasetPage({ params }: PageProps) {
     notFound();
   }
 
-  const queryClient = new QueryClient(queryClientOptions);
-
-  const datasetResolutionPromise = resolveLazyHydration({
-    flagEnabled: featureFlags.lazyDataset,
-    fetcher: () => getProjectDataset(project.id, tracker),
-    queryClient,
-    tracker,
-    payloadLabel: 'hydrate:dataset',
-    lazyPayloadMetadata: { lazy: true, datasetVersion: project.datasetVersion },
-  });
-
-  const [fieldDefinitions, initialDataRequests, initialContacts, datasetResolution] = await Promise.all([
+  const [fieldDefinitions, datasetPayload, initialDataRequests, initialContacts] = await Promise.all([
     getDatasetFieldDefinitions(tracker),
+    getProjectDataset(project.id, tracker),
     getProjectDataRequests(project.id, tracker),
     getProjectContacts(project.id, tracker),
-    datasetResolutionPromise,
   ]);
 
-  let initialDataset: Dataset | null | undefined;
-  let initialDatasetVersion: number | undefined = project.datasetVersion;
+  const resolvedDataset = datasetPayload?.dataset ?? ({ data_points: [] } as Dataset);
+  const resolvedDatasetVersion = datasetPayload?.datasetVersion ?? project.datasetVersion;
 
-  if (!datasetResolution.isLazy) {
-    const payload = datasetResolution.data ?? {
-      dataset: { data_points: [] } as Dataset,
-      datasetVersion: project.datasetVersion,
-    };
-
-    const resolvedDataset = payload.dataset ?? ({ data_points: [] } as Dataset);
-    const resolvedDatasetVersion = payload.datasetVersion ?? project.datasetVersion;
-
-    queryClient.setQueryData(projectKeys.dataset(project.id), {
-      projectId: project.id,
-      projectName: project.name,
-      dataset: resolvedDataset,
-      datasetVersion: resolvedDatasetVersion,
-      version: resolvedDatasetVersion,
-      updatedAt: new Date().toISOString(),
-      warning: payload.warning,
-    });
-
-    initialDataset = resolvedDataset;
-    initialDatasetVersion = resolvedDatasetVersion;
-  } else {
-    initialDataset = undefined;
-  }
-
+  const queryClient = new QueryClient(queryClientOptions);
+  queryClient.setQueryData(projectKeys.dataset(project.id), {
+    projectId: project.id,
+    projectName: project.name,
+    dataset: resolvedDataset,
+    datasetVersion: resolvedDatasetVersion,
+    version: resolvedDatasetVersion,
+    updatedAt: new Date().toISOString(),
+  });
   queryClient.setQueryData(dataRequestKeys.list(project.id, 'all'), initialDataRequests);
   queryClient.setQueryData(projectKeys.contacts(project.id), initialContacts);
 
+  tracker.recordPayload('hydrate:dataset', {
+    dataset: resolvedDataset,
+    datasetVersion: resolvedDatasetVersion,
+  });
   tracker.recordPayload('hydrate:data-requests', initialDataRequests);
   tracker.recordPayload('hydrate:contacts', initialContacts);
   tracker.recordPayload('hydrate:field-definitions', fieldDefinitions);
@@ -103,13 +76,12 @@ export default async function DatasetPage({ params }: PageProps) {
           projectId={project.id}
           projectName={project.name}
           projectOwnerName={ownerName}
-          initialDataset={initialDataset}
-          initialDatasetVersion={initialDatasetVersion}
+          initialDataset={resolvedDataset}
+          initialDatasetVersion={resolvedDatasetVersion}
           fieldDefinitions={fieldDefinitions}
           mailtoTemplate={project.mailtoTemplate as { subject?: string; body?: string } | null}
           initialDataRequests={initialDataRequests}
           initialContacts={initialContacts}
-          isInitialLazyLoad={datasetResolution.isLazy}
         />
       </HydrationBoundary>
     </ProjectLayout>

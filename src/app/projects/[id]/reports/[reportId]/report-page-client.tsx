@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { DatasetTable, type DataRequestSummary } from '@/components/dataset-table';
@@ -15,6 +15,9 @@ import {
 import { initializeFullDataset } from '@/lib/dataset-init';
 import type { Dataset } from '@/lib/dataset-validation';
 import { useProjectDataset, type ProjectDataset } from '@/lib/data-client/dataset';
+import { useDataRequests } from '@/lib/data-client/data-requests';
+import { useProjectContacts } from '@/lib/data-client/contacts';
+import type { ContactSummary } from '@/lib/contacts/types';
 import { Database, RefreshCcw, FileText } from 'lucide-react';
 
 interface ReportSectionSummary {
@@ -43,6 +46,8 @@ interface ReportPageClientProps {
   initialDatasetVersion: number;
   completion: { filled: number; required: number; percentage: number };
   mailtoTemplate: { subject?: string; body?: string } | null;
+  initialRequests: DataRequestSummary[];
+  initialContacts: ContactSummary[];
 }
 
 type RequestModalState = {
@@ -52,6 +57,12 @@ type RequestModalState = {
   itemId?: string | null;
   repeatableKey?: string | null;
   mailtoTemplate?: { subject: string; body: string } | null;
+  fields?: Array<{
+    fieldId: string;
+    fieldLabel: string;
+    itemId: string | null;
+    fieldHint: string | null;
+  }>;
 } | null;
 
 export function ReportPageClient({
@@ -66,14 +77,9 @@ export function ReportPageClient({
   initialDatasetVersion,
   completion,
   mailtoTemplate,
+  initialRequests,
+  initialContacts,
 }: ReportPageClientProps) {
-  const [dataRequests, setDataRequests] = useState<DataRequestSummary[]>([]);
-  const [contacts, setContacts] = useState<{
-    id: string;
-    name: string;
-    email: string;
-    position?: string | null;
-  }[]>([]);
   const [requestModal, setRequestModal] = useState<RequestModalState>(null);
 
   const fieldIdSet = useMemo(
@@ -141,6 +147,24 @@ export function ReportPageClient({
     [mailtoTemplate, projectName]
   );
 
+  const dataRequestsQuery = useDataRequests(projectId, {
+    status: 'all',
+    initialData: initialRequests,
+  });
+  const dataRequests = dataRequestsQuery.data ?? [];
+
+  const contactsQuery = useProjectContacts(projectId, initialContacts);
+  const contactsData = contactsQuery.data ?? initialContacts;
+  const normalizedContacts = useMemo(
+    () =>
+      contactsData.map((contact) => ({
+        id: contact.id,
+        name: (contact.name ?? '').trim() || contact.email,
+        email: contact.email,
+        position: contact.position ?? null,
+      })),
+    [contactsData]
+  );
 
   const handleRequestData = useCallback(
     ({
@@ -169,55 +193,16 @@ export function ReportPageClient({
     [resolveMailtoTemplate]
   );
 
-  const refreshDataRequests = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/data-requests`, {
-        cache: 'no-store',
+  const handleRequestMultiple = useCallback(
+    (fields: Array<{ fieldId: string; fieldLabel: string; itemId: string | null; fieldHint: string | null }>) => {
+      const template = resolveMailtoTemplate();
+      setRequestModal({
+        fields,
+        mailtoTemplate: template,
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load data requests for project ${projectId}`);
-      }
-
-      const payload = await response.json();
-      if (Array.isArray(payload?.requests)) {
-        setDataRequests(payload.requests as DataRequestSummary[]);
-      } else {
-        setDataRequests([]);
-      }
-    } catch (error) {
-      console.error('Failed to fetch project data requests', error);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    refreshDataRequests();
-  }, [refreshDataRequests]);
-
-  const refreshContacts = useCallback(async () => {
-    try {
-      const response = await fetch(`/api/projects/${projectId}/contacts`, {
-        cache: 'no-store',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to load contacts for project ${projectId}`);
-      }
-
-      const payload = await response.json();
-      if (Array.isArray(payload?.contacts)) {
-        setContacts(payload.contacts);
-      } else {
-        setContacts([]);
-      }
-    } catch (error) {
-      console.error('Failed to fetch project contacts', error);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    refreshContacts();
-  }, [refreshContacts]);
+    },
+    [resolveMailtoTemplate]
+  );
 
   return (
     <div className="space-y-6">
@@ -288,6 +273,7 @@ export function ReportPageClient({
             rows={rows}
             dataRequests={dataRequests}
             onRequestData={handleRequestData}
+            onRequestMultiple={handleRequestMultiple}
           />
         </CardContent>
       </Card>
@@ -304,8 +290,11 @@ export function ReportPageClient({
           group={requestModal.repeatableKey || undefined}
           isGroup={false}
           mailtoTemplate={requestModal.mailtoTemplate || undefined}
-          contacts={contacts}
-          onLogged={refreshDataRequests}
+          fields={requestModal.fields}
+          contacts={normalizedContacts}
+          onLogged={async () => {
+            await dataRequestsQuery.refetch();
+          }}
           onClose={() => setRequestModal(null)}
         />
       )}

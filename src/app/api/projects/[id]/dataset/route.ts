@@ -36,6 +36,39 @@ function buildMetadata(version: number) {
   return { version, updatedAt }
 }
 
+async function findMissingFieldIds(fieldIds: string[]): Promise<string[]> {
+  if (!fieldIds.length) {
+    return []
+  }
+
+  const uniqueIds = Array.from(
+    new Set(fieldIds.filter((id) => typeof id === 'string' && id.trim().length > 0))
+  )
+
+  if (!uniqueIds.length) {
+    return []
+  }
+
+  const definitions = await prisma.datasetFieldDefinition.findMany({
+    where: { fieldId: { in: uniqueIds } },
+    select: { fieldId: true },
+  })
+
+  const known = new Set(definitions.map((definition) => definition.fieldId))
+  return uniqueIds.filter((id) => !known.has(id))
+}
+
+function unknownFieldIdResponse(missingFieldIds: string[]) {
+  return NextResponse.json(
+    {
+      error: 'Unknown dataset field_id',
+      code: 'UNKNOWN_FIELD_ID',
+      fieldIds: missingFieldIds,
+    },
+    { status: 400 }
+  )
+}
+
 /**
  * GET /api/projects/[id]/dataset
  * Returns project dataset with current version
@@ -132,6 +165,14 @@ export async function PUT(
         },
         { status: 400 }
       )
+    }
+
+    const missingFieldIds = await findMissingFieldIds(
+      validatedDataset.data_points.map((dataPoint) => dataPoint.field_id)
+    )
+
+    if (missingFieldIds.length > 0) {
+      return unknownFieldIdResponse(missingFieldIds)
     }
 
     // Optimistic locking: update only if version matches
@@ -232,6 +273,11 @@ export async function PATCH(
       )
     }
 
+    const missingFieldIds = await findMissingFieldIds([field_id])
+    if (missingFieldIds.length > 0) {
+      return unknownFieldIdResponse(missingFieldIds)
+    }
+
     // Get current dataset
     const currentDataset = project.dataset as Dataset | null
     const dataPoints = currentDataset?.data_points || []
@@ -247,11 +293,11 @@ export async function PATCH(
 
     if (existingIndex >= 0) {
       // Update existing
-  updatedDataPoint = { field_id, item_id, value }
+      updatedDataPoint = { field_id, item_id, value }
       dataPoints[existingIndex] = updatedDataPoint
     } else {
       // Insert new
-  updatedDataPoint = { field_id, item_id, value }
+      updatedDataPoint = { field_id, item_id, value }
       dataPoints.push(updatedDataPoint)
     }
 

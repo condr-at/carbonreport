@@ -1,7 +1,7 @@
 # Implementation Checklist
 
-**Status**: 🟡 In Progress (Backend Complete, Frontend Pending)  
-**Last Updated**: November 6, 2025
+**Status**: 🟡 In Progress (Phase 7 polish + docs/tests remaining)  
+**Last Updated**: November 7, 2025
 
 Use this checklist to track implementation of the architecture updates. Cross-reference Phase 2a/2b milestones in `docs/Loading perfomance optimization plan.md` when sequencing SSR prefetching, payload trimming, and virtualization.
 - [ ] For every new route adopting lazy SSR, reuse `src/lib/server-data/lazy-hydration.ts`, keep the feature flag guard, and capture `x-server-timing` + HAR metrics (use `npm run metrics:collect -- <url>` for quick snapshots) before sign-off.
@@ -81,13 +81,14 @@ Use this checklist to track implementation of the architecture updates. Cross-re
   - [x] Add validation (optional, for safety)
 
 - [ ] `PATCH /api/projects/[id]/dataset` — Update single field (implemented)
-   - [ ] Validate `field_id` exists in DB definitions
+   - [x] Validate `field_id` exists in DB definitions
    - [ ] Use `upsertDataPoint` helper
-   - [ ] Optimistic locking via `datasetVersion`
+   - [x] Optimistic locking via `datasetVersion`
 
 - [ ] `DELETE /api/projects/[id]/dataset/items/[itemId]` — Delete repeatable item (implemented)
-   - [ ] Use helper to remove all data points for `item_id`
-   - [ ] Optimistic locking via `datasetVersion`
+   - [x] Use helper to remove all data points for `item_id`
+   - [x] Optimistic locking via `datasetVersion`
+   - [x] Validate associated `field_id` values exist in DB definitions before deletion
 
 #### Project Endpoints ✅
 
@@ -134,19 +135,19 @@ Use this checklist to track implementation of the architecture updates. Cross-re
    - [x] Reload template from first matching report config
    - [x] Overwrite `Project.mailtoTemplate`
 
-#### Data Request Endpoints 🚧
+#### Data Requests Endpoints ✅
 
-- [ ] `GET /api/projects/[id]/data-requests` — List project requests (fields, contacts, statuses)
-- [ ] `POST /api/data-requests/bulk` — Create/update records for the `dataPointIds` array and revoke previous contacts
-- [ ] `POST /api/data-requests/:id/close` (or PATCH) — Mark the request `completed_at`
-- [ ] Reserve endpoint for reminders (`POST /api/data-requests/remind`) — deferred, but interface and contract defined
+- [x] `GET /api/projects/[id]/data-requests` — List project requests (fields, contacts, statuses)
+- [x] `POST /api/data-requests/bulk` — Create/update records for the `dataPointIds` array and revoke previous contacts
+- [x] `POST /api/data-requests/:id/close` (or PATCH) — Mark the request `completed_at` *(implemented as `/api/data-requests/[id]/complete`)*
+- [ ] `POST /api/data-requests/remind` — Deferred, interface and contract defined but no route yet
 
 ### 3.3 Update Frontend Components
 
 #### Dataset Page
 
 - [ ] `app/projects/[id]/dataset/page.tsx`
-  - [ ] Display current `datasetVersion` (hidden, for debugging)
+   - [x] Display current `datasetVersion` (hidden, for debugging)
   - [ ] On save, send `datasetVersion` in request body
   - [ ] Handle 409 Conflict error:
     ```typescript
@@ -158,18 +159,18 @@ Use this checklist to track implementation of the architecture updates. Cross-re
    - [x] Show optimistic UI updates (simplified)
       - [x] Use DB-backed field IDs (snake_case) from `/api/dataset-fields`
       - [x] Add checkboxes to select multiple rows and enable the bulk "Request Data" action
-      - [x] Show a badge "Request sent · [Contact]" linking to request history and provide an inline "Change contact" control *(represented via inline summaries; dedicated badge UI deferred)*
-      - [x] On modal confirmation call `POST /api/data-requests/bulk` and update local contact state (including badge contact name)
+   - [x] Surface a "Responsible" summary for active requests and provide an inline "Change contact" control *(badge UI deferred)*
+   - [x] On modal confirmation call `POST /api/data-requests/bulk` and update local contact state (including the Responsible summary contact name)
 
 #### Report Editor
 
-- [ ] `app/projects/[id]/reports/[reportId]/page.tsx`
-   - [ ] Fetch data from GET endpoint (filters Project.dataset)
-   - [ ] On field update, call dataset endpoint (not report endpoint)
-   - [ ] Remove any references to `Report.data`
-      - [ ] Add "Request Data" for a single field and allow adding the field to the bulk selection
-      - [ ] Surface the current contact with a status badge and "Change" action (using `data_requests`)
-      - [ ] Use the project `mailtoTemplate`, ensuring `{{field_list}}` renders as bullets in previews
+- [x] `app/projects/[id]/reports/[reportId]/page.tsx`
+   - [x] Fetch data from GET endpoint (filters Project.dataset)
+   - [x] On field update, call dataset endpoint (not report endpoint)
+   - [x] Remove any references to `Report.data`
+      - [x] Add "Request Data" for a single field and allow adding the field to the bulk selection
+      - [x] Surface the current contact via the shared "Responsible" summary with a "Change contact" action (using `data_requests`)
+      - [x] Use the project `mailtoTemplate`, ensuring `{{field_list}}` renders as bullets in previews
 
 #### Data Requests Page
 
@@ -254,13 +255,13 @@ Use this checklist to track implementation of the architecture updates. Cross-re
    - [ ] Sorting by requested_at/deadline/field
    - [x] Empty state when no requests
 
-#### Dataset/Report Tables — Request Badges
+#### Dataset/Report Tables — Request Summaries
 
 - [ ] Update `DatasetTable` and report dataset views
    - [ ] Fetch active requests for visible fields via `GET /api/projects/:id/data-requests?status=active`
-   - [ ] Show badge next to each field with active request: "Requested from [Contact Name]" + timestamp
-   - [ ] Badge variants: muted (active), success (completed)
-   - [ ] Click badge to view request details or reassign contact
+   - [ ] Show a "Responsible" summary next to each field with an active request, including contact name and timestamp
+   - [ ] Provide visual variants for upcoming states (active/completed)
+   - [ ] Click summary to view request details or reassign contact
    - [ ] Show tooltip warning when reassigning: "This will revoke the previous request"
 
 #### Future Extensions (Plan Ahead)
@@ -959,7 +960,7 @@ Use this checklist to track implementation of the architecture updates. Cross-re
    - API revokes previous links and returns the current records
 
 7. [ ] Integrate into Dataset and Reports
-   - Dataset: checkboxes, bulk bar, badges with contact name, "Change" action
+   - Dataset: checkboxes, bulk bar, Responsible summaries with contact name, "Change" action
    - Reports: reuse the same modal plus quick access for a single field
    - Both flows consume `<RequestDataModal />` and `POST /api/data-requests/bulk`
 

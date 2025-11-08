@@ -13,6 +13,39 @@ function buildMetadata(version: number) {
   return { version, updatedAt }
 }
 
+async function findMissingFieldIds(fieldIds: string[]): Promise<string[]> {
+  if (!fieldIds.length) {
+    return []
+  }
+
+  const uniqueIds = Array.from(
+    new Set(fieldIds.filter((id) => typeof id === 'string' && id.trim().length > 0))
+  )
+
+  if (!uniqueIds.length) {
+    return []
+  }
+
+  const definitions = await prisma.datasetFieldDefinition.findMany({
+    where: { fieldId: { in: uniqueIds } },
+    select: { fieldId: true },
+  })
+
+  const known = new Set(definitions.map((definition) => definition.fieldId))
+  return uniqueIds.filter((id) => !known.has(id))
+}
+
+function unknownFieldIdResponse(missingFieldIds: string[]) {
+  return NextResponse.json(
+    {
+      error: 'Unknown dataset field_id',
+      code: 'UNKNOWN_FIELD_ID',
+      fieldIds: missingFieldIds,
+    },
+    { status: 400 }
+  )
+}
+
 /**
  * DELETE /api/projects/[id]/dataset/items/[itemId]
  * Delete all data points with the specified item_id
@@ -58,16 +91,23 @@ export async function DELETE(
     const currentDataset = project.dataset as Dataset | null
     const dataPoints = currentDataset?.data_points || []
 
-    // Filter out all data points with this item_id
-    const filteredDataPoints = dataPoints.filter((dp) => dp.item_id !== itemId)
-    const deletedCount = dataPoints.length - filteredDataPoints.length
+    const targetDataPoints = dataPoints.filter((dp) => dp.item_id === itemId)
 
-    if (deletedCount === 0) {
+    if (targetDataPoints.length === 0) {
       return NextResponse.json(
         { error: 'Item not found' },
         { status: 404 }
       )
     }
+
+    const missingFieldIds = await findMissingFieldIds(targetDataPoints.map((dp) => dp.field_id))
+    if (missingFieldIds.length > 0) {
+      return unknownFieldIdResponse(missingFieldIds)
+    }
+
+    // Filter out all data points with this item_id
+    const filteredDataPoints = dataPoints.filter((dp) => dp.item_id !== itemId)
+    const deletedCount = targetDataPoints.length
 
     // Update project
     const updatedProject = await prisma.project.update({

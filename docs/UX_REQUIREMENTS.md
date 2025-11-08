@@ -204,9 +204,8 @@ DataPointRow {
   - "Request Data" button
   - Last updated indicator
   - Validation status icon
-  - Request badge (if active request exists): "Requested from [Contact Name]" with timestamp
-    * Badge color: muted for active requests, success for completed
-    * Click badge to view request details or reassign contact
+  - Responsible summary (if active request exists): "Responsible: [Contact Name]" with timestamp
+    * Click summary to view request details or reassign contact
     * Warning tooltip when reassigning: "This will revoke the previous request"
 }
 ```
@@ -673,7 +672,7 @@ sequenceDiagram
     Dataset->>User: Shows saving indicator with success or error toast
     User->>Dataset: Clicks "Export CSV"
     Dataset->>User: Displays export progress and downloads dataset.csv
-  Note over Dataset: Request Data actions available for single rows and bulk selections; active fields display a badge with the contact name.
+  Note over Dataset: Request Data actions available for single rows and bulk selections; active fields display a "Responsible" summary with the contact name.
 
     Note over User,Report: Scenario 6 — Duplicate project
     User->>Dashboard: Reviews project list
@@ -748,7 +747,7 @@ graph TD
 
 ### Phase 4: Dataset & Roadmap
 1. `/projects/:id/dataset` — Spreadsheet data capture (inline editing, filters, bulk Request Data, CSV export)
-2. Associate data requests with contacts; show badges "Requested from [Contact]" and an action "Change contact"
+2. Associate data requests with contacts; show a "Responsible: [Contact]" summary and an action "Change contact"
 3. `/projects/:id/data-requests` — Requests table with filters (active/closed/overdue) and actions "Repeat", "Change contact", "Close"
 4. Highlight completion and status filters
 5. `/projects/:id/roadmap` — Roadmap checklist

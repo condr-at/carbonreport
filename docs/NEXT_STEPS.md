@@ -1,7 +1,7 @@
 # Next Steps: Data Request Features Implementation
 
 **Status**: Phase 7 in Progress  
-**Last Updated**: 2025-11-06
+**Last Updated**: 2025-11-07
 
 ## Overview
 
@@ -47,7 +47,7 @@ This document outlines the implementation plan for completing the data request f
 
 **Notes**:
 - Row-level selection, request summaries, and modal hand-off are wired.
-- Dedicated badge UI is deferred; summaries live in the table for now.
+- Dedicated badge UI is deferred; rely on the textual "Responsible" summary in the table for now.
 
 ---
 
@@ -127,14 +127,13 @@ This document outlines the implementation plan for completing the data request f
 
 **Still outstanding**:
 - Column sorting (requested_at/deadline/field).
-- Surface active badge summaries back into dataset/report tables once reminders UI exists.
-- Phase 2b follow-through from `docs/Loading perfomance optimization plan.md`: instrumentation now targets the custom `x-server-timing` header and lazy mode is live. Latest HARs (2025-11-06) show dataset page at 153 KB raw / 16.4 KB transferred with load ≈0.98 s, and data-requests page at 56 KB raw / 8.7 KB transferred with load ≈1.0 s while the table hydrates on the client. Keep `NEXT_PUBLIC_LAZY_DATA_REQUESTS=true` in staging/production, record new HARs after large schema changes, and revisit virtualization only if client fetches regress beyond the current sub-200 ms window.
-- Enable `NEXT_PUBLIC_LAZY_DATASET` in staging, validate the dataset page with `npm run metrics:collect -- <url>` + HAR snapshots, and document the rollout recipe so other heavy routes can reuse the helper when metrics flag them.
+- Surface active "Responsible" summaries back into dataset/report tables once reminders UI exists.
+- Phase 2b follow-through from `docs/Loading perfomance optimization plan.md`: instrumentation now targets the custom `x-server-timing` header and the data-requests page ships with the lazy hydration helper. The dataset page remains in eager SSR mode while we monitor payload budgets. Latest HARs (2025-11-06) show the dataset page at 153 KB raw / 16.4 KB transferred with load ≈0.98 s, and the data-requests page at 56 KB raw / 8.7 KB transferred with load ≈1.0 s while the table hydrates on the client. Keep `NEXT_PUBLIC_LAZY_DATA_REQUESTS=true` in staging/production, record new HARs after large schema changes, and revisit virtualization only if client fetches regress beyond the current sub-200 ms window.
 
 **Testing ideas**:
 - Navigate to `/projects/:id/data-requests` → verify summaries load.
 - Filter by status/contact → ensure rows adjust without reload.
-- Trigger bulk complete/revoke → observe badge + timestamp updates.
+- Trigger bulk complete/revoke → observe summary + timestamp updates.
 - Resend via modal → confirm `/api/data-requests/bulk` logs new entry.
 
 ---
@@ -156,14 +155,16 @@ This document outlines the implementation plan for completing the data request f
 ## Current Implementation Status
 
 ✅ **Completed**:
-- Placeholder system (`{{requester_signature}}`, `{{field_display_name}}`, etc.)
-- Basic RequestDataModal with single-field support
-- Mailto template editor with preview
-- Project owner name fetching via API
+- Phases 1–6 (confirmation dialog through API hardening)
+- Data-requests page initial delivery (filters, bulk toolbar, lazy hydration, cache integration)
+- Instrumentation baseline for dataset/data-requests pages with `x-server-timing`
 
-⏳ **In Progress**: None
+⏳ **In Progress**:
+- Phase 7 polish: table sorting, metrics check-ins, and QA for bulk actions
 
-❌ **Not Started**: All phases above
+🅿️ **Deferred**:
+- Reminder endpoint + follow-up UX when contact nudges are scoped
+- Dataset/report "Responsible" summary refresh until reminders/UI contract lands
 
 ---
 

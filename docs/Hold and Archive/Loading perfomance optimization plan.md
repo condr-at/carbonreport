@@ -1,6 +1,6 @@
 # Optimistic UX: System-Wide Implementation Plan
 
-_Last updated: 2025-11-06_
+_Last updated: 2025-11-07_
 
 ## 1. Goal & Scope
 - Provide consistent optimistic interactions across the app (requests, dataset edits, project management, contacts) while keeping the UI responsive even under slow network or database load.
@@ -576,11 +576,11 @@ const dataset = DatasetSchema.parse(rawData.dataset); // Runtime validation
 > **Phase 2b status · 2025-11-06**
 > - Instrumentation landed: `src/lib/server-data/metrics.ts` now emits `[dataset-page]` / `[data-requests-page]` timing + payload summaries and writes the encoded value to an `x-server-timing` response header (while still logging to the console when headers are immutable in Server Components).
 > - Hydration payload logging captures dataset, data-request, contact, and field-definition footprints per request; correlate these console summaries with HAR exports to spot regressions.
-> - Latest dataset HAR (2025-11-06, lazy flag on): `projects/[id]/dataset` HTML payload 152 892 B raw / 16 416 B transferred (br), request completes in 563 ms, DOMContentLoaded 568 ms, load 985 ms. Streaming now completes inside 1 s with steady 245 ms receive window.
+> - Latest dataset HAR (2025-11-06, eager baseline): `projects/[id]/dataset` HTML payload 152 892 B raw / 16 416 B transferred (br), request completes in 563 ms, DOMContentLoaded 568 ms, load 985 ms. Streaming now completes inside 1 s with steady 245 ms receive window while we keep the dataset payload eager.
 > - Latest data-requests HAR (2025-11-06, lazy flag on): `projects/[id]/data-requests` HTML payload 56 047 B raw / 8 751 B transferred (br), initial document 401 ms total, DOMContentLoaded 436 ms, load 1.03 s. Follow-up client fetches land at 180 ms without blocking first paint.
 > - `NEXT_PUBLIC_LAZY_DATA_REQUESTS` is enabled in staging and aggressively trims the SSR payload; keep it enabled for production unless downstream analytics require the eager data. Capture additional HARs after major schema changes to confirm the savings persist.
 > - Shared lazy payload infrastructure now lives in `src/lib/server-data/lazy-hydration.ts`, and `npm run metrics:collect -- <url>` captures `x-server-timing` + payload size for regression tracking. Adoption steps (flag wiring, skeleton pattern, metrics checklist) remain tracked in `docs/NEXT_STEPS.md`, `docs/IMPLEMENTATION_CHECKLIST.md`, and `docs/TECHNICAL_DEBT.md` for any pages that opt in next.
-> - Dataset SSR now opts into the same helper behind `NEXT_PUBLIC_LAZY_DATASET`; flip it on in staging alongside data-requests, verify payload savings with `metrics:collect` + HAR, then decide on the production rollout.
+> - Dataset SSR has not yet adopted the lazy helper. Keep tracking payload size while the route stays eager, and stage the `NEXT_PUBLIC_LAZY_DATASET` rollout once we green-light deferred loading for that page.
 > - Virtualization remains optional. Revisit once table row counts or client fetches threaten the <250 ms receive budget; for now the lazy path meets the payload target without extra complexity.
 
 ## 6. API Changes Checklist

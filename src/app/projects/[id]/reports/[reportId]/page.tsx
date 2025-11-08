@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import { ProjectLayout } from '@/components/layouts/project-layout';
 import { ReportPageClient } from './report-page-client';
 import {
@@ -8,25 +9,19 @@ import {
 import { initializeFullDataset } from '@/lib/dataset-init';
 import type { Dataset } from '@/lib/dataset-validation';
 import { getBaseUrl } from '@/lib/server-utils';
+import { dataRequestKeys, projectKeys } from '@/lib/data-client/keys';
+import { queryClientOptions } from '@/lib/data-client/queryClient';
+import {
+  getProjectSummary,
+  getProjectDataset,
+  getProjectDataRequests,
+  getProjectContacts,
+  getDatasetFieldDefinitions,
+} from '@/lib/server-data/projects';
+import { createServerTimingTracker } from '@/lib/server-data/metrics';
 
 interface PageProps {
   params: Promise<{ id: string; reportId: string }>;
-}
-
-async function getProject(projectId: string) {
-  const baseUrl = await getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/projects/${projectId}`, {
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    if (res.status === 404) {
-      return null;
-    }
-    throw new Error('Failed to fetch project');
-  }
-
-  return res.json();
 }
 
 async function getReport(projectId: string, reportId: string) {
@@ -45,53 +40,41 @@ async function getReport(projectId: string, reportId: string) {
   return res.json();
 }
 
-async function getFieldDefinitions(): Promise<FieldDefinition[]> {
-  const baseUrl = await getBaseUrl();
-
-  try {
-    const res = await fetch(`${baseUrl}/api/dataset-fields`, {
-      cache: 'force-cache',
-      next: { revalidate: 300 },
-    });
-
-    if (!res.ok) {
-      console.error('Failed to fetch field definitions');
-      return [];
-    }
-
-    const data = await res.json();
-    return data.fields || [];
-  } catch (error) {
-    console.error('Error fetching field definitions:', error);
-    return [];
-  }
-}
-
 export default async function ReportPage({ params }: PageProps) {
   const { id: projectId, reportId } = await params;
 
-  const [project, reportResponse, fieldDefinitions] = await Promise.all([
-    getProject(projectId),
+  const tracker = createServerTimingTracker(`report-page:${projectId}:${reportId}`);
+  const project = await getProjectSummary(projectId, tracker);
+
+  if (!project) {
+    notFound();
+  }
+
+  const [reportResponse, datasetPayload, fieldDefinitions, initialRequests, initialContacts] = await Promise.all([
     getReport(projectId, reportId),
-    getFieldDefinitions(),
+    getProjectDataset(projectId, tracker),
+    getDatasetFieldDefinitions(tracker),
+    getProjectDataRequests(projectId, tracker),
+    getProjectContacts(projectId, tracker),
   ]);
 
-  if (!project || !reportResponse) {
+  if (!reportResponse) {
     notFound();
   }
 
   const templateFieldIds = new Set<string>();
-  for (const section of reportResponse.template.sections || []) {
-    for (const field of section.fields || []) {
+  for (const section of reportResponse.template.sections ?? []) {
+    for (const field of section.fields ?? []) {
       templateFieldIds.add(field.fieldId);
     }
   }
 
-  const filteredFieldDefinitions = fieldDefinitions.filter((def) =>
-    templateFieldIds.has(def.field_id)
+  const resolvedDataset = (datasetPayload?.dataset as Dataset | null) ?? ({ data_points: [] } as Dataset);
+  const filteredFieldDefinitions = fieldDefinitions.filter((definition: FieldDefinition) =>
+    templateFieldIds.has(definition.field_id)
   );
 
-  const existingDataPoints = (reportResponse.dataset?.data_points || []) as DataPoint[];
+  const existingDataPoints = (resolvedDataset.data_points ?? []) as DataPoint[];
   const completeDataPoints = initializeFullDataset(filteredFieldDefinitions, existingDataPoints);
 
   const requiredFields = reportResponse.template.sections
@@ -99,13 +82,36 @@ export default async function ReportPage({ params }: PageProps) {
     .filter((field: any) => field.isRequired)
     .map((field: any) => field.fieldId);
 
-  const filledCount = completeDataPoints.filter((dp) =>
-    requiredFields.includes(dp.field_id) && dp.value.trim() !== ''
+  const filledCount = completeDataPoints.filter((dataPoint) =>
+    requiredFields.includes(dataPoint.field_id) && dataPoint.value.trim() !== ''
   ).length;
   const requiredCount = requiredFields.length;
-  const completionPercentage = requiredCount === 0
-    ? 100
-    : Math.round((filledCount / requiredCount) * 100);
+  const completionPercentage =
+    requiredCount === 0 ? 100 : Math.round((filledCount / requiredCount) * 100);
+
+  const datasetVersion = datasetPayload?.datasetVersion ?? project.datasetVersion;
+  const datasetHydration = {
+    projectId: project.id,
+    projectName: project.name,
+    dataset: resolvedDataset,
+    datasetVersion,
+    version: datasetVersion,
+    updatedAt: new Date().toISOString(),
+    warning: datasetPayload?.warning,
+  };
+
+  const queryClient = new QueryClient(queryClientOptions);
+  queryClient.setQueryData(projectKeys.dataset(project.id), datasetHydration);
+  queryClient.setQueryData(dataRequestKeys.list(project.id, 'all'), initialRequests);
+  queryClient.setQueryData(projectKeys.contacts(project.id), initialContacts);
+
+  tracker.recordPayload('hydrate:dataset', datasetHydration);
+  tracker.recordPayload('hydrate:data-requests', initialRequests);
+  tracker.recordPayload('hydrate:contacts', initialContacts);
+
+  await tracker.commit();
+  tracker.logTimings('report-page');
+  tracker.logPayloads('report-page');
 
   const projectForLayout = {
     id: project.id,
@@ -114,36 +120,40 @@ export default async function ReportPage({ params }: PageProps) {
     updatedAt: project.updatedAt,
   };
 
-  const ownerName = (project.user?.name ?? 'Carbon Report Team').trim() || 'Carbon Report Team';
+  const ownerName = project.ownerName?.trim() ? project.ownerName.trim() : 'Carbon Report Team';
 
   return (
     <ProjectLayout project={projectForLayout}>
-      <ReportPageClient
-        projectId={project.id}
-        projectName={project.name}
-        projectOwnerName={ownerName}
-        reportId={reportResponse.reportInfo.id}
-        reportName={reportResponse.template.name}
-        templateCode={reportResponse.template.code}
-        sections={reportResponse.template.sections.map((section: any) => ({
-          key: section.key,
-          title: section.title,
-          description: section.description,
-          fields: section.fields.map((field: any) => ({
-            fieldId: field.fieldId,
-            isRequired: Boolean(field.isRequired),
-          })),
-        }))}
-        fieldDefinitions={filteredFieldDefinitions}
-          initialDataset={reportResponse.dataset as Dataset}
-          initialDatasetVersion={reportResponse.datasetVersion ?? 0}
-        completion={{
-          filled: filledCount,
-          required: requiredCount,
-          percentage: completionPercentage,
-        }}
-        mailtoTemplate={project.mailtoTemplate || null}
-      />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <ReportPageClient
+          projectId={project.id}
+          projectName={project.name}
+          projectOwnerName={ownerName}
+          reportId={reportResponse.reportInfo.id}
+          reportName={reportResponse.template.name}
+          templateCode={reportResponse.template.code}
+          sections={reportResponse.template.sections.map((section: any) => ({
+            key: section.key,
+            title: section.title,
+            description: section.description,
+            fields: section.fields.map((field: any) => ({
+              fieldId: field.fieldId,
+              isRequired: Boolean(field.isRequired),
+            })),
+          }))}
+          fieldDefinitions={filteredFieldDefinitions}
+          initialDataset={resolvedDataset as Dataset}
+          initialDatasetVersion={datasetVersion}
+          completion={{
+            filled: filledCount,
+            required: requiredCount,
+            percentage: completionPercentage,
+          }}
+          mailtoTemplate={(project.mailtoTemplate as { subject?: string; body?: string } | null) ?? null}
+          initialRequests={initialRequests}
+          initialContacts={initialContacts}
+        />
+      </HydrationBoundary>
     </ProjectLayout>
   );
 }
