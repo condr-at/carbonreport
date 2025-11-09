@@ -126,29 +126,13 @@ This document outlines the implementation plan for completing the data request f
 - Empty-state messaging and manual refresh control.
 
 **Still outstanding**:
-- Column sorting (requested_at/deadline/field).
-- Surface active "Responsible" summaries back into dataset/report tables once reminders UI exists.
-- Phase 2b follow-through from `docs/Loading perfomance optimization plan.md`: instrumentation now targets the custom `x-server-timing` header and the data-requests page ships with the lazy hydration helper. The dataset page remains in eager SSR mode while we monitor payload budgets. Latest HARs (2025-11-06) show the dataset page at 153 KB raw / 16.4 KB transferred with load ≈0.98 s, and the data-requests page at 56 KB raw / 8.7 KB transferred with load ≈1.0 s while the table hydrates on the client. Keep `NEXT_PUBLIC_LAZY_DATA_REQUESTS=true` in staging/production, record new HARs after large schema changes, and revisit virtualization only if client fetches regress beyond the current sub-200 ms window.
+- Surface active "Responsible" summaries back into dataset/report tables once reminders UI exists. _Automated test_: extend dataset table integration coverage to assert summary badge rendering after mocked bulk request.
 
 **Testing ideas**:
 - Navigate to `/projects/:id/data-requests` → verify summaries load.
 - Filter by status/contact → ensure rows adjust without reload.
 - Trigger bulk complete/revoke → observe summary + timestamp updates.
 - Resend via modal → confirm `/api/data-requests/bulk` logs new entry.
-
----
-
-## Estimated Total Time
-
-- Phase 1: 30 min
-- Phase 2: 20 min
-- Phase 3: 45 min
-- Phase 4: 30 min
-- Phase 5: 1 hour
-- Phase 6: 1.5 hours
-- Phase 7: 1 hour
-
-**Total: ~5 hours**
 
 ---
 
@@ -162,9 +146,11 @@ This document outlines the implementation plan for completing the data request f
 ⏳ **In Progress**:
 - Phase 7 polish: table sorting, metrics check-ins, and QA for bulk actions
 
-🅿️ **Deferred**:
-- Reminder endpoint + follow-up UX when contact nudges are scoped
-- Dataset/report "Responsible" summary refresh until reminders/UI contract lands
+🅿️ **Deferred / Post-MVP**:
+- Column sorting (requested_at/deadline/field). _Automated test_: add end-to-end table sorting check (e.g., Playwright) verifying persisted order.
+- Phase 2b follow-through from `docs/Loading perfomance optimization plan.md`: instrumentation now targets the custom `x-server-timing` header. ✅ Environment variable already added in Vercel, but no improvement yet — needs deeper investigation. Track once we have capacity for perf tooling.
+- Reminder endpoint + follow-up UX when contact nudges are scoped.
+- Dataset/report "Responsible" summary refresh until reminders/UI contract lands.
 
 ---
 
@@ -186,3 +172,12 @@ This document outlines the implementation plan for completing the data request f
 - [UX_GUIDE.md](../UX_GUIDE.md) - DataPointRow component spec
 - [planning/BACKLOG.md](./BACKLOG.md) - Granular task breakdown
 - [TECHNICAL_DEBT.md](../TECHNICAL_DEBT.md) - Pointer to active debt items
+
+---
+
+## Post-MVP Themes (High Level)
+
+- **Organizations & Access** — introduce workspaces with scoped membership and roles.
+- **Billing & Compliance** — evaluate enterprise-friendly billing/compliance model (likely fixed plans vs usage-based).
+- **Automated Data Extraction** — populate fields via uploaded documents (OCR/LLM pipeline with human QA).
+- **Data Collection Agents** — automation that sends follow-ups and negotiates data collection on behalf of users (will require delegated email access).

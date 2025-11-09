@@ -1,6 +1,6 @@
 # Project Backlog
 
-_Last updated: 2025-11-08_
+_Last updated: 2025-11-09_
 
 This backlog captures the remaining work items that were previously tracked in `IMPLEMENTATION_CHECKLIST.md`. Items are grouped by theme and prioritised roughly by impact. Move completed items to version control history or note them in `DEVELOPMENT.md`.
 
@@ -36,10 +36,10 @@ This backlog captures the remaining work items that were previously tracked in `
 ## 🟨 Frontend Experience
 
 - **Dataset & Report Tables**
-  - Display active "Responsible" summaries using data-request API.
+  - Display active "Responsible" summaries using data-request API. _Add integration test_ validating badge rendering after mocked bulk request.
   - Provide inline reassignment with warning tooltip.
 - **Data Requests Page** (`app/projects/[id]/data-requests/page.tsx`)
-  - Add sorting (requested_at, deadline, field).
+  - Add sorting (requested_at, deadline, field). _Post-MVP_. _Add end-to-end test_ (e.g., Playwright) to verify ordering persists via query params.
   - Prepare bulk toolbar for resend/change contact/close actions.
 - **Contact Detail Page** (`app/contacts/[id]/page.tsx`)
   - Introduce "Requests" tab with table + quick actions.
@@ -53,7 +53,7 @@ This backlog captures the remaining work items that were previously tracked in `
 ## 🟩 Tooling & Documentation
 
 - Add JSDoc to newly introduced helpers (dataset, data-requests, mailto).
-- Automate HAR capture and regression alerts for SSR payload metrics.
+- Automate HAR capture and regression alerts for SSR payload metrics. _Note_: `NEXT_PUBLIC_LAZY_DATA_REQUESTS` env var already provisioned on Vercel; no perf improvement yet — further analysis required.
 - Define staging deployment checklist (backup, rollback, smoke tests).
 
 ---

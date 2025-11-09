@@ -75,7 +75,8 @@ Detailed task breakdown (including open checklist items) now lives in `docs/plan
 - **Next steps**:
   1. Automate HAR capture for regression detection.
   2. Hook metrics into observability stack when available.
-  3. Keep `NEXT_PUBLIC_LAZY_DATA_REQUESTS` flagged on until more perf headroom exists.
+   3. Keep `NEXT_PUBLIC_LAZY_DATA_REQUESTS` flagged on until more perf headroom exists.
+   4. Investigate why enabling the env var on Vercel did not reduce payload timings; deeper perf tooling analysis required (tracks with `docs/planning/ROADMAP.md`).
 
 ---
 
@@ -100,6 +101,7 @@ Resolved backlog items remain in archived checklists for traceability.
    - Project creation flow (dataset + mailto defaults).
    - Dataset optimistic locking (409 handling).
    - Data request lifecycle (bulk → complete → revoke).
+   - Data requests page sorting & "Responsible" summary visibility once features land (see `docs/planning/BACKLOG.md`).
 3. **Manual smoke checklist** (until automated coverage exists)
    - Create project → verify datasetVersion increments.
    - Request data → verify Responsible summary updates.
