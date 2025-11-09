@@ -104,7 +104,7 @@ Resolved backlog items remain in archived checklists for traceability.
    - Data requests page sorting & "Responsible" summary visibility once features land (see `docs/planning/BACKLOG.md`).
 3. **Manual smoke checklist** (until automated coverage exists)
    - Create project → verify datasetVersion increments.
-   - Request data → verify Responsible summary updates.
+   - Request data → verify the Responsible column shows the latest pending contact name (fallback "—").
    - Edit mailto template → reset to defaults.
 
 Progress on automated tests should be tracked in `docs/planning/BACKLOG.md`.

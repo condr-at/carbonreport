@@ -204,9 +204,9 @@ DataPointRow {
   - "Request Data" button
   - Last updated indicator
   - Validation status icon
-  - Responsible summary (if active request exists): "Responsible: [Contact Name]" with timestamp
-    * Click summary to view request details or reassign contact
-    * Warning tooltip when reassigning: "This will revoke the previous request"
+  - Responsible column displays the latest pending contact name when requests exist; otherwise shows "—".
+    * Repeatable groups surface the latest pending contact across their items.
+    * Reassignment still flows through the Request Data dialog (no inline summary click target yet).
 }
 ```
 
@@ -672,7 +672,7 @@ sequenceDiagram
     Dataset->>User: Shows saving indicator with success or error toast
     User->>Dataset: Clicks "Export CSV"
     Dataset->>User: Displays export progress and downloads dataset.csv
-  Note over Dataset: Request Data actions available for single rows and bulk selections; active fields display a "Responsible" summary with the contact name.
+  Note over Dataset: Request Data actions available for single rows and bulk selections; the Responsible column shows the latest pending contact name or "—" when none exist.
 
     Note over User,Report: Scenario 6 — Duplicate project
     User->>Dashboard: Reviews project list
@@ -747,7 +747,7 @@ graph TD
 
 ### Phase 4: Dataset & Roadmap
 1. `/projects/:id/dataset` — Spreadsheet data capture (inline editing, filters, bulk Request Data, CSV export)
-2. Associate data requests with contacts; show a "Responsible: [Contact]" summary and an action "Change contact"
+2. Associate data requests with contacts; surface a Responsible column showing the latest pending contact name; reassignment still happens via the Request Data dialog.
 3. `/projects/:id/data-requests` — Requests table with filters (active/closed/overdue) and actions "Repeat", "Change contact", "Close"
 4. Highlight completion and status filters
 5. `/projects/:id/roadmap` — Roadmap checklist

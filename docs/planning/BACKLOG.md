@@ -36,7 +36,7 @@ This backlog captures the remaining work items that were previously tracked in `
 ## 🟨 Frontend Experience
 
 - **Dataset & Report Tables**
-  - Display active "Responsible" summaries using data-request API. _Add integration test_ validating badge rendering after mocked bulk request.
+  - Ensure the Responsible column displays the latest pending contact only (single name, fallback "—") and guard the invariant in an integration test.
   - Provide inline reassignment with warning tooltip.
 - **Data Requests Page** (`app/projects/[id]/data-requests/page.tsx`)
   - Add sorting (requested_at, deadline, field). _Post-MVP_. _Add end-to-end test_ (e.g., Playwright) to verify ordering persists via query params.
