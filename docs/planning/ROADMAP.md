@@ -1,4 +1,4 @@
-# Next Steps: Data Request Features Implementation
+# Roadmap: Data Request Features Implementation
 
 **Status**: Phase 7 in Progress  
 **Last Updated**: 2025-11-07
@@ -180,9 +180,9 @@ This document outlines the implementation plan for completing the data request f
 
 ## Related Documentation
 
-- [Loading perfomance optimization plan.md](./Loading%20perfomance%20optimization%20plan.md) - Phase breakdown for SSR payload vs optimistic UX work
-- [Requirements v0.0.1.md](./Requirements%20v0.0.1.md) - §3.5 Data Requests
-- [API_REFERENCE.md](./API_REFERENCE.md) - Data Requests endpoints
-- [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md) - DataPointRow component spec
-- [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md) - Granular task breakdown
-- [TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md) - Known limitations
+- [Loading perfomance optimization plan.md](../archive/Loading%20perfomance%20optimization%20plan.md) - Phase breakdown for SSR payload vs optimistic UX work
+- [ARCHITECTURE.md](../ARCHITECTURE.md) - System-wide context for data requests
+- [API_REFERENCE.md](../API_REFERENCE.md) - Data Requests endpoints
+- [UX_GUIDE.md](../UX_GUIDE.md) - DataPointRow component spec
+- [planning/BACKLOG.md](./BACKLOG.md) - Granular task breakdown
+- [TECHNICAL_DEBT.md](../TECHNICAL_DEBT.md) - Pointer to active debt items

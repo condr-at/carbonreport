@@ -1,6 +1,8 @@
-# Documentation
+# Documentation Index
 
-This folder contains all project documentation for the Carbon Report Platform.
+_Last updated: 2025-11-08_
+
+This folder contains the working documentation for the Carbon Report Platform. The layout was refreshed to reduce duplication and make it easier to find the right reference quickly.
 
 ---
 
@@ -8,164 +10,86 @@ This folder contains all project documentation for the Carbon Report Platform.
 
 ### For Developers
 
-1. **Setup Database**: 
+1. **Environment & Database**
    ```bash
    npm run db:push   # Sync schema (uses DIRECT_URL)
-   npm run db:seed   # Seed DB-backed field definitions and sample data
+   npm run db:seed   # Seed dataset field definitions and demo data
    npm run dev       # Start dev server
    ```
-2. **Read First**: [Requirements v0.0.1](./Requirements%20v0.0.1.md) — updated for DB-backed field definitions
-3. **API**: [API_REFERENCE.md](./API_REFERENCE.md) — endpoints and contracts
-4. **UI Components**: [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)
+2. **Validation (after schema or template edits)**
+   ```bash
+   npm run templates:check  # Ensure report templates match DB field IDs
+   ```
+3. **Read next**: [`ARCHITECTURE.md`](./ARCHITECTURE.md) → [`DEVELOPMENT.md`](./DEVELOPMENT.md)
+4. **API contracts**: [`API_REFERENCE.md`](./API_REFERENCE.md)
 
-### For Product/UX
+### For Product & UX
 
-1. **UX Flows**: [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md)
-2. **Architecture**: [REPORT_TEMPLATES_ARCHITECTURE.md](./REPORT_TEMPLATES_ARCHITECTURE.md) and [Requirements v0.0.1](./Requirements%20v0.0.1.md)
+1. **User flows & IA**: [`UX_GUIDE.md`](./UX_GUIDE.md)
+2. **Design system**: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)
+3. **Product direction**: [`planning/ROADMAP.md`](./planning/ROADMAP.md)
 
 ---
 
 ## 📚 Core Documents
 
-### 📋 [Requirements v0.0.1](./Requirements%20v0.0.1.md)
-**Primary source of truth** for all system requirements, data model, and architecture decisions.
-
-**Contents**:
-- User roles and workflows
-- Questionnaire system architecture (code-based)
-- Report templates architecture (code-based)
-- Database schema and field ID conventions
-- Mailto template customization
-- Future-proofing and AI integration plans
-
-**When to use**: Understanding system design, making architectural decisions, resolving ambiguities
-
----
-
-### 🎨 [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md)
-Visual design system and UI component specifications.
-
-**Contents**:
-- Color palette and typography
-- Component library (buttons, forms, cards, etc.)
-- Layout patterns and spacing
-- Accessibility guidelines
-
-**When to use**: Building frontend components, ensuring visual consistency
+| File | Who | Why |
+| --- | --- | --- |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Engineers, PMs | High-level system & data architecture (supersedes archived requirements docs). |
+| [`DEVELOPMENT.md`](./DEVELOPMENT.md) | Engineers | Day-to-day workflow, active technical debt, validation tooling. |
+| [`API_REFERENCE.md`](./API_REFERENCE.md) | Engineers | REST endpoint definitions, request/response schemas. |
+| [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Engineers, Designers | UI components, spacing, accessibility rules. |
+| [`UX_GUIDE.md`](./UX_GUIDE.md) | Product, Design | UX flows, layout templates, page-to-API mapping. |
+| [`planning/ROADMAP.md`](./planning/ROADMAP.md) | PMs, Leads | Near-term delivery plan and phase overview. |
+| [`planning/BACKLOG.md`](./planning/BACKLOG.md) | Engineers, PMs | Active backlog items carried over from the old implementation checklist. |
+| [`reference/data-points-hints.md`](./reference/data-points-hints.md) | Engineers, Analysts | Narrative hints for key dataset fields (legacy CamelCase identifiers). |
+| [`TECHNICAL_DEBT.md`](./TECHNICAL_DEBT.md) | Everyone | Pointer to the consolidated development guide. |
 
 ---
 
-### 👤 [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md)
-UX specifications, information architecture, and user interaction patterns.
-
-**Contents**:
-- Information Architecture (site map, layouts, page blocks)
-- Layout templates (PublicLayout, DashboardLayout, ProjectLayout, PrintLayout)
-- Reusable page blocks (ProjectCard, DataPointRow, ContactSelector, etc.)
-- Component hierarchy (Pages → Blocks → UI Components)
-- Page-to-API mapping (which endpoints each page uses)
-- User flows and navigation diagrams
-- Screen wireframes and scenarios
-
-**When to use**: Understanding user experience, planning features, UX reviews, frontend architecture
-
----
-
-## 📊 Dataset System (DB-backed)
-
-The dataset is now fully defined by database field definitions (`DatasetFieldDefinition`).
-
-Key references:
-- Field definitions API: `/api/dataset-fields`
-- Seed source: `prisma/seed-data/dataset-fields.ts`
-- Runtime helpers: `src/lib/dataset-init.ts`, `src/lib/dataset-utils-v2.ts`
-
-Concepts:
-- `field_id`: snake_case string ID stored in DB
-- `is_repeatable`, `repeatable_key`: mark and group repeatable fields
-- `item_id`: numeric string to distinguish rows within a repeatable group
-
-### 🔧 [API_REFERENCE.md](./API_REFERENCE.md)
-Complete REST API documentation for backend endpoints.
-
-**Contents**:
-- All endpoints (Projects, Dataset, Reports, Mailto Templates)
-- Request/response schemas
-- Error handling patterns
-- Optimistic locking implementation
-- Code examples and testing commands
-
-**When to use**: Implementing frontend API calls, testing, debugging
-
----
-
-### ✅ [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md)
-Development progress tracker and implementation roadmap.
-
-**Contents**:
-- Phase-by-phase task breakdown (Database, API, Frontend, Testing, Deployment)
-- Current progress: 43% (31/72 tasks)
-- Next action items and priorities
-
-**When to use**: Tracking development progress, planning sprints, onboarding developers
-
----
-
-## Quick Navigation
+## 🔍 Navigation Tips
 
 **New to the project?**
-1. Start with [Requirements v0.0.1](./Requirements%20v0.0.1.md)
-2. Read [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md) to understand user experience
-3. Check [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md) for current status
+1. Skim [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the system overview.
+2. Read [`UX_GUIDE.md`](./UX_GUIDE.md) to understand the product experience.
+3. Check [`DEVELOPMENT.md`](./DEVELOPMENT.md) for active engineering focus areas.
 
-**Working with Dataset?** ⭐
-1. **Field definitions**: `prisma/seed-data/dataset-fields.ts`
-2. **API**: `/api/dataset-fields`
-3. **Helpers**: `src/lib/dataset-utils-v2.ts`
+**Working on datasets or templates?**
+- Canonical definitions: `prisma/seed-data/dataset-fields.ts`
+- Validation tooling: `npm run templates:check`
+- Field guidance: [`reference/data-points-hints.md`](./reference/data-points-hints.md)
 
-**Building frontend?**
-1. Read [API_REFERENCE.md](./API_REFERENCE.md) for endpoint specs
-2. Use [UX_REQUIREMENTS.md](./UX_REQUIREMENTS.md) for page structure and IA
-3. Use [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) for UI components
-4. Follow page-to-API mapping for data flow
+**Implementing backend changes?**
+- API specs: [`API_REFERENCE.md`](./API_REFERENCE.md)
+- Technical debt / priorities: [`DEVELOPMENT.md`](./DEVELOPMENT.md#active-technical-debt)
+- Backlog tasks: [`planning/BACKLOG.md`](./planning/BACKLOG.md)
 
-**Working on backend?**
-1. Refer to [Requirements v0.0.1](./Requirements%20v0.0.1.md) for data model
-2. Check [API_REFERENCE.md](./API_REFERENCE.md) for endpoint contracts
-3. Update [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md) when completing tasks
-
----
-
-<!-- Removed stale Document Status table to avoid drift -->
+**Building frontend features?**
+- UX flows & layouts: [`UX_GUIDE.md`](./UX_GUIDE.md)
+- Components: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)
+- Data contracts: [`API_REFERENCE.md`](./API_REFERENCE.md)
 
 ---
 
-## Architecture Summary
+## 🗂️ Archives & Historical Specs
 
-**Key Principles** (from Requirements):
-- **Single Source of Truth**: All field data in `Project.dataset` JSONB
-- **Code-Based Configuration**: Templates and questionnaires in `src/lib/` (Git-versioned)
-- **Optimistic Locking**: Concurrent edit prevention via `datasetVersion` counter
-- **DB-backed Field Definitions**: Single source of truth in DB, fetched via API
-- **Type Safety**: Zod validation throughout
-- **Flexible Reports**: Reports are filtered views of Project.dataset
+The previous long-form documents are preserved for reference:
 
-**Tech Stack**:
-- Next.js 15 App Router
-- PostgreSQL (Supabase) + Prisma ORM
-- TypeScript + Zod validation
-- Tailwind CSS (UI)
+- `docs/archive/Requirements v0.0.1.md`
+- `docs/archive/REPORT_TEMPLATES_ARCHITECTURE.md`
+- `docs/archive/IMPLEMENTATION_CHECKLIST.md`
+- `docs/archive/REFERENCE_data_points_hints.json`
+- Additional planning artefacts inside `docs/archive/`
+
+Refer to these when you need the original detail that fed into the current summaries.
 
 ---
 
-## Contributing
+## ✍️ Contributing to Docs
 
-When updating documentation:
-1. Update relevant `.md` files
-2. Update "Last Updated" dates
-3. Keep [IMPLEMENTATION_CHECKLIST.md](./IMPLEMENTATION_CHECKLIST.md) in sync with actual progress
-4. Cross-reference related sections in other docs
+1. Update "Last updated" timestamps when making significant edits.
+2. Cross-link related sections to avoid duplication.
+3. For major restructures, move superseded files to `docs/archive/` instead of deleting outright.
+4. Keep `ARCHITECTURE.md` and `DEVELOPMENT.md` high-level; push granular task lists to `planning/`.
 
----
-
-**Questions?** Open an issue or contact the development team.
+Questions or suggestions? Reach out in the project channel or open an issue.

@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document describes the REST API endpoints for the Carbon Report Platform. All endpoints follow the architecture defined in `Requirements v0.0.1.md`:
+This document describes the REST API endpoints for the Carbon Report Platform. All endpoints follow the architecture defined in `ARCHITECTURE.md`:
 
 - **Single Source of Truth**: All field data stored in `Project.dataset` JSONB
 - **Optimistic Locking**: Concurrent edit prevention via `datasetVersion` counter
@@ -857,4 +857,4 @@ curl -X PUT http://localhost:3000/api/projects/:id/dataset \
 
 **Last Updated**: October 30, 2025  
 **Maintained By**: Development Team  
-**Questions**: Refer to `Requirements v0.0.1.md` or `IMPLEMENTATION_CHECKLIST.md`
+**Questions**: Refer to `ARCHITECTURE.md` or `DEVELOPMENT.md`

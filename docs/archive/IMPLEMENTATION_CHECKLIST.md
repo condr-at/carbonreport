@@ -53,17 +53,20 @@ Use this checklist to track implementation of the architecture updates. Cross-re
 
 ## Phase 3: Code Updates
 
-### 3.1 Update Template Files
+### 3.1 Update Template Files ✅
 
-- [ ] Update `src/lib/report-templates/iso14067.ts`
-   - [ ] Ensure field IDs match DB `DatasetFieldDefinition.fieldId` (snake_case)
-   - [ ] Ensure mailto template structure correct
-- [ ] Update `src/lib/report-templates/cbam.ts`
-   - [ ] Ensure field IDs match DB `DatasetFieldDefinition.fieldId` (snake_case)
-   - [ ] Ensure mailto template structure correct
-- [ ] Update `src/lib/report-templates/types.ts`
-   - [ ] Confirm `ReportField` uses `field_id: string` referencing DB IDs
-   - [ ] Document `metadata` field for Reports
+- [x] Update `src/lib/report-templates/iso14067.ts`
+   - [x] Ensure field IDs match DB `DatasetFieldDefinition.fieldId` (snake_case)
+   - [x] Ensure mailto template structure correct
+- [x] Update `src/lib/report-templates/cbam.ts`
+   - [x] Ensure field IDs match DB `DatasetFieldDefinition.fieldId` (snake_case)
+   - [x] Ensure mailto template structure correct
+- [x] Update `src/lib/report-templates/types.ts`
+   - [x] Confirm `ReportField` uses `field_id: string` referencing DB IDs
+   - [x] Document `metadata` field for Reports
+- [x] Add validation script `scripts/check-templates.ts`
+   - [x] Validates field IDs across seed data, code templates, and database
+   - [x] Run via `npm run templates:check`
 
 ### 3.2 Update API Routes ✅
 

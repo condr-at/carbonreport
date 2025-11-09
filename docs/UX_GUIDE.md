@@ -1,4 +1,4 @@
-# UX Requirements & Information Architecture
+# UX Guide & Information Architecture
 
 Complete UX specifications including information architecture, page hierarchy, reusable components, user flows, and navigation patterns for the Carbon Report Platform.
 
