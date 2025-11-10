@@ -1,8 +1,19 @@
 # Documentation Index
 
-_Last updated: 2025-11-08_
+_Last updated: 2025-11-10_
 
 This folder contains the working documentation for the Carbon Report Platform. The layout was refreshed to reduce duplication and make it easier to find the right reference quickly.
+
+---
+
+## 🧭 Documentation Structure
+
+- `IMPLEMENTATION_CHECKLIST.md` — release-readiness gates to run before shipping a slice of work.
+- `planning/ROADMAP.md` — phase sequencing, milestones, and cross-team dependencies.
+- `planning/BACKLOG.md` — actionable tasks and ideas queued for delivery.
+- `archive/` — historical deep-dives retained for context, no longer the source of truth.
+
+Use the table below when you need to know “why does this file exist?” and the Backlog when you need the next concrete task.
 
 ---
 
@@ -40,8 +51,9 @@ This folder contains the working documentation for the Carbon Report Platform. T
 | [`API_REFERENCE.md`](./API_REFERENCE.md) | Engineers | REST endpoint definitions, request/response schemas. |
 | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Engineers, Designers | UI components, spacing, accessibility rules. |
 | [`UX_GUIDE.md`](./UX_GUIDE.md) | Product, Design | UX flows, layout templates, page-to-API mapping. |
-| [`planning/ROADMAP.md`](./planning/ROADMAP.md) | PMs, Leads | Near-term delivery plan and phase overview. |
-| [`planning/BACKLOG.md`](./planning/BACKLOG.md) | Engineers, PMs | Active backlog items carried over from the old implementation checklist. |
+| [`IMPLEMENTATION_CHECKLIST.md`](./IMPLEMENTATION_CHECKLIST.md) | Everyone | Ship checklist covering scope, implementation, testing, and rollout gates. |
+| [`planning/ROADMAP.md`](./planning/ROADMAP.md) | PMs, Leads | Phase sequencing, milestones, and dependencies. |
+| [`planning/BACKLOG.md`](./planning/BACKLOG.md) | Engineers, PMs | Prioritized tasks and follow-ups feeding the roadmap phases. |
 | [`reference/data-points-hints.md`](./reference/data-points-hints.md) | Engineers, Analysts | Narrative hints for key dataset fields (legacy CamelCase identifiers). |
 | [`TECHNICAL_DEBT.md`](./TECHNICAL_DEBT.md) | Everyone | Pointer to the consolidated development guide. |
 
@@ -63,6 +75,7 @@ This folder contains the working documentation for the Carbon Report Platform. T
 - API specs: [`API_REFERENCE.md`](./API_REFERENCE.md)
 - Technical debt / priorities: [`DEVELOPMENT.md`](./DEVELOPMENT.md#active-technical-debt)
 - Backlog tasks: [`planning/BACKLOG.md`](./planning/BACKLOG.md)
+- Release gates: [`IMPLEMENTATION_CHECKLIST.md`](./IMPLEMENTATION_CHECKLIST.md)
 
 **Building frontend features?**
 - UX flows & layouts: [`UX_GUIDE.md`](./UX_GUIDE.md)
