@@ -13,6 +13,8 @@ import {
 import { getContactsOverview } from '@/lib/server-data/contacts';
 import { getGlobalDataRequests, getProjectsForRequests } from '@/lib/server-data/requests';
 
+export const dynamic = 'force-dynamic';
+
 const STATUS_VALUES: ReadonlyArray<DataRequestStatusFilter> = ['all', 'pending', 'completed', 'revoked'];
 const DEADLINE_VALUES: ReadonlyArray<DeadlineFilter> = ['all', 'due-soon', 'overdue', 'no-deadline'];
 
@@ -32,10 +34,14 @@ function toSingleValue(value: SearchValue): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 
-function resolveFilters(searchParams: RequestsPageSearchParams): GlobalRequestFilters {
+function resolveFilters(searchParams: RequestsPageSearchParams | undefined): GlobalRequestFilters {
   const filters: GlobalRequestFilters = {
     ...DEFAULT_GLOBAL_REQUEST_FILTERS,
   };
+
+  if (!searchParams) {
+    return filters;
+  }
 
   const statusValue = toSingleValue(searchParams.status);
   if (statusValue && STATUS_VALUES.includes(statusValue as DataRequestStatusFilter)) {
@@ -61,11 +67,12 @@ function resolveFilters(searchParams: RequestsPageSearchParams): GlobalRequestFi
 }
 
 interface RequestsPageProps {
-  searchParams?: RequestsPageSearchParams;
+  searchParams?: Promise<RequestsPageSearchParams>;
 }
 
-export default async function RequestsPage({ searchParams = {} }: RequestsPageProps) {
-  const initialFilters = resolveFilters(searchParams);
+export default async function RequestsPage({ searchParams }: RequestsPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const initialFilters = resolveFilters(resolvedSearchParams);
 
   const [requests, contacts, projects] = await Promise.all([
     getGlobalDataRequests(initialFilters),
