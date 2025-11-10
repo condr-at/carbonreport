@@ -101,7 +101,7 @@ Resolved backlog items remain in archived checklists for traceability.
    - Project creation flow (dataset + mailto defaults).
    - Dataset optimistic locking (409 handling).
    - Data request lifecycle (bulk → complete → revoke).
-   - Data requests page sorting & "Responsible" summary visibility once features land (see `docs/planning/BACKLOG.md`).
+      - Global requests board filters/actions once the top-level `/requests` view ships (see `docs/planning/BACKLOG.md`).
 3. **Manual smoke checklist** (until automated coverage exists)
    - Create project → verify datasetVersion increments.
    - Request data → verify the Responsible column shows the latest pending contact name (fallback "—").
@@ -120,6 +120,18 @@ Progress on automated tests should be tracked in `docs/planning/BACKLOG.md`.
 | `scripts/verify-schema.ts` | Validates Prisma schema vs generated client. |
 | `src/lib/server-data/` | Server data loaders, caching, lazy hydration helpers. |
 | `src/lib/data-requests/service.ts` | Source of truth for data-request mutations. |
+
+---
+
+## Database Migration Playbook
+
+Follow this checklist whenever you add or apply Prisma migrations—skipping pieces is what tripped us up on `20251110120000_enforce_single_pending_requests`.
+
+1. **Prep the environment.** Ensure `.env` defines both `DIRECT_URL` (direct Postgres connection) and `DATABASE_URL` (pooled). Append `?sslmode=require` to the direct URL—Supabase rejects plain TCP. Export both variables into your shell (`source .env` or manual `export`) and confirm with `echo $DIRECT_URL` / `echo $DATABASE_URL`.
+2. **Validate connectivity.** Run `nc -zv <host> <port>` or `psql "$DIRECT_URL" -c 'select 1'`. Resolve VPN, firewall, or allow-list issues before invoking Prisma so we do not leave half-applied migrations.
+3. **Pre-flight data guards.** When adding unique constraints or NOT NULL columns, clean existing records first. Commit that cleanup as its own migration or execute it via `npx prisma db execute --file scripts/<name>.sql`. Avoid editing an already-applied migration; create a new one instead.
+4. **Apply safely.** Use `npx prisma migrate dev` for local work (uses `DIRECT_URL`) and `npx prisma migrate deploy` for shared/prod environments. If a migration fails, fix the root cause, mark it rolled back with `npx prisma migrate resolve --rolled-back <migration_name>`, then re-run the apply command.
+5. **Smoke-test immediately.** Re-run the relevant integration suite (`npx tsx --test …`) or targeted checks while context is fresh. Remove any temporary SQL helpers (e.g., files under `temp/`) once the migration lands so the repo stays tidy.
 
 ---
 

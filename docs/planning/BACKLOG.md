@@ -36,14 +36,15 @@ This backlog captures the remaining work items that were previously tracked in `
 ## 🟨 Frontend Experience
 
 - **Dataset & Report Tables**
-  - Ensure the Responsible column displays the latest pending contact only (single name, fallback "—") and guard the invariant in an integration test.
-  - Provide inline reassignment with warning tooltip.
+  - ✅ Responsible column now displays the latest pending contact only (single name, fallback "—") with integration test coverage enforcing the invariant.
+  - 🚫 Inline reassignment control — решение признано избыточным: повторный запрос через модалку уже покрывает сценарий.
 - **Data Requests Page** (`app/projects/[id]/data-requests/page.tsx`)
-  - Add sorting (requested_at, deadline, field). _Post-MVP_. _Add end-to-end test_ (e.g., Playwright) to verify ordering persists via query params.
-  - Prepare bulk toolbar for resend/change contact/close actions.
-- **Contact Detail Page** (`app/contacts/[id]/page.tsx`)
-  - Introduce "Requests" tab with table + quick actions.
-  - Show request history (requested/revoked/completed).
+  - ➡️ Moved to Post-MVP: sorting controls + e2e coverage, bulk toolbar polish (resend/change/close).
+- **Requests (Global)**
+  - Ship a top-level "Requests" page in the sidebar: list all project requests with filters (project, status, deadline) and quick actions (resend, reassign, complete, revoke).
+- **Contacts Page**
+  - Create table of Contacts in the menu page.
+  - Create contact detail page (`app/contacts/[id]/page.tsx`) with a "Requests" tab showing history (requested/revoked/completed timestamps) sourced from the global store.
 - **Mailto Template Editor**
   - Validate allowed placeholders.
   - Surface inline error feedback for invalid tokens.

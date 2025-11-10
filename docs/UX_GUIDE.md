@@ -431,6 +431,7 @@ This table shows which API endpoints each page uses:
 | **Files** | `GET /api/projects/:id/files`<br>`POST /api/projects/:id/files` | List files<br>Upload to S3 |
 | **Contacts** | `GET /api/contacts`<br>`POST /api/contacts` | List all user contacts<br>Create contact |
 | **Data Requests Board** | `GET /api/projects/:id/data-requests`<br>`POST /api/data-requests/bulk` | Table of requests per project<br>Create/update bulk assignments |
+| **Requests Overview** | `GET /api/data-requests` (planned)<br>`POST /api/data-requests/bulk` | Aggregated requests across projects<br>Reuse bulk logging actions |
 | **Request Data (inline)** | `POST /api/data-requests/bulk` | Bulk or single request logging after mailto launch |
 | **Mailto Templates** | `GET /api/projects/:id/mailto-template`<br>`PUT /api/projects/:id/mailto-template`<br>`POST /api/projects/:id/mailto-template/reset` | Get current template<br>Update subject/body<br>Reset to default |
 | **Settings** | `GET /api/users/me`<br>`PUT /api/users/me` | Current user info<br>Update profile |
@@ -444,6 +445,13 @@ This table shows which API endpoints each page uses:
 - **Optimistic UI (planned)**: allow immediate visual updates while API runs; maintain snapshot for rollback and trigger refetch after success.
 - **Performance**: measure handler durations via instrumentation; migrate to row virtualisation (e.g., `react-window`) once row count regularly exceeds ~200 to keep scroll responsive.
 - **Empty state**: dashed card with explanatory copy, CTA to adjust filters or request data.
+
+### Requests Page (Global view)
+- **Purpose**: consolidate every data request across projects so operations can triage in one place.
+- Sidebar entry `/requests` lists `Project`, `Field`, `Contact`, `Status`, `Requested / Completed / Revoked`, and `Deadline` columns with quick links back to the originating project.
+- Filters: project selector, status segments (All/Pending/Completed/Revoked), deadline buckets (due soon, overdue), optional text search.
+- Quick actions reuse the existing Request Data modal plus complete/revoke endpoints; mutations invalidate both project-level and global caches for consistency.
+- Contact detail pages surface the same dataset inside a "Requests" tab, showing chronological history per contact and enabling repeat/close actions inline.
 
 **Key Patterns**:
 - **Optimistic Locking**: Dataset page sends `datasetVersion` with PUT, handles 409 Conflict
@@ -740,10 +748,11 @@ graph TD
 6. Project CRUD operations
 7. Project duplication
 
-### Phase 3: Global Contacts
+### Phase 3: Global Contacts & Requests
 1. `/contacts` — Global address book
 2. Contact CRUD operations
-3. View data-request history per contact (Requests tab with quick repeat/close actions)
+3. `/requests` — Global data-requests board with filters (project, status, deadline) and quick actions (resend, reassign, complete, revoke)
+4. View data-request history per contact (Requests tab mirrors the global board and exposes quick repeat/close actions)
 
 ### Phase 4: Dataset & Roadmap
 1. `/projects/:id/dataset` — Spreadsheet data capture (inline editing, filters, bulk Request Data, CSV export)
@@ -793,6 +802,7 @@ src/app/
 │   ├── contacts/         # Global address book
 │   │   └── [id]/
 │   │       └── page.tsx  # Contact details with Requests tab
+│   ├── requests/         # Global data-requests board
 │   ├── projects/
 │   │   ├── new/
 │   │   │   ├── page.tsx              # Step 1: Project name

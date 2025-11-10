@@ -396,13 +396,16 @@ export function DatasetTable({
   );
 
   const formatPendingContacts = useCallback((requests: DataRequestSummary[]) => {
-    const contacts = requests
+    const latestPending = [...requests]
       .filter((request) => request.status === 'pending')
-      .map((request) => request.contact?.name?.trim() || request.contact?.email || null)
-      .filter((label): label is string => Boolean(label));
+      .sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime())[0];
 
-    const unique = Array.from(new Set(contacts));
-    return unique.length > 0 ? unique.join(', ') : '—';
+    if (!latestPending) {
+      return '—';
+    }
+
+    const label = latestPending.contact?.name?.trim() || latestPending.contact?.email || null;
+    return label ?? '—';
   }, []);
 
   const columns = useMemo<ColumnDef<DisplayRow>[]>(

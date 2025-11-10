@@ -227,13 +227,7 @@ export async function prepareBulk(
         })
       : [];
 
-    const revocationIds: string[] = [];
-
-    for (const request of activeRequests) {
-      if (request.contactId !== contact.id) {
-        revocationIds.push(request.id);
-      }
-    }
+    const revocationIds = Array.from(new Set(activeRequests.map((request) => request.id)));
 
     const insertRows: Array<Prisma.DataRequestCreateManyInput & { id: string }> = [];
 

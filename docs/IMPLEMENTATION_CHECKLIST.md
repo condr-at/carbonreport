@@ -262,8 +262,8 @@ Use this checklist to track implementation of the architecture updates. Cross-re
 
 - [ ] Update `DatasetTable` and report dataset views
    - [x] Fetch active requests for visible fields via `GET /api/projects/:id/data-requests?status=active`
-   - [ ] Display a Responsible column that shows only the latest pending contact (fallback "—").
-   - [ ] Enforce single pending request per field (service logic + DB guard).
+   - [x] Display a Responsible column that shows only the latest pending contact (fallback "—").
+   - [x] Enforce single pending request per field (service logic + DB guard).
    - [ ] Surface timestamp or status context alongside the contact names.
    - [ ] Provide visual variants for upcoming states (active/completed)
    - [ ] Click summary to view request details or reassign contact

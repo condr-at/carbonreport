@@ -10,7 +10,7 @@ This document outlines the implementation plan for completing the data request f
 ### Decisions & Clarifications
 - Phase 1 creates a temporary `POST /api/data-requests/bulk` handler that just echoes the payload; Phase 6 will replace it with the real Prisma logic.
 - Request status is derived on the fly from timestamps (`revoked_at` → revoked, `completed_at` → completed, otherwise pending).
-- When a field is re-requested for the same project, any previous active request for that field (different contact) gets `revoked_at` set.
+- When a field is re-requested for the same project, **all** previous active requests for that field must be revoked before logging the new one (enforced at service + DB levels). ✅
 
 ---
 
@@ -126,7 +126,8 @@ This document outlines the implementation plan for completing the data request f
 - Empty-state messaging and manual refresh control.
 
 **Still outstanding**:
-- Surface active "Responsible" summaries back into dataset/report tables once reminders UI exists. _Automated test_: extend dataset table integration coverage to assert summary badge rendering after mocked bulk request.
+- Ship a top-level "Requests" page consolidating all projects' data requests with filters (project, status, deadline) and quick actions (resend, reassign, complete, revoke).
+- Extend the contact detail page with a "Requests" tab backed by the same data source, showing requested/revoked/completed history per contact.
 
 **Testing ideas**:
 - Navigate to `/projects/:id/data-requests` → verify summaries load.
