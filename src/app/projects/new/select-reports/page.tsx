@@ -12,7 +12,6 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { getAllReportTemplates } from '@/lib/report-templates';
 import { getRecommendedTemplates } from '@/lib/questionnaires/wizard-config';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -289,7 +288,7 @@ export default function SelectReportsPage() {
       {isSubmitting && (
         <div className="fixed inset-0 z-50 flex overflow-hidden bg-background/95 backdrop-blur-sm">
           <div className="absolute right-8 top-6 flex items-center gap-2 text-sm text-muted-foreground">
-            <Spinner size="md" variant="default" />
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             <span>Создаём проект…</span>
           </div>
           <div className="pointer-events-none opacity-90" aria-hidden="true">

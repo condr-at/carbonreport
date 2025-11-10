@@ -45,7 +45,6 @@
   /* Enhanced Button animations */
   --animate-shine: shine 3s ease-out infinite;
   --animate-gradient-flow: gradientFlow 10s ease 0s infinite normal none running;
-  --animate-spinner-leaf-fade: spinner-leaf-fade 800ms linear infinite;
 }
 
 :root {
@@ -143,9 +142,4 @@
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
-}
-
-@keyframes spinner-leaf-fade {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
 }

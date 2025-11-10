@@ -13,6 +13,7 @@ import {
 import { MoreVertical, Copy, Archive, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ProjectLayoutProps {
   children: ReactNode;
@@ -41,13 +42,13 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
 
   // Determine active tab
   const getActiveTab = () => {
-    if (pathname === baseHref) return 'overview';
-  if (pathname.includes('/dataset')) return 'dataset';
-  if (pathname.includes('/data-requests')) return 'requests';
-  if (pathname.includes('/reports')) return 'reports';
-  if (pathname.includes('/mailto-templates')) return 'emails';
-  if (pathname.includes('/files')) return 'files';
-    return 'overview';
+    if (pathname === baseHref) return 'overview'
+    if (pathname.includes('/dataset')) return 'dataset'
+    if (pathname.includes('/data-requests')) return 'requests'
+    if (pathname.includes('/reports')) return 'reports'
+    if (pathname.includes('/mailto-templates')) return 'emails'
+    if (pathname.includes('/files')) return 'files'
+    return 'overview'
   };
 
   const activeTab = getActiveTab();
@@ -95,31 +96,18 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
           </div>
 
           {/* Tabs Navigation */}
-          <div className="border-b">
-            <nav className="flex gap-6" aria-label="Project tabs">
+          <Tabs value={activeTab} className="w-full">
+            <TabsList aria-label="Project tabs">
               {TABS.map((tab) => {
-                const isActive = activeTab === tab.id;
                 const href = `${baseHref}${tab.href}`;
-
                 return (
-                  <Link
-                    key={tab.id}
-                    href={href}
-                    className={`
-                      inline-flex items-center px-1 pb-4 border-b-2 text-sm font-medium transition-colors
-                      ${
-                        isActive
-                          ? 'border-primary text-foreground'
-                          : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-                      }
-                    `}
-                  >
-                    {tab.label}
-                  </Link>
+                  <TabsTrigger key={tab.id} value={tab.id} asChild>
+                    <Link href={href}>{tab.label}</Link>
+                  </TabsTrigger>
                 );
               })}
-            </nav>
-          </div>
+            </TabsList>
+          </Tabs>
         </div>
 
         {/* Tab Content */}
