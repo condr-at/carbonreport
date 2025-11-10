@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  Users, 
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Users,
   Settings,
-  LogOut
+  LogOut,
+  Mail,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -17,6 +18,7 @@ import { Button } from '@/components/ui/button';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
+  { name: 'Requests', href: '/requests', icon: Mail },
   { name: 'Contacts', href: '/contacts', icon: Users },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];

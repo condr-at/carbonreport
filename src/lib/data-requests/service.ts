@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
-import type { Contact, Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
+import type { Contact } from '@prisma/client';
 import prismaClient from '@/lib/db';
 import { invalidateByPrefix } from '@/lib/cache';
 
@@ -59,6 +60,11 @@ export interface SerializedRequest {
   completedAt: string | null;
   revokedAt: string | null;
   deadline: string | null;
+  project: {
+    id: string;
+    name: string | null;
+    ownerName: string | null;
+  } | null;
   contact: {
     id: string;
     name: string;
@@ -72,6 +78,39 @@ export interface SerializedRequest {
     hint: string | null;
   };
 }
+
+const REQUEST_SERIALIZATION_SELECT = Prisma.validator<Prisma.DataRequestSelect>()({
+  id: true,
+  projectId: true,
+  requestedAt: true,
+  completedAt: true,
+  revokedAt: true,
+  deadline: true,
+  dataPointId: true,
+  itemId: true,
+  fieldLabel: true,
+  contact: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      position: true,
+    },
+  },
+  project: {
+    select: {
+      id: true,
+      name: true,
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  },
+});
+
+type RequestForSerialization = Prisma.DataRequestGetPayload<{ select: typeof REQUEST_SERIALIZATION_SELECT }>;
 
 const DATA_REQUEST_CACHE_PREFIX = 'project:data-requests:';
 const CONTACT_CACHE_PREFIX = 'project:contacts:';
@@ -319,7 +358,7 @@ export async function serializeRequests(
   try {
     const requests = await prisma.dataRequest.findMany({
       where: { id: { in: ids } },
-      include: { contact: true },
+      select: REQUEST_SERIALIZATION_SELECT,
     });
 
     if (requests.length === 0) {
@@ -363,7 +402,7 @@ export async function completeRequest(
   try {
     const existing = await prisma.dataRequest.findUnique({
       where: { id },
-      include: { contact: true },
+      select: REQUEST_SERIALIZATION_SELECT,
     });
 
     if (!existing) {
@@ -379,7 +418,7 @@ export async function completeRequest(
       : await prisma.dataRequest.update({
           where: { id },
           data: { completedAt, revokedAt: null },
-          include: { contact: true },
+          select: REQUEST_SERIALIZATION_SELECT,
         });
 
     invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${updated.projectId}`);
@@ -408,7 +447,7 @@ export async function revokeRequest(
   try {
     const existing = await prisma.dataRequest.findUnique({
       where: { id },
-      include: { contact: true },
+      select: REQUEST_SERIALIZATION_SELECT,
     });
 
     if (!existing) {
@@ -424,7 +463,7 @@ export async function revokeRequest(
       : await prisma.dataRequest.update({
           where: { id },
           data: { revokedAt, completedAt: null },
-          include: { contact: true },
+          select: REQUEST_SERIALIZATION_SELECT,
         });
 
     invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${updated.projectId}`);
@@ -458,7 +497,12 @@ export async function completeRequestsBulk(
   try {
     const existing = await prisma.dataRequest.findMany({
       where: { id: { in: ids } },
-      include: { contact: true },
+      select: {
+        id: true,
+        projectId: true,
+        revokedAt: true,
+        completedAt: true,
+      },
     });
 
     if (existing.length !== ids.length) {
@@ -528,7 +572,12 @@ export async function revokeRequestsBulk(
   try {
     const existing = await prisma.dataRequest.findMany({
       where: { id: { in: ids } },
-      include: { contact: true },
+      select: {
+        id: true,
+        projectId: true,
+        completedAt: true,
+        revokedAt: true,
+      },
     });
 
     if (existing.length !== ids.length) {
@@ -641,9 +690,21 @@ export async function resendRequestsBulk(
 }
 
 export function serializeRequestRecord(
-  request: Prisma.DataRequestGetPayload<{ include: { contact: true } }> ,
+  request: RequestForSerialization,
   definition?: { label: string | null; hint: string | null } | null
 ): SerializedRequest {
+  const projectMeta = request.project
+    ? {
+        id: request.projectId,
+        name: request.project.name ?? null,
+        ownerName: request.project.user?.name ?? null,
+      }
+    : {
+        id: request.projectId,
+        name: null,
+        ownerName: null,
+      };
+
   return {
     id: request.id,
     status: computeStatus(request),
@@ -651,6 +712,7 @@ export function serializeRequestRecord(
     completedAt: request.completedAt?.toISOString() ?? null,
     revokedAt: request.revokedAt?.toISOString() ?? null,
     deadline: request.deadline?.toISOString() ?? null,
+    project: projectMeta,
     contact: request.contact
       ? {
           id: request.contact.id,

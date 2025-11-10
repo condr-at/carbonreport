@@ -1,3 +1,5 @@
+import type { GlobalRequestFilters } from '@/lib/data-requests/filters';
+
 export const projectKeys = {
   all: ['projects'] as const,
   detail: (projectId: string) => ['projects', projectId] as const,
@@ -11,8 +13,30 @@ export const dataRequestKeys = {
   summary: (projectId: string) => ['projects', projectId, 'data-requests', 'summary'] as const,
 };
 
+export const contactsKeys = {
+  list: () => ['contacts', 'list'] as const,
+  detail: (contactId: string) => ['contacts', contactId] as const,
+};
+
+export const globalRequestsKeys = {
+  base: ['global-data-requests'] as const,
+  list: (filters: GlobalRequestFilters) =>
+    [
+      'global-data-requests',
+      filters.projectId ?? 'all',
+      filters.status ?? 'all',
+      filters.contactId ?? 'all',
+      filters.deadline ?? 'all',
+    ] as const,
+};
+
 export const featureKeys = {
   flags: ['features'] as const,
 };
 
-export type QueryKeyFactory = typeof projectKeys & typeof dataRequestKeys & typeof featureKeys;
+export type QueryKeyFactory =
+  typeof projectKeys &
+  typeof dataRequestKeys &
+  typeof contactsKeys &
+  typeof globalRequestsKeys &
+  typeof featureKeys;
