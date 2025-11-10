@@ -45,14 +45,7 @@ export default async function ReportsPage({ params }: PageProps) {
   return (
     <ProjectLayout project={projectForLayout}>
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Reports</CardTitle>
-            <CardDescription>
-              View and manage the report templates attached to this project.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+
             {reports.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <FileText className="h-16 w-16 text-muted-foreground mb-4" />
@@ -97,8 +90,7 @@ export default async function ReportsPage({ params }: PageProps) {
                 })}
               </div>
             )}
-          </CardContent>
-        </Card>
+
       </div>
     </ProjectLayout>
   );

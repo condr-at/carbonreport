@@ -219,9 +219,8 @@ export function DatasetPageClient({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Database className="h-5 w-5" />
-            Dataset Editor
+            Dataset Version: {datasetVersion}
           </CardTitle>
-          <p className="text-xs text-muted-foreground">Version: {datasetVersion}</p>
         </CardHeader>
         <CardContent>
           <DatasetTable
