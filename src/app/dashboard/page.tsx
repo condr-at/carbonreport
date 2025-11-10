@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { NextStepsWidget } from '@/components/blocks/next-steps-widget';
+import { PageHeader } from '@/components/layouts/page-header';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,23 +56,18 @@ export default async function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Greeting */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Hello, {MOCK_USER.name} 👋
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {dateStr}
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/projects/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Project
-            </Link>
-          </Button>
-        </div>
+        <PageHeader
+          title={`Hello, ${MOCK_USER.name} 👋`}
+          description={dateStr}
+          actions={(
+            <Button asChild>
+              <Link href="/projects/new">
+                <Plus className="mr-2 h-4 w-4" />
+                New Project
+              </Link>
+            </Button>
+          )}
+        />
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">

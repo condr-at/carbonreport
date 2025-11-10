@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Loader2, RefreshCw, Search, ChevronDown } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/blocks/empty-state';
 import { useContactsList } from '@/lib/data-client/contacts-global';
 import type { ContactOverview } from '@/lib/contacts/types';
+import { PageHeader } from '@/components/layouts/page-header';
 
 interface ContactsPageClientProps {
   initialContacts: ContactOverview[];
@@ -121,33 +122,30 @@ export function ContactsPageClient({ initialContacts }: ContactsPageClientProps)
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Contacts</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your address book and track outstanding data requests per contact.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void refetch({ throwOnError: false })}
-            disabled={isFetching}
-          >
-            {isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-            Refresh
-          </Button>
-          <Button disabled size="sm">
-            <ChevronDown className="mr-2 h-4 w-4" />
-            New Contact
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Contacts"
+        description="Manage your address book and track outstanding data requests per contact."
+        actions={(
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void refetch({ throwOnError: false })}
+              disabled={isFetching}
+            >
+              {isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+              Refresh
+            </Button>
+            <Button disabled size="sm">
+              <ChevronDown className="mr-2 h-4 w-4" />
+              New Contact
+            </Button>
+          </>
+        )}
+      />
 
       <Card>
         <CardHeader className="gap-4">
-          <CardTitle>Address book</CardTitle>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full lg:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

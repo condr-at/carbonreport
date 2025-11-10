@@ -1,6 +1,7 @@
 'use client';
 
 import { DashboardLayout } from '@/components/layouts/dashboard-layout';
+import { PageHeader } from '@/components/layouts/page-header';
 import { Button } from '@/components/ui/button';
 import { ProjectCard } from '@/components/blocks/project-card';
 import { EmptyState } from '@/components/blocks/empty-state';
@@ -115,21 +116,18 @@ export default function ProjectsPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage all your carbon footprint projects
-            </p>
-          </div>
-          <Button asChild>
-            <Link href="/projects/new">
-              <Plus className="mr-2 h-4 w-4" />
-              New Project
-            </Link>
-          </Button>
-        </div>
+        <PageHeader
+          title="Projects"
+          description="Manage all your carbon footprint projects"
+          actions={(
+            <Button asChild>
+              <Link href="/projects/new">
+                <Plus className="mr-2 h-4 w-4" />
+                New Project
+              </Link>
+            </Button>
+          )}
+        />
 
         {/* Filters & Search */}
         <div className="flex flex-col sm:flex-row gap-4">

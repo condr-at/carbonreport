@@ -1,5 +1,6 @@
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/layouts/dashboard-layout';
+import { PageHeader } from '@/components/layouts/page-header';
 import { RequestsBoard } from '@/components/requests/requests-board';
 import { queryClientOptions } from '@/lib/data-client/queryClient';
 import { globalRequestsKeys } from '@/lib/data-client/keys';
@@ -77,16 +78,20 @@ export default async function RequestsPage({ searchParams = {} }: RequestsPagePr
 
   return (
     <DashboardLayout>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <RequestsBoard
-          initialFilters={initialFilters}
-          initialRequests={requests}
-          contacts={contacts}
-          projectOptions={projects}
-          heading="Requests"
+      <div className="space-y-6">
+        <PageHeader
+          title="Requests"
           description="Monitor and action data requests across projects."
         />
-      </HydrationBoundary>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <RequestsBoard
+            initialFilters={initialFilters}
+            initialRequests={requests}
+            contacts={contacts}
+            projectOptions={projects}
+          />
+        </HydrationBoundary>
+      </div>
     </DashboardLayout>
   );
 }

@@ -12,7 +12,7 @@ import {
   Inbox,
   Building2,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -74,8 +74,6 @@ interface RequestsBoardProps {
   contacts: ContactOverview[];
   projectOptions: Array<{ id: string; name: string }>;
   lockedContactId?: string;
-  heading?: string;
-  description?: string;
   projectOwnerFallback?: string;
 }
 
@@ -122,8 +120,6 @@ export function RequestsBoard({
   contacts,
   projectOptions,
   lockedContactId,
-  heading = 'Data Requests',
-  description = 'Review and manage data requests across all projects.',
   projectOwnerFallback = 'Carbon Report Team',
 }: RequestsBoardProps) {
   const [filters, setFilters] = useState<GlobalRequestFilters>(() => ensureContactFilter(initialFilters, lockedContactId));
@@ -426,14 +422,7 @@ export function RequestsBoard({
 
   return (
     <Card>
-      <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-            <Mail className="h-5 w-5" />
-            {heading}
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
+      <CardHeader className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <Select value={effectiveFilters.status ?? 'all'} onValueChange={(value) => handleFiltersChange({ status: value as GlobalRequestFilters['status'] })}>
             <SelectTrigger className="w-[140px]">

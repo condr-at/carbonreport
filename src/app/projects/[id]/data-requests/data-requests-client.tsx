@@ -459,15 +459,6 @@ export function DataRequestsPageClient({
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-              <Mail className="h-5 w-5" />
-              Data Requests
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Coordinate data collection with vendors and teammates.
-            </p>
-          </div>
           <div className="flex flex-wrap items-center gap-2">
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
               <SelectTrigger className="w-[150px]">
