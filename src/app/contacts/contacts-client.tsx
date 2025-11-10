@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, RefreshCw, Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -69,7 +69,6 @@ export function ContactsPageClient({ initialContacts }: ContactsPageClientProps)
   const {
     data: contacts = [],
     isFetching,
-    refetch,
   } = useContactsList(initialContacts);
 
   const filteredContacts = useMemo(() => {
@@ -126,21 +125,10 @@ export function ContactsPageClient({ initialContacts }: ContactsPageClientProps)
         title="Contacts"
         description="Manage your address book and track outstanding data requests per contact."
         actions={(
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void refetch({ throwOnError: false })}
-              disabled={isFetching}
-            >
-              {isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-              Refresh
-            </Button>
-            <Button disabled size="sm">
-              <ChevronDown className="mr-2 h-4 w-4" />
-              New Contact
-            </Button>
-          </>
+          <Button disabled size="sm">
+            <ChevronDown className="mr-2 h-4 w-4" />
+            New Contact
+          </Button>
         )}
       />
 

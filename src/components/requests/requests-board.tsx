@@ -474,15 +474,6 @@ export function RequestsBoard({
               </SelectContent>
             </Select>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void refetch({ throwOnError: false })}
-            disabled={isFetching}
-          >
-            {isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-            Refresh
-          </Button>
           <Button size="sm" onClick={openModalForSelection} disabled={!filteredSelection.length}>
             <Mail className="mr-2 h-4 w-4" />
             Send email

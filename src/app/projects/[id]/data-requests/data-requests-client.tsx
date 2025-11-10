@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 import { Loader2, Mail, RefreshCw, CheckCircle2, XCircle, Inbox } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -119,13 +119,11 @@ export function DataRequestsPageClient({
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [contactFilter, setContactFilter] = useState<string>('all');
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [modalConfig, setModalConfig] = useState<ModalConfig | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const {
     data: requests = [],
-    isFetching: isFetchingRequests,
     refetch: refetchRequests,
     status: requestsStatus,
   } = useDataRequests(projectId, {
@@ -149,7 +147,6 @@ export function DataRequestsPageClient({
 
   const {
     data: contactsData = [],
-    isFetching: isFetchingContacts,
     refetch: refetchContacts,
   } = useProjectContacts(projectId, initialContacts);
 
@@ -286,34 +283,6 @@ export function DataRequestsPageClient({
       : visibleSelectedCount === filteredRequests.length
       ? true
       : 'indeterminate';
-
-  const refreshRequests = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
-      const result = await refetchRequests({ throwOnError: true });
-      if (result.error) {
-        throw result.error;
-      }
-      setSelectedIds(new Set());
-    } catch (error) {
-      const messageText = error instanceof Error ? error.message : 'Failed to refresh data requests';
-      notifications.error(messageText);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [refetchRequests]);
-
-  const refreshContacts = useCallback(async () => {
-    try {
-      const result = await refetchContacts({ throwOnError: true });
-      if (result.error) {
-        throw result.error;
-      }
-    } catch (error) {
-      const messageText = error instanceof Error ? error.message : 'Failed to refresh contacts';
-      notifications.error(messageText);
-    }
-  }, [refetchContacts]);
 
   const handleBulkComplete = useCallback(() => {
     if (pendingSelected.length === 0) {
@@ -453,6 +422,35 @@ export function DataRequestsPageClient({
     setModalConfig(null);
   }, []);
 
+  const handleRefreshAfterLog = useCallback(async () => {
+    const [contactsOutcome, requestsOutcome] = await Promise.allSettled([
+      refetchContacts({ throwOnError: false }),
+      refetchRequests({ throwOnError: false }),
+    ]);
+
+    if (contactsOutcome.status === 'rejected') {
+      const messageText = contactsOutcome.reason instanceof Error ? contactsOutcome.reason.message : 'Failed to refresh contacts';
+      notifications.error(messageText);
+    } else if (contactsOutcome.value.error) {
+      const messageText = contactsOutcome.value.error instanceof Error ? contactsOutcome.value.error.message : 'Failed to refresh contacts';
+      notifications.error(messageText);
+    }
+
+    if (requestsOutcome.status === 'rejected') {
+      const messageText = requestsOutcome.reason instanceof Error ? requestsOutcome.reason.message : 'Failed to refresh data requests';
+      notifications.error(messageText);
+      return;
+    }
+
+    if (requestsOutcome.value.error) {
+      const messageText = requestsOutcome.value.error instanceof Error ? requestsOutcome.value.error.message : 'Failed to refresh data requests';
+      notifications.error(messageText);
+      return;
+    }
+
+    setSelectedIds(new Set());
+  }, [refetchContacts, refetchRequests, setSelectedIds]);
+
   const bulkBusy = isBulkCompleting || isBulkRevoking || isBulkResending;
 
   return (
@@ -484,32 +482,6 @@ export function DataRequestsPageClient({
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void refreshContacts()}
-              disabled={isFetchingContacts}
-            >
-              {isFetchingContacts ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              Refresh contacts
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void refreshRequests()}
-              disabled={isRefreshing || isFetchingRequests}
-            >
-              {isRefreshing || isFetchingRequests ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              Refresh
-            </Button>
             <Button size="sm" onClick={openModalForSelection} disabled={!hasSelection}>
               <Mail className="mr-2 h-4 w-4" />
               Send email
@@ -723,10 +695,7 @@ export function DataRequestsPageClient({
           initialContact={modalConfig.initialContact}
           mailtoTemplate={resolvedMailtoTemplate ?? undefined}
           contacts={contacts}
-          onLogged={async () => {
-            await refreshContacts();
-            await refreshRequests();
-          }}
+          onLogged={handleRefreshAfterLog}
         />
       )}
     </div>
