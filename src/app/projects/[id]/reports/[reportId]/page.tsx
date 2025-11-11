@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
-import { ProjectLayout } from '@/components/layouts/project-layout';
 import { ReportPageClient } from './report-page-client';
 import {
   type DataPoint,
@@ -11,13 +10,7 @@ import type { Dataset } from '@/lib/dataset-validation';
 import { getBaseUrl } from '@/lib/server-utils';
 import { dataRequestKeys, projectKeys } from '@/lib/data-client/keys';
 import { queryClientOptions } from '@/lib/data-client/queryClient';
-import {
-  getProjectSummary,
-  getProjectDataset,
-  getProjectDataRequests,
-  getProjectContacts,
-  getDatasetFieldDefinitions,
-} from '@/lib/server-data/projects';
+import { getProjectDataset, getProjectDataRequests, getProjectContacts, getDatasetFieldDefinitions, getProjectSummaryCached } from '@/lib/server-data/projects';
 import { createServerTimingTracker } from '@/lib/server-data/metrics';
 
 interface PageProps {
@@ -39,12 +32,11 @@ async function getReport(projectId: string, reportId: string) {
 
   return res.json();
 }
-
 export default async function ReportPage({ params }: PageProps) {
   const { id: projectId, reportId } = await params;
 
   const tracker = createServerTimingTracker(`report-page:${projectId}:${reportId}`);
-  const project = await getProjectSummary(projectId, tracker);
+  const project = await getProjectSummaryCached(projectId, tracker);
 
   if (!project) {
     notFound();
@@ -113,47 +105,38 @@ export default async function ReportPage({ params }: PageProps) {
   tracker.logTimings('report-page');
   tracker.logPayloads('report-page');
 
-  const projectForLayout = {
-    id: project.id,
-    name: project.name,
-    status: project.status ?? 'active',
-    updatedAt: project.updatedAt,
-  };
-
   const ownerName = project.ownerName?.trim() ? project.ownerName.trim() : 'Carbon Report Team';
 
   return (
-    <ProjectLayout project={projectForLayout}>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <ReportPageClient
-          projectId={project.id}
-          projectName={project.name}
-          projectOwnerName={ownerName}
-          reportId={reportResponse.reportInfo.id}
-          reportName={reportResponse.template.name}
-          templateCode={reportResponse.template.code}
-          sections={reportResponse.template.sections.map((section: any) => ({
-            key: section.key,
-            title: section.title,
-            description: section.description,
-            fields: section.fields.map((field: any) => ({
-              fieldId: field.fieldId,
-              isRequired: Boolean(field.isRequired),
-            })),
-          }))}
-          fieldDefinitions={filteredFieldDefinitions}
-          initialDataset={resolvedDataset as Dataset}
-          initialDatasetVersion={datasetVersion}
-          completion={{
-            filled: filledCount,
-            required: requiredCount,
-            percentage: completionPercentage,
-          }}
-          mailtoTemplate={(project.mailtoTemplate as { subject?: string; body?: string } | null) ?? null}
-          initialRequests={initialRequests}
-          initialContacts={initialContacts}
-        />
-      </HydrationBoundary>
-    </ProjectLayout>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ReportPageClient
+        projectId={project.id}
+        projectName={project.name}
+        projectOwnerName={ownerName}
+        reportId={reportResponse.reportInfo.id}
+        reportName={reportResponse.template.name}
+        templateCode={reportResponse.template.code}
+        sections={reportResponse.template.sections.map((section: any) => ({
+          key: section.key,
+          title: section.title,
+          description: section.description,
+          fields: section.fields.map((field: any) => ({
+            fieldId: field.fieldId,
+            isRequired: Boolean(field.isRequired),
+          })),
+        }))}
+        fieldDefinitions={filteredFieldDefinitions}
+        initialDataset={resolvedDataset as Dataset}
+        initialDatasetVersion={datasetVersion}
+        completion={{
+          filled: filledCount,
+          required: requiredCount,
+          percentage: completionPercentage,
+        }}
+        mailtoTemplate={(project.mailtoTemplate as { subject?: string; body?: string } | null) ?? null}
+        initialRequests={initialRequests}
+        initialContacts={initialContacts}
+      />
+    </HydrationBoundary>
   );
 }

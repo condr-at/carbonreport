@@ -1,10 +1,9 @@
-import { ProjectLayout } from '@/components/layouts/project-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Database, TrendingUp, MailQuestion } from 'lucide-react';
 import { ProjectRoadmap } from '@/components/project-roadmap';
 import { ProjectPrefillHydrator } from '@/components/project-prefill-hydrator';
-import ProjectLoading from './loading';
 import { getBaseUrl } from '@/lib/server-utils';
+import { notFound } from 'next/navigation';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -46,10 +45,16 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
   const { id } = await params;
   const { status, project } = await getProject(id);
 
-  if (status !== 'ok' || !project) {
-    return (
-      <ProjectLoading initialPendingState={status === 'error' ? 'error' : 'idle'} />
-    );
+  if (status === 'not-found') {
+    notFound();
+  }
+
+  if (status === 'error') {
+    throw new Error(`Failed to fetch project ${id}`);
+  }
+
+  if (!project) {
+    throw new Error(`Project ${id} data is unavailable`);
   }
 
   // Calculate completion from reports
@@ -99,7 +104,7 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
   const pendingDataRequests = 0; // TODO: Get from API when data_requests table implemented
 
   return (
-    <ProjectLayout project={project}>
+    <>
       <ProjectPrefillHydrator
         project={{
           id: project.id,
@@ -410,6 +415,6 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
           <ProjectRoadmap items={mockRoadmapItems} incompleteCount={mockIncompleteCount} />
         </div>
       </div>
-    </ProjectLayout>
+    </>
   );
 }

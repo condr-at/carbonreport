@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from './dashboard-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical, Copy, Archive, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ProjectLayoutProps {
@@ -35,10 +35,13 @@ const TABS = [
 ] as const;
 
 export function ProjectLayout({ children, project }: ProjectLayoutProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const baseHref = `/projects/${project.id}`;
   const normalizedStatus = project.status?.toString() ?? 'active';
   const statusVariant = normalizedStatus.toLowerCase() === 'active' ? 'default' : 'secondary';
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
+  const skipNextValueChange = useRef(false);
 
   // Determine active tab
   const getActiveTab = () => {
@@ -52,6 +55,27 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
   };
 
   const activeTab = getActiveTab();
+
+  useEffect(() => {
+    setPendingTab(null);
+  }, [activeTab]);
+
+  const handleNavigate = useCallback(
+    (nextTabId: string) => {
+      if (nextTabId === activeTab) {
+        return;
+      }
+
+      const target = TABS.find((tab) => tab.id === nextTabId);
+      if (!target) {
+        return;
+      }
+
+      setPendingTab(nextTabId);
+      router.push(`${baseHref}${target.href}`);
+    },
+    [activeTab, baseHref, router],
+  );
 
   return (
     <DashboardLayout>
@@ -96,13 +120,42 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
           </div>
 
           {/* Tabs Navigation */}
-          <Tabs value={activeTab} className="w-full">
+          <Tabs
+            value={pendingTab ?? activeTab}
+            onValueChange={(value) => {
+              if (skipNextValueChange.current) {
+                skipNextValueChange.current = false;
+                return;
+              }
+              handleNavigate(value);
+            }}
+            className="w-full"
+          >
             <TabsList aria-label="Project tabs">
               {TABS.map((tab) => {
                 const href = `${baseHref}${tab.href}`;
                 return (
                   <TabsTrigger key={tab.id} value={tab.id} asChild>
-                    <Link href={href}>{tab.label}</Link>
+                    <Link
+                      href={href}
+                      onClick={(event) => {
+                        if (
+                          event.metaKey ||
+                          event.ctrlKey ||
+                          event.shiftKey ||
+                          event.altKey ||
+                          event.button !== 0
+                        ) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        skipNextValueChange.current = true;
+                        handleNavigate(tab.id);
+                      }}
+                    >
+                      {tab.label}
+                    </Link>
                   </TabsTrigger>
                 );
               })}

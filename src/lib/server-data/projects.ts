@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import prisma from '@/lib/db';
 import { computeStatus } from '@/lib/data-requests/service';
 import type { DataRequestSummary } from '@/lib/data-requests/types';
@@ -62,6 +63,23 @@ export async function getProjectSummary(
   stopTransform?.();
 
   return result;
+}
+
+const getProjectSummaryCache = cache((projectId: string) => getProjectSummary(projectId));
+
+export async function getProjectSummaryCached(
+  projectId: string,
+  tracker?: ServerTimingTracker
+): Promise<ProjectSummary | null> {
+  const stop = tracker?.start('cache:project-summary');
+  try {
+    const summary = await getProjectSummaryCache(projectId);
+    stop?.();
+    return summary;
+  } catch (error) {
+    stop?.();
+    throw error;
+  }
 }
 
 export async function getProjectContacts(
