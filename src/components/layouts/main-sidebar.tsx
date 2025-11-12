@@ -111,7 +111,7 @@ export function MainSidebar() {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
             const Icon = item.icon;
             const isPending = pendingHref === item.href;
-            const isHighlighted = isActive || isPending;
+            const isHighlighted = pendingHref ? isPending : isActive;
 
             return (
               <Link
@@ -140,7 +140,7 @@ export function MainSidebar() {
 
                   setOpen(false);
                 }}
-                aria-current={isActive ? 'page' : undefined}
+                aria-current={isActive && !pendingHref ? 'page' : undefined}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   isHighlighted
