@@ -406,8 +406,17 @@ POST /api/organizations/:organizationId/invite
 ```
 
 **Errors**:
-- `409 CONFLICT` — plan limit reached (returns error code `PLAN_LIMIT_EXCEEDED`).  
+- `409 CONFLICT` — seat limit reached (returns error code `SEAT_LIMIT_EXCEEDED`).  
 - `422 UNPROCESSABLE_ENTITY` — invalid email or role.
+
+Limit Error Example:
+```json
+{
+  "error": "No editor seats available",
+  "code": "SEAT_LIMIT_EXCEEDED",
+  "details": { "limit": 2, "current": 2, "role": "EDITOR" }
+}
+```
 
 ### Update Member Role
 
@@ -483,6 +492,19 @@ GET /api/organizations/:organizationId/usage
     "max_viewers": null
   },
   "plan_valid_until": "2025-12-15T00:00:00Z"
+}
+```
+
+Future Extension:
+```json
+{
+  "organization_id": "...",
+  "usage": { /* current snapshot */ },
+  "limits": { /* plan limits */ },
+  "snapshots": [
+    { "computed_at": "2025-11-11T00:00:00Z", "active_projects": 1, "active_editors": 0 },
+    { "computed_at": "2025-11-12T00:00:00Z", "active_projects": 1, "active_editors": 1 }
+  ]
 }
 ```
 
@@ -636,6 +658,88 @@ POST /api/projects
 - `403 FORBIDDEN` — user lacks permissions in the target organization.  
 - `404 NOT_FOUND` — organization id not found or soft deleted.  
 - `409 CONFLICT` (`PLAN_LIMIT_EXCEEDED`) — creating the project would exceed `max_active_projects` for the plan.
+
+### Update Project Status
+
+```http
+PATCH /api/projects/:id/status
+```
+
+**Auth**: Required.  
+**Roles**: `OWNER`, `ADMIN`, `EDITOR`.
+
+**Request Body**:
+```json
+{ "status": "archived" }
+```
+Allowed `status` values: `active`, `archived`, `reported`, `deleted`.
+
+Rules:
+1. Transition to `active` performs limit check.
+2. Transition to `reported` locks dataset/report editing (no direct revert—must use restore endpoint).
+3. Transition to `deleted` sets `deleted_at` (soft-delete); restore allowed within retention window.
+4. Direct transitions `reported → archived` or `reported → deleted` require using restore (explicit design choice simplifying reversible path).
+
+**Response — 200 OK**:
+```json
+{
+  "project": { "id": "c51f0790-114f-4b53-83e6-6a63cb9dd2a1", "status": "archived" }
+}
+```
+
+**Errors**:
+- `400 BAD_REQUEST` — unsupported status.
+- `403 FORBIDDEN` — caller lacks role.
+- `409 PLAN_LIMIT_EXCEEDED` — attempting to set `active` over limit (details object included).
+- `409 VERSION_CONFLICT` — stale precondition header if optimistic status versioning added later.
+- `404 NOT_FOUND` — project not found or organization soft-deleted.
+
+### Delete Project (Soft)
+
+```http
+DELETE /api/projects/:id
+```
+
+Equivalent to setting status to `deleted` if not already. Idempotent.
+
+**Response — 202 Accepted**:
+```json
+{
+  "project_id": "c51f0790-114f-4b53-83e6-6a63cb9dd2a1",
+  "status": "deleted",
+  "retention_expires_at": "2025-12-12T10:15:00Z"
+}
+```
+
+**Errors**:
+- `404 NOT_FOUND` — project missing.
+- `409 CONFLICT` — already deleted (returns same payload with an `already_deleted` flag optionally).
+
+### Restore Project
+
+```http
+POST /api/projects/:id/restore
+```
+
+Restores a project from `archived`, `reported`, or `deleted` back to `active` (subject to limits & retention).
+
+**Response — 200 OK**:
+```json
+{
+  "project": { "id": "c51f0790-114f-4b53-83e6-6a63cb9dd2a1", "status": "active" },
+  "limit_check": { "resource": "active_projects", "current": 0, "limit": 3 }
+}
+```
+
+**Errors**:
+- `409 PLAN_LIMIT_EXCEEDED` — would exceed active project limit.
+- `409 RETENTION_EXPIRED` — soft-deleted beyond 30-day window.
+- `404 NOT_FOUND` — project id invalid.
+- `403 FORBIDDEN` — user lacks permissions in owning organization.
+
+Edge Cases:
+- Restoring from `reported` re-opens editing; UI must confirm undoing finalisation semantics.
+- Attempting to restore already `active` returns 200 with no changes (idempotent).
 
 ---
 
@@ -1245,6 +1349,41 @@ if (response.status === 409) {
 ```
 
 Logs contain detailed error information.
+
+### Unified Error Envelope
+All errors SHOULD use structure:
+```json
+{ "error": "Human readable message", "code": "PLAN_LIMIT_EXCEEDED", "details": {"limit":1,"current":1,"needed":1} }
+```
+
+| Code | Meaning | Typical HTTP Status | Details Fields |
+|------|---------|---------------------|----------------|
+| `VALIDATION_ERROR` | Payload fails schema | 400 | `fields` array (optional) |
+| `FORBIDDEN` | Insufficient role | 403 | `requiredRole` |
+| `NOT_FOUND` | Resource missing | 404 | `resource` |
+| `PLAN_LIMIT_EXCEEDED` | Project limit hit | 409 | `limit`, `current`, `needed`, `resource` |
+| `SEAT_LIMIT_EXCEEDED` | Seat limit hit | 409 | `limit`, `current`, `role` |
+| `VERSION_CONFLICT` | Optimistic lock failed | 409 | `expectedVersion`, `currentVersion` |
+| `RETENTION_EXPIRED` | Soft-delete window passed | 409 | `deleted_at`, `window_days` |
+| `UPGRADE_NOT_IMPLEMENTED` | Upgrade not available | 501 | `target_plan_code` |
+
+### Example: Plan Limit Exceeded
+```json
+{
+  "error": "Active project limit reached",
+  "code": "PLAN_LIMIT_EXCEEDED",
+  "details": { "limit": 3, "current": 3, "needed": 1, "resource": "active_projects" }
+}
+```
+
+### Example: Retention Expired
+```json
+{
+  "error": "Project retention period expired",
+  "code": "RETENTION_EXPIRED",
+  "details": { "deleted_at": "2025-10-01T00:00:00Z", "window_days": 30 }
+}
+```
 
 ---
 

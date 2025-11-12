@@ -92,6 +92,41 @@ The platform adopts a multi-organization model without an intermediate `Account`
 | `organization_usage_snapshots` | `id` (UUID, PK), `organization_id` (FK), `computed_at`, `active_projects` (int), `active_editors` (int), `active_verifiers` (int), `active_viewers` (int) | Supports historical reporting, billing reconciliation, warning thresholds. |
 | `assets` | `id` (UUID, PK), `type` (enum: `org_logo`, `user_avatar`), `url` (text), `file_name` (text), `mime_type` (text), `file_size_bytes` (int), `uploaded_by_user_id` (FK), `created_at` (timestamptz) | Abstracts file storage. Extend later with checksum/metadata. |
 
+#### Enumerations (Canonical)
+
+| Enum | Values | Notes |
+|------|--------|-------|
+| `organization.status` | `active`, `deleted`, `pending_transfer` | `pending_transfer` reserved for future ownership handoff flow. |
+| `project.status` | `active`, `archived`, `reported`, `deleted` | `reported` = finalised read-only; restore allowed with limit check. |
+| `organization_memberships.role` | `OWNER`, `ADMIN`, `EDITOR`, `VIEWER_READONLY`, `VIEWER_VERIFIER` | Verifier currently read-only until `verifierRoleEnabled=true`. |
+| `organization_memberships.invite_status` | `pending`, `accepted`, `declined`, `revoked` | Seat counts only include `accepted` memberships. |
+| `assets.type` | `org_logo`, `user_avatar` | Extend later for `report_attachment`, etc. |
+
+#### Indices & Constraints (Performance / Integrity)
+
+| Table | Index / Constraint | Purpose |
+|-------|--------------------|---------|
+| `organizations` | UNIQUE(`slug`) | Routing & uniqueness. |
+| `organizations` | INDEX(`plan_code`) | Fast joins to plan definitions. |
+| `organization_memberships` | UNIQUE(`organization_id`,`user_id`) | Prevent duplicate memberships. |
+| `organization_memberships` | INDEX(`organization_id`,`role`,`invite_status`) | Seat usage queries. |
+| `projects` | INDEX(`organization_id`,`status`) | Limit checks & listings. |
+| `projects` | INDEX(`status`,`deleted_at`) | Retention purges (future). |
+| `organization_usage_snapshots` | INDEX(`organization_id`,`computed_at` DESC) | Latest snapshot lookup. |
+| `assets` | INDEX(`uploaded_by_user_id`) | User cleanup / audit. |
+| `plan_definitions` | PK(`plan_code`) | Lookup by code. |
+
+Retention Windows:
+- Projects & organizations soft-deleted retained for 30 days → purge job will scan by `deleted_at < NOW() - INTERVAL '30 days'`.
+
+Limit Check Query Patterns:
+- Active projects: `SELECT count(*) FROM projects WHERE organization_id=$1 AND status='active'` (covered by composite index).
+- Editor seats: `SELECT count(*) FROM organization_memberships WHERE organization_id=$1 AND role='EDITOR' AND invite_status='accepted'`.
+- Verifier seats analogous when feature flag enabled.
+
+Seat Limit Enforcement Timing:
+- On invite creation (pre-accept) we allow pending invites beyond seat count; only transition to `accepted` validates limit. (Alternative stricter model kept for future.)
+
 **Existing tables updated:**
 
 - `projects`: add `organization_id` (FK → `organizations.id`), expand `status` enum (`active`, `archived`, `reported`, `deleted`), add `deleted_at`. Index combinations (`organization_id`, `status`) for fast limit checks.
@@ -115,6 +150,12 @@ The platform adopts a multi-organization model without an intermediate `Account`
 - `plan_assigned_at` timestamps the latest plan assignment. Update whenever `plan_code` is changed.
 - `plan_valid_until` is nullable. Populate for expiring plans (e.g., Pro Beta) to surface countdowns and automated downgrades.
 - Plan upgrades/downgrades are manual in beta. `POST /api/organizations/:id/plan/upgrade` returns `501` but captures the contract for future billing automation.
+
+Edge Cases:
+- Attempting to create an active project while at limit → API returns `409 PLAN_LIMIT_EXCEEDED`.
+- Restoring a project (archived/reported/deleted → active) when at limit → `409 PLAN_LIMIT_EXCEEDED`.
+- Accepting an invite or role change to `EDITOR` beyond seat count → `409 SEAT_LIMIT_EXCEEDED`.
+- Expired Pro Beta downgrade may leave organization over Free limits; UI warns but does not auto-archive.
 
 ### Roles & Permissions Matrix
 
@@ -140,6 +181,26 @@ The platform adopts a multi-organization model without an intermediate `Account`
 - **reported**: renamed from `submitted`. Represents finalised projects; dataset/report editing locked. Does not count toward limits. Restoration to `active` requires explicit confirmation and limit checks.
 - **deleted**: soft-deleted. Record retained for 30 days (`deleted_at`). Hidden from default listings. Restoration allowed within retention window if limits permit.
 
+Restore Rules:
+1. If `status in ('archived','reported','deleted')` and retention not expired → attempt restore.
+2. Check active project limit.
+3. If limit exceeded → refuse with `PLAN_LIMIT_EXCEEDED` including `{ limit, current, needed: 1 }` metadata.
+4. If retention expired (`deleted_at < NOW() - INTERVAL '30 days'`) → refuse with `RETENTION_EXPIRED`.
+
+Allowed Transitions:
+| From | To | Notes |
+|------|----|-------|
+| active | archived | User action (space management). |
+| active | reported | Finalisation (locks editing). |
+| active | deleted | Soft-delete (Danger Zone). |
+| archived | active | Requires limit check. |
+| reported | active | Only via explicit restore endpoint. |
+| deleted | active | Within retention window + limit check. |
+
+Disallowed:
+- Direct `reported → archived` (must restore first if editing required).
+- Any transition from `deleted` after retention expiry.
+
 Transitions enforce limit checks whenever a project becomes `active`. If limits are exceeded, the API returns `PLAN_LIMIT_EXCEEDED` with structured metadata so the UI can prompt the user (remove/archived other projects or request upgrade).
 
 ### Soft-Delete & Retention Policy
@@ -161,6 +222,14 @@ Transitions enforce limit checks whenever a project becomes `active`. If limits 
 - **Snapshots**: `organization_usage_snapshots` populated nightly or after major changes (creation, invite acceptance) to support trending and future billing.
 - **Plan expiry**: daily job checks `plan_valid_until` and demotes expired Pro Beta organizations back to `free` while notifying owner/admin via UI banner (email automation tracked in `docs→BILLING_PLAYBOOK.md`).
 
+Error Formats (returned as JSON):
+```
+{ "error": "Human readable message", "code": "PLAN_LIMIT_EXCEEDED", "details": { /* optional */ } }
+```
+Optional `details` keys:
+- For limits: `{"limit":3,"current":3,"needed":1,"resource":"active_projects"}`
+- For retention: `{"deleted_at":"2025-10-01T00:00:00Z","window_days":30}`
+
 ### Assets & Uploads
 
 - **Storage approach**: prefer external object storage (S3, Cloudflare R2). UI requests a signed upload URL via `POST /api/uploads/sign` specifying resource type (`org_logo`, `user_avatar`). Client uploads directly; backend persists the `assets` record.
@@ -175,6 +244,11 @@ Transitions enforce limit checks whenever a project becomes `active`. If limits 
 | `verifierRoleEnabled` | `false` | Gates the ability for `VIEWER_VERIFIER` to perform approval actions. Keeps role in read-only mode during beta. |
 | `billingUiEnabled` | `true` | Enables plan cards, limits UI, and manual upgrade modal. Does not process payments. |
 | `approvalsEnabled` | `false` | Placeholder for future workflow once verifier tooling lands. |
+
+Flag Handling Strategy:
+- Flags defined in code (`src/lib/config.ts`) with environment override (e.g. `NEXT_PUBLIC_VERIFIER_ROLE_ENABLED`).
+- Do not persist flags in DB until dynamic runtime toggling is required.
+- Tests should assert default disabled paths (e.g. verifier seat limit always zero) before enabling scenarios.
 
 Flags live in `src/lib/config.ts` with environment overrides. Document flips in `docs→DEVELOPMENT.md`.
 

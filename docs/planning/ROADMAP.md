@@ -154,6 +154,59 @@ This document outlines the implementation plan for completing the data request f
 - Dataset/report "Responsible" summary refresh until reminders/UI contract lands.
 
 ---
+# Roadmap
+
+**Status**: Multi‑Org phase added  
+**Last Updated**: 2025-11-12
+
+## Overview
+
+Этот документ фиксирует фазы поставки. Раздел Multi‑Org добавлен согласно брифу, существующие фазы по Data Requests сохранены ниже.
+
+---
+
+## Phase: Multi‑Org (без Account) & Plans
+
+### Подфазы
+1) Schema & Migrations
+	- Таблицы: organizations, organization_memberships, plan_definitions, organization_usage_snapshots, assets; расширение projects (organization_id, status, deleted_at)
+	- Индексы и enum’ы как в `docs→ARCHITECTURE.md`
+	- Команды: `npm run db:migrate`, `npm run db:seed`
+
+2) Org Settings & Switcher
+	- Страница настроек с табами (Profile, Members, Usage & Limits, Danger Zone)
+	- Sidebar switcher: логотип, имя, план, `X / limit`, действия Create/Manage
+
+3) Memberships & Roles
+	- Список участников, инвайт, смена роли, удаление
+	- Ограничение лимитов для EDITOR/VERIFIER
+
+4) Project Status Lifecycle
+	- Статусы: active/archived/reported/deleted
+	- Эндпоинты: PATCH status, DELETE (soft), POST restore (лимит + ретеншн)
+
+5) Uploads (logos/avatars)
+	- Signed URL, валидация (PNG/JPEG/SVG ≤512KB)
+	- Таблица assets
+
+6) Soft‑deletes & Retention
+	- Org soft-delete + каскад проектов, 30 дней ретеншн
+	- Баннеры/копирайт в UI
+
+7) Usage snapshots
+	- Снапшоты nightly или on‑demand
+	- Виджеты на Usage & Limits
+
+8) API hardening
+	- Единая структура ошибок, коды `PLAN_LIMIT_EXCEEDED`, `SEAT_LIMIT_EXCEEDED`, `RETENTION_EXPIRED` и др.
+	- Кэш/ETag для `GET /organizations/:id/usage`
+
+9) Docs freeze
+	- Обновлены `ARCHITECTURE.md`, `API_REFERENCE.md`, `UX_GUIDE.md`, `DEVELOPMENT.md`, `README.md`, `BILLING_PLAYBOOK.md`
+
+### Зависимости
+- Object storage (S3/R2) ключи и env
+- Планировщик/cron для expiry и snapshots (минимально — вручную)
 
 ## Notes
 

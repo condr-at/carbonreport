@@ -1,4 +1,20 @@
 # UX Guide & Information Architecture
+_Last updated: 2025-11-12_
+
+## Table of Contents
+1. Page Architecture
+2. Organization Switcher
+3. Organization Settings (Profile, Members, Usage & Limits, Danger Zone)
+4. User Settings
+5. Core User Flows (Create Org, Invite with limits, Delete Org, Restore Project)
+6. States (Empty / Loading / Error / Disabled / Expiry)
+7. Layout Templates
+8. Reusable Page Blocks
+9. Page-to-API Mapping
+10. Navigation Overview
+11. Delivery Priorities & Phases
+12. Technical Notes
+
 ## Page Architecture
 
 ```mermaid
@@ -93,7 +109,7 @@ graph LR
 #### Members Tab
 
 - **Table columns**: Avatar, Name, Email, Role badge, Last active (relative, fallback `—`), Status (Active/Pending). Actions column with `Change role`, `Remove`, `Resend invite`.
-- **Invite flow**: `Invite member` button opens modal with fields `Email` (required), `Role` radio buttons, optional note (future). Show plan usage chip for Editor/Verifier (`"0 / 0 seats available"`). Disable selection when limit reached with tooltip `"Upgrade plan to add more editors."`
+- **Invite flow**: `Invite member` button opens modal with fields `Email` (required), `Role` radio buttons, optional note (future). Show plan usage chip for Editor/Verifier (`"0 / 0 seats available"`). Disable selection when limit reached with tooltip `"Upgrade plan to add more editors."`. Tooltip для роли Verifier (если флаг выключен): `"Approval tools coming soon"`.
 - **Role changes**: inline dropdown; confirm dialog summarises impact (`"This will free an editor seat."`). API errors surface toast with reason (e.g., `PLAN_LIMIT_EXCEEDED`).
 - **Ownership guardrails**: owner row hides Remove button and shows tooltip `"Transfer ownership coming soon."`. Owners can demote Admins, Admins cannot affect Owners.
 - **Empty state**: card with illustration, headline `"Invite teammates"`, copy explaining unlimited viewers on Free plan, and `Invite member` CTA.
@@ -112,6 +128,32 @@ graph LR
   - `Restore projects`: link to `/projects?status=deleted` with helper copy `"You can restore deleted projects here before retention ends."`
   - `Transfer ownership` placeholder: greyed-out card stating `"Ownership transfer coming soon"`.
 - **Delete flow**: on submit, call DELETE endpoint; show spinner and then success toast `"Organization scheduled for deletion."` followed by redirect to dashboard. If already pending deletion, disable button and display badge `"Scheduled on {date}"`.
+
+## Organization Switcher
+
+Цель: быстрый выбор активной организации и доступ к созданию / настройкам.
+
+Элементы строки:
+- Логотип (или инициалы fallback)
+- Display name
+- План (пилл внутри строки: Free / Pro Beta)
+- Счётчик активных проектов `X / limit` (если viewers unlimited — не показываем)
+
+Действия (контекстное меню или выпадающее):
+- Select (по умолчанию клик по строке)
+- Manage organization (ведёт на `/settings/organization` — скрыто для `VIEWER_*` если нет прав редактирования; чтение допускается прямым URL)
+- Create organization (кнопка вне списка + внизу списка)
+
+Состояния:
+- Loading: skeleton 3–5 серых полос
+- Empty: иллюстрация + CTA `Create organization`
+- Error: inline alert + Retry (при наличии кэша показываем кэшированные элементы блеклым)
+- Expiring plan: под строкой баннер "Pro Beta expires on {date}" (≤14 дней)
+
+Поведение после создания:
+- Автоматический свитч и редирект в профиль организации
+
+Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`.
 
 ### User Settings
 
@@ -217,6 +259,46 @@ graph LR
     ├── Password (/settings/password)
     └── Organizations (/settings/organizations)
 ```
+
+### States (Empty / Loading / Error / Disabled / Expiry)
+
+| Context | State | UX Pattern |
+|---------|-------|-----------|
+| Org Switcher | Empty | Illustration + CTA `Create organization` |
+| Org Switcher | Loading | 4 skeleton rows |
+| Org Switcher | Error | Inline error banner + Retry |
+| Invite Modal | Disabled roles | Tooltip: "Upgrade plan to add more editors" on EDITOR / VERIFIER when limit=0 |
+| Usage & Limits | Over 100% | Red progress bar, link to archive projects or upgrade |
+| Project Restore | Limit exceeded | Modal with actions: (Open Usage) (Archive other) (Request upgrade) |
+| Pro Beta Expiry | ≤14 days | Warning banner (switcher + Usage tab) |
+| Deleting Organization | Pending | Badge "Scheduled on {date}" disables delete button |
+
+### Core User Flows
+
+#### Create Organization
+1. Пользователь нажимает `Create organization`.
+2. Модал: ввод `Display name` (+optional description/logo) → submit.
+3. API 201 → активируем и редирект `/settings/organization?tab=profile`.
+4. Показываем toast `Organization created.`.
+
+#### Invite Member (seat limits)
+1. Открыть таб Members → `Invite member`.
+2. Ввести email, выбрать роль.
+3. Если роль заблокирована (нет seat) — disabled + tooltip.
+4. Submit → 201 или 409 (`SEAT_LIMIT_EXCEEDED`) → показываем toast с деталями `{current, limit}`.
+
+#### Delete Organization (soft)
+1. Danger Zone → ввод slug.
+2. Кнопка активируется при точном совпадении.
+3. DELETE → 202 возвращает `retention_expires_at`.
+4. Редирект → ингресс-баннер об удалении.
+
+#### Restore Project
+1. Пользователь на списке архивных / deleted проектов.
+2. Жмёт Restore → модал подтверждения.
+3. POST restore.
+4. Успех: открываем проект. 409 `PLAN_LIMIT_EXCEEDED`: показываем варианты.
+5. 409 `RETENTION_EXPIRED`: сообщаем, что проект нельзя восстановить.
 
 ### Layout Templates
 

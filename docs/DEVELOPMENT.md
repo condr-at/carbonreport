@@ -1,6 +1,6 @@
 # Development Guide
 
-_Last updated: 2025-11-08_
+_Last updated: 2025-11-12_
 
 This guide consolidates day-to-day engineering practices, active technical debt, and validation tooling. It replaces the previous `TECHNICAL_DEBT.md` and `IMPLEMENTATION_CHECKLIST.md` as the primary reference for contributors. Historical detail remains in `docs/archive/`.
 
@@ -30,6 +30,109 @@ Refer to `docs/README.md` for onboarding context and project overview.
 | Template alignment | `npm run templates:check` | Validates field IDs across seed, code, and DB records. |
 | Dataset utilities | `npm run db:seed` | Populates `DatasetFieldDefinition` and demo data. |
 | Server metrics | `npm run metrics:collect -- <url>` | Captures `x-server-timing` and HAR snapshots. |
+
+---
+
+## Multi‑Org: Migrations & Seed (Playbook)
+
+This section documents the schema changes, indices, and seeding steps for the multi‑organization model per `docs→ARCHITECTURE.md`.
+
+### Schema (DDL outline)
+
+New tables:
+- `plan_definitions(plan_code PK, label, description, max_active_projects, max_editors, max_verifiers, max_viewers, created_at, updated_at)`
+- `organizations(id UUID PK, slug UNIQUE, display_name, description NULL, plan_code FK, plan_assigned_at, plan_valid_until NULL, logo_asset_id FK NULL, logo_url NULL, created_by_user_id FK, status enum, deleted_at NULL, metadata JSONB)`
+- `organization_memberships(id UUID PK, organization_id FK, user_id FK, role enum, invite_status enum, invited_by_user_id FK NULL, joined_at, last_active_at)`
+- `organization_usage_snapshots(id UUID PK, organization_id FK, computed_at, active_projects, active_editors, active_verifiers, active_viewers)`
+- `assets(id UUID PK, type enum, url, file_name, mime_type, file_size_bytes, uploaded_by_user_id FK, created_at)`
+
+Altered tables:
+- `projects`: add `organization_id` FK, add `status` enum (`active|archived|reported|deleted`), add `deleted_at`.
+
+Indices (critical):
+- `organizations.slug` UNIQUE
+- `organization_memberships (organization_id, user_id)` UNIQUE
+- `organization_memberships (organization_id, role, invite_status)`
+- `projects (organization_id, status)`
+- `projects (status, deleted_at)`
+- `organization_usage_snapshots (organization_id, computed_at DESC)`
+
+### Prisma migration steps
+
+Local dev:
+```bash
+npm run db:migrate   # alias to npx prisma migrate dev
+npm run db:seed      # seeds plans, demo user, demo orgs, memberships
+```
+
+Deploy/staging:
+```bash
+npx prisma migrate deploy
+node prisma/seed.js  # or npm run db:seed depending on script
+```
+
+If a migration fails, use the checklist in the "Database Migration Playbook" below (resolve/rollback/retry) rather than editing applied SQL.
+
+### Seed data (demo user + two orgs)
+
+Seed requirements:
+- Plans: `free`, `pro_beta` with limits from docs.
+- Demo user with predictable email (e.g., `demo@carbonreport.local`).
+- Two organizations: one `free`, one `pro_beta` with `plan_valid_until` in near future for UX testing.
+- Memberships: user is `OWNER` in both; add a couple of `VIEWER_READONLY` and (on Pro Beta) up to 2 `EDITOR` seats (respecting the limit).
+
+Reset seed:
+```bash
+npm run db:seed:reset
+```
+
+### Manual plan changes (beta)
+
+Upgrade to Pro Beta:
+```sql
+UPDATE organizations
+SET plan_code='pro_beta', plan_assigned_at=NOW(), plan_valid_until=NOW() + INTERVAL '30 days'
+WHERE id='{org_id}';
+```
+
+Downgrade to Free:
+```sql
+UPDATE organizations
+SET plan_code='free', plan_assigned_at=NOW(), plan_valid_until=NULL
+WHERE id='{org_id}';
+```
+
+### Feature flags
+
+Location: `src/lib/config.ts`
+
+Defaults:
+- `verifierRoleEnabled=false`
+- `billingUiEnabled=true`
+- `approvalsEnabled=false`
+
+Override via env (example):
+```bash
+export NEXT_PUBLIC_VERIFIER_ROLE_ENABLED=true
+```
+
+### Test plan (summary)
+
+Unit:
+- Limit checks: active projects, editor seats (owner не учитывается), verifier seats (резерв = 0).
+- Role guards: `assertOrgMembership(userId, orgId, minRole)`.
+- Plan resolution: `getPlan(orgId)` объединяет `plan_definitions` + `plan_valid_until`.
+
+Integration:
+- Create organization → plan `free` + limits в ответе.
+- Invite EDITOR на Free → `409 SEAT_LIMIT_EXCEEDED`.
+- Delete organization → статус `deleted` + каскад soft-delete проектов.
+- Restore project при переполнении → `409 PLAN_LIMIT_EXCEEDED`.
+
+E2E:
+- Organization switcher (переключение, empty/loading/error).
+- Expiry banner для Pro Beta (валид <=14 дней).
+- Restore из `deleted` после 30 дней → `RETENTION_EXPIRED` (ошибка в UI).
 
 ---
 

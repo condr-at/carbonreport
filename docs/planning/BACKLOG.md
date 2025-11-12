@@ -1,6 +1,6 @@
 # Project Backlog
 
-_Last updated: 2025-11-09_
+_Last updated: 2025-11-12_
 
 This backlog captures the remaining work items that were previously tracked in `IMPLEMENTATION_CHECKLIST.md`. Items are grouped by theme and prioritised roughly by impact. Move completed items to version control history or note them in `DEVELOPMENT.md`.
 
@@ -67,3 +67,78 @@ This backlog captures the remaining work items that were previously tracked in `
 - Plan for exports/reporting needs of operations stakeholders.
 
 Track progress by updating this file or referencing linked issues / tickets in your PM tool of choice.
+
+---
+
+## 📚 Epics — Multi‑Org (без Account) & Plans
+
+### Epic: Schema & Migrations
+**Description**: Ввести таблицы/enum/индексы для multi‑org, статусы проектов, assets.
+
+Tasks:
+- Create tables and enums per `docs→ARCHITECTURE.md`.
+  - AC: все таблицы существуют; индексы созданы; миграции применяются на чистой БД.
+  - DoD: миграции в репозитории; проверка `npm run db:migrate` проходит; документировано в `DEVELOPMENT.md`.
+
+### Epic: Org Settings & Switcher
+**Description**: Настройки организации и переключатель в сайдбаре.
+
+Tasks:
+- Implement Organization Switcher UI.
+  - AC: логотип/инициалы, имя, план, `X / limit`; empty/loading/error.
+  - DoD: `UX_GUIDE.md` обновлён; ручной тест сценариев.
+- Settings Profile/Members/Usage/Danger tabs.
+  - AC: формы валидируются; PATCH/GET/DELETE/usage задокументированы.
+  - DoD: unit тесты валидаторов; `API_REFERENCE.md` обновлён.
+
+### Epic: Memberships & Roles
+**Description**: Инвайты/роли/лимиты мест.
+
+Tasks:
+- Invite flow with seat checks.
+  - AC: добавление EDITOR при исчерпанных местах → `409 SEAT_LIMIT_EXCEEDED`.
+  - DoD: unit тесты guard’ов; спецификация в `API_REFERENCE.md`.
+- Role change guard.
+  - AC: смена на EDITOR проверяет лимит; OWNER immutable.
+  - DoD: integration тест.
+
+### Epic: Project Status Lifecycle
+**Description**: Переходы статусов, soft-delete и restore.
+
+Tasks:
+- PATCH status endpoint.
+  - AC: `reported` делает read-only; `active` ограничивается лимитом.
+  - DoD: интеграционный тест.
+- DELETE project (soft).
+  - AC: возврат retention_expires_at.
+  - DoD: тест восстановление → успех.
+- POST restore.
+  - AC: 409 `PLAN_LIMIT_EXCEEDED` и 409 `RETENTION_EXPIRED` случаи.
+  - DoD: e2e сценарий.
+
+### Epic: Uploads & Assets
+Tasks:
+- Signed URL endpoint с валидацией.
+  - AC: >512KB или неподдерживаемый MIME → 413/415.
+  - DoD: тест успешной загрузки + сохранение asset_id.
+
+### Epic: Usage & Limits
+Tasks:
+- Usage endpoint.
+  - AC: возвращает usage + limits + plan_valid_until.
+  - DoD: кэш стратегия описана.
+- Snapshots job.
+  - AC: создаёт запись; несколько запусков — новые строки.
+  - DoD: подтверждено просмотром в БД.
+
+### Epic: API Contracts & Errors
+Tasks:
+- Unified error envelope.
+  - AC: ответы содержат `error` и `code`.
+  - DoD: таблица кодов в `API_REFERENCE.md`.
+
+### Epic: Billing Preparation
+Tasks:
+- Billing playbook.
+  - AC: описаны события планов, expiry downgrade.
+  - DoD: ссылка в README.

@@ -1,6 +1,6 @@
 # Documentation Index
 
-_Last updated: 2025-11-10_
+_Last updated: 2025-11-12_
 
 This folder contains the working documentation for the Carbon Report Platform. The layout was refreshed to reduce duplication and make it easier to find the right reference quickly.
 
@@ -51,6 +51,7 @@ Use the table below when you need to know “why does this file exist?” and th
 | [`API_REFERENCE.md`](./API_REFERENCE.md) | Engineers | REST endpoint definitions, request/response schemas. |
 | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Engineers, Designers | UI components, spacing, accessibility rules. |
 | [`UX_GUIDE.md`](./UX_GUIDE.md) | Product, Design | UX flows, layout templates, page-to-API mapping. |
+| [`BILLING_PLAYBOOK.md`](./BILLING_PLAYBOOK.md) | Engineers, PMs | Эволюция биллинга: история планов, expiry, webhooks, источники usage. |
 | [`IMPLEMENTATION_CHECKLIST.md`](./IMPLEMENTATION_CHECKLIST.md) | Everyone | Ship checklist covering scope, implementation, testing, and rollout gates. |
 | [`planning/ROADMAP.md`](./planning/ROADMAP.md) | PMs, Leads | Phase sequencing, milestones, and dependencies. |
 | [`planning/BACKLOG.md`](./planning/BACKLOG.md) | Engineers, PMs | Prioritized tasks and follow-ups feeding the roadmap phases. |
@@ -81,6 +82,21 @@ Use the table below when you need to know “why does this file exist?” and th
 - UX flows & layouts: [`UX_GUIDE.md`](./UX_GUIDE.md)
 - Components: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)
 - Data contracts: [`API_REFERENCE.md`](./API_REFERENCE.md)
+
+---
+
+## Terminology Consistency
+
+Единые термины и регистры, используемые в коде и документации:
+
+- Роли (`organization_memberships.role`): `OWNER`, `ADMIN`, `EDITOR`, `VIEWER_READONLY`, `VIEWER_VERIFIER`.
+- Статусы проектов (`projects.status`): `active`, `archived`, `reported`, `deleted`.
+- Статусы организаций (`organizations.status`): `active`, `deleted`, `pending_transfer`.
+- Статусы инвайта (`organization_memberships.invite_status`): `pending`, `accepted`, `declined`, `revoked`.
+- Коды планов (`plan_definitions.plan_code`): `free`, `pro_beta`.
+- Коды ошибок API (JSON поле `code`): `PLAN_LIMIT_EXCEEDED`, `SEAT_LIMIT_EXCEEDED`, `RETENTION_EXPIRED`, `VERSION_CONFLICT`, `VALIDATION_ERROR`, `FORBIDDEN`, `NOT_FOUND`, `UPGRADE_NOT_IMPLEMENTED`.
+
+См. также: `docs→ARCHITECTURE.md` (Enums), `docs→API_REFERENCE.md` (таблица ошибок), `docs→BILLING_PLAYBOOK.md` (планы и expiry).
 
 ---
 
