@@ -127,3 +127,76 @@ E2E: переключатель организаций, восстановлен
 Возможность сброса: npm run db:seed:reset.
 Это финальный консолидированный объём того, что реализуем и закладываем. Если нужно изменить терминологию статусов или добавить ещё поля — уточнить до начала миграций.
 
+
+# UPD разъяснения текущего статуса для ИИ АГЕНТА
+## По пунктам брифа (1–18):
+
+Стратегия (multi‑org без Account) — покрыто в docs→ARCHITECTURE.md.
+Планы (Free, Pro Beta) + лимиты + valid_until — покрыто в ARCHITECTURE.md; в API — есть TOC для планов и заглушки апгрейда, UI-часть отражена частично в UX.
+Роли и доступы — матрица прав есть в ARCHITECTURE.md; фичефлаг Verifier — зафиксирован.
+Организации: поля, soft‑delete, retention — покрыто в ARCHITECTURE.md.
+Участники: роли, invite_status, лимиты на editor/verifier — модель описана; в API memberships есть, но нужно перепроверить/довести специфику лимит‑чеков и инвайтов.
+Пользователь/настройки — частично в UX; API user settings обозначены, но дев‑стаб/seed и сценарии в DEVELOPMENT.md пока не отражены.
+Проекты и статусы (active/archived/reported/deleted, restore и лимиты) — концептуально в ARCHITECTURE.md; в API_REFERENCE.md отсутствуют разделы для PATCH status / DELETE / RESTORE.
+Лимиты/usage/проверки — правила и снапшоты есть в ARCHITECTURE.md; usage endpoint в API заявлен в TOC, нужно убедиться, что спецификация полная.
+API — частично: организации, планы, загрузки есть; проекты: Create ок с org и PLAN_LIMIT_EXCEEDED; не хватает Update Status/Delete/Restore и уточнений по invite/usage (см. ниже).
+UX (Switcher, Org Settings, Upgrade) — частично: IA и страницы описаны, но switcher пустой/неполный, нет целостных флоу и состояний disabled/empty/error.
+Uploads/Assets — покрыто (signed URL, типы, валидации) в ARCHITECTURE.md и API uploads.
+Soft‑delete политика — покрыто, каскад для проектов описан.
+Миграции — нет в DEVELOPMENT.md пошаговой DDL/seed‑инструкции и индексов/enum’ов, как требует бриф.
+Guards/middleware — описаны на уровне концепции (assertWithinLimit/assertOrgMembership/getPlan) в ARCHITECTURE.md; в DEV‑гайде нет практики подключения.
+Обновление доков — выполнено частично (ARCHITECTURE, частично UX и API), остальное — в работе.
+Тестирование — частично (в ARCHITECTURE/UX обозначено, но нет детального тест‑плана в DEVELOPMENT.md).
+Открытые вопросы/риски — зафиксированы в ARCHITECTURE.md (нужно синхронизировать).
+Дев‑пользователь/seed — не оформлено в DEVELOPMENT.md.
+
+## Что уже вписано
+
+ARCHITECTURE.md: полный раздел multi‑org (сущности, поля, связи), матрица ролей, планы и лимиты, статусы проектов, soft‑delete, uploads/assets, feature flags, usage/snapshots, риски.
+API_REFERENCE.md:
+Обновлён Create Project: обязательный organization_id, инициализация, ошибки, 409 PLAN_LIMIT_EXCEEDED.
+Присутствуют секции по оргам/планам/мембершипам/загрузкам/датасету (по TOC и выборочным чтениям).
+Но отсутствуют спецификации Update Project Status / Delete Project / Restore Project (хотя в оглавлении перечислены).
+UX_GUIDE.md: крупные разделы IA/страницы/шаблоны есть, но:
+нет оглавления;
+раздел Organization Switcher фактически пуст/дублируется контент;
+нет полноценных user flows (создание организации, инвайт с учётом лимитов, удаление org, восстановление проекта при переполнении лимита) и состояний disabled/empty/error.
+Прочее: ROADMAP.md и BACKLOG.md остаются про Data Requests (не переработаны под Multi‑Org), DEVELOPMENT.md и README.md не обновлены под новые требования, BILLING_PLAYBOOK.md отсутствует.
+
+## Ключевые расхождения с брифом (что нужно доделать)
+
+Документы планирования:
+ROADMAP.md — добавить фазу «Multi‑Org (без Account) & Plans» по этапам из брифа.
+BACKLOG.md — разложить на эпики/задачи с AC/DoD под multi‑org.
+DEV/миграции/тесты:
+DEVELOPMENT.md — DDL/индексы/FK, seed (demo user + 2 org), гайд по ручной смене плана/valid_until, фиче‑флаги, детальный тест‑план (unit/integration/E2E).
+API контракты:
+Проекты: PATCH /projects/:id/status, DELETE /projects/:id, POST /projects/:id/restore — с правилами переходов, проверкой лимитов и кодами ошибок.
+Memberships/Invite — удостовериться в наличии заглушки POST /organizations/:id/invite с payload/ответом; дописать лимит‑чек для editor/verifier.
+Usage — спецификацию GET /organizations/:id/usage (агрегаты + лимиты) довести до полноты.
+План‑апгрейд — явная 501 заглушка с контрактом и полями аудита.
+UX:
+UX_GUIDE.md — оглавление, полноценный раздел Organization Switcher (контент, операции, состояния), новые флоу и состояния ошибок/disabled.
+Биллинг:
+Создать BILLING_PLAYBOOK.md (архитектура будущего биллинга, источники usage, истечения Pro Beta, webhooks, UI апгрейда).
+Индексация/входная точка:
+README.md — обновить индекс, ссылки и «Last updated».
+Терминология:
+Единые термины (роли, планы, статусы, поля планов); добавить мини‑раздел «Terminology Consistency».
+
+## Готовность (оценка)
+
+Архитектура: соответствует брифу (высокая полнота).
+API: частичное соответствие (создание проектов и орг‑блоки есть; статусы/удаление/restore проектов — отсутствуют).
+UX: частичное соответствие (IA есть, но switcher/флоу/состояния требуют дописки).
+Планирование/Dev/Тесты/Биллинг: не соответствует (нужно дописать).
+
+## Что надо дальше (коротко, по текущему ToDo)
+
+Создам docs→BILLING_PLAYBOOK.md.
+Обновлю docs→DEVELOPMENT.md (миграции/seed/фиче‑флаги/тест‑план).
+Перепишу docs→planning→ROADMAP.md и docs→planning→BACKLOG.md под Multi‑Org с AC/DoD.
+Допишу docs→API_REFERENCE.md (status/delete/restore, invite‑stub, usage).
+Приведу в порядок docs→UX_GUIDE.md (оглавление, switcher, user flows, состояния).
+Освежу docs→README.md и добавлю «Terminology Consistency».
+Итог: то, что уже внесено, хорошо закрывает архитектуру и частично API/UX, но для соответствия брифу нужно добить планирование (roadmap/backlog), dev‑гайд с миграциями и тест‑док, биллинговый плейбук и недостающие API/UX разделы.

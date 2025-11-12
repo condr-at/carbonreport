@@ -1,54 +1,184 @@
 # UX Guide & Information Architecture
+## Page Architecture
 
-Complete UX specifications including information architecture, page hierarchy, reusable components, user flows, and navigation patterns for the Carbon Report Platform.
+```mermaid
+graph LR
+  subgraph "Public Pages"
+    A1[/ <br/>Landing Page]
+    A2[/login<br/>Sign in]
+    A3[/register<br/>Sign up]
+    A4[/verify-email<br/>Confirm email]
+    A5[/forgot-password<br/>Reset password]
+  end
 
----
+  subgraph "Protected Pages (require auth)"
+    B1[/dashboard<br/>Home]
+    B2[/contacts<br/>Global address book]
 
-## Table of Contents
+    subgraph "Project Creation Flow"
+      C0[/projects/new<br/>Create project - Step 1]
+      C0a[/projects/new/questionnaire<br/>Questionnaire - optional]
+      C0b[/projects/new/select-reports<br/>Select report types]
+    end
 
-1. [Information Architecture](#information-architecture)
-   - [Site Map](#site-map)
-   - [Layout Templates](#layout-templates)
-   - [Reusable Page Blocks](#reusable-page-blocks)
-   - [Component Hierarchy](#component-hierarchy)
-   - [Page-to-API Mapping](#page-to-api-mapping)
-  2. [Navigation Overview](#navigation-overview)
-    - [Organization Switcher](#organization-switcher)
-  3. [Page Architecture](#page-architecture)
-    - [Organization Settings](#organization-settings)
-    - [User Settings](#user-settings)
-    - [Upgrade Plan Modal](#upgrade-plan-modal)
-  4. [Core User Stories](#core-user-stories)
-    - [Multi-Organization Flows](#multi-organization-flows)
-5. [Navigation Structure](#navigation-structure-header--sidebar)
-6. [Delivery Priorities](#delivery-priorities-mvp)
-7. [Technical Notes](#technical-notes)
+    subgraph "Project Pages"
+      C2[/projects/:id<br/>Project overview]
+      C3[/projects/:id/dataset<br/>Dataset]
+      C5[/projects/:id/roadmap<br/>Roadmap]
+      C6[/projects/:id/reports<br/>Report list]
+      C8[/projects/:id/reports/:reportId<br/>Report editor]
+      C8a[/projects/:id/reports/:reportId/print<br/>Print view]
+      C9[/projects/:id/files<br/>Files]
+    end
 
----
+    subgraph "Settings Pages"
+      D1[/settings<br/>User settings overview]
+      D2[/settings/profile<br/>Profile]
+      D3[/settings/password<br/>Password]
+      D4[/settings/organizations<br/>Organizations list]
+    end
 
-## Information Architecture
+    subgraph "Organization Settings"
+      E1[/settings/organization<br/>Organization profile]
+      E2[/settings/organization/members<br/>Members]
+      E3[/settings/organization/usage<br/>Usage & Limits]
+      E4[/settings/organization/danger<br/>Danger Zone]
+    end
+  end
 
-### Site Map
+  B1 --> C0
+  C0 --> C0a
+  C0 --> C0b
+  C0a --> C0b
+  C0b --> C2
 
+  B1 --> C2
+  B1 --> B2
+
+  C2 --> C3
+  C2 --> C5
+  C2 --> C6
+  C2 --> C9
+
+  C6 --> C8
+  C8 --> C8a
+
+  B1 --> D1
+  D1 --> D2
+  D1 --> D3
+  D1 --> D4
+
+  B1 --> E1
+  E1 --> E2
+  E1 --> E3
+  E1 --> E4
 ```
-Carbon Report Platform
-│
-├── Public (unauthenticated)
-│   ├── Landing (/)
-### Organization Switcher
 
-- **Placement**: top of the authenticated sidebar (above primary navigation) inside `DashboardLayout` and `ProjectLayout`.
-- **Display**: organization logo (or 2-letter initials fallback), organization display name (truncate at 28 characters), and a pill showing plan label (`Free`, `Pro Beta`) plus active project counter `X / limit`.
-- **Dropdown contents**:
-  - Current organization highlighted with checkmark.
-  - Each organization item shows plan pill + `activeProjects/limit` and a tooltip with `Plan valid until` when `plan_valid_until` is set.
-  - Empty state when the user has a single organization: "You only have one organization. Create another to switch contexts."
+### Organization Settings
+
+- **URL**: `/settings/organization`
+- **Tabs**: Profile (default), Members, Usage & Limits, Danger Zone. Persist last tab via query parameter `?tab=` for deep linking.
+- **Header**: organization name, plan pill, `Plan valid until` countdown badge when applicable, primary `Upgrade plan` button (opens modal).
+
+#### Profile Tab
+
+- **Fields**: Display name (required, max 64 chars), Description (optional, 400 chars, shows character counter), Logo upload (square recommendation, PNG/JPEG/SVG ≤512 KB), Slug (read-only token used in URLs), Plan code + Valid until (read-only).
+- **Logo upload flow**: uses `<AvatarUploader />` pattern with the following states:
+  - Empty: initials fallback badge with upload CTA.
+  - Uploading: progress bar with cancel button; disable Save until upload completes.
+  - Success: thumbnail preview with `Replace` and `Remove` buttons.
+  - Error: inline error message (`"Upload failed. Please retry."`) with `Retry` button referencing the signed URL flow.
+- **Validation**: show inline errors for empty name, overlength description, unsupported file type, and size >512 KB. Disable Save when no changes. Success toast `"Organization profile updated."` appears after PATCH.
+
+#### Members Tab
+
+- **Table columns**: Avatar, Name, Email, Role badge, Last active (relative, fallback `—`), Status (Active/Pending). Actions column with `Change role`, `Remove`, `Resend invite`.
+- **Invite flow**: `Invite member` button opens modal with fields `Email` (required), `Role` radio buttons, optional note (future). Show plan usage chip for Editor/Verifier (`"0 / 0 seats available"`). Disable selection when limit reached with tooltip `"Upgrade plan to add more editors."`
+- **Role changes**: inline dropdown; confirm dialog summarises impact (`"This will free an editor seat."`). API errors surface toast with reason (e.g., `PLAN_LIMIT_EXCEEDED`).
+- **Ownership guardrails**: owner row hides Remove button and shows tooltip `"Transfer ownership coming soon."`. Owners can demote Admins, Admins cannot affect Owners.
+- **Empty state**: card with illustration, headline `"Invite teammates"`, copy explaining unlimited viewers on Free plan, and `Invite member` CTA.
+
+#### Usage & Limits Tab
+
+- **Metrics cards**: Active projects, Editors, Verifiers (flagged `Coming soon`), Viewers. Each card displays `current / limit`, progress bar (green <=80%, amber between 80-100%, red on overflow), and tooltip `"Limit from Free plan"`.
+- **Snapshots table**: simple table with `computed_at`, `active_projects`, `active_editors`, `active_verifiers`, `active_viewers`. Future enhancement reserved for charts.
+- **Upgrade CTA**: prominent `Upgrade plan` button plus `Contact support` secondary link (mailto). When plan is expiring (`plan_valid_until` within 14 days) show warning banner `"Pro Beta expires on {date}."`
+- **Error handling**: if usage endpoint fails, show inline banner with `Retry`. Loading state uses skeleton cards.
+
+#### Danger Zone Tab
+
+- **Sections**:
+  - `Delete organization`: explains 30-day retention and that active projects will be marked deleted. Confirmation input requires typing the organization slug; disable button until match.
+  - `Restore projects`: link to `/projects?status=deleted` with helper copy `"You can restore deleted projects here before retention ends."`
+  - `Transfer ownership` placeholder: greyed-out card stating `"Ownership transfer coming soon"`.
+- **Delete flow**: on submit, call DELETE endpoint; show spinner and then success toast `"Organization scheduled for deletion."` followed by redirect to dashboard. If already pending deletion, disable button and display badge `"Scheduled on {date}"`.
+
+### User Settings
+
+- **URL**: `/settings`
+- **Primary layout**: two-column form (fields left, contextual guidance right) on desktop, single column on mobile.
+- **Tabs**: Profile (default), Password, Organizations. Tabs persist using shallow routing (`?tab=`) for deep links.
+
+#### Profile Tab
+
+- **Fields**:
+  - First name (required), Last name (required), Job title (optional, max 64 chars).
+  - Email (read-only with helper text `"Email changes will be available after beta."`).
+  - Timezone select (future; placeholder disabled with tooltip `"Coming soon"`).
+  - Avatar upload button using the same `<AvatarUploader />` component as organization logos.
+- **Actions**: Save button disabled until change detected; `Reset` link reverts unsaved edits. Success toast `"Profile updated."`.
+- **Avatar states**: identical to organization logo (empty, uploading, success, error). Provide crop guidance (square) in helper text.
+
+#### Password Tab
+
+- **Form**: Current password, New password, Confirm password. Submit triggers `POST /api/user/settings/password` (stub until backend ready).
+- **Validation**: show inline errors for mismatch, insufficient complexity, missing fields. Disable submit until validation passes.
+- **Success state**: toast `"Password updated."` and auto-clear inputs. Failure surfaces API message.
+- **Forgot password link**: inline link to `/forgot-password` for fallback.
+
+#### Organizations Tab
+
+- **Content**: list of organizations where user is a member. Each item shows organization logo, name, plan pill, role badge, `Last active` timestamp.
 - **Actions**:
-  - `Create organization` (primary button) → launches modal guiding to `/settings/organization` after creation.
-  - `Manage organization` (secondary button) → navigates to `/settings/organization` with the current org preselected.
-  - Disabled state for `Create organization` never triggers in beta (no org count limit); keep copy ready for future (`Plan upgrade required`).
-- **Error handling**: if the organization list fails to load, show inline error banner with `Retry` button and keep the last successful selection cached client-side.
-- **Accessibility**: dropdown opens on click or keyboard (`Enter`/`Space`), list items focusable with arrow keys, role="menu" semantics, announce plan and usage info as part of item label.
+  - `Open` button → switches context and navigates to organization dashboard.
+  - `Leave organization` (for non-owners) with confirm dialog explaining lost access. Owners see tooltip `"Transfer ownership before leaving."`.
+  - `Create organization` button persists (same as switcher) for quick access.
+- **Empty state**: copy `"You are not a member of any organizations yet."` with `Create organization` CTA.
+
+### User Settings
+
+- **URL**: `/settings`
+- **Primary layout**: two-column form (fields left, contextual guidance right) on desktop, single column on mobile.
+- **Tabs**: Profile (default), Password, Organizations. Tabs persist using shallow routing (`?tab=`) for deep links.
+
+#### Profile Tab
+
+- **Fields**:
+  - First name (required), Last name (required), Job title (optional, max 64 chars).
+  - Email (read-only with helper text `"Email changes will be available after beta."`).
+  - Timezone select (future; placeholder disabled with tooltip `"Coming soon"`).
+  - Avatar upload button using the same `<AvatarUploader />` component as organization logos.
+- **Actions**: Save button disabled until change detected; `Reset` link reverts unsaved edits. Success toast `"Profile updated."`.
+- **Avatar states**: identical to organization logo (empty, uploading, success, error). Provide crop guidance (square) in helper text.
+
+#### Password Tab
+
+- **Form**: Current password, New password, Confirm password. Submit triggers `POST /api/user/settings/password` (stub until backend ready).
+- **Validation**: show inline errors for mismatch, insufficient complexity, missing fields. Disable submit until validation passes.
+- **Success state**: toast `"Password updated."` and auto-clear inputs. Failure surfaces API message.
+- **Forgot password link**: inline link to `/forgot-password` for fallback.
+
+#### Organizations Tab
+
+- **Content**: list of organizations where user is a member. Each item shows organization logo, name, plan pill, role badge, `Last active` timestamp.
+- **Actions**:
+  - `Open` button → switches context and navigates to organization dashboard.
+  - `Leave organization` (for non-owners) with confirm dialog explaining lost access. Owners see tooltip `"Transfer ownership before leaving."`.
+  - `Create organization` button persists (same as switcher) for quick access.
+- **Empty state**: copy `"You are not a member of any organizations yet."` with `Create organization` CTA.
+| `/settings/password` | `POST /api/user/settings/password` | Modal form collects current/new password once backend available. |
+| `/settings/organizations` | `GET /api/organizations`, `POST /api/organizations` | Lists memberships with role tags, provides `Leave organization` (DELETE membership) except for owners. |
+| Upgrade Plan modal | `GET /api/plan-definitions`, `POST /api/organizations/:id/plan/upgrade` (501) | Modal shows plan comparison, contact info, logs intent via 501 endpoint for future billing audit trail. |
 │   ├── Login (/login)
 │   ├── Register (/register)
 │   ├── Email Verification (/verify-email)
@@ -553,9 +683,11 @@ graph TD
     Settings --> Profile[Profile<br/>Name, email, avatar]
     Settings --> Password[Change Password<br/>Update password]
 
-    Dashboard --> Logout[Logout<br/>Sign out]
-    Logout --> Landing
+  Dashboard --> Logout[Logout<br/>Sign out]
+  Logout --> Landing
 ```
+
+### Organization Switcher
 
 ## Page Architecture
 
@@ -579,21 +711,29 @@ graph LR
             C0b[/projects/new/select-reports<br/>Select report types]
         end
 
-        subgraph "Project Pages"
-            C2[/projects/:id<br/>Project overview]
-            C3[/projects/:id/dataset<br/>Dataset]
-            C5[/projects/:id/roadmap<br/>Roadmap]
-            C6[/projects/:id/reports<br/>Report list]
-            C8[/projects/:id/reports/:reportId<br/>Report editor]
-            C8a[/projects/:id/reports/:reportId/print<br/>Print view]
-            C9[/projects/:id/files<br/>Files]
-        end
+    subgraph "Project Pages"
+      C2[/projects/:id<br/>Project overview]
+      C3[/projects/:id/dataset<br/>Dataset]
+      C5[/projects/:id/roadmap<br/>Roadmap]
+      C6[/projects/:id/reports<br/>Report list]
+      C8[/projects/:id/reports/:reportId<br/>Report editor]
+      C8a[/projects/:id/reports/:reportId/print<br/>Print view]
+      C9[/projects/:id/files<br/>Files]
+    end
 
-        subgraph "Settings Pages"
-            D1[/settings<br/>Settings]
-            D2[/settings/profile<br/>Profile]
-            D3[/settings/password<br/>Password]
-        end
+    subgraph "Settings Pages"
+      D1[/settings<br/>User settings overview]
+      D2[/settings/profile<br/>Profile]
+      D3[/settings/password<br/>Password]
+      D4[/settings/organizations<br/>Organizations list]
+    end
+
+    subgraph "Organization Settings"
+      E1[/settings/organization<br/>Organization profile]
+      E2[/settings/organization/members<br/>Members]
+      E3[/settings/organization/usage<br/>Usage & Limits]
+      E4[/settings/organization/danger<br/>Danger Zone]
+    end
     end
 
     B1 --> C0

@@ -1,8 +1,42 @@
 # API Reference
 
 **Version**: 0.0.1  
-**Last Updated**: October 30, 2025  
+**Last Updated**: November 12, 2025  
 **Base URL**: `/api`
+
+---
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Authentication](#authentication)
+3. [Organizations](#organizations)
+  - [Create Organization](#create-organization)
+  - [List Organizations](#list-organizations)
+  - [Get Current Organization](#get-current-organization)
+  - [Update Organization](#update-organization)
+  - [Delete Organization](#delete-organization)
+4. [Organization Plans](#organization-plans)
+  - [List Plan Definitions](#list-plan-definitions)
+  - [Request Plan Upgrade](#request-plan-upgrade)
+5. [Organization Memberships](#organization-memberships)
+  - [List Members](#list-members)
+  - [Invite Member](#invite-member)
+  - [Update Member Role](#update-member-role)
+  - [Remove Member](#remove-member)
+6. [Organization Usage](#organization-usage)
+7. [Uploads](#uploads)
+8. [Projects](#projects)
+  - [List Projects](#list-projects)
+  - [Create Project](#create-project)
+  - [Update Project Status](#update-project-status)
+  - [Delete Project](#delete-project)
+  - [Restore Project](#restore-project)
+9. [Dataset](#dataset)
+10. [Reports](#reports)
+11. [Data Requests](#data-requests)
+12. [User Settings](#user-settings)
+13. [Common Error Codes](#common-error-codes)
 
 ---
 
@@ -32,6 +66,485 @@ For now, endpoints accept `userId` in request body or return all data.
 
 ---
 
+## Organizations
+
+All organization routes require an authenticated user. Role checks are enforced per endpoint as described below. See `docs→ARCHITECTURE.md` for the full domain model.
+
+### Create Organization
+
+```http
+POST /api/organizations
+```
+
+**Auth**: Required (`OWNER` is implied for the creator).  
+**Feature flags**: None.
+
+**Request Body**:
+```json
+{
+  "display_name": "Climate Ops",
+  "description": "Internal footprint team",
+  "logo_asset_id": "6d77dd52-4f08-4d1a-9a5f-09bb7d6f70cf"
+}
+```
+
+- `display_name` — required, 3–64 characters.  
+- `description` — optional, trimmed to 400 characters.  
+- `logo_asset_id` — optional reference to an uploaded asset created via [`POST /api/uploads/sign`](#uploads).
+
+**Response — 201 Created**:
+```json
+{
+  "organization": {
+    "id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+    "slug": "climate-ops",
+    "display_name": "Climate Ops",
+    "description": "Internal footprint team",
+    "plan_code": "free",
+    "plan_assigned_at": "2025-11-12T10:15:00Z",
+    "plan_valid_until": null,
+    "limits": {
+      "max_active_projects": 1,
+      "max_editors": 0,
+      "max_verifiers": 0,
+      "max_viewers": null
+    }
+  }
+}
+```
+
+**Errors**:
+- `400 BAD_REQUEST` — validation failures (missing display name, overlong description).  
+- `409 CONFLICT` — slug collision (very rare; client should retry with a new name).  
+- `413 PAYLOAD_TOO_LARGE` — description exceeds 4 KB after trimming.
+
+### List Organizations
+
+```http
+GET /api/organizations
+```
+
+**Auth**: Required. Returns organizations where the user has an accepted membership.
+
+**Query Params**:
+- `includePending` (boolean, default `false`) — when `true`, include invitations (`invite_status=pending`).
+
+**Response — 200 OK**:
+```json
+{
+  "organizations": [
+    {
+      "id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+      "display_name": "Climate Ops",
+      "plan_label": "Free",
+      "role": "OWNER",
+      "plan_valid_until": null,
+      "active_projects": 1,
+      "limits": {
+        "max_active_projects": 1,
+        "max_editors": 0,
+        "max_verifiers": 0,
+        "max_viewers": null
+      }
+    }
+  ]
+}
+```
+
+**Notes**:
+- The first returned organization becomes the default active organization if the client has no selection cached.  
+- Pending invitations include `invite_status` and omit usage metrics.
+
+### Get Current Organization
+
+```http
+GET /api/organizations/current
+```
+
+**Auth**: Required.  
+**Roles**: Any accepted member (`OWNER`, `ADMIN`, `EDITOR`, `VIEWER_READONLY`, `VIEWER_VERIFIER`).
+
+**Response — 200 OK**:
+```json
+{
+  "organization": {
+    "id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+    "slug": "climate-ops",
+    "display_name": "Climate Ops",
+    "description": "Internal footprint team",
+    "plan": {
+      "code": "free",
+      "label": "Free",
+      "max_active_projects": 1,
+      "max_editors": 0,
+      "max_verifiers": 0,
+      "max_viewers": null,
+      "valid_until": null
+    },
+    "usage": {
+      "active_projects": 1,
+      "active_editors": 0,
+      "active_verifiers": 0,
+      "active_viewers": 3
+    },
+    "feature_flags": {
+      "verifierRoleEnabled": false,
+      "billingUiEnabled": true
+    }
+  }
+}
+```
+
+**Errors**:
+- `404 NOT_FOUND` — active organization id in session no longer exists or user lost access.
+
+### Update Organization
+
+```http
+PATCH /api/organizations/:organizationId
+```
+
+**Auth**: Required.  
+**Roles**: `OWNER` or `ADMIN`.
+
+**Request Body**:
+```json
+{
+  "display_name": "Climate Operations",
+  "description": "Updated copy",
+  "logo_asset_id": "0ebeaf41-7d50-4a47-9e76-5351c1dc54ac"
+}
+```
+
+All properties optional; omit fields that are unchanged.
+
+**Response — 200 OK**:
+```json
+{
+  "organization": {
+    "id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+    "display_name": "Climate Operations",
+    "description": "Updated copy",
+    "logo_asset_id": "0ebeaf41-7d50-4a47-9e76-5351c1dc54ac"
+  }
+}
+```
+
+**Errors**:
+- `400 BAD_REQUEST` — invalid payload (e.g., empty display name).  
+- `403 FORBIDDEN` — caller lacks admin privileges.  
+- `409 CONFLICT` — attempting to reuse a soft-deleted logo asset.
+
+### Delete Organization
+
+```http
+DELETE /api/organizations/:organizationId
+```
+
+**Auth**: Required.  
+**Roles**: `OWNER` only.
+
+**Behaviour**:
+- Sets `status=deleted` and `deleted_at=now()` on the organization.  
+- Cascades soft delete to all projects.  
+- Returns retention deadline (30 days after deletion).  
+- Blocks deletion when there is already a pending deletion.
+
+**Response — 202 Accepted**:
+```json
+{
+  "organization_id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+  "status": "deleted",
+  "retention_expires_at": "2025-12-12T10:15:00Z"
+}
+```
+
+**Errors**:
+- `403 FORBIDDEN` — non-owner or owner attempting to delete while plan upgrade request is processing.  
+- `409 CONFLICT` — organization already marked deleted.  
+- `412 PRECONDITION_FAILED` — organization has no active projects but pending invites still exist (inform user to cancel invites first).
+
+---
+
+## Organization Plans
+
+### List Plan Definitions
+
+```http
+GET /api/plan-definitions
+```
+
+**Auth**: Required.  
+**Roles**: Any authenticated user.
+
+**Response — 200 OK**:
+```json
+{
+  "plans": [
+    {
+      "code": "free",
+      "label": "Free",
+      "description": "Single project workspace",
+      "max_active_projects": 1,
+      "max_editors": 0,
+      "max_verifiers": 0,
+      "max_viewers": null
+    },
+    {
+      "code": "pro_beta",
+      "label": "Pro Beta",
+      "description": "Expanded seats and projects",
+      "max_active_projects": 3,
+      "max_editors": 2,
+      "max_verifiers": 0,
+      "max_viewers": null
+    }
+  ]
+}
+```
+
+### Request Plan Upgrade
+
+```http
+POST /api/organizations/:organizationId/plan/upgrade
+```
+
+**Auth**: Required.  
+**Roles**: `OWNER` or `ADMIN`.  
+**Status**: Placeholder — records intent, returns `501`.
+
+**Request Body**:
+```json
+{
+  "target_plan_code": "pro_beta",
+  "contact_email": "billing@climateops.io",
+  "notes": "Need more editor seats"
+}
+```
+
+**Response — 501 Not Implemented**:
+```json
+{
+  "status": "not_implemented",
+  "message": "Upgrade flow is handled manually during beta.",
+  "ticket_reference": "UPG-2025-11-12-001"
+}
+```
+
+**Side effects**: logs the request (via email or database table) for the support team to follow up manually.
+
+**Errors**:
+- `400 BAD_REQUEST` — unsupported `target_plan_code`.  
+- `409 CONFLICT` — upgrade already pending.
+
+---
+
+## Organization Memberships
+
+### List Members
+
+```http
+GET /api/organizations/:organizationId/members
+```
+
+**Auth**: Required.  
+**Roles**: Any accepted member.
+
+**Query Params**:
+- `status` — optional filter (`pending`, `accepted`).
+- `role` — optional filter (`OWNER`, `ADMIN`, `EDITOR`, `VIEWER_READONLY`, `VIEWER_VERIFIER`).
+
+**Response — 200 OK**:
+```json
+{
+  "members": [
+    {
+      "membership_id": "5c93c2e4-88f6-4db9-8d7a-395e8c06699c",
+      "user_id": "3a4b15c9-2f24-4b65-9a44-4ad697e5dd01",
+      "role": "OWNER",
+      "invite_status": "accepted",
+      "joined_at": "2025-10-01T09:00:00Z",
+      "last_active_at": "2025-11-11T15:45:00Z"
+    }
+  ]
+}
+```
+
+### Invite Member
+
+```http
+POST /api/organizations/:organizationId/invite
+```
+
+**Auth**: Required.  
+**Roles**: `OWNER` or `ADMIN`.
+
+**Request Body**:
+```json
+{
+  "email": "alex@example.com",
+  "role": "EDITOR",
+  "message": "Join us in preparing the CBAM submission."
+}
+```
+
+**Rules**:
+- Editors and verifiers enforce plan limits.  
+- Viewers are unlimited but tracked.  
+- Duplicate pending invites are idempotent (returns existing invite).
+
+**Response — 201 Created**:
+```json
+{
+  "invite": {
+    "membership_id": "c4d88a37-7ace-4c43-b5f4-4b0a0e473930",
+    "email": "alex@example.com",
+    "role": "EDITOR",
+    "invite_status": "pending"
+  }
+}
+```
+
+**Errors**:
+- `409 CONFLICT` — plan limit reached (returns error code `PLAN_LIMIT_EXCEEDED`).  
+- `422 UNPROCESSABLE_ENTITY` — invalid email or role.
+
+### Update Member Role
+
+```http
+PATCH /api/organizations/:organizationId/members/:membershipId
+```
+
+**Auth**: Required.  
+**Roles**: `OWNER` or `ADMIN` (cannot modify owners).
+
+**Request Body**:
+```json
+{
+  "role": "ADMIN"
+}
+```
+
+**Response — 200 OK**:
+```json
+{
+  "membership": {
+    "membership_id": "5c93c2e4-88f6-4db9-8d7a-395e8c06699c",
+    "role": "ADMIN"
+  }
+}
+```
+
+**Errors**:
+- `400 BAD_REQUEST` — missing role.  
+- `403 FORBIDDEN` — attempting to change owner role.  
+- `409 CONFLICT` — plan limit would be exceeded by the new role.
+
+### Remove Member
+
+```http
+DELETE /api/organizations/:organizationId/members/:membershipId
+```
+
+**Auth**: Required.  
+**Roles**: `OWNER` or `ADMIN` (owners cannot remove themselves).
+
+**Response — 204 No Content**
+
+**Errors**:
+- `403 FORBIDDEN` — trying to remove the sole owner.  
+- `404 NOT_FOUND` — membership not found or already removed.
+
+---
+
+## Organization Usage
+
+```http
+GET /api/organizations/:organizationId/usage
+```
+
+**Auth**: Required.  
+**Roles**: Any accepted member.
+
+**Response — 200 OK**:
+```json
+{
+  "organization_id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+  "usage": {
+    "active_projects": 1,
+    "active_editors": 0,
+    "active_verifiers": 0,
+    "active_viewers": 3
+  },
+  "limits": {
+    "max_active_projects": 3,
+    "max_editors": 2,
+    "max_verifiers": 0,
+    "max_viewers": null
+  },
+  "plan_valid_until": "2025-12-15T00:00:00Z"
+}
+```
+
+**Notes**:
+- Endpoint is idempotent and can be polled for dashboards.  
+- Server may respond with cached values (ETag recommended).  
+- Future enhancement: include latest `organization_usage_snapshots` array.
+
+---
+
+## Uploads
+
+### Generate Signed Upload URL
+
+```http
+POST /api/uploads/sign
+```
+
+**Auth**: Required.  
+**Roles**: Any authenticated user (permissions enforced on the consumer route).
+
+**Request Body**:
+```json
+{
+  "resource_type": "org_logo",
+  "file_name": "logo.png",
+  "mime_type": "image/png",
+  "file_size_bytes": 102400
+}
+```
+
+`resource_type` accepts `org_logo` or `user_avatar` (extend as needed).
+
+**Response — 201 Created**:
+```json
+{
+  "upload": {
+    "asset_id": "6d77dd52-4f08-4d1a-9a5f-09bb7d6f70cf",
+    "url": "https://uploads.example.com/signature",
+    "expires_at": "2025-11-12T10:25:00Z",
+    "fields": {
+      "key": "uploads/org_logo/6d77dd52-...",
+      "policy": "base64-policy",
+      "signature": "signature"
+    }
+  }
+}
+```
+
+**Client flow**:
+1. Call this endpoint to obtain signed URL and form fields.  
+2. Upload file directly to storage provider.  
+3. On success, pass `asset_id` to the relevant PATCH endpoint.
+
+**Errors**:
+- `400 BAD_REQUEST` — invalid resource type, missing metadata.  
+- `413 PAYLOAD_TOO_LARGE` — file size exceeds 512 KB.  
+- `415 UNSUPPORTED_MEDIA_TYPE` — MIME type not allowed.  
+- `429 TOO_MANY_REQUESTS` — per-user upload rate limit.
+
+---
+
 ## Projects
 
 ### List Projects
@@ -40,23 +553,35 @@ For now, endpoints accept `userId` in request body or return all data.
 GET /api/projects
 ```
 
-**Response**:
+**Auth**: Required.  
+**Roles**: `OWNER`, `ADMIN`, `EDITOR`, `VIEWER_READONLY`, `VIEWER_VERIFIER` (restricted to organizations the user belongs to).
+
+**Query Params**:
+- `organization_id` — filter projects for a specific organization (defaults to active organization).  
+- `status` — optional filter (`active`, `archived`, `reported`, `deleted`).  
+- `includeDeleted` — boolean, when `true` returns records with status `deleted` (defaults to `false`).
+
+**Response — 200 OK**:
 ```json
 {
   "projects": [
     {
-      "id": "uuid",
-      "name": "Project Name",
-      "status": "ACTIVE" | "ARCHIVED" | "DELETED",
-      "reportsCount": 2,
-      "datasetVersion": 5,
-      "createdAt": "2025-10-12T10:00:00Z"
+      "id": "c51f0790-114f-4b53-83e6-6a63cb9dd2a1",
+      "organization_id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+      "name": "ISO 14067 FY24",
+      "status": "active",
+      "reports_count": 2,
+      "dataset_version": 5,
+      "created_at": "2025-10-12T10:00:00Z",
+      "updated_at": "2025-11-10T08:30:00Z"
     }
   ]
 }
 ```
 
-**Filters**: Currently none (returns all non-deleted projects)
+**Notes**:
+- Endpoint orders results by `updated_at DESC`.  
+- Use pagination (`page`, `pageSize`) once dataset grows (future enhancement).
 
 ---
 
@@ -66,46 +591,51 @@ GET /api/projects
 POST /api/projects
 ```
 
+**Auth**: Required.  
+**Roles**: `OWNER`, `ADMIN`, `EDITOR` within the target organization.
+
 **Request Body**:
 ```json
 {
-  "name": "My New Project",
-  "templateCodes": ["ISO14067", "CBAM"],
-  "userId": "uuid"
+  "organization_id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+  "name": "ISO 14067 FY24",
+  "template_codes": ["ISO14067", "CBAM"]
 }
 ```
 
-**Response**:
+**Initialization**:
+- `status` defaults to `active`.  
+- `dataset` initialises with `{ "data_points": [] }`.  
+- `dataset_version` set to `0`.  
+- `mailto_templates`, `reports`, and `checklist` seeded from template configs.  
+- Owner automatically added as project owner via membership.
+
+**Response — 201 Created**:
 ```json
 {
   "project": {
-    "id": "uuid",
-    "name": "My New Project",
-    "status": "ACTIVE",
-    "datasetVersion": 0,
-    "createdAt": "2025-10-12T10:00:00Z"
+    "id": "c51f0790-114f-4b53-83e6-6a63cb9dd2a1",
+    "organization_id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+    "name": "ISO 14067 FY24",
+    "status": "active",
+    "dataset_version": 0,
+    "created_at": "2025-11-12T10:30:00Z"
   },
   "reports": [
     {
-      "id": "uuid",
-      "templateCode": "ISO14067",
+      "id": "4ee5a9e6-1d80-4cf5-879d-b9a7ef87ec84",
+      "template_code": "ISO14067",
       "completion": 0
     }
   ]
 }
 ```
 
-**Initialization**:
-- `dataset`: `{ data_points: [] }`
-- `datasetVersion`: `0`
-- `mailtoTemplates`: Extracted from template configs
-- `checklist`: `{ items: [] }`
-- Creates Report records for each templateCode
-
-**Validation**:
-- `name`: Min 3 characters
-- `templateCodes`: At least 1 valid code
-- `userId`: Valid UUID
+**Errors**:
+- `400 BAD_REQUEST` — validation errors (missing name, invalid template code).  
+- `403 FORBIDDEN` — user lacks permissions in the target organization.  
+- `404 NOT_FOUND` — organization id not found or soft deleted.  
+- `409 CONFLICT` (`PLAN_LIMIT_EXCEEDED`) — creating the project would exceed `max_active_projects` for the plan.
 
 ---
 
