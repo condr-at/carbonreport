@@ -12,9 +12,14 @@ Complete UX specifications including information architecture, page hierarchy, r
    - [Reusable Page Blocks](#reusable-page-blocks)
    - [Component Hierarchy](#component-hierarchy)
    - [Page-to-API Mapping](#page-to-api-mapping)
-2. [Navigation Overview](#navigation-overview)
-3. [Page Architecture](#page-architecture)
-4. [Core User Stories](#core-user-stories)
+  2. [Navigation Overview](#navigation-overview)
+    - [Organization Switcher](#organization-switcher)
+  3. [Page Architecture](#page-architecture)
+    - [Organization Settings](#organization-settings)
+    - [User Settings](#user-settings)
+    - [Upgrade Plan Modal](#upgrade-plan-modal)
+  4. [Core User Stories](#core-user-stories)
+    - [Multi-Organization Flows](#multi-organization-flows)
 5. [Navigation Structure](#navigation-structure-header--sidebar)
 6. [Delivery Priorities](#delivery-priorities-mvp)
 7. [Technical Notes](#technical-notes)
@@ -30,36 +35,57 @@ Carbon Report Platform
 │
 ├── Public (unauthenticated)
 │   ├── Landing (/)
+### Organization Switcher
+
+- **Placement**: top of the authenticated sidebar (above primary navigation) inside `DashboardLayout` and `ProjectLayout`.
+- **Display**: organization logo (or 2-letter initials fallback), organization display name (truncate at 28 characters), and a pill showing plan label (`Free`, `Pro Beta`) plus active project counter `X / limit`.
+- **Dropdown contents**:
+  - Current organization highlighted with checkmark.
+  - Each organization item shows plan pill + `activeProjects/limit` and a tooltip with `Plan valid until` when `plan_valid_until` is set.
+  - Empty state when the user has a single organization: "You only have one organization. Create another to switch contexts."
+- **Actions**:
+  - `Create organization` (primary button) → launches modal guiding to `/settings/organization` after creation.
+  - `Manage organization` (secondary button) → navigates to `/settings/organization` with the current org preselected.
+  - Disabled state for `Create organization` never triggers in beta (no org count limit); keep copy ready for future (`Plan upgrade required`).
+- **Error handling**: if the organization list fails to load, show inline error banner with `Retry` button and keep the last successful selection cached client-side.
+- **Accessibility**: dropdown opens on click or keyboard (`Enter`/`Space`), list items focusable with arrow keys, role="menu" semantics, announce plan and usage info as part of item label.
 │   ├── Login (/login)
 │   ├── Register (/register)
 │   ├── Email Verification (/verify-email)
 │   └── Forgot Password (/forgot-password)
 │
 └── Protected (authenticated)
-    ├── Dashboard (/dashboard)
-    │   └── Project list with actions
-    │
-    ├── Contacts (/contacts)
-    │   ├── Address book grid
-    │   └── Request history per contact
-    │
-    ├── Project Creation Flow (/projects/new)
-    │   ├── Step 1: Project name
-    │   ├── Step 2 (optional): Questionnaire
-    │   └── Step 3: Select report types
-    │
-    ├── Project Workspace (/projects/:id)
-    │   ├── Overview (/projects/:id) — includes Roadmap
-    │   ├── Dataset (/projects/:id/dataset)
-    │   ├── Reports (/projects/:id/reports)
-    │   │   ├── Report list
-    │   │   └── Report editor (/projects/:id/reports/:reportId)
-    │   │       └── Print view (/projects/:id/reports/:reportId/print)
-    │   └── Files (/projects/:id/files)
-    │
-    └── Settings (/settings)
-        ├── Profile (/settings/profile)
-        └── Password (/settings/password)
+  ├── Dashboard (/dashboard)
+  │   └── Project list with actions
+  │
+  ├── Contacts (/contacts)
+  │   ├── Address book grid
+  │   └── Request history per contact
+  │
+  ├── Project Creation Flow (/projects/new)
+  │   ├── Step 1: Project name
+  │   ├── Step 2 (optional): Questionnaire
+  │   └── Step 3: Select report types
+  │
+  ├── Project Workspace (/projects/:id)
+  │   ├── Overview (/projects/:id) — includes Roadmap
+  │   ├── Dataset (/projects/:id/dataset)
+  │   ├── Reports (/projects/:id/reports)
+  │   │   ├── Report list
+  │   │   └── Report editor (/projects/:id/reports/:reportId)
+  │   │       └── Print view (/projects/:id/reports/:reportId/print)
+  │   └── Files (/projects/:id/files)
+  │
+  ├── Organization Settings (/settings/organization)
+  │   ├── Profile (default tab)
+  │   ├── Members
+  │   ├── Usage & Limits
+  │   └── Danger Zone
+  │
+  └── User Settings (/settings)
+    ├── Profile (/settings/profile)
+    ├── Password (/settings/password)
+    └── Organizations (/settings/organizations)
 ```
 
 ### Layout Templates
