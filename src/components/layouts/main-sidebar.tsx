@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -67,8 +67,26 @@ const organizations: Organization[] = [
 
 export function MainSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { setOpen } = useSidebar();
   const [activeOrganization, setActiveOrganization] = useState<Organization>(organizations[0]);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  useEffect(() => {
+    navigation.forEach((item) => {
+      router.prefetch(item.href);
+    });
+  }, [router]);
+
+  useEffect(() => {
+    if (!pendingHref) {
+      return;
+    }
+
+    if (pathname === pendingHref || pathname?.startsWith(`${pendingHref}/`)) {
+      setPendingHref(null);
+    }
+  }, [pathname, pendingHref]);
 
   return (
     <>
@@ -92,15 +110,40 @@ export function MainSidebar() {
           {navigation.map((item) => {
             const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
             const Icon = item.icon;
+            const isPending = pendingHref === item.href;
+            const isHighlighted = isActive || isPending;
 
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                onClick={() => setOpen(false)}
+                onClick={(event) => {
+                  if (
+                    event.metaKey ||
+                    event.ctrlKey ||
+                    event.shiftKey ||
+                    event.altKey ||
+                    event.button !== 0
+                  ) {
+                    setOpen(false);
+                    return;
+                  }
+
+                  event.preventDefault();
+
+                  if (!isActive) {
+                    setPendingHref(item.href);
+                    router.push(item.href);
+                  } else {
+                    setPendingHref(null);
+                  }
+
+                  setOpen(false);
+                }}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  isActive
+                  isHighlighted
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 )}
