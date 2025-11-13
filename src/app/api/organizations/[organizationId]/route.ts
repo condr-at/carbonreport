@@ -26,11 +26,11 @@ const ORGANIZATION_RETENTION_DAYS = 30
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { organizationId: string } },
+  context: { params: Promise<{ organizationId: string }> },
 ) {
   try {
     const user = await getCurrentUser()
-    const { organizationId } = params
+    const { organizationId } = await context.params
 
     await assertOrgMembership(user.id, organizationId, OrganizationMembershipRole.ADMIN)
 
@@ -98,11 +98,11 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { organizationId: string } },
+  context: { params: Promise<{ organizationId: string }> },
 ) {
   try {
     const user = await getCurrentUser()
-    const { organizationId } = params
+    const { organizationId } = await context.params
 
     await assertOrgMembership(user.id, organizationId, OrganizationMembershipRole.OWNER)
 

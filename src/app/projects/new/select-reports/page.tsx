@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { clearWizardProgress, hasAnyWizardProgress } from '@/lib/wizard-progress';
 import { saveProjectPrefill } from '@/lib/project-prefill';
+import { useOrganizationContext } from '@/lib/organizations/context';
 
 export default function SelectReportsPage() {
   const router = useRouter();
@@ -33,6 +34,8 @@ export default function SelectReportsPage() {
   const [hasStoredProgress, setHasStoredProgress] = useState(false);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const exitTargetRef = useRef<string | null>(null);
+  const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading } = useOrganizationContext();
+  const organizationId = activeOrganizationId ?? currentOrganization?.id ?? null;
 
   useEffect(() => {
     // Load project data from sessionStorage
@@ -65,6 +68,12 @@ export default function SelectReportsPage() {
   useEffect(() => {
     setHasStoredProgress(hasAnyWizardProgress());
   }, []);
+
+  useEffect(() => {
+    if (!organizationsLoading && !organizationId) {
+      router.push('/no-organization');
+    }
+  }, [organizationsLoading, organizationId, router]);
 
   const allTemplates = useMemo(() => getAllReportTemplates(), []);
   const hasSelection = selectedTemplates.length > 0;
@@ -109,6 +118,11 @@ export default function SelectReportsPage() {
       return;
     }
 
+    if (!organizationId) {
+      router.push('/no-organization');
+      return;
+    }
+
     const projectDataStr = sessionStorage.getItem('projectData');
     if (!projectDataStr) {
       router.push('/projects/new');
@@ -150,9 +164,9 @@ export default function SelectReportsPage() {
         },
         body: JSON.stringify({
           id: clientId,
+          organization_id: organizationId,
           name: projectData.name,
-          templateCodes: selectedTemplates,
-          userId: '550e8400-e29b-41d4-a716-446655440000', // Mock user ID
+          template_codes: selectedTemplates,
         }),
       });
 

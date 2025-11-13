@@ -32,11 +32,11 @@ function toSeatResource(role: OrganizationMembershipRole | undefined) {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { organizationId: string } },
+  context: { params: Promise<{ organizationId: string }> },
 ) {
   try {
     const user = await getCurrentUser()
-    const { organizationId } = params
+    const { organizationId } = await context.params
 
     await assertOrgMembership(user.id, organizationId, OrganizationMembershipRole.ADMIN)
 

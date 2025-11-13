@@ -30,11 +30,11 @@ function seatResourceForRole(role: OrganizationMembershipRole) {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { organizationId: string; membershipId: string } },
+  context: { params: Promise<{ organizationId: string; membershipId: string }> },
 ) {
   try {
     const user = await getCurrentUser()
-    const { organizationId, membershipId } = params
+    const { organizationId, membershipId } = await context.params
 
     await assertOrgMembership(user.id, organizationId, OrganizationMembershipRole.ADMIN)
 
@@ -113,11 +113,11 @@ export async function PATCH(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { organizationId: string; membershipId: string } },
+  context: { params: Promise<{ organizationId: string; membershipId: string }> },
 ) {
   try {
     const user = await getCurrentUser()
-    const { organizationId, membershipId } = params
+    const { organizationId, membershipId } = await context.params
 
     const actorMembership = await assertOrgMembership(
       user.id,

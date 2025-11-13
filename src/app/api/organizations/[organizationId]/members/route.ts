@@ -25,11 +25,11 @@ const ROLE_LOOKUP: Record<string, OrganizationMembershipRole> = {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { organizationId: string } },
+  context: { params: Promise<{ organizationId: string }> },
 ) {
   try {
     const user = await getCurrentUser()
-    const { organizationId } = params
+    const { organizationId } = await context.params
 
     await assertOrgMembership(user.id, organizationId)
 

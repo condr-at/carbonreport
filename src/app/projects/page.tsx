@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useOrganizationContext } from '@/lib/organizations/context';
 
 interface Report {
   id: string;
@@ -30,8 +31,9 @@ interface Project {
   name: string;
   status: string;
   reportsCount: number;
-  reports?: Report[];
+  reports: Report[];
   createdAt: string;
+  checklist?: any;
 }
 
 export default function ProjectsPage() {
@@ -39,6 +41,8 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading } = useOrganizationContext();
+  const organizationId = activeOrganizationId ?? currentOrganization?.id ?? null;
   
   // Filter & sort state
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,16 +52,41 @@ export default function ProjectsPage() {
   // Fetch projects
   useEffect(() => {
     async function fetchProjects() {
+      if (organizationsLoading) {
+        return
+      }
+
+      if (!organizationId) {
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        const response = await fetch('/api/projects');
+        const response = await fetch(`/api/projects?organization_id=${organizationId}`);
         
         if (!response.ok) {
           throw new Error('Failed to fetch projects');
         }
         
         const data = await response.json();
-        setProjects(data.projects || []);
+        const normalized = (data.projects || []).map((project: any) => ({
+          id: project.id,
+          name: project.name,
+          status: project.status,
+          reportsCount: project.reports_count ?? project.reports?.length ?? 0,
+          reports: Array.isArray(project.reports)
+            ? project.reports.map((report: any) => ({
+                id: report.id,
+                templateCode: report.template_code,
+                completion: report.completion,
+              }))
+            : [],
+          createdAt: project.created_at,
+          checklist: project.checklist,
+        }));
+        setProjects(normalized);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load projects');
       } finally {
@@ -66,7 +95,13 @@ export default function ProjectsPage() {
     }
 
     fetchProjects();
-  }, []);
+  }, [organizationId, organizationsLoading]);
+
+  useEffect(() => {
+    if (!organizationsLoading && !organizationId) {
+      router.push('/no-organization');
+    }
+  }, [organizationsLoading, organizationId, router]);
 
   // Filter and sort projects
   const filteredProjects = useMemo(() => {

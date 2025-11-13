@@ -10,6 +10,8 @@ import {
 
 type LimitResource = 'project' | 'editor' | 'verifier'
 
+export const PROJECT_RETENTION_DAYS = 30
+
 const ROLE_RANK: Record<OrganizationMembershipRole, number> = {
   [OrganizationMembershipRole.OWNER]: 4,
   [OrganizationMembershipRole.ADMIN]: 3,

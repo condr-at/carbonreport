@@ -1,53 +1,127 @@
-/**
- * API: Projects
- * 
- * GET /api/projects - List all projects
- * POST /api/projects - Create new project
- * 
- * Creates a new project with:
- * - Empty dataset structure
- * - Default mailto templates from selected report templates
- * - datasetVersion = 0
- * - Empty checklist
- */
-
 import { NextRequest, NextResponse } from 'next/server'
-import { Prisma } from '@prisma/client'
-import prisma from '@/lib/db'
 import { z } from 'zod'
+import {
+  OrganizationMembershipInviteStatus,
+  OrganizationMembershipRole,
+  OrganizationStatus,
+  Prisma,
+  ProjectStatus,
+} from '@prisma/client'
+import prisma from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth'
+import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
+import { assertOrgMembership, assertWithinLimit } from '@/lib/server-utils'
 import { getReportTemplate } from '@/lib/report-templates'
 import { createEmptyDataset } from '@/lib/dataset-validation'
 
-// Request schema
 const CreateProjectSchema = z.object({
   id: z.string().uuid().optional(),
-  name: z.string().min(3, 'Project name must be at least 3 characters'),
-  templateCodes: z.array(z.string()).min(1, 'At least one report type is required'),
-  organizationId: z.string().uuid(), // TODO: Resolve from JWT session / active org
-  createdByUserId: z.string().uuid(), // TODO: Get from JWT session
+  organization_id: z.string().uuid(),
+  name: z.string().trim().min(3).max(200),
+  template_codes: z.array(z.string().trim()).min(1),
 })
 
-/**
- * GET /api/projects
- * Returns list of all projects for current user
- * 
- * TODO: Filter by userId from JWT session
- */
-export async function GET() {
+const STATUS_LOOKUP: Record<string, ProjectStatus> = {
+  active: ProjectStatus.ACTIVE,
+  archived: ProjectStatus.ARCHIVED,
+  reported: ProjectStatus.REPORTED,
+  deleted: ProjectStatus.DELETED,
+}
+
+function parseBooleanFlag(value: string | null) {
+  if (!value) return false
+  return value === 'true' || value === '1'
+}
+
+function validationError(message: string, details?: Record<string, unknown>) {
+  return errorResponse(new ApiError(400, 'VALIDATION_ERROR', message, details))
+}
+
+function buildDefaultMailtoTemplate(templateCodes: string[]) {
+  for (const code of templateCodes) {
+    const template = getReportTemplate(code as any)
+    if (template?.mailto) {
+      return {
+        subject: template.mailto.subject,
+        body: template.mailto.body,
+      }
+    }
+  }
+  return null
+}
+
+export async function GET(request: NextRequest) {
   try {
-    // TODO: Get userId from JWT session
-    // For now, return all projects
-    const projects = await prisma.project.findMany({
+    const user = await getCurrentUser()
+    const url = new URL(request.url)
+    const organizationIdFilter = url.searchParams.get('organization_id')
+    const statusParam = url.searchParams.get('status')?.toLowerCase() ?? null
+    const includeDeleted = parseBooleanFlag(url.searchParams.get('includeDeleted'))
+
+    const memberships = await prisma.organizationMembership.findMany({
       where: {
-        deletedAt: null, // Only active projects
+        userId: user.id,
+        inviteStatus: OrganizationMembershipInviteStatus.ACCEPTED,
+        organization: {
+          status: {
+            not: OrganizationStatus.DELETED,
+          },
+        },
       },
       select: {
+        organizationId: true,
+      },
+    })
+
+    if (memberships.length === 0) {
+      return NextResponse.json({ projects: [] })
+    }
+
+    const accessibleOrganizationIds = new Set(memberships.map((membership) => membership.organizationId))
+
+    if (organizationIdFilter && !accessibleOrganizationIds.has(organizationIdFilter)) {
+      throw new ApiError(403, 'FORBIDDEN', 'Access to organization denied')
+    }
+
+    let statusFilter: ProjectStatus | undefined
+    if (statusParam) {
+      statusFilter = STATUS_LOOKUP[statusParam]
+      if (!statusFilter) {
+        return validationError('Unsupported status filter', {
+          status: statusParam,
+        })
+      }
+    }
+
+    const organizationIds = organizationIdFilter
+      ? [organizationIdFilter]
+      : Array.from(accessibleOrganizationIds)
+
+    const where: Prisma.ProjectWhereInput = {
+      organizationId: {
+        in: organizationIds,
+      },
+    }
+
+    if (statusFilter) {
+      where.status = statusFilter
+    } else if (!includeDeleted) {
+      where.status = {
+        not: ProjectStatus.DELETED,
+      }
+    }
+
+    const projects = await prisma.project.findMany({
+      where,
+      select: {
         id: true,
+        organizationId: true,
         name: true,
         status: true,
         createdAt: true,
         datasetVersion: true,
-        checklist: true, // Include checklist for roadmap
+        deletedAt: true,
+        checklist: true,
         reports: {
           select: {
             id: true,
@@ -67,125 +141,135 @@ export async function GET() {
     })
 
     return NextResponse.json({
-      projects: projects.map(p => ({
-        id: p.id,
-        name: p.name,
-        status: p.status,
-        reportsCount: p._count.reports,
-        datasetVersion: p.datasetVersion,
-        createdAt: p.createdAt,
-        checklist: p.checklist, // For roadmap widget
-        reports: p.reports, // For completion calculation
+      projects: projects.map((project) => ({
+        id: project.id,
+        organization_id: project.organizationId,
+        name: project.name,
+        status: project.status,
+        reports_count: project._count.reports,
+        dataset_version: project.datasetVersion,
+        created_at: project.createdAt,
+        deleted_at: project.deletedAt,
+        checklist: project.checklist,
+        reports: project.reports.map((report) => ({
+          id: report.id,
+          template_code: report.templateCode,
+          completion: report.completion,
+        })),
       })),
     })
   } catch (error) {
-    console.error('Error fetching projects:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch projects' },
-      { status: 500 }
-    )
+    return errorResponse(ensureApiError(error, 'Failed to list projects'))
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse and validate request body
-  const body = await request.json()
-  const { id, name, templateCodes, organizationId, createdByUserId } = CreateProjectSchema.parse(body)
+    const user = await getCurrentUser()
+    const payload = await request.json().catch(() => ({}))
+    const parsed = CreateProjectSchema.safeParse(payload)
 
-    // ⚠️ TEMPORARY DEV WORKAROUND - Remove before production!
-    // Auto-create user if doesn't exist (bypasses foreign key constraint for testing)
-    // TODO: Replace with proper JWT session validation (see docs/API_REFERENCE.md)
-    await prisma.user.upsert({
-      where: { id: createdByUserId },
-      update: {},
-      create: {
-        id: createdByUserId,
-        name: 'Dev User',
-        email: 'dev@carbonreport.app',
-        passwordHash: 'dev-hash',
+    if (!parsed.success) {
+      return validationError('Invalid project payload', {
+        issues: parsed.error.flatten(),
+      })
+    }
+
+  const projectIdOverride = parsed.data.id
+  const organizationId = parsed.data.organization_id
+    const name = parsed.data.name
+    const templateCodes = [...new Set(parsed.data.template_codes)]
+
+    const organization = await prisma.organization.findFirst({
+      where: {
+        id: organizationId,
+        status: {
+          not: OrganizationStatus.DELETED,
+        },
+      },
+      select: {
+        id: true,
       },
     })
 
-    // Get default mailto template from first selected report template
-    let defaultMailtoTemplate: { subject: string; body: string } | null = null
-    
-    for (const code of templateCodes) {
-      const template = getReportTemplate(code as any)
-      if (!template) {
-        return NextResponse.json(
-          { error: `Invalid template code: ${code}` },
-          { status: 400 }
-        )
-      }
-
-      // Use mailto template from first report that has one
-      if (template.mailto && !defaultMailtoTemplate) {
-        defaultMailtoTemplate = {
-          subject: template.mailto.subject,
-          body: template.mailto.body,
-        }
-      }
+    if (!organization) {
+      throw new ApiError(404, 'NOT_FOUND', 'Organization not found')
     }
 
-    const projectData: Prisma.ProjectCreateInput = {
-      ...(id ? { id } : {}),
-      organization: { connect: { id: organizationId } },
-      createdBy: { connect: { id: createdByUserId } },
-      name,
-      status: 'ACTIVE',
-      dataset: createEmptyDataset(), // { data_points: [] }
-      datasetVersion: 0, // Optimistic locking counter
-      mailtoTemplate: defaultMailtoTemplate || undefined, // Single project-wide template
-      checklist: {
-        items: [], // Will be populated in background (post-MVP)
-      },
+    await assertOrgMembership(user.id, organizationId, OrganizationMembershipRole.EDITOR)
+    await assertWithinLimit(organizationId, 'project')
+
+    const invalidCode = templateCodes.find((code) => !getReportTemplate(code as any))
+    if (invalidCode) {
+      throw new ApiError(400, 'VALIDATION_ERROR', 'Invalid template code provided', {
+        template_code: invalidCode,
+      })
     }
 
-    const project = await prisma.project.create({
-      data: projectData,
-    })
+    const defaultMailtoTemplate = buildDefaultMailtoTemplate(templateCodes)
+    const dataset = createEmptyDataset()
 
-    // Create report records for selected templates
-    const reports = await Promise.all(
-      templateCodes.map(code =>
-        prisma.report.create({
+    const result = await prisma.$transaction(async (tx) => {
+      const project = await tx.project.create({
+        data: {
+          ...(projectIdOverride ? { id: projectIdOverride } : {}),
+          organizationId,
+          createdByUserId: user.id,
+          name,
+          status: ProjectStatus.ACTIVE,
+          dataset: dataset as Prisma.InputJsonValue,
+          datasetVersion: 0,
+          mailtoTemplate: defaultMailtoTemplate ?? undefined,
+          checklist: {
+            items: [],
+          },
+        },
+      })
+
+      const reports = [] as {
+        id: string
+        templateCode: string
+        completion: number
+      }[]
+
+      for (const code of templateCodes) {
+        const createdReport = await tx.report.create({
           data: {
             projectId: project.id,
             templateCode: code,
             completion: 0,
-            metadata: undefined, // No custom settings yet
+          },
+          select: {
+            id: true,
+            templateCode: true,
+            completion: true,
           },
         })
-      )
-    )
+        reports.push(createdReport)
+      }
 
-    return NextResponse.json({
-      project: {
-        id: project.id,
-        name: project.name,
-        status: project.status,
-        datasetVersion: project.datasetVersion,
-        createdAt: project.createdAt,
-      },
-      reports: reports.map((r) => ({
-        id: r.id,
-        templateCode: r.templateCode,
-        completion: r.completion,
-      })),
+      return { project, reports }
     })
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      )
-    }
 
-    console.error('Error creating project:', error)
     return NextResponse.json(
-      { error: 'Failed to create project' },
-      { status: 500 }
+      {
+        project: {
+          id: result.project.id,
+          organization_id: result.project.organizationId,
+          name: result.project.name,
+          status: result.project.status,
+          dataset_version: result.project.datasetVersion,
+          created_at: result.project.createdAt,
+        },
+        reports: result.reports.map((report) => ({
+          id: report.id,
+          template_code: report.templateCode,
+          completion: report.completion,
+        })),
+      },
+      { status: 201 },
     )
+  } catch (error) {
+    return errorResponse(ensureApiError(error, 'Failed to create project'))
   }
 }

@@ -26,7 +26,7 @@ interface Project {
   name: string;
   status: string;
   reportsCount: number;
-  reports?: Report[];
+  reports: Report[];
   createdAt: string;
 }
 
@@ -39,7 +39,7 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProps) {
   // Calculate overall completion (average of all reports)
   const completion = useMemo(() => {
-    if (!project.reports || project.reports.length === 0) return 0;
+  if (!project.reports || project.reports.length === 0) return 0;
     const total = project.reports.reduce((sum, r) => sum + r.completion, 0);
     return Math.round(total / project.reports.length);
   }, [project.reports]);
@@ -59,7 +59,7 @@ export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProp
       createdAt: project.createdAt,
       reportsCount: project.reportsCount,
       completion,
-      templateCodes: project.reports?.map((report) => report.templateCode) ?? [],
+      templateCodes: project.reports.map((report) => report.templateCode),
       source: 'projects-list',
     });
   }, [project.id, project.name, project.status, project.createdAt, project.reportsCount, project.reports, completion]);

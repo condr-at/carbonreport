@@ -16,7 +16,26 @@ const MOCK_USER = {
 
 async function getProjects() {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/projects`, {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const organizationResponse = await fetch(`${baseUrl}/api/organizations/current`, {
+      cache: 'no-store',
+    })
+
+    if (!organizationResponse.ok) {
+      if (organizationResponse.status !== 404) {
+        console.error('Failed to resolve current organization:', organizationResponse.statusText)
+      }
+      return []
+    }
+
+    const organizationData = await organizationResponse.json()
+    const organizationId = organizationData?.organization?.id
+
+    if (!organizationId) {
+      return []
+    }
+
+    const response = await fetch(`${baseUrl}/api/projects?organization_id=${organizationId}`, {
       cache: 'no-store',
     });
     
@@ -26,7 +45,21 @@ async function getProjects() {
     }
     
     const data = await response.json();
-    return data.projects || [];
+    return (data.projects || []).map((project: any) => ({
+      id: project.id,
+      name: project.name,
+      status: project.status,
+      createdAt: project.created_at,
+      reportsCount: project.reports_count ?? project.reports?.length ?? 0,
+      reports: Array.isArray(project.reports)
+        ? project.reports.map((report: any) => ({
+            id: report.id,
+            templateCode: report.template_code,
+            completion: report.completion,
+          }))
+        : [],
+      checklist: project.checklist,
+    }));
   } catch (error) {
     console.error('Error fetching projects:', error);
     return [];
