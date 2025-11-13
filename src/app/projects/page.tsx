@@ -29,6 +29,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useOrganizationContext } from '@/lib/organizations/context';
 import {
   useProjectsList,
@@ -183,14 +189,39 @@ export default function ProjectsPage() {
     hasActiveProjectsLimit && typeof activeProjectsUsage === 'number' && activeProjectsUsage >= activeProjectsLimit;
 
   const isLoadingInitial = (isLoading || organizationsLoading) && projects.length === 0;
-  const showUsageHint = createDisabled && !isLoadingInitial;
   const totalProjects = projects.length;
 
   const projectsErrorMessage = projectsError instanceof Error ? projectsError.message : 'Failed to load projects';
+  const projectLimitHint =
+    'You have reached the active project limit. Archive or delete an existing project, or upgrade in organization settings.';
+
+  const newProjectAction = createDisabled ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex">
+          <Button disabled>
+            <Plus className="mr-2 h-4 w-4" />
+            New Project
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{projectLimitHint}</p>
+      </TooltipContent>
+    </Tooltip>
+  ) : (
+    <Button asChild>
+      <Link href="/projects/new">
+        <Plus className="mr-2 h-4 w-4" />
+        New Project
+      </Link>
+    </Button>
+  );
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <TooltipProvider delayDuration={150}>
+      <DashboardLayout>
+        <div className="space-y-6">
         <PageHeader
           title="Projects"
           description={
@@ -198,21 +229,7 @@ export default function ProjectsPage() {
               ? `Active projects: ${activeProjectsUsage}/${activeProjectsLimit}`
               : 'Manage all your carbon footprint projects'
           }
-          actions={
-            createDisabled ? (
-              <Button disabled>
-                <Plus className="mr-2 h-4 w-4" />
-                New Project
-              </Button>
-            ) : (
-              <Button asChild>
-                <Link href="/projects/new">
-                  <Plus className="mr-2 h-4 w-4" />
-                  New Project
-                </Link>
-              </Button>
-            )
-          }
+            actions={newProjectAction}
         />
 
         <div className="flex flex-col gap-4 sm:flex-row">
@@ -250,19 +267,6 @@ export default function ProjectsPage() {
           </Select>
         </div>
 
-        {showUsageHint ? (
-          <div className="rounded-lg border border-dashed border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
-            <p className="font-medium">Лимит активных проектов достигнут</p>
-            <p className="mt-1 text-sm">
-              Заархивируйте или удалите проекты, которые вам больше не нужны, или рассмотрите переход на более высокий тариф в разделе{' '}
-              <Link href="/settings/organization" className="font-medium underline">
-                настроек организации
-              </Link>
-              .
-            </p>
-          </div>
-        ) : null}
-
         {isLoadingInitial ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -298,6 +302,7 @@ export default function ProjectsPage() {
               actionLabel="Create Project"
               onAction={() => router.push('/projects/new')}
               actionDisabled={createDisabled}
+              actionTooltip={createDisabled ? projectLimitHint : undefined}
             />
           )
         ) : (
@@ -361,6 +366,7 @@ export default function ProjectsPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </DashboardLayout>
+      </DashboardLayout>
+    </TooltipProvider>
   );
 }

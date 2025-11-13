@@ -146,7 +146,9 @@ export function MainSidebar() {
         ) : (
           <nav className="space-y-1">
             {navigation.map((item) => {
-              const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
+              const isExactMatch = pathname === item.href
+              const isWithinSection = !isExactMatch && pathname?.startsWith(item.href + '/')
+              const isActive = isExactMatch || isWithinSection
               const Icon = item.icon
               const isPending = pendingHref === item.href
               const isHighlighted = pendingHref ? isPending : isActive
@@ -169,7 +171,7 @@ export function MainSidebar() {
 
                     event.preventDefault()
 
-                    if (!isActive) {
+                    if (!isExactMatch) {
                       setPendingHref(item.href)
                       router.push(item.href)
                     } else {
