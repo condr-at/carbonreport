@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/components/layouts/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,6 +16,14 @@ import { DangerZoneTab } from './_components/danger-zone-tab';
 import { CreateOrganizationForm } from './_components/create-organization-form';
 
 export default function OrganizationSettingsPage() {
+  return (
+    <Suspense fallback={<OrganizationSettingsPageFallback />}>
+      <OrganizationSettingsPageContent />
+    </Suspense>
+  );
+}
+
+function OrganizationSettingsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isCreateMode = searchParams.get('mode') === 'create';
@@ -204,5 +212,19 @@ export default function OrganizationSettingsPage() {
       </div>
       {createOrganizationDialog}
     </>
+  );
+}
+
+function OrganizationSettingsPageFallback() {
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Organization Settings" description="Manage workspace profile, seats, and lifecycle." />
+      <Card>
+        <CardContent className="space-y-4 py-10">
+          <Skeleton className="h-10 w-1/3" />
+          <Skeleton className="h-64 w-full" />
+        </CardContent>
+      </Card>
+    </div>
   );
 }
