@@ -94,8 +94,8 @@ export type OrganizationUsageResponse = {
 
 export type CreateOrganizationPayload = {
   display_name: string
-  description?: string | null
-  logo_asset_id?: string | null
+  description?: string
+  logo_asset_id?: string
 }
 
 export type CreateOrganizationResponse = {

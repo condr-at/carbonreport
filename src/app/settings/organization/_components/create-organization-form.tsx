@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ChangeEvent, type FormEventHandler } from 'react'
 import Image from 'next/image'
-import { Loader2, UploadCloud, ArrowLeft, Trash2 } from 'lucide-react'
+import { Loader2, UploadCloud, Trash2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,7 +18,7 @@ type CreateOrganizationFormProps = {
 
 const NAME_MIN_LENGTH = 3
 const NAME_MAX_LENGTH = 64
-const DESCRIPTION_MAX_LENGTH = 4000
+const DESCRIPTION_MAX_LENGTH = 400
 
 function normalizeDescription(value: string) {
   return value.replace(/\r\n/g, '\n')
@@ -49,10 +49,19 @@ export function CreateOrganizationForm({ onCreated, onCancel }: CreateOrganizati
     trimmedName.length < NAME_MIN_LENGTH ||
     trimmedName.length > NAME_MAX_LENGTH
 
-  const nameHelperText =
-    trimmedName.length < NAME_MIN_LENGTH
-      ? `${NAME_MIN_LENGTH - trimmedName.length} more character${NAME_MIN_LENGTH - trimmedName.length === 1 ? '' : 's'} required.`
-      : `${trimmedName.length}/${NAME_MAX_LENGTH} characters.`
+  const nameHelperText = (() => {
+    if (trimmedName.length < NAME_MIN_LENGTH) {
+      const remaining = NAME_MIN_LENGTH - trimmedName.length
+      return `${remaining} more character${remaining === 1 ? '' : 's'} required.`
+    }
+
+    if (trimmedName.length > NAME_MAX_LENGTH) {
+      const excess = trimmedName.length - NAME_MAX_LENGTH
+      return `${excess} character${excess === 1 ? '' : 's'} over the limit.`
+    }
+
+    return `${trimmedName.length}/${NAME_MAX_LENGTH} characters.`
+  })()
 
   const handleLogoSelect = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -105,6 +114,9 @@ export function CreateOrganizationForm({ onCreated, onCancel }: CreateOrganizati
     setDisplayName('')
     setDescription('')
     setLogoAssetId(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current)
       objectUrlRef.current = null
@@ -129,18 +141,33 @@ export function CreateOrganizationForm({ onCreated, onCancel }: CreateOrganizati
       return
     }
 
+    const payload: {
+      display_name: string
+      description?: string
+      logo_asset_id?: string
+    } = {
+      display_name: trimmedName,
+    }
+
+    if (normalizedDescription.length) {
+      payload.description = normalizedDescription
+    }
+
+    if (logoAssetId) {
+      payload.logo_asset_id = logoAssetId
+    }
+
     createMutation.mutate(
-      {
-        display_name: trimmedName,
-        description: normalizedDescription.length ? normalizedDescription : null,
-        logo_asset_id: logoAssetId,
-      },
+      payload,
       {
         onSuccess: (data) => {
           const organizationId = data.organization.id
           setDisplayName('')
           setDescription('')
           setLogoAssetId(null)
+          if (fileInputRef.current) {
+            fileInputRef.current.value = ''
+          }
           if (objectUrlRef.current) {
             URL.revokeObjectURL(objectUrlRef.current)
             objectUrlRef.current = null
@@ -191,13 +218,17 @@ export function CreateOrganizationForm({ onCreated, onCancel }: CreateOrganizati
             </div>
 
             <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleCancel}
+                disabled={createMutation.isPending || isUploading}
+              >
+                Cancel
+              </Button>
               <Button type="submit" disabled={disableSubmit}>
                 {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
                 Create organization
-              </Button>
-              <Button type="button" variant="ghost" onClick={handleCancel} disabled={createMutation.isPending || isUploading}>
-                <ArrowLeft className="mr-2 h-4 w-4" aria-hidden />
-                Cancel
               </Button>
             </div>
           </div>

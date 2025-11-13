@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ProjectCard } from '@/components/blocks/project-card';
 import { EmptyState } from '@/components/blocks/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, FolderOpen, Search } from 'lucide-react';
+import { Plus, FolderOpen, Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useOrganizationContext } from '@/lib/organizations/context';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useUpdateProjectStatus } from '@/lib/data-client/projects';
 
 interface Report {
   id: string;
@@ -41,8 +52,11 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<{ type: 'archive' | 'restore' | 'delete'; projectId: string } | null>(null);
   const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading } = useOrganizationContext();
   const organizationId = activeOrganizationId ?? currentOrganization?.id ?? null;
+  const statusMutation = useUpdateProjectStatus();
+  const isProcessing = statusMutation.isPending;
   
   // Filter & sort state
   const [searchQuery, setSearchQuery] = useState('');
@@ -144,9 +158,94 @@ export default function ProjectsPage() {
   };
 
   const handleArchive = (projectId: string) => {
-    console.log('Archive project:', projectId);
-    // TODO: Implement archiving
+    const target = projects.find((project) => project.id === projectId);
+    if (!target) {
+      return;
+    }
+
+    const type = target.status === 'ARCHIVED' ? 'restore' : 'archive';
+    setPendingAction({ type, projectId });
   };
+
+  const handleDelete = (projectId: string) => {
+    setPendingAction({ type: 'delete', projectId });
+  };
+
+  const closeDialog = () => {
+    if (isProcessing) {
+      return;
+    }
+    setPendingAction(null);
+  };
+
+  const handleConfirmAction = () => {
+    if (!pendingAction) {
+      return;
+    }
+
+    const { projectId, type } = pendingAction;
+    const nextStatus = type === 'archive' ? 'archived' : type === 'restore' ? 'active' : 'deleted';
+
+    statusMutation.mutate(
+      { projectId, status: nextStatus },
+      {
+        onSuccess: (data) => {
+          if (nextStatus === 'deleted') {
+            setProjects((prev) => prev.filter((project) => project.id !== projectId));
+          } else {
+            setProjects((prev) =>
+              prev.map((project) =>
+                project.id === projectId
+                  ? {
+                      ...project,
+                      status: data?.project?.status ?? project.status,
+                    }
+                  : project,
+              ),
+            );
+          }
+          setPendingAction(null);
+        },
+      },
+    );
+  };
+
+  const pendingProject = pendingAction
+    ? projects.find((project) => project.id === pendingAction.projectId) ?? null
+    : null;
+
+  const confirmTitle = pendingAction
+    ? `${pendingAction.type === 'delete' ? 'Delete' : pendingAction.type === 'restore' ? 'Restore' : 'Archive'} project${pendingProject ? ` "${pendingProject.name}"` : ''}?`
+    : '';
+
+  const confirmDescription = (() => {
+    if (!pendingAction) {
+      return '';
+    }
+    if (pendingAction.type === 'delete') {
+      return 'The project will be marked as deleted and can be restored during the retention window.';
+    }
+    if (pendingAction.type === 'restore') {
+      return 'The project will return to your active list.';
+    }
+    return 'Archiving removes the project from the active list without deleting any data. You can restore it later.';
+  })();
+
+  const confirmActionLabel = pendingAction
+    ? pendingAction.type === 'delete'
+      ? 'Delete'
+      : pendingAction.type === 'restore'
+        ? 'Restore'
+        : 'Archive'
+    : 'Confirm';
+
+  const confirmPendingLabel = pendingAction
+    ? pendingAction.type === 'delete'
+      ? 'Deleting...'
+      : pendingAction.type === 'restore'
+        ? 'Restoring...'
+        : 'Archiving...'
+    : 'Working...';
 
   return (
     <DashboardLayout>
@@ -246,6 +345,7 @@ export default function ProjectsPage() {
                   project={project}
                   onDuplicate={handleDuplicate}
                   onArchive={handleArchive}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>
@@ -256,6 +356,41 @@ export default function ProjectsPage() {
             </div>
           </>
         )}
+
+        <AlertDialog
+          open={Boolean(pendingAction)}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeDialog();
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{confirmTitle}</AlertDialogTitle>
+              <AlertDialogDescription>{confirmDescription}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isProcessing} onClick={closeDialog}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                disabled={isProcessing}
+                onClick={handleConfirmAction}
+                className={pendingAction?.type === 'delete' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : undefined}
+              >
+                {isProcessing ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {confirmPendingLabel}
+                  </span>
+                ) : (
+                  confirmActionLabel
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );

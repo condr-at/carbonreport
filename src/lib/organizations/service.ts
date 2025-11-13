@@ -1,6 +1,6 @@
 import prisma from '@/lib/db'
 import { ApiError } from '@/lib/api-error'
-import { AssetType } from '@prisma/client'
+import { AssetType, Prisma, type PrismaClient } from '@prisma/client'
 import { slugify } from '@/lib/slugify'
 
 export async function ensureLogoAsset(assetId: string, userId: string) {
@@ -46,4 +46,48 @@ export async function generateUniqueOrganizationSlug(displayName: string) {
     suffix += 1
     candidate = `${fallbackBase}-${suffix}`
   }
+}
+
+type PlanDefinitionInput = {
+  planCode: string
+  label: string
+  description: string
+  maxActiveProjects: number
+  maxEditors: number
+  maxVerifiers: number
+  maxViewers: number | null
+}
+
+const DEFAULT_PLANS: PlanDefinitionInput[] = [
+  {
+    planCode: 'free',
+    label: 'Free',
+    description: 'Single project workspace',
+    maxActiveProjects: 1,
+    maxEditors: 0,
+    maxVerifiers: 0,
+    maxViewers: null,
+  },
+]
+
+type PrismaExecutor = PrismaClient | Prisma.TransactionClient
+
+export async function ensureDefaultPlans(executor: PrismaExecutor) {
+  await Promise.all(
+    DEFAULT_PLANS.map((plan) =>
+      executor.planDefinition.upsert({
+        where: { planCode: plan.planCode },
+        create: {
+          planCode: plan.planCode,
+          label: plan.label,
+          description: plan.description,
+          maxActiveProjects: plan.maxActiveProjects,
+          maxEditors: plan.maxEditors,
+          maxVerifiers: plan.maxVerifiers,
+          maxViewers: plan.maxViewers,
+        },
+        update: {},
+      }),
+    ),
+  )
 }

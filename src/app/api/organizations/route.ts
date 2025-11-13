@@ -16,6 +16,7 @@ import { getOrganizationUsage } from '@/lib/server-utils'
 import {
   ensureLogoAsset,
   generateUniqueOrganizationSlug,
+  ensureDefaultPlans,
 } from '@/lib/organizations/service'
 
 type MembershipWithOrganization = {
@@ -163,6 +164,8 @@ export async function POST(request: NextRequest) {
 
     try {
       const organization = await prisma.$transaction(async (tx) => {
+        await ensureDefaultPlans(tx)
+
         const created = await tx.organization.create({
           data: {
             slug,
@@ -226,6 +229,7 @@ export async function POST(request: NextRequest) {
       throw error
     }
   } catch (error) {
+    console.error('Failed to create organization', error)
     return errorResponse(ensureApiError(error, 'Failed to create organization'))
   }
 }

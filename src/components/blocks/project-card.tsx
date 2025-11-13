@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, ExternalLink, Copy, Archive } from 'lucide-react';
+import { MoreHorizontal, ExternalLink, Copy, Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -34,17 +34,22 @@ interface ProjectCardProps {
   project: Project;
   onDuplicate?: (projectId: string) => void;
   onArchive?: (projectId: string) => void;
+  onDelete?: (projectId: string) => void;
 }
 
-export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProps) {
+export function ProjectCard({ project, onDuplicate, onArchive, onDelete }: ProjectCardProps) {
   // Calculate overall completion (average of all reports)
   const completion = useMemo(() => {
-  if (!project.reports || project.reports.length === 0) return 0;
+    if (!project.reports || project.reports.length === 0) return 0;
     const total = project.reports.reduce((sum, r) => sum + r.completion, 0);
     return Math.round(total / project.reports.length);
   }, [project.reports]);
 
-  const statusColor = project.status === 'ACTIVE' ? 'default' : 'secondary';
+  const normalizedStatus = project.status?.toUpperCase?.() ?? 'ACTIVE';
+  const isArchived = normalizedStatus === 'ARCHIVED';
+  const statusColor = normalizedStatus === 'ACTIVE' ? 'default' : 'secondary';
+  const ArchiveToggleIcon = isArchived ? ArchiveRestore : Archive;
+  const archiveLabel = isArchived ? 'Restore' : 'Archive';
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -96,10 +101,16 @@ export function ProjectCard({ project, onDuplicate, onArchive }: ProjectCardProp
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => onArchive?.(project.id)}
+              >
+                <ArchiveToggleIcon className="mr-2 h-4 w-4" />
+                {archiveLabel}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDelete?.(project.id)}
                 className="text-destructive"
               >
-                <Archive className="mr-2 h-4 w-4" />
-                Archive
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

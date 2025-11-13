@@ -16,7 +16,27 @@ interface ProjectFetchResult<TProject> {
   project: TProject | null;
 }
 
-async function getProject(id: string): Promise<ProjectFetchResult<any>> {
+interface ProjectReport {
+  id: string;
+  templateCode: string;
+  completion: number;
+}
+
+interface ProjectDetails {
+  id: string;
+  name: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string | null;
+  datasetVersion: number;
+  reports: ProjectReport[];
+  dataset?: {
+    data_points?: unknown[];
+  } | null;
+  checklist?: unknown;
+}
+
+async function getProject(id: string): Promise<ProjectFetchResult<ProjectDetails>> {
   const baseUrl = await getBaseUrl();
 
   try {
@@ -25,8 +45,37 @@ async function getProject(id: string): Promise<ProjectFetchResult<any>> {
     });
 
     if (res.ok) {
-      const project = await res.json();
-      return { status: 'ok', project };
+      const payload = await res.json().catch(() => null);
+      const rawProject = payload?.project;
+
+      if (!rawProject?.id) {
+        console.error(`Project ${id} response missing payload.`);
+        return { status: 'error', project: null };
+      }
+
+      const normalizedReports: ProjectReport[] = Array.isArray(rawProject.reports)
+        ? rawProject.reports
+            .map((report: any) => ({
+              id: report?.id,
+              templateCode: report?.template_code ?? report?.templateCode ?? '',
+              completion: typeof report?.completion === 'number' ? report.completion : 0,
+            }))
+            .filter((report: ProjectReport) => Boolean(report.id))
+        : [];
+
+      const normalized: ProjectDetails = {
+        id: rawProject.id,
+        name: rawProject.name ?? 'Untitled project',
+        status: rawProject.status ?? 'ACTIVE',
+        createdAt: rawProject.created_at ?? rawProject.createdAt ?? new Date().toISOString(),
+        updatedAt: rawProject.updated_at ?? rawProject.updatedAt ?? rawProject.created_at ?? rawProject.createdAt ?? null,
+        datasetVersion: rawProject.dataset_version ?? rawProject.datasetVersion ?? 0,
+        reports: normalizedReports,
+        dataset: rawProject.dataset ?? null,
+        checklist: rawProject.checklist ?? null,
+      };
+
+      return { status: 'ok', project: normalized };
     }
 
     if (res.status === 404) {
@@ -60,7 +109,7 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
   // Calculate completion from reports
   const totalReports = project.reports?.length || 0;
   const avgCompletion = totalReports > 0
-    ? project.reports.reduce((sum: number, r: any) => sum + (r.completion || 0), 0) / totalReports
+    ? project.reports.reduce((sum: number, r: ProjectReport) => sum + (r.completion || 0), 0) / totalReports
     : 0;
 
   // Get incomplete roadmap items
@@ -111,10 +160,14 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
           name: project.name,
           status: project.status,
           createdAt: project.createdAt,
-          updatedAt: project.updatedAt,
+          updatedAt: project.updatedAt ?? project.createdAt,
           datasetVersion: project.datasetVersion,
         }}
-        reports={project.reports}
+        reports={project.reports?.map((report) => ({
+          id: report.id,
+          templateCode: report.templateCode,
+          completion: report.completion,
+        }))}
       />
       <div className="space-y-6">
         {/* Three Columns Layout */}
@@ -147,7 +200,9 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
               <CardContent>
                 <div className="text-2xl font-bold">{totalReports}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {project.reports?.map((r: any) => r.templateCode).join(', ') || 'None'}
+                  {project.reports.length > 0
+                    ? project.reports.map((report) => report.templateCode).join(', ')
+                    : 'None'}
                 </p>
               </CardContent>
             </Card>
