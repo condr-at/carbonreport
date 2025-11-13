@@ -129,6 +129,27 @@ function getLatestDataset(queryClient: ReturnType<typeof useQueryClient>, key: D
   return queryClient.getQueryData<ProjectDataset>(key);
 }
 
+function handleDatasetMutationError(
+  queryClient: ReturnType<typeof useQueryClient>,
+  queryKey: DatasetQueryKey,
+  error: unknown,
+  fallbackMessage: string,
+) {
+  if (error instanceof ApiError) {
+    if (error.code === 'VERSION_CONFLICT') {
+      notifications.error('Dataset changed in another session. Reloaded the latest values, please try again.');
+      void queryClient.invalidateQueries({ queryKey });
+      void queryClient.refetchQueries({ queryKey, type: 'active' });
+      return;
+    }
+
+    notifications.error(error.message);
+    return;
+  }
+
+  notifications.error(fallbackMessage);
+}
+
 export function useUpdateDatasetField(projectId: string) {
   const queryClient = useQueryClient();
   const queryKey = projectKeys.dataset(projectId);
@@ -178,12 +199,9 @@ export function useUpdateDatasetField(projectId: string) {
         queryClient.setQueryData(queryKey, context.snapshot);
       }
 
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : 'Failed to update dataset field.';
-      notifications.error(message);
-      logOptimistic('mutate:error', { action: 'dataset.update', projectId, fieldId: variables.fieldId, error: message });
+      handleDatasetMutationError(queryClient, queryKey, error, 'Failed to update dataset field.');
+      const errorMessage = error instanceof ApiError ? error.message : 'unknown error';
+      logOptimistic('mutate:error', { action: 'dataset.update', projectId, fieldId: variables.fieldId, error: errorMessage });
     },
     onSuccess: (data, variables) => {
       queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
@@ -238,12 +256,14 @@ export function useAddDatasetItem(projectId: string) {
         queryClient.setQueryData(queryKey, context.snapshot);
       }
 
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : 'Failed to add item.';
-      notifications.error(message);
-      logOptimistic('mutate:error', { action: 'dataset.add-item', projectId, repeatableKey: variables.repeatableKey, error: message });
+      handleDatasetMutationError(queryClient, queryKey, error, 'Failed to add item.');
+      const errorMessage = error instanceof ApiError ? error.message : 'unknown error';
+      logOptimistic('mutate:error', {
+        action: 'dataset.add-item',
+        projectId,
+        repeatableKey: variables.repeatableKey,
+        error: errorMessage,
+      });
     },
     onSuccess: (data, variables) => {
       queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
@@ -310,12 +330,14 @@ export function useDeleteDatasetItem(projectId: string) {
         queryClient.setQueryData(queryKey, context.snapshot);
       }
 
-      const message =
-        error instanceof ApiError
-          ? error.message
-          : 'Failed to delete item.';
-      notifications.error(message);
-      logOptimistic('mutate:error', { action: 'dataset.delete-item', projectId, itemId: variables.itemId, error: message });
+      handleDatasetMutationError(queryClient, queryKey, error, 'Failed to delete item.');
+      const errorMessage = error instanceof ApiError ? error.message : 'unknown error';
+      logOptimistic('mutate:error', {
+        action: 'dataset.delete-item',
+        projectId,
+        itemId: variables.itemId,
+        error: errorMessage,
+      });
     },
     onSuccess: (data, variables) => {
       queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {

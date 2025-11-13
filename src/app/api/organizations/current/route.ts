@@ -43,6 +43,11 @@ export async function GET(request: NextRequest) {
         organization: {
           include: {
             plan: true,
+            logoAsset: {
+              select: {
+                url: true,
+              },
+            },
           },
         },
       },
@@ -61,6 +66,8 @@ export async function GET(request: NextRequest) {
         slug: membership.organization.slug,
         display_name: membership.organization.displayName,
         description: membership.organization.description,
+        logo_asset_id: membership.organization.logoAssetId,
+        logo_url: membership.organization.logoUrl ?? membership.organization.logoAsset?.url ?? null,
         plan: {
           code: membership.organization.planCode,
           label: membership.organization.plan.label,
