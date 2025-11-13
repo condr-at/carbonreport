@@ -28,13 +28,21 @@ async function fetchProjectWithReports(id: string) {
 
 export default async function ReportsPage({ params }: PageProps) {
   const { id } = await params;
-  const project = await fetchProjectWithReports(id);
+  const payload = await fetchProjectWithReports(id);
+  const project = payload?.project ?? null;
 
   if (!project) {
     notFound();
   }
 
-  const reports = project.reports ?? [];
+  const reports = Array.isArray(project.reports)
+    ? project.reports.map((report: any) => ({
+        id: report?.id,
+        templateCode: report?.template_code ?? report?.templateCode ?? '',
+        completion: typeof report?.completion === 'number' ? report.completion : 0,
+      }))
+      .filter((r: any) => Boolean(r.id))
+    : [];
 
   return (
     <div className="space-y-6">

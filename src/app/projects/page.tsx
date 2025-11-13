@@ -315,6 +315,7 @@ export default function ProjectsPage() {
                   onDuplicate={handleDuplicate}
                   onArchive={handleArchive}
                   onDelete={handleDelete}
+                  canDuplicate={!createDisabled}
                 />
               ))}
             </div>

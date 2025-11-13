@@ -35,9 +35,10 @@ interface ProjectCardProps {
   onDuplicate?: (projectId: string) => void;
   onArchive?: (projectId: string) => void;
   onDelete?: (projectId: string) => void;
+  canDuplicate?: boolean; // hide duplicate when limit reached
 }
 
-export function ProjectCard({ project, onDuplicate, onArchive, onDelete }: ProjectCardProps) {
+export function ProjectCard({ project, onDuplicate, onArchive, onDelete, canDuplicate = true }: ProjectCardProps) {
   // Calculate overall completion (average of all reports)
   const completion = useMemo(() => {
     if (!project.reports || project.reports.length === 0) return 0;
@@ -92,12 +93,14 @@ export function ProjectCard({ project, onDuplicate, onArchive, onDelete }: Proje
                   Open Project
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDuplicate?.(project.id)}
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                Duplicate
-              </DropdownMenuItem>
+              {canDuplicate && (
+                <DropdownMenuItem
+                  onClick={() => onDuplicate?.(project.id)}
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => onArchive?.(project.id)}

@@ -179,12 +179,13 @@ export function useUpdateDatasetField(projectId: string) {
         return { snapshot: undefined };
       }
 
+      // Optimistically update dataset content but DO NOT bump datasetVersion.
+      // Bumping caused PATCH to send incremented version and triggered false VERSION_CONFLICT.
       const nextDataset = applyDataPointUpdate(snapshot.dataset, variables);
-      const optimisticVersion = snapshot.datasetVersion + 1;
       const optimistic = {
         ...snapshot,
         dataset: nextDataset,
-        datasetVersion: optimisticVersion,
+        // keep datasetVersion unchanged until server increments
         version: Date.now(),
         updatedAt: new Date().toISOString(),
       };
@@ -315,7 +316,7 @@ export function useDeleteDatasetItem(projectId: string) {
         const optimistic = {
           ...snapshot,
           dataset,
-          datasetVersion: snapshot.datasetVersion + 1,
+          // keep datasetVersion unchanged to avoid premature conflict
           version: Date.now(),
           updatedAt: new Date().toISOString(),
         };
