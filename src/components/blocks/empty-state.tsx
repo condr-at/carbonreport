@@ -8,6 +8,7 @@ interface EmptyStateProps {
   description: string
   actionLabel?: string
   onAction?: () => void
+  actionDisabled?: boolean
 }
 
 export function EmptyState({
@@ -16,6 +17,7 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
+  actionDisabled = false,
 }: EmptyStateProps) {
   return (
     <EmptyPlaceholder className="max-w-md py-12">
@@ -26,7 +28,9 @@ export function EmptyState({
       <EmptyPlaceholder.Description>{description}</EmptyPlaceholder.Description>
       {actionLabel && onAction ? (
         <EmptyPlaceholder.Action>
-          <Button onClick={onAction}>{actionLabel}</Button>
+          <Button onClick={actionDisabled ? undefined : onAction} disabled={actionDisabled}>
+            {actionLabel}
+          </Button>
         </EmptyPlaceholder.Action>
       ) : null}
     </EmptyPlaceholder>

@@ -1,16 +1,16 @@
 'use client';
 
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
+import { FolderOpen, Loader2, Plus, Search } from 'lucide-react';
+
+import { ProjectCard } from '@/components/blocks/project-card';
+import { EmptyState } from '@/components/blocks/empty-state';
 import { DashboardLayout } from '@/components/layouts/dashboard-layout';
 import { PageHeader } from '@/components/layouts/page-header';
 import { Button } from '@/components/ui/button';
-import { ProjectCard } from '@/components/blocks/project-card';
-import { EmptyState } from '@/components/blocks/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, FolderOpen, Search, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect, useMemo } from 'react';
 import {
   Select,
   SelectContent,
@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useOrganizationContext } from '@/lib/organizations/context';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,112 +29,54 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useUpdateProjectStatus } from '@/lib/data-client/projects';
+import { useOrganizationContext } from '@/lib/organizations/context';
+import {
+  useProjectsList,
+  useUpdateProjectStatus,
+  type ProjectListViewItem,
+} from '@/lib/data-client/projects';
 
-interface Report {
-  id: string;
-  templateCode: string;
-  completion: number;
-}
-
-interface Project {
-  id: string;
-  name: string;
-  status: string;
-  reportsCount: number;
-  reports: Report[];
-  createdAt: string;
-  checklist?: any;
-}
+type PendingAction = { type: 'archive' | 'restore' | 'delete'; projectId: string } | null;
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<{ type: 'archive' | 'restore' | 'delete'; projectId: string } | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading } = useOrganizationContext();
   const organizationId = activeOrganizationId ?? currentOrganization?.id ?? null;
+
+  const {
+    data: projects = [],
+    isLoading,
+    isFetching,
+    isError,
+    error: projectsError,
+    refetch,
+  } = useProjectsList(organizationId);
+
   const statusMutation = useUpdateProjectStatus();
   const isProcessing = statusMutation.isPending;
-  
-  // Filter & sort state
+
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('date-desc');
 
-  // Fetch projects
-  useEffect(() => {
-    async function fetchProjects() {
-      if (organizationsLoading) {
-        return
-      }
-
-      if (!organizationId) {
-        setProjects([]);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const response = await fetch(`/api/projects?organization_id=${organizationId}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch projects');
-        }
-        
-        const data = await response.json();
-        const normalized = (data.projects || []).map((project: any) => ({
-          id: project.id,
-          name: project.name,
-          status: project.status,
-          reportsCount: project.reports_count ?? project.reports?.length ?? 0,
-          reports: Array.isArray(project.reports)
-            ? project.reports.map((report: any) => ({
-                id: report.id,
-                templateCode: report.template_code,
-                completion: report.completion,
-              }))
-            : [],
-          createdAt: project.created_at,
-          checklist: project.checklist,
-        }));
-        setProjects(normalized);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load projects');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProjects();
-  }, [organizationId, organizationsLoading]);
-
   useEffect(() => {
     if (!organizationsLoading && !organizationId) {
-      router.push('/no-organization');
+      router.replace('/no-organization');
     }
   }, [organizationsLoading, organizationId, router]);
 
-  // Filter and sort projects
   const filteredProjects = useMemo(() => {
-    let result = [...projects];
+    const query = searchQuery.trim().toLowerCase();
+    const targetStatus = statusFilter !== 'all' ? statusFilter.toUpperCase() : null;
 
-    // Search filter
-    if (searchQuery) {
-      result = result.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
+    const result = projects.filter((project) => {
+      const matchesQuery = query ? project.name.toLowerCase().includes(query) : true;
+      const matchesStatus = targetStatus ? project.status === targetStatus : true;
+      return matchesQuery && matchesStatus;
+    });
 
-    // Status filter
-    if (statusFilter !== 'all') {
-      result = result.filter(p => p.status === statusFilter.toUpperCase());
-    }
-
-    // Sort
-    result.sort((a, b) => {
+    return [...result].sort((a, b) => {
       switch (sortBy) {
         case 'name-asc':
           return a.name.localeCompare(b.name);
@@ -143,14 +85,15 @@ export default function ProjectsPage() {
         case 'date-asc':
           return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         case 'date-desc':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         default:
-          return 0;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
     });
-
-    return result;
   }, [projects, searchQuery, statusFilter, sortBy]);
+
+  if (!organizationId && !organizationsLoading) {
+    return null;
+  }
 
   const handleDuplicate = (projectId: string) => {
     console.log('Duplicate project:', projectId);
@@ -189,21 +132,7 @@ export default function ProjectsPage() {
     statusMutation.mutate(
       { projectId, status: nextStatus },
       {
-        onSuccess: (data) => {
-          if (nextStatus === 'deleted') {
-            setProjects((prev) => prev.filter((project) => project.id !== projectId));
-          } else {
-            setProjects((prev) =>
-              prev.map((project) =>
-                project.id === projectId
-                  ? {
-                      ...project,
-                      status: data?.project?.status ?? project.status,
-                    }
-                  : project,
-              ),
-            );
-          }
+        onSuccess: () => {
           setPendingAction(null);
         },
       },
@@ -247,26 +176,48 @@ export default function ProjectsPage() {
         : 'Archiving...'
     : 'Working...';
 
+  const activeProjectsLimit = currentOrganization?.plan?.max_active_projects ?? null;
+  const activeProjectsUsage = currentOrganization?.usage?.active_projects ?? null;
+  const hasActiveProjectsLimit = typeof activeProjectsLimit === 'number';
+  const createDisabled =
+    hasActiveProjectsLimit && typeof activeProjectsUsage === 'number' && activeProjectsUsage >= activeProjectsLimit;
+
+  const isLoadingInitial = (isLoading || organizationsLoading) && projects.length === 0;
+  const showUsageHint = createDisabled && !isLoadingInitial;
+  const totalProjects = projects.length;
+
+  const projectsErrorMessage = projectsError instanceof Error ? projectsError.message : 'Failed to load projects';
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <PageHeader
           title="Projects"
-          description="Manage all your carbon footprint projects"
-          actions={(
-            <Button asChild>
-              <Link href="/projects/new">
+          description={
+            hasActiveProjectsLimit && typeof activeProjectsUsage === 'number'
+              ? `Active projects: ${activeProjectsUsage}/${activeProjectsLimit}`
+              : 'Manage all your carbon footprint projects'
+          }
+          actions={
+            createDisabled ? (
+              <Button disabled>
                 <Plus className="mr-2 h-4 w-4" />
                 New Project
-              </Link>
-            </Button>
-          )}
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link href="/projects/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Project
+                </Link>
+              </Button>
+            )
+          }
         />
 
-        {/* Filters & Search */}
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search projects..."
               value={searchQuery}
@@ -274,7 +225,7 @@ export default function ProjectsPage() {
               className="pl-9"
             />
           </div>
-          
+
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Filter by status" />
@@ -299,8 +250,20 @@ export default function ProjectsPage() {
           </Select>
         </div>
 
-        {/* Content */}
-        {loading ? (
+        {showUsageHint ? (
+          <div className="rounded-lg border border-dashed border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
+            <p className="font-medium">Лимит активных проектов достигнут</p>
+            <p className="mt-1 text-sm">
+              Заархивируйте или удалите проекты, которые вам больше не нужны, или рассмотрите переход на более высокий тариф в разделе{' '}
+              <Link href="/settings/organization" className="font-medium underline">
+                настроек организации
+              </Link>
+              .
+            </p>
+          </div>
+        ) : null}
+
+        {isLoadingInitial ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="space-y-3">
@@ -308,10 +271,10 @@ export default function ProjectsPage() {
               </div>
             ))}
           </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-destructive">{error}</p>
-            <Button onClick={() => window.location.reload()} className="mt-4">
+        ) : isError ? (
+          <div className="py-12 text-center">
+            <p className="text-destructive">{projectsErrorMessage}</p>
+            <Button onClick={() => refetch()} className="mt-4">
               Retry
             </Button>
           </div>
@@ -334,12 +297,13 @@ export default function ProjectsPage() {
               description="Create your first project to get started with carbon reporting"
               actionLabel="Create Project"
               onAction={() => router.push('/projects/new')}
+              actionDisabled={createDisabled}
             />
           )
         ) : (
           <>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredProjects.map((project) => (
+              {filteredProjects.map((project: ProjectListViewItem) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
@@ -349,10 +313,15 @@ export default function ProjectsPage() {
                 />
               ))}
             </div>
-            
-            {/* Results count */}
+
             <div className="text-center text-sm text-muted-foreground">
-              Showing {filteredProjects.length} of {projects.length} projects
+              Showing {filteredProjects.length} of {totalProjects} projects
+              {isFetching ? (
+                <span className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Updating…
+                </span>
+              ) : null}
             </div>
           </>
         )}

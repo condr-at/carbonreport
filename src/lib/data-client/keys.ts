@@ -2,6 +2,8 @@ import type { GlobalRequestFilters } from '@/lib/data-requests/filters';
 
 export const projectKeys = {
   all: ['projects'] as const,
+  list: (organizationId: string | null | undefined = undefined) =>
+    ['projects', 'list', organizationId ?? 'all'] as const,
   detail: (projectId: string) => ['projects', projectId] as const,
   dataset: (projectId: string) => ['projects', projectId, 'dataset'] as const,
   contacts: (projectId: string) => ['projects', projectId, 'contacts'] as const,
