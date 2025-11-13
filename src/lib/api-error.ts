@@ -12,6 +12,7 @@ export type ApiErrorCode =
   | 'CONFLICT'
   | 'UNAUTHORIZED'
   | 'PRECONDITION_FAILED'
+  | 'SERVICE_UNAVAILABLE'
   | 'INTERNAL_ERROR'
 
 export type ApiErrorDetails = Record<string, unknown> | undefined

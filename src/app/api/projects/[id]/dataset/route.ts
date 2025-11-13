@@ -1,23 +1,20 @@
 /**
  * API: Dataset Operations
- * 
- * GET /api/projects/[id]/dataset - Read project dataset
- * PUT /api/projects/[id]/dataset - Update entire dataset (with optimistic locking)
- * PATCH /api/projects/[id]/dataset - Update single data point
- * 
- * Key requirements from docs/Requirements v0.0.1.md:
- * - All data lives in Project.dataset JSONB
- * - Use optimistic locking via dataset_version counter
- * - Validate with Zod schemas from dataset-validation.ts
- * - Validate field identifiers as plain strings
+ *
+ * - GET /api/projects/[id]/dataset
+ * - PUT /api/projects/[id]/dataset
+ * - PATCH /api/projects/[id]/dataset
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import prisma from '@/lib/db'
 import { validateDataset, type Dataset, type DataPoint } from '@/lib/dataset-validation'
-import { z } from 'zod'
+import { getCurrentUser } from '@/lib/auth'
+import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
+import { OrganizationMembershipRole, type Prisma } from '@prisma/client'
+import { requireProjectForDataset } from '@/lib/projects/dataset-guards'
 
-// Schema for PATCH - single field update
 const PatchDataPointSchema = z.object({
   field_id: z.string().min(1, 'field_id is required'),
   item_id: z.string().nullable(),
@@ -25,9 +22,8 @@ const PatchDataPointSchema = z.object({
   datasetVersion: z.number().int().min(0).optional(),
 })
 
-// Request schema for UPDATE
 const UpdateDatasetSchema = z.object({
-  dataset: z.any(), // Will be validated with DatasetSchema
+  dataset: z.any(),
   datasetVersion: z.number().int().min(0),
 })
 
@@ -41,10 +37,7 @@ async function findMissingFieldIds(fieldIds: string[]): Promise<string[]> {
     return []
   }
 
-  const uniqueIds = Array.from(
-    new Set(fieldIds.filter((id) => typeof id === 'string' && id.trim().length > 0))
-  )
-
+  const uniqueIds = Array.from(new Set(fieldIds.filter((id) => id && id.trim().length > 0)))
   if (!uniqueIds.length) {
     return []
   }
@@ -65,131 +58,124 @@ function unknownFieldIdResponse(missingFieldIds: string[]) {
       code: 'UNKNOWN_FIELD_ID',
       fieldIds: missingFieldIds,
     },
-    { status: 400 }
+    { status: 400 },
   )
 }
 
-/**
- * GET /api/projects/[id]/dataset
- * Returns project dataset with current version
- */
+function versionConflictResponse(expected: number, current: number | null) {
+  return errorResponse(
+    new ApiError(409, 'VERSION_CONFLICT', 'Dataset version conflict', {
+      expectedVersion: expected,
+      currentVersion: current,
+    }),
+  )
+}
+
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const user = await getCurrentUser()
     const { id: projectId } = await params
 
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: {
-        id: true,
-        name: true,
-        dataset: true,
-        datasetVersion: true,
-      },
+    const project = await requireProjectForDataset(user.id, projectId, {
+      includeDataset: true,
+      includeName: true,
+      role: OrganizationMembershipRole.VIEWER_READONLY,
     })
 
-    if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      )
-    }
+    const rawDataset = (project.dataset as unknown) ?? { data_points: [] }
 
-    // Validate dataset structure (optional, for safety)
     try {
-      const validatedDataset = validateDataset(project.dataset)
-      
+      const validatedDataset = validateDataset(rawDataset)
       const metadata = buildMetadata(project.datasetVersion)
 
       return NextResponse.json({
         projectId: project.id,
-        projectName: project.name,
+        projectName: project.name ?? 'Project',
         dataset: validatedDataset,
         datasetVersion: project.datasetVersion,
         ...metadata,
       })
     } catch (validationError) {
-      // Dataset is malformed - return as-is with warning
       console.error('Dataset validation failed:', validationError)
       const metadata = buildMetadata(project.datasetVersion)
       return NextResponse.json({
         projectId: project.id,
-        projectName: project.name,
-        dataset: project.dataset,
+        projectName: project.name ?? 'Project',
+        dataset: rawDataset,
         datasetVersion: project.datasetVersion,
         warning: 'Dataset structure validation failed',
         ...metadata,
       })
     }
   } catch (error) {
-    console.error('Error fetching dataset:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch dataset' },
-      { status: 500 }
-    )
+    return errorResponse(ensureApiError(error, 'Failed to fetch dataset'))
   }
 }
 
-/**
- * PUT /api/projects/[id]/dataset
- * Updates dataset with optimistic locking
- * 
- * Requirements:
- * - Validates dataset structure with Zod
- * - Checks datasetVersion to prevent concurrent edits
- * - Increments datasetVersion on successful update
- * - Returns 409 Conflict if version mismatch
- */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const user = await getCurrentUser()
     const { id: projectId } = await params
-    const body = await request.json()
-    
-    // Validate request body
-    const { dataset: rawDataset, datasetVersion: clientVersion } = UpdateDatasetSchema.parse(body)
+    const payload = await request.json().catch(() => ({}))
+    const parsed = UpdateDatasetSchema.safeParse(payload)
 
-    // Validate dataset structure with Zod
+    if (!parsed.success) {
+      return errorResponse(
+        new ApiError(400, 'VALIDATION_ERROR', 'Invalid dataset payload', {
+          issues: parsed.error.flatten(),
+        }),
+      )
+    }
+
+    const project = await requireProjectForDataset(user.id, projectId, {
+      requireWritable: true,
+      role: OrganizationMembershipRole.EDITOR,
+    })
+
+    const { dataset: rawDataset, datasetVersion: clientVersion } = parsed.data
+
+    if (clientVersion !== project.datasetVersion) {
+      return versionConflictResponse(clientVersion, project.datasetVersion)
+    }
+
     let validatedDataset: Dataset
     try {
       validatedDataset = validateDataset(rawDataset)
     } catch (validationError) {
-      return NextResponse.json(
-        { 
-          error: 'Invalid dataset structure', 
-          details: validationError instanceof Error ? validationError.message : 'Unknown error'
-        },
-        { status: 400 }
+      return errorResponse(
+        new ApiError(400, 'VALIDATION_ERROR', 'Invalid dataset structure', {
+          message:
+            validationError instanceof Error ? validationError.message : 'Unknown validation error',
+        }),
       )
     }
 
     const missingFieldIds = await findMissingFieldIds(
-      validatedDataset.data_points.map((dataPoint) => dataPoint.field_id)
+      validatedDataset.data_points.map((dataPoint) => dataPoint.field_id),
     )
 
     if (missingFieldIds.length > 0) {
       return unknownFieldIdResponse(missingFieldIds)
     }
 
-    // Optimistic locking: update only if version matches
     try {
       const updatedProject = await prisma.project.update({
         where: {
           id: projectId,
-          datasetVersion: clientVersion, // This is the key: WHERE clause checks version
+          datasetVersion: clientVersion,
         },
         data: {
-          dataset: validatedDataset as any, // Prisma accepts JSONB as any
-          datasetVersion: { increment: 1 }, // Atomic increment
+          dataset: validatedDataset as unknown as Prisma.InputJsonValue,
+          datasetVersion: { increment: 1 },
         },
         select: {
           id: true,
-          name: true,
-          dataset: true,
           datasetVersion: true,
         },
       })
@@ -199,140 +185,133 @@ export async function PUT(
       return NextResponse.json({
         success: true,
         projectId: updatedProject.id,
-        datasetVersion: updatedProject.datasetVersion, // Return new version
+        datasetVersion: updatedProject.datasetVersion,
         message: 'Dataset updated successfully',
         ...metadata,
       })
-    } catch (prismaError: any) {
-      // Check if update failed due to version mismatch (WHERE clause didn't match)
-      if (prismaError.code === 'P2025') {
-        // P2025 = Record to update not found (version mismatch)
-        return NextResponse.json(
-          { 
-            error: 'Concurrent edit detected', 
-            message: 'Someone else has modified this project. Please reload and try again.',
-            code: 'VERSION_CONFLICT'
-          },
-          { status: 409 } // 409 Conflict
-        )
+    } catch (error: any) {
+      if (error?.code === 'P2025') {
+        const latest = await prisma.project.findUnique({
+          where: { id: projectId },
+          select: { datasetVersion: true },
+        })
+
+        return versionConflictResponse(clientVersion, latest?.datasetVersion ?? null)
       }
-      throw prismaError // Re-throw other errors
+
+      throw error
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
+      return errorResponse(
+        new ApiError(400, 'VALIDATION_ERROR', 'Invalid dataset payload', {
+          issues: error.flatten(),
+        }),
       )
     }
 
-    console.error('Error updating dataset:', error)
-    return NextResponse.json(
-      { error: 'Failed to update dataset' },
-      { status: 500 }
-    )
+    return errorResponse(ensureApiError(error, 'Failed to update dataset'))
   }
 }
 
-/**
- * PATCH /api/projects/[id]/dataset
- * Update a single data point value (more efficient than PUT for single field edits)
- */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const user = await getCurrentUser()
     const { id: projectId } = await params
-    const body = await request.json()
-    
-    // Validate request body
-    const { field_id, item_id, value, datasetVersion } = PatchDataPointSchema.parse(body)
+    const payload = await request.json().catch(() => ({}))
+    const parsed = PatchDataPointSchema.safeParse(payload)
 
-    // Fetch current project
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: {
-        dataset: true,
-        datasetVersion: true,
-      },
-    })
-
-    if (!project) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
-    }
-
-    // Check optimistic locking version if provided
-    if (datasetVersion !== undefined && datasetVersion !== project.datasetVersion) {
-      return NextResponse.json(
-        {
-          error: 'Dataset version conflict. Please refresh and try again.',
-          currentVersion: project.datasetVersion,
-        },
-        { status: 409 }
+    if (!parsed.success) {
+      return errorResponse(
+        new ApiError(400, 'VALIDATION_ERROR', 'Invalid dataset update payload', {
+          issues: parsed.error.flatten(),
+        }),
       )
     }
 
-    const missingFieldIds = await findMissingFieldIds([field_id])
+    const project = await requireProjectForDataset(user.id, projectId, {
+      includeDataset: true,
+      requireWritable: true,
+      role: OrganizationMembershipRole.EDITOR,
+    })
+
+    const { field_id: fieldId, item_id: itemId, value, datasetVersion } = parsed.data
+
+    if (datasetVersion !== undefined && datasetVersion !== project.datasetVersion) {
+      return versionConflictResponse(datasetVersion, project.datasetVersion)
+    }
+
+    const missingFieldIds = await findMissingFieldIds([fieldId])
     if (missingFieldIds.length > 0) {
       return unknownFieldIdResponse(missingFieldIds)
     }
 
-    // Get current dataset
-    const currentDataset = project.dataset as Dataset | null
-    const dataPoints = currentDataset?.data_points || []
+    const currentDataset = (project.dataset as Dataset | null) ?? ({ data_points: [] } as Dataset)
+    const dataPoints = currentDataset.data_points ?? []
 
-    // Find existing data point
     const existingIndex = dataPoints.findIndex(
-      (dp) =>
-        dp.field_id === field_id &&
-        (item_id === null ? dp.item_id === null : dp.item_id === item_id)
+      (dp) => dp.field_id === fieldId && (itemId === null ? dp.item_id === null : dp.item_id === itemId),
     )
 
-    let updatedDataPoint: DataPoint
+    const updatedDataPoint: DataPoint = {
+      field_id: fieldId,
+      item_id: itemId,
+      value,
+    }
 
     if (existingIndex >= 0) {
-      // Update existing
-      updatedDataPoint = { field_id, item_id, value }
       dataPoints[existingIndex] = updatedDataPoint
     } else {
-      // Insert new
-      updatedDataPoint = { field_id, item_id, value }
       dataPoints.push(updatedDataPoint)
     }
 
-    // Update project
-    const updatedProject = await prisma.project.update({
-      where: { id: projectId },
-      data: {
-        dataset: { data_points: dataPoints } as any,
-        datasetVersion: { increment: 1 },
-      },
-      select: {
-        datasetVersion: true,
-      },
-    })
+    try {
+      const updatedProject = await prisma.project.update({
+        where: {
+          id: projectId,
+          datasetVersion: project.datasetVersion,
+        },
+        data: {
+          dataset: { data_points: dataPoints } as unknown as Prisma.InputJsonValue,
+          datasetVersion: { increment: 1 },
+        },
+        select: {
+          datasetVersion: true,
+        },
+      })
 
-    const metadata = buildMetadata(updatedProject.datasetVersion)
+      const metadata = buildMetadata(updatedProject.datasetVersion)
 
-    return NextResponse.json({
-      success: true,
-      datasetVersion: updatedProject.datasetVersion,
-      updatedDataPoint,
-      ...metadata,
-    })
+      return NextResponse.json({
+        success: true,
+        datasetVersion: updatedProject.datasetVersion,
+        updatedDataPoint,
+        ...metadata,
+      })
+    } catch (error: any) {
+      if (error?.code === 'P2025') {
+        const latest = await prisma.project.findUnique({
+          where: { id: projectId },
+          select: { datasetVersion: true },
+        })
+
+        return versionConflictResponse(project.datasetVersion, latest?.datasetVersion ?? null)
+      }
+
+      throw error
+    }
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
+      return errorResponse(
+        new ApiError(400, 'VALIDATION_ERROR', 'Invalid dataset update payload', {
+          issues: error.flatten(),
+        }),
       )
     }
 
-    console.error('Error updating data point:', error)
-    return NextResponse.json(
-      { error: 'Failed to update data point' },
-      { status: 500 }
-    )
+    return errorResponse(ensureApiError(error, 'Failed to update data point'))
   }
 }

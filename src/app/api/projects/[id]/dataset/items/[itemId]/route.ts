@@ -1,12 +1,12 @@
-/**
- * API: Delete Dataset Item
- * 
- * DELETE /api/projects/[id]/dataset/items/[itemId] - Delete all fields with item_id
- */
-
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { OrganizationMembershipRole, type Prisma } from '@prisma/client'
+
+import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
+import { getCurrentUser } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { type Dataset } from '@/lib/dataset-validation'
+import { requireProjectForDataset } from '@/lib/projects/dataset-guards'
 
 function buildMetadata(version: number) {
   const updatedAt = new Date().toISOString()
@@ -19,7 +19,7 @@ async function findMissingFieldIds(fieldIds: string[]): Promise<string[]> {
   }
 
   const uniqueIds = Array.from(
-    new Set(fieldIds.filter((id) => typeof id === 'string' && id.trim().length > 0))
+    new Set(fieldIds.filter((id) => typeof id === 'string' && id.trim().length > 0)),
   )
 
   if (!uniqueIds.length) {
@@ -42,62 +42,51 @@ function unknownFieldIdResponse(missingFieldIds: string[]) {
       code: 'UNKNOWN_FIELD_ID',
       fieldIds: missingFieldIds,
     },
-    { status: 400 }
+    { status: 400 },
   )
 }
 
-/**
- * DELETE /api/projects/[id]/dataset/items/[itemId]
- * Delete all data points with the specified item_id
- */
+function versionConflictResponse(expected: number | undefined, current: number | null) {
+  return errorResponse(
+    new ApiError(409, 'VERSION_CONFLICT', 'Dataset version conflict', {
+      expectedVersion: expected ?? null,
+      currentVersion: current,
+    }),
+  )
+}
+
+const DatasetVersionQuerySchema = z
+  .object({ datasetVersion: z.coerce.number().int().min(0).optional() })
+  .catch(() => ({ datasetVersion: undefined }))
+
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; itemId: string }> }
+  { params }: { params: Promise<{ id: string; itemId: string }> },
 ) {
   try {
+    const user = await getCurrentUser()
     const { id: projectId, itemId } = await params
-    const url = new URL(request.url)
-    const datasetVersionParam = url.searchParams.get('datasetVersion')
-    
-    const datasetVersion = datasetVersionParam
-      ? parseInt(datasetVersionParam, 10)
-      : undefined
 
-    // Fetch current project
-    const project = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: {
-        dataset: true,
-        datasetVersion: true,
-      },
+    const query = DatasetVersionQuerySchema.parse({
+      datasetVersion: request.nextUrl.searchParams.get('datasetVersion'),
     })
 
-    if (!project) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    const project = await requireProjectForDataset(user.id, projectId, {
+      includeDataset: true,
+      requireWritable: true,
+      role: OrganizationMembershipRole.EDITOR,
+    })
+
+    if (query.datasetVersion !== undefined && query.datasetVersion !== project.datasetVersion) {
+      return versionConflictResponse(query.datasetVersion, project.datasetVersion)
     }
 
-    // Check optimistic locking version if provided
-    if (datasetVersion !== undefined && datasetVersion !== project.datasetVersion) {
-      return NextResponse.json(
-        {
-          error: 'Dataset version conflict. Please refresh and try again.',
-          currentVersion: project.datasetVersion,
-        },
-        { status: 409 }
-      )
-    }
-
-    // Get current dataset
-    const currentDataset = project.dataset as Dataset | null
-    const dataPoints = currentDataset?.data_points || []
-
+    const currentDataset = (project.dataset as Dataset | null) ?? ({ data_points: [] } as Dataset)
+    const dataPoints = currentDataset.data_points ?? []
     const targetDataPoints = dataPoints.filter((dp) => dp.item_id === itemId)
 
     if (targetDataPoints.length === 0) {
-      return NextResponse.json(
-        { error: 'Item not found' },
-        { status: 404 }
-      )
+      return errorResponse(new ApiError(404, 'NOT_FOUND', 'Dataset item not found'))
     }
 
     const missingFieldIds = await findMissingFieldIds(targetDataPoints.map((dp) => dp.field_id))
@@ -105,35 +94,53 @@ export async function DELETE(
       return unknownFieldIdResponse(missingFieldIds)
     }
 
-    // Filter out all data points with this item_id
     const filteredDataPoints = dataPoints.filter((dp) => dp.item_id !== itemId)
-    const deletedCount = targetDataPoints.length
 
-    // Update project
-    const updatedProject = await prisma.project.update({
-      where: { id: projectId },
-      data: {
-        dataset: { data_points: filteredDataPoints } as any,
-        datasetVersion: { increment: 1 },
-      },
-      select: {
-        datasetVersion: true,
-      },
-    })
+    try {
+      const updatedProject = await prisma.project.update({
+        where: {
+          id: projectId,
+          datasetVersion: project.datasetVersion,
+        },
+        data: {
+          dataset: { data_points: filteredDataPoints } as unknown as Prisma.InputJsonValue,
+          datasetVersion: { increment: 1 },
+        },
+        select: {
+          datasetVersion: true,
+        },
+      })
 
-    const metadata = buildMetadata(updatedProject.datasetVersion)
+      const metadata = buildMetadata(updatedProject.datasetVersion)
 
-    return NextResponse.json({
-      success: true,
-      datasetVersion: updatedProject.datasetVersion,
-      deletedCount,
-      ...metadata,
-    })
+      return NextResponse.json({
+        success: true,
+        datasetVersion: updatedProject.datasetVersion,
+        deletedCount: targetDataPoints.length,
+        ...metadata,
+      })
+    } catch (error: any) {
+      if (error?.code === 'P2025') {
+        const latest = await prisma.project.findUnique({
+          where: { id: projectId },
+          select: { datasetVersion: true },
+        })
+
+        return versionConflictResponse(query.datasetVersion, latest?.datasetVersion ?? null)
+      }
+
+      throw error
+    }
   } catch (error) {
-    console.error('Error deleting item:', error)
-    return NextResponse.json(
-      { error: 'Failed to delete item' },
-      { status: 500 }
-    )
+    if (error instanceof z.ZodError) {
+      return errorResponse(
+        new ApiError(400, 'VALIDATION_ERROR', 'Invalid dataset version query parameter', {
+          issues: error.flatten(),
+        }),
+      )
+    }
+
+    return errorResponse(ensureApiError(error, 'Failed to delete dataset item'))
   }
 }
+
