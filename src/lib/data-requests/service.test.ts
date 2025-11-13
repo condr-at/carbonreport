@@ -6,7 +6,8 @@ import type { DataRequestSummary } from './types';
 
 type ContactRecord = {
   id: string;
-  userId: string;
+  organizationId: string;
+  createdByUserId: string;
   email: string;
   name: string;
   position: string | null;
@@ -43,8 +44,10 @@ class MockPrismaClient {
 
   contact = {
     findUnique: async ({ where: { id } }: { where: { id: string } }) => this.contacts.get(id) ?? null,
-    findFirst: async ({ where: { userId, email } }: { where: { userId: string; email: string } }) =>
-      Array.from(this.contacts.values()).find((contact) => contact.userId === userId && contact.email === email) ?? null,
+    findFirst: async ({ where: { organizationId, email } }: { where: { organizationId: string; email: string } }) =>
+      Array.from(this.contacts.values()).find(
+        (contact) => contact.organizationId === organizationId && contact.email === email
+      ) ?? null,
     create: async ({ data }: { data: Omit<ContactRecord, 'id'> }) => {
       const record: ContactRecord = {
         id: `contact-${this.contacts.size + 1}`,
@@ -215,6 +218,7 @@ async function submitRequest(mock: MockPrismaClient, input: BulkRequestInput) {
 test('bulk data requests keep only one pending record per field and surface the latest contact', async () => {
   const mock = new MockPrismaClient();
   const projectId = 'project-1';
+  const organizationId = 'org-1';
   const userId = 'user-1';
   const field = {
     dataPointId: 'field-A',
@@ -225,7 +229,8 @@ test('bulk data requests keep only one pending record per field and surface the 
 
   const contactX: ContactRecord = {
     id: 'contact-x',
-    userId,
+    organizationId,
+    createdByUserId: userId,
     email: 'alex@example.com',
     name: 'Alex Rivera',
     position: null,
@@ -233,7 +238,8 @@ test('bulk data requests keep only one pending record per field and surface the 
 
   const contactY: ContactRecord = {
     id: 'contact-y',
-    userId,
+    organizationId,
+    createdByUserId: userId,
     email: 'yara@example.com',
     name: 'Yara Singh',
     position: null,
@@ -244,7 +250,8 @@ test('bulk data requests keep only one pending record per field and surface the 
 
   const baseInput: Omit<BulkRequestInput, 'contact' | 'fields'> = {
     projectId,
-    userId,
+    organizationId,
+    requestedByUserId: userId,
     deadline: null,
     now: undefined,
   };

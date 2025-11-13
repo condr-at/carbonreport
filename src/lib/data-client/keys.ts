@@ -34,9 +34,18 @@ export const featureKeys = {
   flags: ['features'] as const,
 };
 
+export const organizationKeys = {
+  list: (includePending = false) => ['organizations', includePending ? 'with-pending' : 'accepted'] as const,
+  current: (organizationId?: string) => ['organizations', 'current', organizationId ?? 'default'] as const,
+  usage: (organizationId: string) => ['organizations', organizationId, 'usage'] as const,
+  members: (organizationId: string) => ['organizations', organizationId, 'members'] as const,
+  planUpgrade: (organizationId: string) => ['organizations', organizationId, 'plan-upgrade'] as const,
+};
+
 export type QueryKeyFactory =
   typeof projectKeys &
   typeof dataRequestKeys &
   typeof contactsKeys &
   typeof globalRequestsKeys &
-  typeof featureKeys;
+  typeof featureKeys &
+  typeof organizationKeys;

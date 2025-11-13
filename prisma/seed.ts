@@ -1,7 +1,13 @@
 /**
  * Database Seed Script (DB-backed, no CSV dependencies)
  */
-import { Prisma, PrismaClient } from '@prisma/client'
+import {
+  OrganizationMembershipInviteStatus,
+  OrganizationMembershipRole,
+  Prisma,
+  PrismaClient,
+  ProjectStatus,
+} from '@prisma/client'
 import { DATASET_FIELD_SEED } from './seed-data/dataset-fields'
 import { REPORT_TEMPLATE_SEED } from './seed-data/report-templates'
 
@@ -22,6 +28,41 @@ const prisma = new PrismaClient({
     },
   },
 })
+
+const PLAN_DEFINITION_SEED = [
+  {
+    planCode: 'free',
+    label: 'Free',
+    description: 'Single project workspace',
+    maxActiveProjects: 1,
+    maxEditors: 0,
+    maxVerifiers: 0,
+    maxViewers: null,
+  },
+  {
+    planCode: 'pro_beta',
+    label: 'Pro Beta',
+    description: 'Expanded seats and manual billing support',
+    maxActiveProjects: 3,
+    maxEditors: 2,
+    maxVerifiers: 0,
+    maxViewers: null,
+  },
+]
+
+function addDays(base: Date, days: number) {
+  const copy = new Date(base)
+  copy.setUTCDate(copy.getUTCDate() + days)
+  return copy
+}
+
+function slugify(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '')
+}
 
 async function seedReportTemplates() {
   console.log('🧱 Seeding report templates...')
@@ -229,7 +270,12 @@ async function main() {
   await prisma.report.deleteMany()
   await prisma.project.deleteMany()
   await prisma.contact.deleteMany()
+  await prisma.organizationUsageSnapshot.deleteMany()
+  await prisma.organizationMembership.deleteMany()
+  await prisma.organization.deleteMany()
+  await prisma.asset.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.planDefinition.deleteMany()
   await prisma.reportTemplateFieldMapping.deleteMany()
   await prisma.reportTemplateSection.deleteMany()
   await prisma.reportTemplate.deleteMany()
@@ -253,47 +299,164 @@ async function main() {
   })
   console.log(`✅ Seeded ${DATASET_FIELD_SEED.length} definitions`)
 
+  console.log('📦 Seeding plan definitions...')
+  await prisma.planDefinition.createMany({
+    data: PLAN_DEFINITION_SEED.map((plan) => ({
+      planCode: plan.planCode,
+      label: plan.label,
+      description: plan.description,
+      maxActiveProjects: plan.maxActiveProjects,
+      maxEditors: plan.maxEditors,
+      maxVerifiers: plan.maxVerifiers,
+      maxViewers: plan.maxViewers,
+    })),
+  })
+  console.log(`✅ Seeded ${PLAN_DEFINITION_SEED.length} plan definitions`)
+
   await seedReportTemplates()
 
-  console.log('👤 Creating test user...')
-  const user = await prisma.user.create({
+  console.log('👤 Creating demo users...')
+  const demoOwner = await prisma.user.create({
     data: {
-      name: 'John Doe',
-      email: 'john@example.com',
+      name: 'Demo Owner',
+      email: 'demo@carbonreport.local',
       passwordHash: '$2a$10$dummyhash',
       emailVerified: true,
     },
   })
-  console.log(`✅ Created user: ${user.email}`)
 
-  console.log('📇 Creating contacts...')
-  const contact1 = await prisma.contact.create({
+  const editorOne = await prisma.user.create({
     data: {
-      userId: user.id,
+      name: 'Taylor Editor',
+      email: 'editor+1@carbonreport.local',
+      passwordHash: '$2a$10$dummyhash',
+      emailVerified: true,
+    },
+  })
+
+  const editorTwo = await prisma.user.create({
+    data: {
+      name: 'Jordan Editor',
+      email: 'editor+2@carbonreport.local',
+      passwordHash: '$2a$10$dummyhash',
+      emailVerified: true,
+    },
+  })
+
+  const viewerUser = await prisma.user.create({
+    data: {
+      name: 'Casey Viewer',
+      email: 'viewer@carbonreport.local',
+      passwordHash: '$2a$10$dummyhash',
+      emailVerified: true,
+    },
+  })
+  console.log('✅ Users created')
+
+  console.log('🏢 Creating organizations and memberships...')
+  const now = new Date()
+  const freeOrg = await prisma.organization.create({
+    data: {
+      slug: slugify('Free Demo Organization'),
+      displayName: 'Free Demo Organization',
+      description: 'Seed organization for Free plan scenarios.',
+      planCode: 'free',
+      planAssignedAt: now,
+      planValidUntil: null,
+      createdByUserId: demoOwner.id,
+    },
+  })
+
+  const proOrg = await prisma.organization.create({
+    data: {
+      slug: slugify('Pro Beta Demo Organization'),
+      displayName: 'Pro Beta Demo Organization',
+      description: 'Seed organization for Pro Beta plan scenarios.',
+      planCode: 'pro_beta',
+      planAssignedAt: now,
+      planValidUntil: addDays(now, 30),
+      createdByUserId: demoOwner.id,
+    },
+  })
+
+  const acceptedStatus = OrganizationMembershipInviteStatus.ACCEPTED
+  const joinedAt = now
+
+  const memberships = [
+    {
+      organizationId: freeOrg.id,
+      userId: demoOwner.id,
+      role: OrganizationMembershipRole.OWNER,
+    },
+    {
+      organizationId: proOrg.id,
+      userId: demoOwner.id,
+      role: OrganizationMembershipRole.OWNER,
+    },
+    {
+      organizationId: proOrg.id,
+      userId: editorOne.id,
+      role: OrganizationMembershipRole.EDITOR,
+    },
+    {
+      organizationId: proOrg.id,
+      userId: editorTwo.id,
+      role: OrganizationMembershipRole.EDITOR,
+    },
+    {
+      organizationId: proOrg.id,
+      userId: viewerUser.id,
+      role: OrganizationMembershipRole.VIEWER_READONLY,
+    },
+  ]
+
+  for (const membership of memberships) {
+    await prisma.organizationMembership.create({
+      data: {
+        organizationId: membership.organizationId,
+        userId: membership.userId,
+        role: membership.role,
+        inviteStatus: acceptedStatus,
+        invitedByUserId: demoOwner.id,
+        joinedAt,
+        lastActiveAt: joinedAt,
+      },
+    })
+  }
+  console.log('✅ Memberships created')
+
+  console.log('📇 Creating organization contacts...')
+  const freeContact = await prisma.contact.create({
+    data: {
+      organizationId: freeOrg.id,
+      createdByUserId: demoOwner.id,
       name: 'Ivan Petrov',
       position: 'Production Manager',
       email: 'ivan@supplier.com',
     },
   })
-  const contact2 = await prisma.contact.create({
+
+  const proContact = await prisma.contact.create({
     data: {
-      userId: user.id,
+      organizationId: proOrg.id,
+      createdByUserId: demoOwner.id,
       name: 'Maria Garcia',
       position: 'Logistics Coordinator',
       email: 'maria@logistics.com',
     },
   })
-  console.log(`✅ Created contacts: ${contact1.name}, ${contact2.name}`)
+  console.log('✅ Contacts created')
 
   console.log('📁 Creating sample projects...')
-  const project1 = await prisma.project.create({
+  const freeProject = await prisma.project.create({
     data: {
-      userId: user.id,
+      organizationId: freeOrg.id,
+      createdByUserId: demoOwner.id,
       name: 'Electric Bicycle Carbon Assessment',
-      status: 'ACTIVE',
+      status: ProjectStatus.ACTIVE,
       datasetVersion: 0,
-      mailtoTemplate: defaultMailtoTemplate,
-      dataset: createMockDataset('ebike'),
+      mailtoTemplate: defaultMailtoTemplate as Prisma.InputJsonValue,
+      dataset: createMockDataset('ebike') as Prisma.InputJsonValue,
       checklist: {
         items: [
           {
@@ -309,18 +472,19 @@ async function main() {
             dataPointIds: ['material_input_name', 'material_input_amount'],
           },
         ],
-      },
+      } as Prisma.InputJsonValue,
     },
   })
 
-  const project2 = await prisma.project.create({
+  const proProjectPrimary = await prisma.project.create({
     data: {
-      userId: user.id,
+      organizationId: proOrg.id,
+      createdByUserId: demoOwner.id,
       name: 'Steel Components CBAM Report',
-      status: 'ACTIVE',
+      status: ProjectStatus.ACTIVE,
       datasetVersion: 0,
-      mailtoTemplate: defaultMailtoTemplate,
-      dataset: createMockDataset('steel'),
+      mailtoTemplate: defaultMailtoTemplate as Prisma.InputJsonValue,
+      dataset: createMockDataset('steel') as Prisma.InputJsonValue,
       checklist: {
         items: [
           {
@@ -336,46 +500,101 @@ async function main() {
             dataPointIds: ['total_cfp_co2e'],
           },
         ],
-      },
+      } as Prisma.InputJsonValue,
     },
   })
-  console.log(`✅ Created projects: ${project1.name}, ${project2.name}`)
+
+  const proProjectSecondary = await prisma.project.create({
+    data: {
+      organizationId: proOrg.id,
+      createdByUserId: demoOwner.id,
+      name: 'Supply Chain Footprint Pilot',
+      status: ProjectStatus.ARCHIVED,
+      datasetVersion: 0,
+      mailtoTemplate: defaultMailtoTemplate as Prisma.InputJsonValue,
+      dataset: createMockDataset('ebike') as Prisma.InputJsonValue,
+      checklist: {
+        items: [
+          {
+            id: 'cl1',
+            title: 'Draft scope and boundaries',
+            completed: true,
+            dataPointIds: ['system_boundary'],
+          },
+        ],
+      } as Prisma.InputJsonValue,
+    },
+  })
+  console.log('✅ Projects created')
 
   const totalFields = DATASET_FIELD_SEED.length
-  const filledFieldsP1 = (project1.dataset as any).data_points.filter((dp: any) => dp.value && dp.value.trim() !== '').length
-  const filledFieldsP2 = (project2.dataset as any).data_points.filter((dp: any) => dp.value && dp.value.trim() !== '').length
+  const freeFilled = (freeProject.dataset as any).data_points.filter((dp: any) => dp.value && dp.value.trim() !== '').length
+  const proFilled = (proProjectPrimary.dataset as any).data_points.filter((dp: any) => dp.value && dp.value.trim() !== '').length
 
   await prisma.report.create({
     data: {
-      projectId: project1.id,
+      projectId: freeProject.id,
       templateCode: 'ISO14067',
-      metadata: undefined,
-      completion: totalFields ? Math.round((filledFieldsP1 / totalFields) * 100) : 0,
+      completion: totalFields ? Math.round((freeFilled / totalFields) * 100) : 0,
     },
   })
+
   await prisma.report.create({
     data: {
-      projectId: project2.id,
+      projectId: proProjectPrimary.id,
       templateCode: 'CBAM',
-      metadata: undefined,
-      completion: totalFields ? Math.round((filledFieldsP2 / totalFields) * 100) : 0,
+      completion: totalFields ? Math.round((proFilled / totalFields) * 100) : 0,
     },
   })
-  console.log('✅ Created reports with completion metrics')
+
+  console.log('✅ Reports created')
 
   const repeatableField = DATASET_FIELD_SEED.find((f) => f.isRepeatable)
   if (repeatableField) {
     await prisma.dataRequest.create({
       data: {
-        userId: user.id,
-        projectId: project1.id,
-        contactId: contact1.id,
+        userId: demoOwner.id,
+        projectId: freeProject.id,
+        contactId: freeContact.id,
         dataPointId: repeatableField.fieldId,
         externalAccess: false,
       },
     })
-    console.log(`✅ Created data request for field ${repeatableField.fieldId}`)
+
+    await prisma.dataRequest.create({
+      data: {
+        userId: editorOne.id,
+        projectId: proProjectPrimary.id,
+        contactId: proContact.id,
+        dataPointId: repeatableField.fieldId,
+        externalAccess: false,
+      },
+    })
+    console.log(`✅ Created data requests for field ${repeatableField.fieldId}`)
   }
+
+  console.log('📈 Capturing usage snapshots...')
+  await prisma.organizationUsageSnapshot.createMany({
+    data: [
+      {
+        organizationId: freeOrg.id,
+        computedAt: now,
+        activeProjects: 1,
+        activeEditors: 0,
+        activeVerifiers: 0,
+        activeViewers: 0,
+      },
+      {
+        organizationId: proOrg.id,
+        computedAt: now,
+        activeProjects: 1,
+        activeEditors: 2,
+        activeVerifiers: 0,
+        activeViewers: 1,
+      },
+    ],
+  })
+  console.log('✅ Usage snapshots captured')
 
   console.log('✨ Seeding completed!')
 }

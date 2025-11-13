@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
     const project = await prisma.project.findUnique({
       where: { id: payload.projectId },
-      select: { id: true, userId: true },
+      select: { id: true, organizationId: true, createdByUserId: true },
     });
 
     if (!project) {
@@ -68,7 +68,8 @@ export async function POST(request: Request) {
     const plan = await prepareBulk(
       {
         projectId: payload.projectId,
-        userId: project.userId,
+        organizationId: project.organizationId,
+        requestedByUserId: project.createdByUserId,
         contact: payload.contact,
         deadline: deadlineDate,
         fields: payload.fields,

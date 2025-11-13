@@ -264,6 +264,7 @@ Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`
 
 | Context | State | UX Pattern |
 |---------|-------|-----------|
+| App Shell | No accepted organizations | Redirect to `/no-organization` empty state; sidebar navigation disabled; copy instructs users to request an invite before creating a new org. |
 | Org Switcher | Empty | Illustration + CTA `Create organization` |
 | Org Switcher | Loading | 4 skeleton rows |
 | Org Switcher | Error | Inline error banner + Retry |

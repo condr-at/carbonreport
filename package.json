@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts",
+  "db:seed": "tsx prisma/seed.ts",
+  "db:seed:reset": "prisma migrate reset --force --skip-generate",
     "templates:check": "tsx scripts/check-templates.ts",
     "metrics:collect": "tsx scripts/collect-server-timing.ts"
   },

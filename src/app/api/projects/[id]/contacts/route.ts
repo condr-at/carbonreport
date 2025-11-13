@@ -28,7 +28,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
       where: { id },
       select: {
         id: true,
-        userId: true,
+        organizationId: true,
       },
     });
 
@@ -46,7 +46,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
 
     const contacts = await db.contact.findMany({
       where: {
-        userId: project.userId,
+        organizationId: project.organizationId,
         archived: false,
       },
       orderBy: [{ name: 'asc' }],

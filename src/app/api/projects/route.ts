@@ -12,6 +12,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import prisma from '@/lib/db'
 import { z } from 'zod'
 import { getReportTemplate } from '@/lib/report-templates'
@@ -22,7 +23,8 @@ const CreateProjectSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(3, 'Project name must be at least 3 characters'),
   templateCodes: z.array(z.string()).min(1, 'At least one report type is required'),
-  userId: z.string().uuid(), // TODO: Get from JWT session
+  organizationId: z.string().uuid(), // TODO: Resolve from JWT session / active org
+  createdByUserId: z.string().uuid(), // TODO: Get from JWT session
 })
 
 /**
@@ -89,16 +91,16 @@ export async function POST(request: NextRequest) {
   try {
     // Parse and validate request body
   const body = await request.json()
-  const { id, name, templateCodes, userId } = CreateProjectSchema.parse(body)
+  const { id, name, templateCodes, organizationId, createdByUserId } = CreateProjectSchema.parse(body)
 
     // ⚠️ TEMPORARY DEV WORKAROUND - Remove before production!
     // Auto-create user if doesn't exist (bypasses foreign key constraint for testing)
     // TODO: Replace with proper JWT session validation (see docs/API_REFERENCE.md)
     await prisma.user.upsert({
-      where: { id: userId },
+      where: { id: createdByUserId },
       update: {},
       create: {
-        id: userId,
+        id: createdByUserId,
         name: 'Dev User',
         email: 'dev@carbonreport.app',
         passwordHash: 'dev-hash',
@@ -126,20 +128,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create project with proper initialization
-    const project = await prisma.project.create({
-      data: {
-        ...(id ? { id } : {}),
-        userId,
-        name,
-        status: 'ACTIVE',
-        dataset: createEmptyDataset(), // { data_points: [] }
-        datasetVersion: 0, // Optimistic locking counter
-        mailtoTemplate: defaultMailtoTemplate || undefined, // Single project-wide template
-        checklist: {
-          items: [], // Will be populated in background (post-MVP)
-        },
+    const projectData: Prisma.ProjectCreateInput = {
+      ...(id ? { id } : {}),
+      organization: { connect: { id: organizationId } },
+      createdBy: { connect: { id: createdByUserId } },
+      name,
+      status: 'ACTIVE',
+      dataset: createEmptyDataset(), // { data_points: [] }
+      datasetVersion: 0, // Optimistic locking counter
+      mailtoTemplate: defaultMailtoTemplate || undefined, // Single project-wide template
+      checklist: {
+        items: [], // Will be populated in background (post-MVP)
       },
+    }
+
+    const project = await prisma.project.create({
+      data: projectData,
     })
 
     // Create report records for selected templates

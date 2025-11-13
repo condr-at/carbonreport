@@ -108,7 +108,7 @@ export async function getGlobalDataRequests(
         select: {
           id: true,
           name: true,
-          user: {
+          createdBy: {
             select: { name: true },
           },
         },
@@ -150,7 +150,7 @@ export async function getGlobalDataRequests(
       project: {
         id: request.project?.id ?? request.projectId,
         name: request.project?.name ?? null,
-        ownerName: request.project?.user?.name ?? null,
+        ownerName: request.project?.createdBy?.name ?? null,
       },
       contact: request.contact
         ? {

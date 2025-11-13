@@ -21,7 +21,8 @@ export interface BulkContactInput {
 
 export interface BulkRequestInput {
   projectId: string;
-  userId: string;
+  organizationId: string;
+  requestedByUserId: string;
   contact: BulkContactInput;
   deadline: Date | null;
   fields: BulkFieldInput[];
@@ -30,7 +31,8 @@ export interface BulkRequestInput {
 
 export interface BulkWorkPlan {
   projectId: string;
-  userId: string;
+  organizationId: string;
+  requestedByUserId: string;
   contact: Contact;
   deadline: Date | null;
   now: Date;
@@ -101,7 +103,7 @@ const REQUEST_SERIALIZATION_SELECT = Prisma.validator<Prisma.DataRequestSelect>(
     select: {
       id: true,
       name: true,
-      user: {
+      createdBy: {
         select: {
           name: true,
         },
@@ -178,13 +180,14 @@ function fieldKey(fieldId: string, itemId: string | null): string {
 
 async function resolveContact(
   client: PrismaClient,
-  userId: string,
+  organizationId: string,
+  createdByUserId: string,
   contactInput: BulkContactInput
-) {
+): Promise<Contact> {
   if (contactInput.id) {
     const existing = await client.contact.findUnique({ where: { id: contactInput.id } });
 
-    if (!existing || existing.userId !== userId) {
+    if (!existing || existing.organizationId !== organizationId) {
       throw new DataRequestServiceError('Contact not found for current project', 404, 'CONTACT_NOT_FOUND');
     }
 
@@ -195,7 +198,7 @@ async function resolveContact(
 
   const byEmail = await client.contact.findFirst({
     where: {
-      userId,
+      organizationId,
       email: normalizedEmail,
     },
   });
@@ -208,10 +211,12 @@ async function resolveContact(
 
   return client.contact.create({
     data: {
-      userId,
+      organizationId,
+      createdByUserId,
       email: normalizedEmail,
       name: name.length > 0 ? name : normalizedEmail,
       position: null,
+      archived: false,
     },
   });
 }
@@ -244,7 +249,12 @@ export async function prepareBulk(
       }
     }
 
-    const contact = await resolveContact(prisma, input.userId, input.contact);
+    const contact = await resolveContact(
+      prisma,
+      input.organizationId,
+      input.requestedByUserId,
+      input.contact
+    );
 
     const activeRequests = uniqueFields.size
       ? await prisma.dataRequest.findMany({
@@ -274,7 +284,7 @@ export async function prepareBulk(
       insertRows.push({
         id: randomUUID(),
         projectId: input.projectId,
-        userId: input.userId,
+  userId: input.requestedByUserId,
         contactId: contact.id,
         dataPointId: field.dataPointId,
         itemId: field.itemId,
@@ -285,7 +295,8 @@ export async function prepareBulk(
 
     return {
       projectId: input.projectId,
-      userId: input.userId,
+      organizationId: input.organizationId,
+      requestedByUserId: input.requestedByUserId,
       contact,
       deadline: input.deadline,
       now,
@@ -697,7 +708,7 @@ export function serializeRequestRecord(
     ? {
         id: request.projectId,
         name: request.project.name ?? null,
-        ownerName: request.project.user?.name ?? null,
+        ownerName: request.project.createdBy?.name ?? null,
       }
     : {
         id: request.projectId,

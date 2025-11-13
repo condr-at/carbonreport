@@ -37,7 +37,7 @@ export async function getProjectSummary(
       createdAt: true,
       datasetVersion: true,
       mailtoTemplate: true,
-      user: {
+      createdBy: {
         select: {
           name: true,
         },
@@ -58,7 +58,7 @@ export async function getProjectSummary(
     updatedAt: project.createdAt.toISOString(),
     datasetVersion: project.datasetVersion,
     mailtoTemplate: (project.mailtoTemplate as Record<string, unknown> | null) ?? null,
-    ownerName: project.user?.name ?? null,
+    ownerName: project.createdBy?.name ?? null,
   };
   stopTransform?.();
 
@@ -90,7 +90,7 @@ export async function getProjectContacts(
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     select: {
-      userId: true,
+      organizationId: true,
     },
   });
   stopProjectQuery?.();
@@ -102,7 +102,7 @@ export async function getProjectContacts(
   const stopContactsQuery = tracker?.start('db:contacts');
   const contacts = await prisma.contact.findMany({
     where: {
-      userId: project.userId,
+      organizationId: project.organizationId,
       archived: false,
     },
     orderBy: [{ name: 'asc' }],
