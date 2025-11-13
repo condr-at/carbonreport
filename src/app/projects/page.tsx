@@ -36,6 +36,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useOrganizationContext } from '@/lib/organizations/context';
+import { notifications } from '@/components/ui/notifications';
 import {
   useProjectsList,
   useUpdateProjectStatus,
@@ -101,9 +102,28 @@ export default function ProjectsPage() {
     return null;
   }
 
-  const handleDuplicate = (projectId: string) => {
-    console.log('Duplicate project:', projectId);
-    // TODO: Implement duplication
+  const handleDuplicate = async (projectId: string) => {
+    if (createDisabled) {
+      notifications.error('Active project limit reached. Duplicate unavailable.');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/projects/${projectId}/duplicate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reset_completion: false }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        const message = err?.error || 'Failed to duplicate project.';
+        throw new Error(message);
+      }
+      notifications.success('Project duplicated');
+      await refetch();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Duplicate failed';
+      notifications.error(msg);
+    }
   };
 
   const handleArchive = (projectId: string) => {
