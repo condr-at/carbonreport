@@ -2,8 +2,9 @@
 
 import { request, ApiError } from '@/lib/api-client';
 import { MAX_UPLOAD_SIZE_BYTES, listSupportedMimeTypes } from '@/lib/uploads';
+import type { UploadResourceType } from '@/lib/uploads/resource-types';
 
-export type UploadResourceType = 'org_logo' | 'user_avatar';
+export type { UploadResourceType } from '@/lib/uploads/resource-types';
 
 export type SignedUploadResponse = {
   upload: {

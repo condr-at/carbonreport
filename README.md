@@ -21,11 +21,12 @@ See [docs/Requirements v0.0.1.md](docs/Requirements%20v0.0.1.md) for complete sp
 
 ### Upload guardrails
 
-The S3 upload pipeline currently supports organization logos and user avatars only:
+The upload pipeline currently supports organization logos and user avatars only:
 
 - MIME types: `image/png`, `image/jpeg` (or `image/jpg` alias), `image/svg+xml`.
 - File size: ≤ **512 KB** (enforced at presign + server validation).
 - Dimensions: logos and avatars must be square within ±10% aspect-ratio tolerance—crop before calling the API to avoid validation errors when applying assets.
+- Local development automatically falls back to disk-based storage (`public/dev-uploads`) when `ASSETS_BUCKET_NAME` is not set. Use `ENABLE_LOCAL_UPLOADS=false` to force-disable the fallback and surface configuration errors early.
 
 ## Tech Stack
 
@@ -35,7 +36,7 @@ The S3 upload pipeline currently supports organization logos and user avatars on
 - **UI**: Tailwind CSS + shadcn/ui + Lucide icons
 - **Auth**: JWT (email/password)
 - **Email**: Resend (optional for MVP)
-- **File Storage**: S3-compatible object storage (presigned uploads for org logos & avatars)
+- **File Storage**: S3-compatible object storage (presigned uploads for org logos & avatars) with an automatic disk fallback in local dev
 
 ## Getting Started
 
@@ -83,7 +84,12 @@ Edit `.env` with your Supabase connection string:
 npm run db:push      # Create tables in Supabase
 ```
 
-6. Run development server:
+6. Configure uploads (optional):
+   - For S3-compatible storage, set `ASSETS_BUCKET_NAME`, `ASSETS_BUCKET_REGION`, `ASSETS_PUBLIC_BASE_URL`, `ASSETS_UPLOADS_PREFIX`, `ASSETS_UPLOAD_TTL_SECONDS`, `ASSETS_S3_ENDPOINT` (when using a custom endpoint like Cloudflare R2), plus `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`.
+   - If these variables are omitted in local development, the app automatically falls back to disk-backed uploads under `public/dev-uploads`. You can force-enable or tune this mode with `ENABLE_LOCAL_UPLOADS`, `LOCAL_UPLOADS_DIR`, `LOCAL_UPLOADS_PUBLIC_PATH`, and `LOCAL_UPLOADS_PUBLIC_URL`.
+   - Cloudflare R2 example: `ASSETS_S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com` (S3 API) and `ASSETS_PUBLIC_BASE_URL=https://pub-<account-id>.r2.dev/<bucket>` (public CDN). Repo defaults already point to `carbonreport-assets` in region `eeur`—replace these credentials if you provision a different storage backend.
+
+7. Run development server:
 ```bash
 npm run dev
 ```
