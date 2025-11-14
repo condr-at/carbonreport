@@ -74,6 +74,7 @@ function isValidTimezone(tz: string) {
 function buildUserPayload(user: any) {
   const fullName = user.name || [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
   const avatarUrl = user.avatarUrl ?? user.avatarAsset?.url ?? null
+  const avatarAssetId = user.avatarAssetId ?? null
 
   return {
     id: user.id,
@@ -84,6 +85,7 @@ function buildUserPayload(user: any) {
     job_title: user.jobTitle,
     timezone: user.timezone,
     avatar_url: avatarUrl,
+    avatar_asset_id: avatarAssetId,
   }
 }
 
@@ -123,6 +125,7 @@ export async function GET() {
           jobTitle: true,
           timezone: true,
           avatarUrl: true,
+          avatarAssetId: true,
           avatarAsset: {
             select: {
               url: true,
@@ -230,6 +233,7 @@ export async function PATCH(request: NextRequest) {
         jobTitle: true,
         timezone: true,
         avatarUrl: true,
+          avatarAssetId: true,
         avatarAsset: {
           select: {
             url: true,

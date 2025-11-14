@@ -1,15 +1,14 @@
-'use client'
+"use client"
 
-import { useEffect, useRef, useState, type ChangeEvent, type FormEventHandler } from 'react'
-import Image from 'next/image'
-import { Loader2, UploadCloud, Trash2 } from 'lucide-react'
+import { useState, type FormEventHandler } from 'react'
+import { Loader2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { notifications } from '@/components/ui/notifications'
-import { uploadAsset, UploadError } from '@/lib/uploads-client'
 import { useCreateOrganization } from '@/lib/data-client/organizations'
+import { SquareImageUploader, type SquareImageValue } from '@/components/uploads/square-image-uploader'
 
 type CreateOrganizationFormProps = {
   onCreated: (organizationId: string) => void
@@ -29,24 +28,11 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
   const createMutation = useCreateOrganization()
   const [displayName, setDisplayName] = useState('')
   const [description, setDescription] = useState('')
-  const [logoAssetId, setLogoAssetId] = useState<string | null>(null)
-  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const objectUrlRef = useRef<string | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current)
-      }
-    }
-  }, [])
+  const [logoValue, setLogoValue] = useState<SquareImageValue>({ assetId: null, url: null })
 
   const trimmedName = displayName.trim()
   const disableSubmit =
     createMutation.isPending ||
-    isUploading ||
     trimmedName.length < NAME_MIN_LENGTH ||
     trimmedName.length > NAME_MAX_LENGTH
 
@@ -64,65 +50,10 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
     return `${trimmedName.length}/${NAME_MAX_LENGTH} characters.`
   })()
 
-  const handleLogoSelect = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) {
-      return
-    }
-
-    setIsUploading(true)
-    try {
-      const { assetId } = await uploadAsset('org_logo', file)
-
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current)
-      }
-
-      const objectUrl = URL.createObjectURL(file)
-      objectUrlRef.current = objectUrl
-      setLogoPreviewUrl(objectUrl)
-      setLogoAssetId(assetId)
-      notifications.success('Logo uploaded. Create the organization to apply it.')
-    } catch (error) {
-      if (error instanceof UploadError) {
-        notifications.error(error.message)
-      } else {
-        notifications.error('Failed to upload logo.')
-      }
-    } finally {
-      setIsUploading(false)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    }
-  }
-
-  const handleRemoveLogo = () => {
-    if (!logoAssetId && !logoPreviewUrl) {
-      return
-    }
-
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current)
-      objectUrlRef.current = null
-    }
-
-    setLogoAssetId(null)
-    setLogoPreviewUrl(null)
-  }
-
   const handleCancel = () => {
     setDisplayName('')
     setDescription('')
-    setLogoAssetId(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current)
-      objectUrlRef.current = null
-    }
-    setLogoPreviewUrl(null)
+    setLogoValue({ assetId: null, url: null })
     onCancel()
   }
 
@@ -154,8 +85,8 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
       payload.description = normalizedDescription
     }
 
-    if (logoAssetId) {
-      payload.logo_asset_id = logoAssetId
+    if (logoValue.assetId) {
+      payload.logo_asset_id = logoValue.assetId
     }
 
     createMutation.mutate(
@@ -165,15 +96,7 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
           const organizationId = data.organization.id
           setDisplayName('')
           setDescription('')
-          setLogoAssetId(null)
-          if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-          }
-          if (objectUrlRef.current) {
-            URL.revokeObjectURL(objectUrlRef.current)
-            objectUrlRef.current = null
-          }
-          setLogoPreviewUrl(null)
+          setLogoValue({ assetId: null, url: null })
           onCreated(organizationId)
         },
       },
@@ -217,7 +140,7 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
             type="button"
             variant="ghost"
             onClick={handleCancel}
-            disabled={createMutation.isPending || isUploading}
+            disabled={createMutation.isPending}
           >
             Cancel
           </Button>
@@ -229,44 +152,17 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
       </div>
 
       <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>Logo</Label>
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-lg border bg-muted">
-              {logoPreviewUrl ? (
-                <Image src={logoPreviewUrl} alt="Organization logo preview" width={128} height={128} className="h-full w-full object-cover" />
-              ) : (
-                <UploadCloud className="h-10 w-10 text-muted-foreground" aria-hidden />
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                ref={fileInputRef}
-                id="org-logo"
-                type="file"
-                accept="image/png,image/jpeg,image/svg+xml"
-                className="hidden"
-                onChange={handleLogoSelect}
-              />
-              <Button type="button" onClick={() => fileInputRef.current?.click()} disabled={isUploading || createMutation.isPending}>
-                {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
-                {isUploading ? 'Uploading…' : 'Upload logo'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleRemoveLogo}
-                disabled={isUploading || createMutation.isPending || (!logoAssetId && !logoPreviewUrl)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" aria-hidden />
-                Remove
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground text-center">
-              Optional. Max size 512 KB. PNG, JPEG, or SVG only.
-            </p>
+          <div className="space-y-2">
+            <Label>Logo (optional)</Label>
+            <SquareImageUploader
+              resourceType="org_logo"
+              value={logoValue}
+              onChange={setLogoValue}
+              label="Logo preview"
+              description="PNG/JPEG/SVG · cropped to square before upload"
+              disabled={createMutation.isPending}
+            />
           </div>
-        </div>
       </div>
     </form>
   )

@@ -44,10 +44,15 @@ export const organizationKeys = {
   planUpgrade: (organizationId: string) => ['organizations', organizationId, 'plan-upgrade'] as const,
 };
 
+export const userKeys = {
+  settings: () => ['user', 'settings'] as const,
+};
+
 export type QueryKeyFactory =
   typeof projectKeys &
   typeof dataRequestKeys &
   typeof contactsKeys &
   typeof globalRequestsKeys &
   typeof featureKeys &
-  typeof organizationKeys;
+  typeof organizationKeys &
+  typeof userKeys;

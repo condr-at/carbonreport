@@ -4,7 +4,7 @@ ALTER TABLE "users"
   ADD COLUMN "last_name" TEXT,
   ADD COLUMN "job_title" TEXT,
   ADD COLUMN "timezone" TEXT,
-  ADD COLUMN "avatar_asset_id" UUID;
+  ADD COLUMN "avatar_asset_id" TEXT;
 
 ALTER TABLE "users"
   ADD CONSTRAINT "users_avatar_asset_id_fkey"

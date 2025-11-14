@@ -146,6 +146,11 @@ function OrganizationSettingsPageContent() {
         <PageHeader
           title="Organization Settings"
           description={`${currentOrganization.display_name} · ${currentOrganization.slug}`}
+          actions={(
+            <Button variant="outline" onClick={() => router.push('/settings/profile')}>
+              Profile settings
+            </Button>
+          )}
         />
 
         <Tabs defaultValue="profile" className="space-y-6">

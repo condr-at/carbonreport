@@ -15,7 +15,7 @@ import {
   Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,7 +31,7 @@ import { SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/comp
 import { useOrganizationContext } from '@/lib/organizations/context'
 import type { OrganizationSummary } from '@/lib/data-client/organizations'
 import { Skeleton } from '@/components/ui/skeleton'
-
+import { useUserSettings } from '@/lib/data-client/user-settings'
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
@@ -56,6 +56,22 @@ export function MainSidebar() {
     currentOrganization,
     refetch,
   } = useOrganizationContext()
+  const hasAcceptedOrganizations = acceptedOrganizations.length > 0
+  const { data: userSettings } = useUserSettings()
+  const user = userSettings?.user
+
+  const userDisplayName = user?.name ?? user?.email ?? 'Your account'
+  const userEmail = user?.email ?? 'user@example.com'
+  const userAvatarUrl = user?.avatar_url ?? null
+  const userInitials = useMemo(() => {
+    const source = user?.name || user?.email || 'U'
+    return source
+      .split(/[\s@]+/)
+      .filter(Boolean)
+      .map((segment) => segment[0]?.toUpperCase() ?? '')
+      .join('')
+      .slice(0, 2) || 'U'
+  }, [user?.name, user?.email])
 
   const activeOrganization = useMemo<OrganizationSummary | null>(() => {
     if (!acceptedOrganizations.length) {
@@ -80,7 +96,7 @@ export function MainSidebar() {
       return
     }
 
-    if (!activeOrganization) {
+    if (!hasAcceptedOrganizations) {
       if (
         pathname !== '/no-organization' &&
         !pathname?.startsWith('/settings/organization')
@@ -90,10 +106,14 @@ export function MainSidebar() {
       return
     }
 
+    if (!activeOrganization) {
+      return
+    }
+
     if (pathname === '/no-organization') {
       router.replace('/dashboard')
     }
-  }, [activeOrganization, isLoading, pathname, router])
+  }, [activeOrganization, hasAcceptedOrganizations, isLoading, pathname, router])
 
   useEffect(() => {
     if (!pendingHref) {
@@ -205,18 +225,32 @@ export function MainSidebar() {
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent"
             >
               <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">U</AvatarFallback>
+                {userAvatarUrl ? <AvatarImage src={userAvatarUrl} alt={userDisplayName} /> : null}
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                  {userInitials}
+                </AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">User Name</p>
-                <p className="truncate text-xs text-muted-foreground">user@example.com</p>
+                <p className="truncate text-sm font-medium">{userDisplayName}</p>
+                <p className="truncate text-xs text-muted-foreground">{userEmail}</p>
               </div>
               <ChevronsUpDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <span className="sr-only">Open user menu</span>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{userDisplayName}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="gap-2"
+              onSelect={(event) => {
+                event.preventDefault()
+                router.push('/settings/profile')
+              }}
+            >
+              <Settings className="h-4 w-4" />
+              Profile settings
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="gap-2 text-destructive">
               <LogOut className="h-4 w-4" />

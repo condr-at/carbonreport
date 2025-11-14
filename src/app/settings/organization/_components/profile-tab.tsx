@@ -1,16 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
-import Image from 'next/image';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { UploadCloud, Loader2, Trash2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { notifications } from '@/components/ui/notifications';
-import { uploadAsset, UploadError } from '@/lib/uploads-client';
 import { useUpdateOrganizationProfile } from '@/lib/data-client/organizations';
+import { SquareImageUploader, type SquareImageValue } from '@/components/uploads/square-image-uploader';
 
 const RETENTION_NOTE = 'Logo updates apply immediately after save. Max size 512 KB, formats: PNG, JPEG, SVG.';
 
@@ -50,77 +49,20 @@ export function OrganizationProfileTab({ organizationId, organization }: Organiz
   const updateMutation = useUpdateOrganizationProfile(organizationId);
   const [displayName, setDisplayName] = useState(organization.display_name);
   const [description, setDescription] = useState(ensureLines(organization.description ?? ''));
-  const [logoAssetId, setLogoAssetId] = useState<string | null>(organization.logo_asset_id);
-  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(organization.logo_url);
-  const [isUploading, setIsUploading] = useState(false);
+  const [logoValue, setLogoValue] = useState<SquareImageValue>({ assetId: organization.logo_asset_id, url: organization.logo_url });
   const [hasChanges, setHasChanges] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     setDisplayName(organization.display_name);
     setDescription(ensureLines(organization.description ?? ''));
-    setLogoAssetId(organization.logo_asset_id);
-    setLogoPreviewUrl(organization.logo_url);
+    setLogoValue({ assetId: organization.logo_asset_id, url: organization.logo_url });
     setHasChanges(false);
   }, [organization]);
 
-  useEffect(() => {
-    return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-      }
-    };
-  }, []);
-
   const planValidity = useMemo(() => formatPlanValidity(organization.plan.valid_until), [organization.plan.valid_until]);
 
-  const handleLogoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const { assetId } = await uploadAsset('org_logo', file);
-
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-      }
-
-      const objectUrl = URL.createObjectURL(file);
-      objectUrlRef.current = objectUrl;
-      setLogoPreviewUrl(objectUrl);
-      setLogoAssetId(assetId);
-      setHasChanges(true);
-      notifications.success('Logo uploaded. Save changes to apply.');
-    } catch (error) {
-      if (error instanceof UploadError) {
-        notifications.error(error.message);
-      } else {
-        notifications.error('Failed to upload logo.');
-      }
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
-  const handleRemoveLogo = () => {
-    if (!logoAssetId && !logoPreviewUrl) {
-      return;
-    }
-
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = null;
-    }
-
-    setLogoAssetId(null);
-    setLogoPreviewUrl(null);
+  const handleLogoChange = (next: SquareImageValue) => {
+    setLogoValue(next);
     setHasChanges(true);
   };
 
@@ -145,8 +87,8 @@ export function OrganizationProfileTab({ organizationId, organization }: Organiz
       payload.description = normalizedDescription.length ? normalizedDescription : null;
     }
 
-    if (logoAssetId !== organization.logo_asset_id) {
-      payload.logo_asset_id = logoAssetId ?? null;
+    if (logoValue.assetId !== organization.logo_asset_id) {
+      payload.logo_asset_id = logoValue.assetId ?? null;
     }
 
     if (Object.keys(payload).length === 0) {
@@ -162,7 +104,7 @@ export function OrganizationProfileTab({ organizationId, organization }: Organiz
   };
 
   const isSaving = updateMutation.isPending;
-  const disableSubmit = isSaving || isUploading;
+  const disableSubmit = isSaving;
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -227,17 +169,17 @@ export function OrganizationProfileTab({ organizationId, organization }: Organiz
               {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
               Save changes
             </Button>
-            <Button type="button" variant="ghost" onClick={() => {
-              setDisplayName(organization.display_name);
-              setDescription(ensureLines(organization.description ?? ''));
-              setLogoAssetId(organization.logo_asset_id);
-              setLogoPreviewUrl(organization.logo_url);
-              if (objectUrlRef.current) {
-                URL.revokeObjectURL(objectUrlRef.current);
-                objectUrlRef.current = null;
-              }
-              setHasChanges(false);
-            }} disabled={disableSubmit || (!hasChanges && !objectUrlRef.current)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setDisplayName(organization.display_name);
+                setDescription(ensureLines(organization.description ?? ''));
+                setLogoValue({ assetId: organization.logo_asset_id, url: organization.logo_url });
+                setHasChanges(false);
+              }}
+              disabled={disableSubmit || !hasChanges}
+            >
               Reset
             </Button>
           </div>
@@ -249,39 +191,14 @@ export function OrganizationProfileTab({ organizationId, organization }: Organiz
           <CardTitle>Logo</CardTitle>
           <CardDescription>{RETENTION_NOTE}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-lg border bg-muted">
-              {logoPreviewUrl ? (
-                <Image src={logoPreviewUrl} alt="Organization logo" width={128} height={128} className="h-full w-full object-cover" />
-              ) : (
-                <UploadCloud className="h-10 w-10 text-muted-foreground" aria-hidden />
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <input
-                ref={fileInputRef}
-                id="org-logo"
-                type="file"
-                accept="image/png,image/jpeg,image/svg+xml"
-                className="hidden"
-                onChange={handleLogoSelect}
-              />
-              <Button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
-                {isUploading ? 'Uploading...' : 'Upload logo'}
-              </Button>
-              <Button type="button" variant="outline" onClick={handleRemoveLogo} disabled={isUploading || (!logoAssetId && !logoPreviewUrl)}>
-                <Trash2 className="mr-2 h-4 w-4" aria-hidden />
-                Remove
-              </Button>
-            </div>
-          </div>
+        <CardContent>
+          <SquareImageUploader
+            resourceType="org_logo"
+            value={logoValue}
+            onChange={handleLogoChange}
+            label="Organization logo"
+            description="PNG, JPEG, or SVG · auto-cropped to square"
+          />
         </CardContent>
       </Card>
     </form>

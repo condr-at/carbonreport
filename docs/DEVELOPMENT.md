@@ -139,6 +139,7 @@ export NEXT_PUBLIC_VERIFIER_ROLE_ENABLED=true
 - `src/lib/assets/service.ts` centralizes asset validation (`ensureOrgLogoAsset`, `ensureUserAvatarAsset`). Always call these helpers before writing `*_asset_id` into user/org records so we do not attach the wrong resource type.
 - Upload signing (`POST /api/uploads/sign`) only allows `image/png`, `image/jpeg`, or `image/svg+xml` and enforces a 512 KB limit. Avatars/logos must be square (±10% tolerance) before they are accepted by downstream PATCH handlers.
 - `src/lib/uploads.ts` exposes `validateImageDimensions` for any future EXIF or client-side preflight logic—prefer reusing it over duplicating the math in React components.
+- `src/components/uploads/square-image-uploader.tsx` is the shared React component (shadcn dialog + `react-easy-crop`) that enforces 1:1 crops, client-side compression/fallbacks, and integrates with `uploadAsset()`. Reuse it for any new avatar/logo surfaces to keep UX consistent.
 
 ### Test plan (summary)
 
