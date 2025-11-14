@@ -8,6 +8,7 @@ export type ApiErrorCode =
   | 'VALIDATION_ERROR'
   | 'FORBIDDEN'
   | 'NOT_FOUND'
+  | 'NOT_IMPLEMENTED'
   | 'UPGRADE_NOT_IMPLEMENTED'
   | 'CONFLICT'
   | 'UNAUTHORIZED'

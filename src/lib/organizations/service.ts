@@ -68,6 +68,15 @@ const DEFAULT_PLANS: PlanDefinitionInput[] = [
     maxVerifiers: 0,
     maxViewers: null,
   },
+  {
+    planCode: 'pro_beta',
+    label: 'Pro Beta',
+    description: 'Expanded seats and manual billing support',
+    maxActiveProjects: 3,
+    maxEditors: 2,
+    maxVerifiers: 0,
+    maxViewers: null,
+  },
 ]
 
 type PrismaExecutor = PrismaClient | Prisma.TransactionClient

@@ -65,10 +65,15 @@ enum ProjectStatus {
 model User {
   id            String    @id @default(uuid())
   name          String
+  firstName     String?   @map("first_name")
+  lastName      String?   @map("last_name")
   email         String    @unique
   passwordHash  String    @map("password_hash")
   emailVerified Boolean   @default(false) @map("email_verified")
   avatarUrl     String?   @map("avatar_url")
+  avatarAssetId String?   @map("avatar_asset_id")
+  jobTitle      String?   @map("job_title")
+  timezone      String?   @map("timezone")
   oauthProvider String?   @map("oauth_provider") // google, microsoft
   oauthId       String?   @map("oauth_id")
   createdAt     DateTime  @default(now()) @map("created_at")
@@ -82,6 +87,7 @@ model User {
   projectsCreated       Project[]                @relation("ProjectCreatedBy")
   contactsCreated       Contact[]                @relation("ContactCreatedBy")
   assetsUploaded        Asset[]                  @relation("AssetUploadedBy")
+  avatarAsset           Asset?                   @relation("UserAvatarAsset", fields: [avatarAssetId], references: [id])
 
   @@unique([oauthProvider, oauthId])
   @@map("users")
@@ -186,6 +192,7 @@ model Asset {
 
   uploadedBy    User           @relation("AssetUploadedBy", fields: [uploadedByUserId], references: [id])
   organizations Organization[] @relation("OrganizationLogo")
+  userAvatars   User[]         @relation("UserAvatarAsset")
 
   @@index([uploadedByUserId])
   @@map("assets")

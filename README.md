@@ -13,6 +13,20 @@ This platform helps users:
 
 See [docs/Requirements v0.0.1.md](docs/Requirements%20v0.0.1.md) for complete specifications.
 
+### Recent API additions
+
+- **User settings**: `GET /api/user/settings`, `PATCH /api/user/settings`, plus a `POST /api/user/settings/change-password` placeholder for upcoming auth work.
+- **Membership self-service**: invitees now use `POST /api/organizations/:organizationId/members/:membershipId/{accept|decline}` to control their seat assignment (with plan limit checks on acceptance).
+- **Lifecycle safety nets**: owners can restore soft-deleted organizations via `POST /api/organizations/:organizationId/restore`, then refresh counters with `POST /api/organizations/:organizationId/usage/recompute`.
+
+### Upload guardrails
+
+The S3 upload pipeline currently supports organization logos and user avatars only:
+
+- MIME types: `image/png`, `image/jpeg` (or `image/jpg` alias), `image/svg+xml`.
+- File size: ≤ **512 KB** (enforced at presign + server validation).
+- Dimensions: logos and avatars must be square within ±10% aspect-ratio tolerance—crop before calling the API to avoid validation errors when applying assets.
+
 ## Tech Stack
 
 - **Framework**: Next.js 15 (App Router)
@@ -21,7 +35,7 @@ See [docs/Requirements v0.0.1.md](docs/Requirements%20v0.0.1.md) for complete sp
 - **UI**: Tailwind CSS + shadcn/ui + Lucide icons
 - **Auth**: JWT (email/password)
 - **Email**: Resend (optional for MVP)
-- **File Storage**: ⏸️ Post-MVP (Vercel Blob planned)
+- **File Storage**: S3-compatible object storage (presigned uploads for org logos & avatars)
 
 ## Getting Started
 
@@ -176,13 +190,14 @@ See [Requirements v0.0.1 § 2](docs/Requirements%20v0.0.1.md#2-functional-requir
 
 ## Documentation
 
-- [Requirements v0.0.1](docs/Requirements%20v0.0.1.md) - Complete system specifications
-- [UX Requirements](docs/UX_REQUIREMENTS.md) - Information architecture and user flows
-- [API Reference](docs/API_REFERENCE.md) - REST API endpoints documentation
-- [Design System](docs/DESIGN_SYSTEM.md) - UI components and visual guidelines
-- [Implementation Checklist](docs/IMPLEMENTATION_CHECKLIST.md) - Development progress tracker
-
-See [docs/README.md](docs/README.md) for complete documentation index.
+- [docs/README.md](docs/README.md) – Documentation index & onboarding links
+- [Requirements v0.0.1](docs/Requirements%20v0.0.1.md) – Baseline functional spec
+- [API Reference](docs/API_REFERENCE.md) – Full list of REST endpoints, including the new user settings, membership acceptance, and organization restore routes
+- [UX Guide](docs/UX_GUIDE.md) – Information architecture, flows, and component guidance (avatars/logos, restore UX, invitation handling)
+- [Development Guide](docs/DEVELOPMENT.md) – Engineering workflows, migrations, helper modules, and runbooks
+- [Billing Playbook](docs/BILLING_PLAYBOOK.md) – Plan defaults, seat enforcement, upgrade intent logging, and usage recompute runbook
+- [Planning Roadmap](docs/planning/ROADMAP.md) – Next steps & release sequencing
+- [Data Points Glossary](docs/reference/data-points-hints.md) – Field definitions and hint copy for dataset builders
 
 ## License
 

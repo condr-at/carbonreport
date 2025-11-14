@@ -1,12 +1,12 @@
 # UX Guide & Information Architecture
-_Last updated: 2025-11-12_
+_Last updated: 2025-11-13_
 
 ## Table of Contents
 1. Page Architecture
 2. Organization Switcher
 3. Organization Settings (Profile, Members, Usage & Limits, Danger Zone)
 4. User Settings
-5. Core User Flows (Create Org, Invite with limits, Delete Org, Restore Project)
+5. Core User Flows (Create Org, Invite with limits, Accept/Decline, Delete Org, Restore Project/Org)
 6. States (Empty / Loading / Error / Disabled / Expiry)
 7. Layout Templates
 8. Reusable Page Blocks
@@ -98,7 +98,7 @@ graph LR
 
 #### Profile Tab
 
-- **Fields**: Display name (required, max 64 chars), Description (optional, 400 chars, shows character counter), Logo upload (square recommendation, PNG/JPEG/SVG ≤512 KB), Slug (read-only token used in URLs), Plan code + Valid until (read-only).
+- **Fields**: Display name (required, max 64 chars), Description (optional, 400 chars, shows character counter), Logo upload (must be square within ±10% tolerance, PNG/JPEG/SVG ≤512 KB), Slug (read-only token used in URLs), Plan code + Valid until (read-only).
 - **Logo upload flow**: uses `<AvatarUploader />` pattern with the following states:
   - Empty: initials fallback badge with upload CTA.
   - Uploading: progress bar with cancel button; disable Save until upload completes.
@@ -113,10 +113,12 @@ graph LR
 - **Role changes**: inline dropdown; confirm dialog summarises impact (`"This will free an editor seat."`). API errors surface toast with reason (e.g., `PLAN_LIMIT_EXCEEDED`).
 - **Ownership guardrails**: owner row hides Remove button and shows tooltip `"Transfer ownership coming soon."`. Owners can demote Admins, Admins cannot affect Owners.
 - **Empty state**: card with illustration, headline `"Invite teammates"`, copy explaining unlimited viewers on Free plan, and `Invite member` CTA.
+- **Invite acceptance**: pending rows show `Accept` / `Decline` pills when viewed by the invitee (accessible via emailed deep links). Accept enforces seat limits the same way as invite creation; Decline frees the seat immediately and collapses the row into the historical list. Show toast feedback for both outcomes and disable the pills once processed.
 
 #### Usage & Limits Tab
 
 - **Metrics cards**: Active projects, Editors, Verifiers (flagged `Coming soon`), Viewers. Each card displays `current / limit`, progress bar (green <=80%, amber between 80-100%, red on overflow), and tooltip `"Limit from Free plan"`.
+- **Refresh usage**: Admins/owners see a `Recompute usage snapshot` tertiary button that calls the `/usage/recompute` API and rehydrates the snapshots table; show inline success toast `"Usage updated."`.
 - **Snapshots table**: simple table with `computed_at`, `active_projects`, `active_editors`, `active_verifiers`, `active_viewers`. Future enhancement reserved for charts.
 - **Upgrade CTA**: prominent `Upgrade plan` button plus `Contact support` secondary link (mailto). When plan is expiring (`plan_valid_until` within 14 days) show warning banner `"Pro Beta expires on {date}."`
 - **Error handling**: if usage endpoint fails, show inline banner with `Retry`. Loading state uses skeleton cards.
@@ -126,6 +128,7 @@ graph LR
 - **Sections**:
   - `Delete organization`: explains 30-day retention and that active projects will be marked deleted. Confirmation input requires typing the organization slug; disable button until match.
   - `Restore projects`: link to `/projects?status=deleted` with helper copy `"You can restore deleted projects here before retention ends."`
+  - `Restore organization`: once an org is marked deleted, show a locked-down card with countdown (`"Recover within 12 days"`) and a primary `Restore organization` button (owners only) that calls the new POST endpoint. Non-owners see informational text directing them to contact an owner.
   - `Transfer ownership` placeholder: greyed-out card stating `"Ownership transfer coming soon"`.
 - **Delete flow**: on submit, call DELETE endpoint; show spinner and then success toast `"Organization scheduled for deletion."` followed by redirect to dashboard. If already pending deletion, disable button and display badge `"Scheduled on {date}"`.
 
@@ -164,18 +167,18 @@ Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`
 #### Profile Tab
 
 - **Fields**:
-  - First name (required), Last name (required), Job title (optional, max 64 chars).
+  - First name + Last name (encouraged but now optional in backend; highlight completeness badge when both present), Job title (optional, max 128 chars).
   - Email (read-only with helper text `"Email changes will be available after beta."`).
-  - Timezone select (future; placeholder disabled with tooltip `"Coming soon"`).
-  - Avatar upload button using the same `<AvatarUploader />` component as organization logos.
+  - Timezone select with searchable dropdown of IANA zones (prefill from browser, autocomplete, fallback manual entry). Show helper `"Used for reminders and audit trails"` beneath the input.
+  - Avatar upload button using the same `<AvatarUploader />` component as organization logos (square, ≤512 KB, PNG/JPEG/SVG); warn users when the crop deviates beyond ±10%.
 - **Actions**: Save button disabled until change detected; `Reset` link reverts unsaved edits. Success toast `"Profile updated."`.
-- **Avatar states**: identical to organization logo (empty, uploading, success, error). Provide crop guidance (square) in helper text.
+- **Avatar states**: identical to organization logo (empty, uploading, success, error). Provide crop guidance (square) in helper text and include inline alert `"Please choose a square image"` when `validateImageDimensions` fails client-side.
 
 #### Password Tab
 
 - **Form**: Current password, New password, Confirm password. Submit triggers `POST /api/user/settings/password` (stub until backend ready).
-- **Validation**: show inline errors for mismatch, insufficient complexity, missing fields. Disable submit until validation passes.
-- **Success state**: toast `"Password updated."` and auto-clear inputs. Failure surfaces API message.
+- **Validation**: show inline errors for mismatch, insufficient complexity, missing fields. Disable submit until validation passes. Until backend ships, surface banner `"Password updates are coming soon"` after every submit (API returns 501).
+- **Success state**: toast `"Password updated."` and auto-clear inputs once backend exits beta. Failure surfaces API message (501 should be converted into friendly info toast).
 - **Forgot password link**: inline link to `/forgot-password` for fallback.
 
 #### Organizations Tab
@@ -185,39 +188,9 @@ Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`
   - `Open` button → switches context and navigates to organization dashboard.
   - `Leave organization` (for non-owners) with confirm dialog explaining lost access. Owners see tooltip `"Transfer ownership before leaving."`.
   - `Create organization` button persists (same as switcher) for quick access.
+- Pending invitations show inline `Accept` / `Decline` buttons (same component as Members tab). Seat limit errors render as inline callouts referencing Usage tab.
 - **Empty state**: copy `"You are not a member of any organizations yet."` with `Create organization` CTA.
 
-### User Settings
-
-- **URL**: `/settings`
-- **Primary layout**: two-column form (fields left, contextual guidance right) on desktop, single column on mobile.
-- **Tabs**: Profile (default), Password, Organizations. Tabs persist using shallow routing (`?tab=`) for deep links.
-
-#### Profile Tab
-
-- **Fields**:
-  - First name (required), Last name (required), Job title (optional, max 64 chars).
-  - Email (read-only with helper text `"Email changes will be available after beta."`).
-  - Timezone select (future; placeholder disabled with tooltip `"Coming soon"`).
-  - Avatar upload button using the same `<AvatarUploader />` component as organization logos.
-- **Actions**: Save button disabled until change detected; `Reset` link reverts unsaved edits. Success toast `"Profile updated."`.
-- **Avatar states**: identical to organization logo (empty, uploading, success, error). Provide crop guidance (square) in helper text.
-
-#### Password Tab
-
-- **Form**: Current password, New password, Confirm password. Submit triggers `POST /api/user/settings/password` (stub until backend ready).
-- **Validation**: show inline errors for mismatch, insufficient complexity, missing fields. Disable submit until validation passes.
-- **Success state**: toast `"Password updated."` and auto-clear inputs. Failure surfaces API message.
-- **Forgot password link**: inline link to `/forgot-password` for fallback.
-
-#### Organizations Tab
-
-- **Content**: list of organizations where user is a member. Each item shows organization logo, name, plan pill, role badge, `Last active` timestamp.
-- **Actions**:
-  - `Open` button → switches context and navigates to organization dashboard.
-  - `Leave organization` (for non-owners) with confirm dialog explaining lost access. Owners see tooltip `"Transfer ownership before leaving."`.
-  - `Create organization` button persists (same as switcher) for quick access.
-- **Empty state**: copy `"You are not a member of any organizations yet."` with `Create organization` CTA.
 | `/settings/password` | `POST /api/user/settings/password` | Modal form collects current/new password once backend available. |
 | `/settings/organizations` | `GET /api/organizations`, `POST /api/organizations` | Lists memberships with role tags, provides `Leave organization` (DELETE membership) except for owners. |
 | Upgrade Plan modal | `GET /api/plan-definitions`, `POST /api/organizations/:id/plan/upgrade` (501) | Modal shows plan comparison, contact info, logs intent via 501 endpoint for future billing audit trail. |
@@ -269,6 +242,7 @@ Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`
 | Org Switcher | Loading | 4 skeleton rows |
 | Org Switcher | Error | Inline error banner + Retry |
 | Invite Modal | Disabled roles | Tooltip: "Upgrade plan to add more editors" on EDITOR / VERIFIER when limit=0 |
+| Pending invitations | Decision | Inline `Accept` / `Decline` pills plus usage tooltip if seat limit exceeded |
 | Usage & Limits | Over 100% | Red progress bar, link to archive projects or upgrade |
 | Project Restore | Limit exceeded | Modal with actions: (Open Usage) (Archive other) (Request upgrade) |
 | Pro Beta Expiry | ≤14 days | Warning banner (switcher + Usage tab) |
@@ -288,6 +262,13 @@ Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`
 3. Если роль заблокирована (нет seat) — disabled + tooltip.
 4. Submit → 201 или 409 (`SEAT_LIMIT_EXCEEDED`) → показываем toast с деталями `{current, limit}`.
 
+#### Accept / Decline Invitation (self-service)
+1. Приглашённый пользователь открывает deep link (`/settings/organizations?membership_id=…`) или Members таб.
+2. Карточка приглашения отображает роли + лимиты, кнопки `Accept` и `Decline`.
+3. `Accept` → POST `/accept`, запускает seat check. Успех: зеленый toast `"You're in"`, строка переходит в список членов.
+4. `Decline` → POST `/decline`, строка помечается `Declined` и исчезает через 3 секунды. Показываем серый toast.
+5. Ошибки лимитов → красный toast + CTA `Open Usage tab`.
+
 #### Delete Organization (soft)
 1. Danger Zone → ввод slug.
 2. Кнопка активируется при точном совпадении.
@@ -300,6 +281,13 @@ Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`
 3. POST restore.
 4. Успех: открываем проект. 409 `PLAN_LIMIT_EXCEEDED`: показываем варианты.
 5. 409 `RETENTION_EXPIRED`: сообщаем, что проект нельзя восстановить.
+
+#### Restore Organization
+1. Owner видит баннер `"Organization scheduled for deletion"` с кнопкой `Restore organization` (Danger Zone).
+2. Кнопка открывает модал с подтверждением и напоминанием о 30-дневном окне.
+3. POST `/api/organizations/:id/restore` → успех: зеленый toast `"Organization restored"` + redirect в профиль.
+4. Сразу после восстановления предлагать `Recompute usage snapshot` (Usage tab) и показать успех `"Usage updated"`.
+5. Если срок истёк → отображаем ошибку `RETENTION_EXPIRED` и CTA `Contact support`.
 
 ### Layout Templates
 
@@ -492,6 +480,17 @@ FileUploadZone {
 }
 ```
 
+**`<AvatarUploader />`** — Used in: Organization profile, User profile
+```tsx
+AvatarUploader {
+  - Square crop (min 256×256) with live preview
+  - Validates PNG/JPEG/SVG only, ≤512 KB
+  - Shows pill messages for "Make it square" when aspect ratio >10% off
+  - Emits `onUploadComplete(assetId, url)` for PATCH endpoints
+  - Provides `Replace` / `Remove` actions and accessible drag/drop targets
+}
+```
+
 ---
 
 #### Navigation Blocks
@@ -673,7 +672,10 @@ This table shows which API endpoints each page uses:
 | **Requests Overview** | `GET /api/data-requests` (planned)<br>`POST /api/data-requests/bulk` | Aggregated requests across projects<br>Reuse bulk logging actions |
 | **Request Data (inline)** | `POST /api/data-requests/bulk` | Bulk or single request logging after mailto launch |
 | **Mailto Templates** | `GET /api/projects/:id/mailto-template`<br>`PUT /api/projects/:id/mailto-template`<br>`POST /api/projects/:id/mailto-template/reset` | Get current template<br>Update subject/body<br>Reset to default |
-| **Settings** | `GET /api/users/me`<br>`PUT /api/users/me` | Current user info<br>Update profile |
+| **User Settings** | `GET /api/user/settings`<br>`PATCH /api/user/settings`<br>`POST /api/user/settings/change-password` (501) | Load profile + memberships<br>Update profile info / avatar<br>Password form shows "coming soon" toast |
+| **Organization Members** | `GET /api/organizations/:id/members`<br>`POST /api/organizations/:id/invite`<br>`PATCH /api/organizations/:id/members/:membershipId`<br>`DELETE /api/organizations/:id/members/:membershipId`<br>`POST /api/organizations/:id/members/:membershipId/accept`<br>`POST /api/organizations/:id/members/:membershipId/decline` | Table + invite modal<br>Role changes / removals<br>Self-serve accept & decline |
+| **Organization Usage** | `GET /api/organizations/:id/usage`<br>`POST /api/organizations/:id/usage/recompute` | Metrics cards + snapshots<br>`Recompute usage` button triggers POST |
+| **Organization Danger Zone** | `DELETE /api/organizations/:id`<br>`POST /api/organizations/:id/restore` | Delete org flow<br>Restore org button (owners) |
 
 ### Data Requests Board (Project-level view)
 - **Purpose**: centralise outstanding/past requests per project with filtering, bulk actions, and quick status review.

@@ -61,3 +61,17 @@ export function toSafeFileStem(fileName: string, fallback: string): string {
   const trimmed = slug.slice(0, 48)
   return trimmed || fallback
 }
+
+export function validateImageDimensions(
+  width: number,
+  height: number,
+  options: { tolerance?: number } = {},
+) {
+  const tolerance = options.tolerance ?? 0.1
+  if (width <= 0 || height <= 0) {
+    return false
+  }
+
+  const ratio = width / height
+  return ratio >= 1 - tolerance && ratio <= 1 + tolerance
+}

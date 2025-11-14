@@ -13,6 +13,7 @@ import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 import { assertOrgMembership, assertWithinLimit } from '@/lib/server-utils'
 import { getReportTemplate } from '@/lib/report-templates'
 import { createEmptyDataset } from '@/lib/dataset-validation'
+import { scheduleUsageRecompute } from '@/lib/organizations/usage-scheduler'
 
 const CreateProjectSchema = z.object({
   id: z.string().uuid().optional(),
@@ -250,6 +251,8 @@ export async function POST(request: NextRequest) {
 
       return { project, reports }
     })
+
+    await scheduleUsageRecompute(organizationId, { reason: 'project_created' })
 
     return NextResponse.json(
       {

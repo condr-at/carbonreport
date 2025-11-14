@@ -319,6 +319,10 @@ async function main() {
   const demoOwner = await prisma.user.create({
     data: {
       name: 'Demo Owner',
+      firstName: 'Demo',
+      lastName: 'Owner',
+      jobTitle: 'Sustainability Lead',
+      timezone: 'UTC',
       email: 'demo@carbonreport.local',
       passwordHash: '$2a$10$dummyhash',
       emailVerified: true,
@@ -328,6 +332,10 @@ async function main() {
   const editorOne = await prisma.user.create({
     data: {
       name: 'Taylor Editor',
+      firstName: 'Taylor',
+      lastName: 'Editor',
+      jobTitle: 'Carbon Data Editor',
+      timezone: 'UTC',
       email: 'editor+1@carbonreport.local',
       passwordHash: '$2a$10$dummyhash',
       emailVerified: true,
@@ -337,6 +345,10 @@ async function main() {
   const editorTwo = await prisma.user.create({
     data: {
       name: 'Jordan Editor',
+      firstName: 'Jordan',
+      lastName: 'Editor',
+      jobTitle: 'Carbon Data Editor',
+      timezone: 'UTC',
       email: 'editor+2@carbonreport.local',
       passwordHash: '$2a$10$dummyhash',
       emailVerified: true,
@@ -346,6 +358,10 @@ async function main() {
   const viewerUser = await prisma.user.create({
     data: {
       name: 'Casey Viewer',
+      firstName: 'Casey',
+      lastName: 'Viewer',
+      jobTitle: 'Stakeholder Viewer',
+      timezone: 'UTC',
       email: 'viewer@carbonreport.local',
       passwordHash: '$2a$10$dummyhash',
       emailVerified: true,

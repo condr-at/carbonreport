@@ -16,6 +16,7 @@
   - [Get Current Organization](#get-current-organization)
   - [Update Organization](#update-organization)
   - [Delete Organization](#delete-organization)
+  - [Restore Organization](#restore-organization)
 4. [Organization Plans](#organization-plans)
   - [List Plan Definitions](#list-plan-definitions)
   - [Request Plan Upgrade](#request-plan-upgrade)
@@ -24,7 +25,10 @@
   - [Invite Member](#invite-member)
   - [Update Member Role](#update-member-role)
   - [Remove Member](#remove-member)
+  - [Accept Invitation](#accept-invitation)
+  - [Decline Invitation](#decline-invitation)
 6. [Organization Usage](#organization-usage)
+  - [Recompute Usage Snapshot](#recompute-usage-snapshot)
 7. [Uploads](#uploads)
 8. [Projects](#projects)
   - [List Projects](#list-projects)
@@ -36,6 +40,9 @@
 10. [Reports](#reports)
 11. [Data Requests](#data-requests)
 12. [User Settings](#user-settings)
+  - [Get Settings](#get-user-settings)
+  - [Update Settings](#update-user-settings)
+  - [Change Password (Placeholder)](#change-password-placeholder)
 13. [Common Error Codes](#common-error-codes)
 
 ---
@@ -264,6 +271,34 @@ DELETE /api/organizations/:organizationId
 - `409 CONFLICT` — organization already marked deleted.  
 - `412 PRECONDITION_FAILED` — organization has no active projects but pending invites still exist (inform user to cancel invites first).
 
+### Restore Organization
+
+```http
+POST /api/organizations/:organizationId/restore
+```
+
+**Auth**: Required.  
+**Roles**: `OWNER` only.
+
+**Behaviour**:
+- Only callable for organizations with `status=deleted`.
+- Enforces the 30-day retention window — after expiry the API returns `410 RETENTION_EXPIRED`.
+- On success clears `deleted_at` and reactivates all soft-deleted child records asynchronously.
+
+**Response — 200 OK**:
+```json
+{
+  "organization_id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+  "status": "active"
+}
+```
+
+**Errors**:
+- `403 FORBIDDEN` — caller is not an owner.  
+- `404 NOT_FOUND` — organization missing or belongs to another tenant.  
+- `409 CONFLICT` — organization is not deleted.  
+- `410 RETENTION_EXPIRED` — soft-delete retention window lapsed.
+
 ---
 
 ## Organization Plans
@@ -464,6 +499,62 @@ DELETE /api/organizations/:organizationId/members/:membershipId
 - `403 FORBIDDEN` — trying to remove the sole owner.  
 - `404 NOT_FOUND` — membership not found or already removed.
 
+### Accept Invitation
+
+```http
+POST /api/organizations/:organizationId/members/:membershipId/accept
+```
+
+**Auth**: Required (invited user only).
+
+**Behaviour**:
+- Enforces seat limits for `EDITOR` and `VIEWER_VERIFIER` using the same checks as invite creation.  
+- Updates the invitation to `accepted`, sets `joined_at`/`last_active_at`, and returns the normalized status for client state reconciliation.  
+- Fails if the invite was already accepted/declined or belongs to a deleted organization.
+
+**Response — 200 OK**:
+```json
+{
+  "membership": {
+    "membership_id": "5c93c2e4-88f6-4db9-8d7a-395e8c06699c",
+    "invite_status": "accepted"
+  }
+}
+```
+
+**Errors**:
+- `403 FORBIDDEN` — logged-in user is not the invitee.  
+- `404 NOT_FOUND` — membership missing or organization deleted.  
+- `409 CONFLICT` — invitation already processed.  
+- `422 VALIDATION_ERROR` — verifier role disabled via feature flag.
+
+### Decline Invitation
+
+```http
+POST /api/organizations/:organizationId/members/:membershipId/decline
+```
+
+**Auth**: Required (invited user only).
+
+**Behaviour**:
+- Marks the invite as `declined` so seats are released immediately.  
+- Only allowed while `invite_status=pending`.
+
+**Response — 200 OK**:
+```json
+{
+  "membership": {
+    "membership_id": "5c93c2e4-88f6-4db9-8d7a-395e8c06699c",
+    "invite_status": "declined"
+  }
+}
+```
+
+**Errors**:
+- `403 FORBIDDEN` — logged-in user is not the invitee.  
+- `404 NOT_FOUND` — membership missing or organization deleted.  
+- `409 CONFLICT` — invitation already processed.
+
 ---
 
 ## Organization Usage
@@ -513,6 +604,36 @@ Future Extension:
 - Server may respond with cached values (ETag recommended).  
 - Future enhancement: include latest `organization_usage_snapshots` array.
 
+### Recompute Usage Snapshot
+
+```http
+POST /api/organizations/:organizationId/usage/recompute
+```
+
+**Auth**: Required.  
+**Roles**: `ADMIN` or `OWNER` (requires accepted membership).
+
+**Purpose**: Forces a new `organization_usage_snapshots` row to be computed when limits appear stale (e.g., after bulk seat imports).
+
+**Response — 201 Created**:
+```json
+{
+  "snapshot": {
+    "id": "usage_snap_01hf9vse7kg2mteq3e6p1wm2r0",
+    "computed_at": "2025-11-12T11:15:00Z",
+    "active_projects": 2,
+    "active_editors": 1,
+    "active_verifiers": 0,
+    "active_viewers": 4
+  }
+}
+```
+
+**Errors**:
+- `404 NOT_FOUND` — organization missing or deleted.  
+- `409 CONFLICT` — usage recompute attempted for deleted organizations.  
+- `429 TOO_MANY_REQUESTS` — server-side guardrail if recompute is spammed (future safeguard).
+
 ---
 
 ## Uploads
@@ -537,6 +658,12 @@ POST /api/uploads/sign
 ```
 
 `resource_type` accepts `org_logo` or `user_avatar` (extend as needed).
+
+Constraints:
+
+- `mime_type` must be one of `image/png`, `image/jpeg` (or `image/jpg` alias), or `image/svg+xml`.  
+- `file_size_bytes` cannot exceed **512 KB**; the server signs the POST with a matching `content-length-range`.  
+- Logos and avatars must be **square** within a 10% tolerance when they are applied to an organization or user profile; clients should crop before uploading to avoid follow-up validation errors.
 
 **Response — 201 Created**:
 ```json
@@ -1297,6 +1424,93 @@ POST /api/data-requests/:id/revoke
 
 ---
 
+## User Settings
+
+### Get User Settings
+
+```http
+GET /api/user/settings
+```
+
+**Auth**: Required (current signed-in user).
+
+**Response — 200 OK**:
+```json
+{
+  "user": {
+    "id": "4e87c13d-5e21-4b30-a25b-83cf41f2114f",
+    "email": "casey@example.com",
+    "name": "Casey Example",
+    "first_name": "Casey",
+    "last_name": "Example",
+    "job_title": "Sustainability Lead",
+    "timezone": "America/Los_Angeles",
+    "avatar_url": "https://assets.example.com/uploads/user-avatar/...",
+    "organizations": [
+      {
+        "organization_id": "a9e9c1ef-e86f-4a12-95dd-0bdf76b1c915",
+        "display_name": "Climate Ops",
+        "role": "ADMIN",
+        "status": "active",
+        "invite_status": "accepted"
+      }
+    ]
+  }
+}
+```
+
+### Update User Settings
+
+```http
+PATCH /api/user/settings
+```
+
+**Request Body** (all fields optional, at least one required):
+```json
+{
+  "first_name": "Casey",
+  "last_name": "Example",
+  "job_title": "Sustainability Lead",
+  "timezone": "America/Los_Angeles",
+  "avatar_asset_id": "6d77dd52-4f08-4d1a-9a5f-09bb7d6f70cf"
+}
+```
+
+Validation rules:
+- `first_name`, `last_name`: 1–64 chars, unicode letters/numbers/dashes/apostrophes.  
+- `job_title`: max 128 chars, trims to `null` when blank.  
+- `timezone`: must be a valid IANA identifier (checked via `Intl.DateTimeFormat`).  
+- `avatar_asset_id`: must reference an uploaded asset of type `user_avatar` owned by the user.
+
+**Response — 200 OK**:
+```json
+{
+  "user": {
+    "id": "4e87c13d-5e21-4b30-a25b-83cf41f2114f",
+    "first_name": "Casey",
+    "last_name": "Example",
+    "job_title": "Sustainability Lead",
+    "timezone": "America/Los_Angeles",
+    "avatar_url": "https://assets.example.com/uploads/user-avatar/..."
+  }
+}
+```
+
+**Errors**:
+- `400 VALIDATION_ERROR` — invalid name/timezone payload (includes flattened issues).  
+- `404 NOT_FOUND` — user missing (should not happen in normal flows).  
+- `409 CONFLICT` — avatar asset already attached elsewhere.
+
+### Change Password (Placeholder)
+
+```http
+POST /api/user/settings/change-password
+```
+
+Currently returns `501 NOT_IMPLEMENTED` with `{ "status": "not_implemented" }`. Wire up UI to show a “coming soon” toast instead of treating it as a failure.
+
+---
+
 ## Error Responses
 
 ### Validation Error (400)
@@ -1364,7 +1578,7 @@ All errors SHOULD use structure:
 | `PLAN_LIMIT_EXCEEDED` | Project limit hit | 409 | `limit`, `current`, `needed`, `resource` |
 | `SEAT_LIMIT_EXCEEDED` | Seat limit hit | 409 | `limit`, `current`, `role` |
 | `VERSION_CONFLICT` | Optimistic lock failed | 409 | `expectedVersion`, `currentVersion` |
-| `RETENTION_EXPIRED` | Soft-delete window passed | 409 | `deleted_at`, `window_days` |
+| `RETENTION_EXPIRED` | Soft-delete window passed | 410 | `deleted_at`, `window_days` |
 | `UPGRADE_NOT_IMPLEMENTED` | Upgrade not available | 501 | `target_plan_code` |
 
 ### Example: Plan Limit Exceeded

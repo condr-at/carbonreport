@@ -3,6 +3,7 @@ import prisma from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { ensureApiError, errorResponse } from '@/lib/api-error'
 import { assertOrgMembership, getOrganizationUsage, getPlan } from '@/lib/server-utils'
+import { ensureUsageSnapshotFresh } from '@/lib/organizations/usage-scheduler'
 
 export async function GET(
   _request: NextRequest,
@@ -13,6 +14,8 @@ export async function GET(
     const { organizationId } = await context.params
 
     await assertOrgMembership(user.id, organizationId)
+
+    await ensureUsageSnapshotFresh(organizationId)
 
     const [plan, usage, snapshots] = await Promise.all([
       getPlan(organizationId),

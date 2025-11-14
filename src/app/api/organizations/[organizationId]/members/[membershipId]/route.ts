@@ -5,18 +5,14 @@ import prisma from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 import { assertOrgMembership, assertWithinLimit } from '@/lib/server-utils'
+import { featureFlags } from '@/lib/config'
+import { scheduleUsageRecompute } from '@/lib/organizations/usage-scheduler'
 
 const UpdateRoleSchema = z.object({
   role: z.nativeEnum(OrganizationMembershipRole).refine((role) => role !== OrganizationMembershipRole.OWNER, {
     message: 'Cannot promote to owner via API',
   }),
 })
-
-function isSeatRole(role: OrganizationMembershipRole) {
-  return (
-    role === OrganizationMembershipRole.EDITOR || role === OrganizationMembershipRole.VIEWER_VERIFIER
-  )
-}
 
 function seatResourceForRole(role: OrganizationMembershipRole) {
   if (role === OrganizationMembershipRole.EDITOR) {
@@ -71,6 +67,10 @@ export async function PATCH(
 
     const nextRole = parsed.data.role
 
+    if (nextRole === OrganizationMembershipRole.VIEWER_VERIFIER && !featureFlags.verifierRoleEnabled) {
+      throw new ApiError(422, 'VALIDATION_ERROR', 'Verifier role is currently disabled')
+    }
+
     if (membership.role === nextRole) {
       return NextResponse.json({
         membership: {
@@ -81,9 +81,10 @@ export async function PATCH(
     }
 
     const nextSeatResource = seatResourceForRole(nextRole)
+    const currentSeatResource = seatResourceForRole(membership.role)
 
     if (nextSeatResource) {
-      const needed = isSeatRole(membership.role) && seatResourceForRole(membership.role) === nextSeatResource ? 0 : 1
+      const needed = currentSeatResource === nextSeatResource ? 0 : 1
       await assertWithinLimit(organizationId, nextSeatResource, { needed })
     }
 
@@ -99,6 +100,8 @@ export async function PATCH(
         role: true,
       },
     })
+
+    await scheduleUsageRecompute(organizationId, { reason: 'membership_role_change' })
 
     return NextResponse.json({
       membership: {
@@ -153,6 +156,8 @@ export async function DELETE(
     await prisma.organizationMembership.delete({
       where: { id: membership.id },
     })
+
+    await scheduleUsageRecompute(organizationId, { reason: 'membership_removed' })
 
     return new NextResponse(null, { status: 204 })
   } catch (error) {

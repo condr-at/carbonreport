@@ -1,6 +1,6 @@
 # Billing Playbook
 
-_Last updated: 2025-11-12_
+_Last updated: 2025-11-13_
 
 > Purpose: Define the forward-looking architecture and operational steps for evolving manual plan assignment (Free, Pro Beta) into a production billing system with history, expiries, usage sources, and external payment integration. This is a planning / specification document—no code changes occur here.
 
@@ -45,6 +45,9 @@ _Last updated: 2025-11-12_
 - Upgrade request: `POST /api/organizations/:id/plan/upgrade` returns `501` and logs intent (ticket/reference placeholder).
 - Limits enforced at creation or state transitions (project active, role seat assignment).
 - No historical audit of plan changes; overwriting `plan_code` loses context.
+- `ensureDefaultPlans()` runs during every seed to guarantee `free` + `pro_beta` definitions exist prior to assigning plans.
+- Seat limits are now enforced both when invites are sent *and* when invitees click `Accept`, preventing back-door overages.
+- Owners can restore soft-deleted organizations within 30 days via `POST /api/organizations/:id/restore`; the scheduler now auto-refreshes usage snapshots, with the manual recompute endpoint reserved for support when instant verification is required.
 
 ---
 ## 3. Target Architecture Overview
@@ -100,8 +103,12 @@ Real-time counters (current implementation):
 - Viewers: counted but not limited (store for analysis).
 
 Snapshots strategy:
-- Nightly cron OR on-demand trigger after threshold changes (project status change, membership role acceptance).
-- Insert into `organization_usage_snapshots` for trend & future billing heuristics.
+- Event-driven scheduler automatically queues recompute jobs after project status changes, membership accept/decline, organization restore, and other usage-affecting mutations.
+- Lazy refresh on Usage/API reads ensures stale snapshots (>5 min) are recomputed before data is returned.
+- Nightly cron remains optional insurance but is no longer required for freshness.
+- Every recompute inserts into `organization_usage_snapshots` for trend & future billing heuristics.
+
+**On-demand recompute (support-only fallback)**: `POST /api/organizations/:id/usage/recompute` is still available when support needs to force an immediate refresh (e.g., after manual SQL edits) or when automation is unavailable. The API writes a new row and returns it to the UI.
 
 Minimum fields in snapshots: `organization_id, computed_at, active_projects, active_editors, active_verifiers, active_viewers`.
 
@@ -141,6 +148,8 @@ Phase 4: Self-serve downgrade (user action) & scheduled expiry downgrades share 
 Current:
 - `GET /api/plan-definitions` (list)
 - `POST /api/organizations/:id/plan/upgrade` (501 placeholder)
+- `POST /api/organizations/:id/usage/recompute` (support-only fallback; normal recomputes are scheduled automatically)
+- `POST /api/organizations/:id/restore` (owner-only, enforces 30-day retention)
 Future:
 - `GET /api/organizations/:id/plan/history` → list assignment rows.
 - `POST /api/organizations/:id/plan/downgrade` → manual downgrade (owner/admin).
@@ -164,6 +173,8 @@ UI Components:
 - **Upgrade Modal**: collects `target_plan_code`, optional contact email, notes.
 - **Expiry Banner**: appears <=14 days before `plan_valid_until`.
 - **Over-limit Warnings**: after downgrade if usage exceeds Free limits (non-blocking).
+- **Usage Snapshot Refresh**: automated scheduler + lazy read refresh keep counts current; UI surfaces the last computed timestamp and a hidden/support-only "Force refresh" action that hits the recompute endpoint if absolutely needed.
+- **Restore Organization Banner**: visible to owners after deletion scheduling; primary CTA hits the restore endpoint and shows retention countdown.
 
 Future Enhancement: Seat usage heatmap & historical project count trend.
 
@@ -188,6 +199,21 @@ SET plan_code='free', plan_assigned_at=NOW(), plan_valid_until=NULL
 WHERE id='...';
 ```
 If over limit post-downgrade: notify user to archive/delete or request upgrade again.
+
+Usage Snapshot Recompute (support path, optional):
+1. Automation fires after every usage-affecting mutation and whenever the Usage tab/API detects a stale snapshot (>5 minutes). No action is required for normal restores, project changes, or seat updates.
+2. If a customer explicitly asks for an immediate refresh or automation is temporarily unavailable, run the manual endpoint below.
+```
+curl -X POST https://app.carbonreport.io/api/organizations/{orgId}/usage/recompute \
+	-H "Cookie: session=..." | jq
+```
+3. Confirm the response body shows the new `computed_at` timestamp and spot-check the Usage tab.
+
+Organization Restore (within retention):
+1. Confirm `deleted_at` < 30 days ago.
+2. Owner (or support impersonating owner) calls `POST /api/organizations/{orgId}/restore`.
+3. Usage metrics will refresh automatically within seconds; only run the manual recompute command if the customer needs proof-of-update immediately or automation is degraded.
+4. Notify customer and remind them limits still apply (they may need to archive projects if they were over limit when deleted).
 
 ---
 ## 14. Metrics & Monitoring

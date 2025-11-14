@@ -1,6 +1,6 @@
 # Development Guide
 
-_Last updated: 2025-11-12_
+_Last updated: 2025-11-13_
 
 This guide consolidates day-to-day engineering practices, active technical debt, and validation tooling. It replaces the previous `TECHNICAL_DEBT.md` and `IMPLEMENTATION_CHECKLIST.md` as the primary reference for contributors. Historical detail remains in `docs/archive/`.
 
@@ -46,8 +46,11 @@ New tables:
 - `organization_usage_snapshots(id UUID PK, organization_id FK, computed_at, active_projects, active_editors, active_verifiers, active_viewers)`
 - `assets(id UUID PK, type enum, url, file_name, mime_type, file_size_bytes, uploaded_by_user_id FK, created_at)`
 
+`assets.type` currently includes `ORG_LOGO` and `USER_AVATAR`; keep Prisma enum + `AssetType` switch statements in sync when adding more resource types.
+
 Altered tables:
 - `projects`: add `organization_id` FK, add `status` enum (`active|archived|reported|deleted`), add `deleted_at`.
+- `users`: add nullable `first_name`, `last_name`, `job_title`, `timezone`, `avatar_asset_id` FK (→ `assets`), plus `avatar_url` for legacy uploads.
 
 Indices (critical):
 - `organizations.slug` UNIQUE
@@ -78,8 +81,10 @@ If a migration fails, use the checklist in the "Database Migration Playbook" bel
 Seed requirements:
 - Plans: `free`, `pro_beta` with limits from docs.
 - Demo user with predictable email (e.g., `demo@carbonreport.local`).
+- Demo user must now include `firstName`, `lastName`, `jobTitle`, and `timezone` to exercise the settings UI. Store the avatar asset ID when available so PATCH validation has real data.
 - Two organizations: one `free`, one `pro_beta` with `plan_valid_until` in near future for UX testing.
 - Memberships: user is `OWNER` in both; add a couple of `VIEWER_READONLY` and (on Pro Beta) up to 2 `EDITOR` seats (respecting the limit).
+- `ensureDefaultPlans()` runs during seeding to keep plan definitions idempotent—do not remove unless production migration guarantees the records.
 
 Reset seed:
 ```bash
@@ -102,6 +107,18 @@ SET plan_code='free', plan_assigned_at=NOW(), plan_valid_until=NULL
 WHERE id='{org_id}';
 ```
 
+### Organization restore & usage recompute
+
+Run these flows whenever support asks for help recovering a tenant or when usage metrics fall out of sync with the database.
+
+1. **Verify retention window** — `organizations.deleted_at` must be within 30 days. Older records require a manual data export; the API will return `410 RETENTION_EXPIRED`.
+2. **Restore the org** — call `POST /api/organizations/:organizationId/restore` as an owner. This clears `deleted_at` and flips `status` back to `active`.
+3. **Usage snapshots auto-update** — after a restore (и любых изменений проектов/ролей) сервер вызывает `scheduleUsageRecompute()` с дебаунсом (30 секунд). Дополнительно `GET /api/organizations/:id/usage` запускает ленивый пересчёт, если последняя запись старше ~5 минут. Это покрывает большинство сценариев без ручных действий.
+4. **Опциональный ручной пересчёт** — при расследовании инцидентов всё ещё можно вызвать `POST /api/organizations/:organizationId/usage/recompute` (admin). Оставьте заметку в тикете, если пользовались этим бэкап-методом.
+5. **Коммуникация** — попросите пользователя просто перезагрузить Usage tab; фронтенд подтянет свежий снимок после ленивой проверки.
+
+For CLI-driven recovery you can use `curl` with an authenticated session cookie (see `docs/DEVELOPMENT.md#manual-testing`) until we wire up an admin UI.
+
 ### Feature flags
 
 Location: `src/lib/config.ts`
@@ -116,6 +133,13 @@ Override via env (example):
 export NEXT_PUBLIC_VERIFIER_ROLE_ENABLED=true
 ```
 
+### User profile & uploads
+
+- `src/app/api/user/settings/route.ts` now exposes GET/PATCH to manage `first_name`, `last_name`, `job_title`, `timezone`, and `avatar_asset_id`. The Zod schema requires at least one field per request—keep this logic in sync with any future UI wizard.
+- `src/lib/assets/service.ts` centralizes asset validation (`ensureOrgLogoAsset`, `ensureUserAvatarAsset`). Always call these helpers before writing `*_asset_id` into user/org records so we do not attach the wrong resource type.
+- Upload signing (`POST /api/uploads/sign`) only allows `image/png`, `image/jpeg`, or `image/svg+xml` and enforces a 512 KB limit. Avatars/logos must be square (±10% tolerance) before they are accepted by downstream PATCH handlers.
+- `src/lib/uploads.ts` exposes `validateImageDimensions` for any future EXIF or client-side preflight logic—prefer reusing it over duplicating the math in React components.
+
 ### Test plan (summary)
 
 Unit:
@@ -128,11 +152,16 @@ Integration:
 - Invite EDITOR на Free → `409 SEAT_LIMIT_EXCEEDED`.
 - Delete organization → статус `deleted` + каскад soft-delete проектов.
 - Restore project при переполнении → `409 PLAN_LIMIT_EXCEEDED`.
+- Accept & decline membership invitations → verify seat enforcement + feature-flagged verifier role guard.
+- Restore organization within 30 days → expect `200`, then recompute usage snapshot and assert counts.
+- PATCH `/api/user/settings` → name/zone normalization + avatar asset ownership validation.
 
 E2E:
 - Organization switcher (переключение, empty/loading/error).
 - Expiry banner для Pro Beta (валид <=14 дней).
 - Restore из `deleted` после 30 дней → `RETENTION_EXPIRED` (ошибка в UI).
+- Membership self-service accept/decline from email deep link.
+- Profile editor with avatar upload + timezone search.
 
 ---
 
@@ -223,6 +252,10 @@ Progress on automated tests should be tracked in `docs/planning/BACKLOG.md`.
 | `scripts/verify-schema.ts` | Validates Prisma schema vs generated client. |
 | `src/lib/server-data/` | Server data loaders, caching, lazy hydration helpers. |
 | `src/lib/data-requests/service.ts` | Source of truth for data-request mutations. |
+| `src/lib/projects/service.ts` | Shared project status + restore helpers (plan/retention enforcement). |
+| `src/lib/organizations/restore.ts` | Organization restore + usage recompute logic. |
+| `src/lib/assets/service.ts` | Guards asset ownership/type before attaching to entities. |
+| `src/lib/uploads.ts` | MIME/type registry, filename sanitiser, and square image validator. |
 
 ---
 

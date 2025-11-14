@@ -7,27 +7,12 @@ import {
 import prisma from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
-import { assertOrgMembership, PROJECT_RETENTION_DAYS } from '@/lib/server-utils'
-const DAY_IN_MS = 24 * 60 * 60 * 1000
+import { assertOrgMembership } from '@/lib/server-utils'
+import { computeProjectRetention } from '@/lib/projects/service'
+import { scheduleUsageRecompute } from '@/lib/organizations/usage-scheduler'
 
 interface RouteParams {
   params: Promise<{ id: string }>
-}
-
-function computeRetentionMetadata(deletedAt: Date | null) {
-  if (!deletedAt) {
-    return null
-  }
-
-  const expiresAt = new Date(deletedAt.getTime() + PROJECT_RETENTION_DAYS * DAY_IN_MS)
-  const now = Date.now()
-  const remainingMs = Math.max(0, expiresAt.getTime() - now)
-  const daysRemaining = Math.ceil(remainingMs / DAY_IN_MS)
-
-  return {
-    expires_at: expiresAt,
-    days_remaining: daysRemaining,
-  }
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -82,7 +67,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           template_code: report.templateCode,
           completion: report.completion,
         })),
-        retention: computeRetentionMetadata(project.deletedAt),
+        retention: computeProjectRetention(project.deletedAt),
       },
     })
   } catch (error) {
@@ -130,13 +115,15 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       })
     }
 
+    await scheduleUsageRecompute(project.organizationId, { reason: 'project_deleted' })
+
     return NextResponse.json(
       {
         project: {
           id: project.id,
           status: ProjectStatus.DELETED,
           deleted_at: deletedAt,
-          retention: computeRetentionMetadata(deletedAt),
+          retention: computeProjectRetention(deletedAt),
         },
         already_deleted: deletionAlreadyApplied,
       },
