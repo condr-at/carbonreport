@@ -1,0 +1,11 @@
+{
+  "upload": {
+    "asset_id": "054d5e02-2c87-4641-9317-8d4195147ddc",
+    "url": "https://3d152d603c5ac1700d3255748578b058.r2.cloudflarestorage.com/carbonreport-assets/uploads/user-avatar/054d5e02-2c87-4641-9317-8d4195147ddc/manual-avatar.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=855bc4156971bf50e16613f44c866e7f%2F20251115%2Feeur%2Fs3%2Faws4_request&X-Amz-Date=20251115T004944Z&X-Amz-Expires=60&X-Amz-Signature=3e7cbfacdcf164544e556bdebdef7927f383b5fa266d27efaaae3589c6265222&X-Amz-SignedHeaders=content-length%3Bhost&x-amz-checksum-crc32=AAAAAA%3D%3D&x-amz-sdk-checksum-algorithm=CRC32&x-id=PutObject",
+    "method": "PUT",
+    "headers": {
+      "Content-Type": "image/png"
+    },
+    "expires_at": "2025-11-15T00:50:45.225Z"
+  }
+}
