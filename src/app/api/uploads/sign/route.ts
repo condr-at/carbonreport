@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post'
-import { S3Client } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { randomUUID } from 'node:crypto'
 import prisma from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
@@ -97,32 +98,58 @@ export async function POST(request: NextRequest) {
     const encodedKey = encodeKeyForUrl(objectKey)
     const assetUrl = `${config.publicBaseUrl}/${encodedKey}`
 
-    let uploadTarget: { url: string; fields: Record<string, string> }
+    type UploadTarget =
+      | { method: 'POST'; url: string; fields: Record<string, string> }
+      | { method: 'PUT'; url: string; headers: Record<string, string> }
+
+    let uploadTarget: UploadTarget
 
     if (config.mode === 's3') {
       const s3 = getClient(config)
-      const presigned = await createPresignedPost(s3, {
-        Bucket: config.bucket,
-        Key: objectKey,
-        Conditions: [
-          ['content-length-range', 1, MAX_UPLOAD_SIZE_BYTES],
-          ['eq', '$Content-Type', normalizedMime.mime],
-        ],
-        Fields: {
-          key: objectKey,
-          'Content-Type': normalizedMime.mime,
-        },
-        Expires: config.expiresInSeconds,
-      })
+        if (config.uploadStrategy === 'presigned_put') {
+          const command = new PutObjectCommand({
+            Bucket: config.bucket,
+            Key: objectKey,
+            ContentType: normalizedMime.mime,
+            ContentLength: fileSizeBytes,
+          })
+          const signedUrl = await getSignedUrl(s3, command, {
+            expiresIn: config.expiresInSeconds,
+          })
 
-      uploadTarget = {
-        url: presigned.url,
-        fields: presigned.fields,
-      }
+          uploadTarget = {
+            method: 'PUT',
+            url: signedUrl,
+            headers: {
+              'Content-Type': normalizedMime.mime,
+            },
+          }
+        } else {
+          const presigned = await createPresignedPost(s3, {
+            Bucket: config.bucket,
+            Key: objectKey,
+            Conditions: [
+              ['content-length-range', 1, MAX_UPLOAD_SIZE_BYTES],
+              ['eq', '$Content-Type', normalizedMime.mime],
+            ],
+            Fields: {
+              key: objectKey,
+              'Content-Type': normalizedMime.mime,
+            },
+            Expires: config.expiresInSeconds,
+          })
+
+          uploadTarget = {
+            method: 'POST',
+            url: presigned.url,
+            fields: presigned.fields,
+          }
+        }
     } else {
       uploadTarget = {
-        url: '/api/uploads/local',
-        fields: {
+          method: 'POST',
+          url: '/api/uploads/local',
+          fields: {
           key: objectKey,
           'Content-Type': normalizedMime.mime,
         },
@@ -148,7 +175,9 @@ export async function POST(request: NextRequest) {
         upload: {
           asset_id: assetId,
           url: uploadTarget.url,
-          fields: uploadTarget.fields,
+          method: uploadTarget.method,
+          ...(uploadTarget.method === 'POST' ? { fields: uploadTarget.fields } : {}),
+          ...(uploadTarget.method === 'PUT' ? { headers: uploadTarget.headers } : {}),
           expires_at: expiresAt.toISOString(),
         },
       },

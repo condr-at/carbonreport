@@ -22,6 +22,7 @@ export type S3UploadConfig = {
   expiresInSeconds: number
   endpoint?: string
   credentials?: Credentials
+  uploadStrategy: 'presigned_post' | 'presigned_put'
 }
 
 export type LocalUploadConfig = {
@@ -121,6 +122,9 @@ export function resolveUploadConfig(): UploadConfig {
     const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
     const sessionToken = process.env.AWS_SESSION_TOKEN
     const endpoint = process.env.ASSETS_S3_ENDPOINT?.trim().replace(/\/$/, '') || undefined
+    const rawStrategy = process.env.ASSETS_S3_UPLOAD_STRATEGY?.trim().toLowerCase()
+    const defaultStrategy = endpoint?.includes('.r2.cloudflarestorage.com') ? 'presigned_put' : 'presigned_post'
+    const uploadStrategy = rawStrategy === 'put' ? 'presigned_put' : rawStrategy === 'post' ? 'presigned_post' : defaultStrategy
 
     const credentials = accessKeyId && secretAccessKey
       ? { accessKeyId, secretAccessKey, sessionToken: sessionToken || undefined }
@@ -135,6 +139,7 @@ export function resolveUploadConfig(): UploadConfig {
       expiresInSeconds,
       endpoint,
       credentials,
+      uploadStrategy,
     }
   }
 

@@ -6,13 +6,25 @@ import type { UploadResourceType } from '@/lib/uploads/resource-types';
 
 export type { UploadResourceType } from '@/lib/uploads/resource-types';
 
+type PostUploadInstruction = {
+  method: 'POST'
+  url: string
+  fields: Record<string, string>
+}
+
+type PutUploadInstruction = {
+  method: 'PUT'
+  url: string
+  headers: Record<string, string>
+}
+
+type UploadInstruction = (PostUploadInstruction | PutUploadInstruction) & {
+  asset_id: string
+  expires_at: string
+}
+
 export type SignedUploadResponse = {
-  upload: {
-    asset_id: string;
-    url: string;
-    fields: Record<string, string>;
-    expires_at: string;
-  };
+  upload: UploadInstruction
 };
 
 export class UploadError extends Error {
@@ -69,16 +81,29 @@ async function requestSignedUpload(resourceType: UploadResourceType, file: File)
   }
 }
 
-async function performUpload(url: string, fields: Record<string, string>, file: File) {
-  const formData = new FormData();
-  Object.entries(fields).forEach(([key, value]) => {
-    formData.append(key, value);
-  });
-  formData.append('file', file);
+async function performUpload(upload: UploadInstruction, file: File) {
+  if (upload.method === 'POST') {
+    const formData = new FormData();
+    Object.entries(upload.fields).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+    formData.append('file', file);
 
-  const response = await fetch(url, {
-    method: 'POST',
-    body: formData,
+    const response = await fetch(upload.url, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new UploadError('Failed to upload file to storage.', response.status);
+    }
+    return
+  }
+
+  const response = await fetch(upload.url, {
+    method: 'PUT',
+    headers: upload.headers,
+    body: file,
   });
 
   if (!response.ok) {
@@ -90,7 +115,7 @@ export async function uploadAsset(resourceType: UploadResourceType, file: File) 
   assertFileConstraints(file);
 
   const { upload } = await requestSignedUpload(resourceType, file);
-  await performUpload(upload.url, upload.fields, file);
+  await performUpload(upload, file);
 
   return {
     assetId: upload.asset_id,
