@@ -21,6 +21,7 @@ type PutUploadInstruction = {
 type UploadInstruction = (PostUploadInstruction | PutUploadInstruction) & {
   asset_id: string
   expires_at: string
+  relay_path?: string
 }
 
 export type SignedUploadResponse = {
@@ -81,7 +82,31 @@ async function requestSignedUpload(resourceType: UploadResourceType, file: File)
   }
 }
 
+async function uploadViaRelay(upload: UploadInstruction, file: File) {
+  if (!upload.relay_path) {
+    return
+  }
+
+  const relayFormData = new FormData()
+  relayFormData.append('file', file)
+  relayFormData.append('upload', JSON.stringify(upload))
+
+  const relayResponse = await fetch(upload.relay_path, {
+    method: 'POST',
+    body: relayFormData,
+  })
+
+  if (!relayResponse.ok) {
+    throw new UploadError('Failed to upload file via relay.', relayResponse.status)
+  }
+}
+
 async function performUpload(upload: UploadInstruction, file: File) {
+  if (upload.relay_path) {
+    await uploadViaRelay(upload, file)
+    return
+  }
+
   if (upload.method === 'POST') {
     const formData = new FormData();
     Object.entries(upload.fields).forEach(([key, value]) => {

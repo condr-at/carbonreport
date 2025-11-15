@@ -23,6 +23,7 @@ export type S3UploadConfig = {
   endpoint?: string
   credentials?: Credentials
   uploadStrategy: 'presigned_post' | 'presigned_put'
+  uploadRequiresRelay: boolean
 }
 
 export type LocalUploadConfig = {
@@ -125,6 +126,9 @@ export function resolveUploadConfig(): UploadConfig {
     const rawStrategy = process.env.ASSETS_S3_UPLOAD_STRATEGY?.trim().toLowerCase()
     const defaultStrategy = endpoint?.includes('.r2.cloudflarestorage.com') ? 'presigned_put' : 'presigned_post'
     const uploadStrategy = rawStrategy === 'put' ? 'presigned_put' : rawStrategy === 'post' ? 'presigned_post' : defaultStrategy
+    const rawRelay = process.env.ASSETS_UPLOADS_REQUIRE_RELAY?.trim().toLowerCase()
+    const defaultRelay = endpoint?.includes('.r2.cloudflarestorage.com') ?? false
+    const uploadRequiresRelay = rawRelay === 'true' ? true : rawRelay === 'false' ? false : defaultRelay
 
     const credentials = accessKeyId && secretAccessKey
       ? { accessKeyId, secretAccessKey, sessionToken: sessionToken || undefined }
@@ -140,6 +144,7 @@ export function resolveUploadConfig(): UploadConfig {
       endpoint,
       credentials,
       uploadStrategy,
+      uploadRequiresRelay,
     }
   }
 

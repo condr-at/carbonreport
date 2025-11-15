@@ -8,8 +8,8 @@ import prisma from '@/lib/db'
 import { MAX_UPLOAD_SIZE_BYTES } from '@/lib/uploads'
 
 type UploadPayload =
-  | { method: 'POST'; fields: Record<string, string>; headers?: never }
-  | { method: 'PUT'; headers: Record<string, string>; fields?: never }
+  | { method: 'POST'; fields: Record<string, string>; headers?: never; relay_path?: string }
+  | { method: 'PUT'; headers: Record<string, string>; fields?: never; relay_path?: string }
 
 type UploadResponse = {
   upload: UploadPayload & {
@@ -66,6 +66,7 @@ test.afterEach(() => {
   delete process.env.AWS_ACCESS_KEY_ID
   delete process.env.AWS_SECRET_ACCESS_KEY
   delete process.env.ASSETS_S3_UPLOAD_STRATEGY
+  delete process.env.ASSETS_UPLOADS_REQUIRE_RELAY
   delete process.env.ENABLE_LOCAL_UPLOADS
   delete process.env.LOCAL_UPLOADS_DIR
   delete process.env.LOCAL_UPLOADS_PUBLIC_PATH
@@ -140,6 +141,7 @@ test('returns presigned payload and records asset on success', async (t) => {
   }
   assert.ok(payload.upload.fields.key)
   assert.equal(payload.upload.fields['Content-Type'], 'image/png')
+  assert.equal(payload.upload.relay_path, undefined)
 
   const expiresAt = new Date(payload.upload.expires_at)
   assert.ok(expiresAt.getTime() > Date.now())
@@ -183,6 +185,7 @@ test('presigned URL uses custom endpoint when configured', async (t) => {
       throw new Error('Expected PUT upload for R2 endpoint')
     }
     assert.equal(payload.upload.headers['Content-Type'], 'image/png')
+    assert.equal(payload.upload.relay_path, '/api/uploads/relay')
   } else {
     throw new Error('Missing upload payload')
   }
@@ -191,6 +194,7 @@ test('presigned URL uses custom endpoint when configured', async (t) => {
 test('honors explicit presigned PUT strategy', async (t) => {
   stubGetCurrentUser(t)
   process.env.ASSETS_S3_UPLOAD_STRATEGY = 'put'
+  process.env.ASSETS_UPLOADS_REQUIRE_RELAY = 'false'
 
   const originalAssetCreate = prisma.asset.create
   ;(prisma.asset as any).create = async (args: any) => ({ id: args.data.id })
@@ -215,6 +219,7 @@ test('honors explicit presigned PUT strategy', async (t) => {
   }
   assert.ok(payload.upload.url.includes('https://test-bucket.s3.us-east-1.amazonaws.com'))
   assert.equal(payload.upload.headers['Content-Type'], 'image/png')
+  assert.equal(payload.upload.relay_path, undefined)
 })
 
 test('falls back to local upload target when bucket config is missing', async (t) => {
@@ -253,6 +258,7 @@ test('falls back to local upload target when bucket config is missing', async (t
   }
   assert.equal(payload.upload.url, '/api/uploads/local')
   assert.ok(payload.upload.fields.key.startsWith('uploads/user-avatar/'))
+  assert.equal(payload.upload.relay_path, undefined)
   assert.ok(recordedArgs)
   assert.equal(recordedArgs.data.url.startsWith('/dev-uploads/'), true)
 })

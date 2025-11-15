@@ -99,8 +99,8 @@ export async function POST(request: NextRequest) {
     const assetUrl = `${config.publicBaseUrl}/${encodedKey}`
 
     type UploadTarget =
-      | { method: 'POST'; url: string; fields: Record<string, string> }
-      | { method: 'PUT'; url: string; headers: Record<string, string> }
+      | { method: 'POST'; url: string; fields: Record<string, string>; relayPath?: string }
+      | { method: 'PUT'; url: string; headers: Record<string, string>; relayPath?: string }
 
     let uploadTarget: UploadTarget
 
@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
             headers: {
               'Content-Type': normalizedMime.mime,
             },
+            relayPath: config.uploadRequiresRelay ? '/api/uploads/relay' : undefined,
           }
         } else {
           const presigned = await createPresignedPost(s3, {
@@ -143,6 +144,7 @@ export async function POST(request: NextRequest) {
             method: 'POST',
             url: presigned.url,
             fields: presigned.fields,
+            relayPath: config.uploadRequiresRelay ? '/api/uploads/relay' : undefined,
           }
         }
     } else {
@@ -178,6 +180,7 @@ export async function POST(request: NextRequest) {
           method: uploadTarget.method,
           ...(uploadTarget.method === 'POST' ? { fields: uploadTarget.fields } : {}),
           ...(uploadTarget.method === 'PUT' ? { headers: uploadTarget.headers } : {}),
+          ...(uploadTarget.relayPath ? { relay_path: uploadTarget.relayPath } : {}),
           expires_at: expiresAt.toISOString(),
         },
       },
