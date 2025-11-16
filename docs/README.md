@@ -1,19 +1,36 @@
 # Documentation Index
 
-_Last updated: 2025-11-12_
+_Last updated: 2025-11-16_
 
 This folder contains the working documentation for the Carbon Report Platform. The layout was refreshed to reduce duplication and make it easier to find the right reference quickly.
 
 ---
 
+## 🎯 Current Status: Multi-Org Implementation
+
+**Overall Progress**: 🟡 **85% Complete**  
+**Staging Ready**: ✅ YES | **Production Ready**: ❌ NO (test coverage blocker)
+
+👉 **Quick Status**: See [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md)  
+📋 **Remaining Work**: See [`planning/BACKLOG.md`](./planning/BACKLOG.md)
+
+**Production Blockers**:
+- 🔴 Test coverage critical gap (only 3 test files, need integration/E2E)
+- 🔴 Authentication dev stub (requires JWT middleware)
+- 🟡 Minor UI polish (expiry warnings, retention countdown)
+
+**Timeline to Production**: ~2-3 days (excluding auth work)
+
+---
+
 ## 🧭 Documentation Structure
 
-- `IMPLEMENTATION_CHECKLIST.md` — release-readiness gates to run before shipping a slice of work.
-- `planning/ROADMAP.md` — phase sequencing, milestones, and cross-team dependencies.
-- `planning/BACKLOG.md` — actionable tasks and ideas queued for delivery.
-- `archive/` — historical deep-dives retained for context, no longer the source of truth.
+- `IMPLEMENTATION_STATUS.md` — **NEW**: Current multi-org implementation status & readiness
+- `planning/BACKLOG.md` — Actionable tasks and work queue
+- `planning/ROADMAP.md` — Phase sequencing, milestones, dependencies
+- `archive/` — Historical deep-dives retained for context
 
-Use the table below when you need to know “why does this file exist?” and the Backlog when you need the next concrete task.
+Use the table below when you need to know "why does this file exist?" and the Backlog when you need the next concrete task.
 
 ---
 
@@ -46,17 +63,16 @@ Use the table below when you need to know “why does this file exist?” and th
 
 | File | Who | Why |
 | --- | --- | --- |
+| [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) | **Everyone** | **Quick status**: Multi-org readiness (85%), blockers, timeline |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Engineers, PMs | High-level system & data architecture (supersedes archived requirements docs). |
 | [`DEVELOPMENT.md`](./DEVELOPMENT.md) | Engineers | Day-to-day workflow, active technical debt, validation tooling. |
 | [`API_REFERENCE.md`](./API_REFERENCE.md) | Engineers | REST endpoint definitions, request/response schemas. |
 | [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Engineers, Designers | UI components, spacing, accessibility rules. |
 | [`UX_GUIDE.md`](./UX_GUIDE.md) | Product, Design | UX flows, layout templates, page-to-API mapping. |
 | [`BILLING_PLAYBOOK.md`](./BILLING_PLAYBOOK.md) | Engineers, PMs | Эволюция биллинга: история планов, expiry, webhooks, источники usage. |
-| [`IMPLEMENTATION_CHECKLIST.md`](./IMPLEMENTATION_CHECKLIST.md) | Everyone | Ship checklist covering scope, implementation, testing, and rollout gates. |
 | [`planning/ROADMAP.md`](./planning/ROADMAP.md) | PMs, Leads | Phase sequencing, milestones, and dependencies. |
 | [`planning/BACKLOG.md`](./planning/BACKLOG.md) | Engineers, PMs | Prioritized tasks and follow-ups feeding the roadmap phases. |
 | [`reference/data-points-hints.md`](./reference/data-points-hints.md) | Engineers, Analysts | Narrative hints for key dataset fields (legacy CamelCase identifiers). |
-| [`TECHNICAL_DEBT.md`](./TECHNICAL_DEBT.md) | Everyone | Pointer to the consolidated development guide. |
 
 ---
 

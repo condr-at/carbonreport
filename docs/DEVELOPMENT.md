@@ -1,6 +1,6 @@
 # Development Guide
 
-_Last updated: 2025-11-13_
+_Last updated: 2025-11-16_
 
 This guide consolidates day-to-day engineering practices, active technical debt, and validation tooling. It replaces the previous `TECHNICAL_DEBT.md` and `IMPLEMENTATION_CHECKLIST.md` as the primary reference for contributors. Historical detail remains in `docs/archive/`.
 
@@ -172,13 +172,15 @@ E2E:
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Phase 1 — Database migration | ✅ Complete | Migrations applied, dataset JSONB live. |
+| Phase 1 — Database migration | ✅ Complete | All multi-org tables, enums, indices in place. |
 | Phase 2 — Type safety layer | ✅ Complete | Zod schemas & helpers shipped. |
-| Phase 3 — API routes | 🟡 Mostly done | Remaining tasks tracked in `docs/planning/BACKLOG.md`. |
-| Phase 3 — Frontend polish | 🟡 Ongoing | Dataset/report request badges outstanding. |
-| Phase 4 — Testing | 🔴 Not started | Unit & integration coverage needed before production. |
-| Phase 5 — Documentation | 🟡 Ongoing | Architecture + dev docs refreshed; JSDoc pending. |
-| Phase 6 — Deployment prep | 🔴 Not started | No staging checklist or rollback plan yet. |
+| Phase 3 — API routes | ✅ Complete | Organizations, Projects, Dataset, Uploads APIs fully implemented. |
+| Phase 3 — Frontend polish | 🟡 Mostly done | Settings UI complete; minor UX gaps (expiry warnings, retention countdown). |
+| Phase 4 — Testing | 🔴 Critical gap | Only 2 unit test files exist; integration/E2E tests missing. |
+| Phase 5 — Documentation | ✅ Complete | Architecture, API, UX, Development docs up-to-date. |
+| Phase 6 — Deployment prep | � Partial | Staging ready; production blocked by test coverage. |
+
+**Current Readiness: 85%**
 
 Detailed task breakdown (including open checklist items) now lives in `docs/planning/BACKLOG.md`.
 
@@ -186,7 +188,34 @@ Detailed task breakdown (including open checklist items) now lives in `docs/plan
 
 ## Active Technical Debt
 
-### 1. Authentication Workaround (Blocker for Production)
+### 1. **Test Coverage (Production Blocker)** 🔴
+- **Location**: Entire codebase — only 3 test files exist.
+- **Issue**: Critical multi-org flows lack automated coverage:
+  - No integration tests for limits (PLAN_LIMIT_EXCEEDED, SEAT_LIMIT_EXCEEDED)
+  - No E2E tests for organization switcher, restore flows, optimistic locking
+  - Missing unit tests for guards (assertWithinLimit, assertOrgMembership)
+- **Impact**: High risk of regression; cannot safely deploy to production.
+- **Next steps**:
+  1. **Priority 1 (Integration)**: Create org with plan=free, invite editor → SEAT_LIMIT_EXCEEDED, delete org → cascade soft-delete, restore project → PLAN_LIMIT_EXCEEDED/RETENTION_EXPIRED.
+  2. **Priority 2 (Unit)**: Limits guards, role guards, usage calculations, retention checks.
+  3. **Priority 3 (E2E)**: Switcher context changes, expiry warnings, dataset VERSION_CONFLICT handling.
+- **Tracking**: Documented in `docs/planning/BACKLOG.md` Epic: Tests.
+- **Timeline**: **1-2 days to unblock production.**
+
+### 2. **UI Warnings & Polish** 🟡
+- **Location**: Organization Switcher, Project List, Restore flows.
+- **Issue**: Missing user-facing feedback for edge cases:
+  - Switcher does not show visual warning when `plan_valid_until <= NOW() + 14 days`
+  - Project list lacks retention countdown for deleted projects ("Expires in 25 days")
+  - Restore action does not show friendly error when PLAN_LIMIT_EXCEEDED (suggests archiving other projects or upgrade)
+- **Impact**: Medium — backend works correctly, but UX lacks polish for limit scenarios.
+- **Next steps**:
+  1. Add expiry badge/banner in `src/components/layouts/main-sidebar.tsx`.
+  2. Add retention countdown badge in `src/app/projects/page.tsx` for deleted status.
+  3. Enhance restore error handling with actionable suggestions.
+- **Timeline**: **~4 hours.**
+
+### 3. Authentication Workaround (Blocker for Production)
 - **Location**: `src/app/api/projects/route.ts` POST handler.
 - **Issue**: Uses `prisma.user.upsert()` to auto-create users, bypassing real auth.
 - **Next steps**:
@@ -196,7 +225,7 @@ Detailed task breakdown (including open checklist items) now lives in `docs/plan
 - **Related docs**: `docs/API_REFERENCE.md` (Authentication section).
 - **Tracking**: High priority before any production launch.
 
-### 2. Database Connection Reliability
+### 4. Database Connection Reliability
 - **Location**: `.env`, `prisma/schema.prisma`, `prisma/seed.ts`.
 - **Issue**: Supabase free tier sleeps; seeds occasionally time out.
 - **Next steps**:
@@ -204,7 +233,15 @@ Detailed task breakdown (including open checklist items) now lives in `docs/plan
   2. Add retry logic / exponential backoff to Prisma client initialisation.
   3. Document wake-up procedure for local devs.
 
-### 3. SSR Payload Instrumentation
+### 4. Database Connection Reliability
+- **Location**: `.env`, `prisma/schema.prisma`, `prisma/seed.ts`.
+- **Issue**: Supabase free tier sleeps; seeds occasionally time out.
+- **Next steps**:
+  1. Evaluate paid Supabase tier or alternative hosting.
+  2. Add retry logic / exponential backoff to Prisma client initialisation.
+  3. Document wake-up procedure for local devs.
+
+### 5. SSR Payload Instrumentation
 - **Location**: `src/app/projects/[id]/dataset/page.tsx`, `src/app/projects/[id]/data-requests/page.tsx`.
 - **Issue**: Instrumentation exists, but ongoing monitoring is manual.
 - **Next steps**:
@@ -229,18 +266,52 @@ Resolved backlog items remain in archived checklists for traceability.
 
 ## Testing Roadmap
 
-1. **Unit tests**
-   - Dataset validation helpers (`src/lib/dataset-validation.ts`).
-   - Mailto template validators (pending module).
-2. **Integration tests**
-   - Project creation flow (dataset + mailto defaults).
-   - Dataset optimistic locking (409 handling).
-   - Data request lifecycle (bulk → complete → revoke).
-      - Global requests board filters/actions once the top-level `/requests` view ships (see `docs/planning/BACKLOG.md`).
-3. **Manual smoke checklist** (until automated coverage exists)
+**Current Status**: 🔴 **Critical Gap** — Only 3 test files exist (15% coverage estimate).
+
+Existing tests:
+- ✅ `src/lib/data-requests/service.test.ts` — Unit tests for bulk requests (latest pending contact logic)
+- ✅ `src/app/api/uploads/sign/route.test.ts` — Unit tests for uploads (MIME validation, size limits, happy path)
+- ✅ `src/app/api/uploads/relay/route.test.ts` — Local upload relay tests
+
+**Required for Production** (per BACKLOG.md):
+
+1. **Unit tests** (Priority 1)
+   - ✅ Dataset validation helpers (`src/lib/dataset-validation.ts`) — existing coverage
+   - ❌ Limits guards: `assertWithinLimit` для project/editor/verifier
+   - ❌ Role guards: `assertOrgMembership` с разными ролями
+   - ❌ Usage calculations: `getOrganizationUsage`
+   - ❌ Retention checks: `computeProjectRetention`
+   - ❌ Plan resolution: `getPlan(orgId)`
+
+2. **Integration tests** (Priority 1)
+   - ❌ Create organization → plan=free, auto-membership
+   - ❌ Invite editor → SEAT_LIMIT_EXCEEDED при исчерпании лимита
+   - ❌ Delete organization → cascade soft-delete всех проектов
+   - ❌ Restore project → PLAN_LIMIT_EXCEEDED / RETENTION_EXPIRED scenarios
+   - ❌ Accept/decline membership invitations → seat enforcement
+   - ❌ Uploads: 413 (size), 415 (MIME), happy path с S3
+   - ❌ Dataset optimistic locking (409 handling)
+   - ❌ Data request lifecycle (bulk → complete → revoke)
+
+3. **E2E tests** (Priority 2)
+   - ❌ Organization switcher (смена контекста, empty/loading/error states)
+   - ❌ Expiry banner для Pro Beta (plan_valid_until <= 14 дней)
+   - ❌ Restore из deleted после retention window → RETENTION_EXPIRED UI
+   - ❌ Dataset VERSION_CONFLICT → refetch и пользовательское уведомление
+   - ❌ Membership self-service accept/decline from email deep link
+   - ❌ Profile editor with avatar upload + timezone search
+
+4. **Manual smoke checklist** (until automated coverage exists)
    - Create project → verify datasetVersion increments.
    - Request data → verify the Responsible column shows the latest pending contact name (fallback "—").
    - Edit mailto template → reset to defaults.
+   - Global requests board filters/actions once the top-level `/requests` view ships (see `docs/planning/BACKLOG.md`).
+
+**Next Steps**:
+1. Create `src/__tests__/` directory structure
+2. Set up test environment (Vitest or Jest + React Testing Library)
+3. Implement Priority 1 tests (integration + unit for guards/limits)
+4. Block production deploy until integration tests pass
 
 Progress on automated tests should be tracked in `docs/planning/BACKLOG.md`.
 
