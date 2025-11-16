@@ -64,7 +64,7 @@ Sidebar:
 Organization switcher: логотип (инициалы fallback), имя, метка плана (Free, Pro Beta), счётчик активных проектов X / limit.
 Опции: “Create organization”, “Manage organization”.
 User блок в футере остаётся (профиль + ссылка в настройки).
-Organization Settings (/settings/organization):
+Organization Settings (/settings):
 Tabs:
 Profile: имя, описание, логотип (upload), slug (read-only или скрыт), план + дата истечения (если есть).
 Members: таблица пользователей (avatar, name, role, last active), actions (Change role, Remove, Resend invite).

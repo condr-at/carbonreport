@@ -1,40 +1,40 @@
-'use client';
+'use client'
 
-import { useEffect, useState, type ChangeEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { usePlanUpgradeRequest } from '@/lib/data-client/organizations';
-import { Loader2, Rocket } from 'lucide-react';
+import { useEffect, useState, type ChangeEvent } from 'react'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { usePlanUpgradeRequest } from '@/lib/data-client/organizations'
+import { Loader2, Rocket } from 'lucide-react'
 
 const PLAN_OPTIONS = [
   { code: 'pro_beta', label: 'Pro Beta' },
-];
+]
 
 type UpgradePlanDialogProps = {
-  organizationId: string;
-  currentPlanCode: string;
-};
+  organizationId: string
+  currentPlanCode: string
+}
 
 export function UpgradePlanDialog({ organizationId, currentPlanCode }: UpgradePlanDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [targetPlan, setTargetPlan] = useState('pro_beta');
-  const [contactEmail, setContactEmail] = useState('');
-  const [notes, setNotes] = useState('');
-  const upgradeMutation = usePlanUpgradeRequest(organizationId);
+  const [open, setOpen] = useState(false)
+  const [targetPlan, setTargetPlan] = useState('pro_beta')
+  const [contactEmail, setContactEmail] = useState('')
+  const [notes, setNotes] = useState('')
+  const upgradeMutation = usePlanUpgradeRequest(organizationId)
 
   useEffect(() => {
     if (!open) {
-      setTargetPlan('pro_beta');
-      setContactEmail('');
-      setNotes('');
+      setTargetPlan('pro_beta')
+      setContactEmail('')
+      setNotes('')
     }
-  }, [open]);
+  }, [open])
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+    event.preventDefault()
     upgradeMutation.mutate(
       {
         target_plan_code: targetPlan,
@@ -43,13 +43,13 @@ export function UpgradePlanDialog({ organizationId, currentPlanCode }: UpgradePl
       },
       {
         onSuccess: () => {
-          setOpen(false);
+          setOpen(false)
         },
       },
-    );
-  };
+    )
+  }
 
-  const isSubmitting = upgradeMutation.isPending;
+  const isSubmitting = upgradeMutation.isPending
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -123,5 +123,5 @@ export function UpgradePlanDialog({ organizationId, currentPlanCode }: UpgradePl
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

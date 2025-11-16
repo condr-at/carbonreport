@@ -49,16 +49,17 @@ graph LR
 
     subgraph "Settings Pages"
       D1[/settings<br/>User settings overview]
-      D2[/settings/profile<br/>Profile]
+  D2[/profile<br/>Profile]
       D3[/settings/password<br/>Password]
       D4[/settings/organizations<br/>Organizations list]
     end
 
     subgraph "Organization Settings"
-      E1[/settings/organization<br/>Organization profile]
-      E2[/settings/organization/members<br/>Members]
-      E3[/settings/organization/usage<br/>Usage & Limits]
-      E4[/settings/organization/danger<br/>Danger Zone]
+      E1[/settings/profile<br/>Org profile]
+      E2[/settings/members<br/>Members]
+      E3[/settings/usage<br/>Usage & Limits]
+      E4[/settings/billing<br/>Billing]
+      E5[/settings/danger<br/>Danger Zone]
     end
   end
 
@@ -86,14 +87,20 @@ graph LR
 
   B1 --> E1
   E1 --> E2
-  E1 --> E3
-  E1 --> E4
+  E2 --> E3
+  E3 --> E4
+  E4 --> E5
 ```
 
 ### Organization Settings
 
-- **URL**: `/settings/organization`
-- **Tabs**: Profile (default), Members, Usage & Limits, Danger Zone. Persist last tab via query parameter `?tab=` for deep linking.
+- **Routes**:
+  - `/settings/profile` — Profile (default)
+  - `/settings/members` — Members
+  - `/settings/usage` — Usage & Limits
+  - `/settings/billing` — Billing
+  - `/settings/danger` — Danger Zone
+- `/settings` is a thin redirect to `/settings/profile` (preserves query params such as `?mode=create`).
 - **Header**: organization name, plan pill, `Plan valid until` countdown badge when applicable, primary `Upgrade plan` button (opens modal).
 
 #### Profile Tab
@@ -122,6 +129,13 @@ graph LR
 - **Snapshots table**: simple table with `computed_at`, `active_projects`, `active_editors`, `active_verifiers`, `active_viewers`. Future enhancement reserved for charts.
 - **Upgrade CTA**: prominent `Upgrade plan` button plus `Contact support` secondary link (mailto). When plan is expiring (`plan_valid_until` within 14 days) show warning banner `"Pro Beta expires on {date}."`
 - **Error handling**: if usage endpoint fails, show inline banner with `Retry`. Loading state uses skeleton cards.
+- **Exports**: placeholder `Request export` (CSV via email) button (coming soon). For now show toast `"Export will arrive via email once ready"` and disable until backend ships.
+
+#### Billing Tab
+
+- **Visibility**: Always reachable at `/settings/billing`; if `feature_flags.billingUiEnabled` is `false`, show locked state with `Email support` CTA instead of plan controls.
+- **Plan summary card**: Plan label, code badge, renewal date, `Upgrade plan` dialog trigger, copy explaining pro-rating.
+- **Invoices card**: Placeholder table until billing backend is wired, plus contact CTA (`mailto:billing@carbonreport.com`). Future work: list of invoices with download links, ability to update billing contacts/payment method.
 
 #### Danger Zone Tab
 
@@ -144,7 +158,7 @@ graph LR
 
 Действия (контекстное меню или выпадающее):
 - Select (по умолчанию клик по строке)
-- Manage organization (ведёт на `/settings/organization` — скрыто для `VIEWER_*` если нет прав редактирования; чтение допускается прямым URL)
+- Manage organization (ведёт на `/settings` — скрыто для `VIEWER_*` если нет прав редактирования; чтение допускается прямым URL)
 - Create organization (кнопка вне списка + внизу списка)
 
 Состояния:
@@ -221,14 +235,14 @@ Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`
   │   │       └── Print view (/projects/:id/reports/:reportId/print)
   │   └── Files (/projects/:id/files)
   │
-  ├── Organization Settings (/settings/organization)
+  ├── Organization Settings (/settings)
   │   ├── Profile (default tab)
   │   ├── Members
   │   ├── Usage & Limits
   │   └── Danger Zone
   │
   └── User Settings (/settings)
-    ├── Profile (/settings/profile)
+  ├── Profile (/profile)
     ├── Password (/settings/password)
     └── Organizations (/settings/organizations)
 ```
@@ -253,7 +267,7 @@ Telemetry (будущее): `org_switched`, `org_created`, `org_settings_opened`
 #### Create Organization
 1. Пользователь нажимает `Create organization`.
 2. Модал: ввод `Display name` (+optional description/logo) → submit.
-3. API 201 → активируем и редирект `/settings/organization?tab=profile`.
+3. API 201 → активируем и редирект `/settings?tab=profile`.
 4. Показываем toast `Organization created.`.
 
 #### Invite Member (seat limits)
@@ -808,16 +822,16 @@ graph LR
 
     subgraph "Settings Pages"
       D1[/settings<br/>User settings overview]
-      D2[/settings/profile<br/>Profile]
+  D2[/profile<br/>Profile]
       D3[/settings/password<br/>Password]
       D4[/settings/organizations<br/>Organizations list]
     end
 
     subgraph "Organization Settings"
-      E1[/settings/organization<br/>Organization profile]
-      E2[/settings/organization/members<br/>Members]
-      E3[/settings/organization/usage<br/>Usage & Limits]
-      E4[/settings/organization/danger<br/>Danger Zone]
+      E1[/settings<br/>Organization profile]
+      E2[/settings<br/>Members tab]
+      E3[/settings<br/>Usage & Limits]
+      E4[/settings<br/>Danger Zone]
     end
     end
 

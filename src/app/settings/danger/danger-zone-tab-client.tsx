@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -13,19 +14,21 @@ type DangerZoneTabProps = {
   organizationId: string;
   slug: string;
   organizationName: string;
-  onDeleted: () => void;
+  onDeleted?: () => void;
 };
 
 export function DangerZoneTab({ organizationId, slug, organizationName, onDeleted }: DangerZoneTabProps) {
   const [confirmationInput, setConfirmationInput] = useState('');
   const deleteMutation = useDeleteOrganization(organizationId);
+  const router = useRouter();
   const confirmationMatches = confirmationInput.trim() === slug;
 
   const handleDelete = () => {
     deleteMutation.mutate(undefined, {
       onSuccess: () => {
         setConfirmationInput('');
-        onDeleted();
+        onDeleted?.();
+        router.replace('/no-organization');
       },
     });
   };

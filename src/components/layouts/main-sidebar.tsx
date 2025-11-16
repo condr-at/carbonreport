@@ -99,7 +99,7 @@ export function MainSidebar() {
     if (!hasAcceptedOrganizations) {
       if (
         pathname !== '/no-organization' &&
-        !pathname?.startsWith('/settings/organization')
+        !pathname?.startsWith('/settings')
       ) {
         router.replace('/no-organization')
       }
@@ -146,7 +146,7 @@ export function MainSidebar() {
           error={error}
           onRetry={refetch}
           onSelect={(id) => setActiveOrganizationId(id)}
-          onCreate={() => router.push('/settings/organization?mode=create')}
+          onCreate={() => router.push('/settings/profile?mode=create')}
           activeUsage={currentOrganization?.usage.active_projects ?? null}
           usageLimit={currentOrganization?.plan.max_active_projects ?? null}
           planLabel={currentOrganization?.plan.label ?? activeOrganization?.plan_label ?? '—'}
@@ -245,7 +245,7 @@ export function MainSidebar() {
               className="gap-2"
               onSelect={(event) => {
                 event.preventDefault()
-                router.push('/settings/profile')
+                router.push('/profile')
               }}
             >
               <Settings className="h-4 w-4" />

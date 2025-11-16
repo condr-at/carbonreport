@@ -1,34 +1,27 @@
-'use client'
+import { OrganizationSettingsShellWithSuspense } from '../organization-settings-shell'
+import { OrganizationProfileTab } from './profile-tab-client'
 
-import { Suspense } from 'react'
-import { UserProfileSettings } from './user-profile-settings'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PageHeader } from '@/components/layouts/page-header'
-import { Skeleton } from '@/components/ui/skeleton'
-
-export default function ProfileSettingsPage() {
+export default function SettingsProfilePage() {
   return (
-    <div className="space-y-6">
-      <PageHeader title="Profile" description="Update your name, job title, timezone, and avatar." />
-      <Suspense fallback={<ProfileSettingsFallback />}>
-        <UserProfileSettings />
-      </Suspense>
-    </div>
-  )
-}
-
-function ProfileSettingsFallback() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Profile</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </CardContent>
-    </Card>
+    <OrganizationSettingsShellWithSuspense
+      activeTab="profile"
+      renderContent={({ organizationId, currentOrganization }) => (
+        <OrganizationProfileTab
+          organizationId={organizationId}
+          organization={{
+            display_name: currentOrganization.display_name,
+            description: currentOrganization.description,
+            slug: currentOrganization.slug,
+            logo_asset_id: currentOrganization.logo_asset_id,
+            logo_url: currentOrganization.logo_url,
+            plan: {
+              label: currentOrganization.plan.label,
+              code: currentOrganization.plan.code,
+              valid_until: currentOrganization.plan.valid_until,
+            },
+          }}
+        />
+      )}
+    />
   )
 }

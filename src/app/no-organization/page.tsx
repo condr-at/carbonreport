@@ -48,7 +48,7 @@ export default function NoOrganizationPage() {
             <a href="mailto:support@carbonreport.app?subject=Organization%20invite%20help">Contact support</a>
           </Button>
           <Button asChild>
-            <Link href="/settings/organization?mode=create">Create organization</Link>
+            <Link href="/settings/profile?mode=create">Create organization</Link>
           </Button>
         </div>
       </div>

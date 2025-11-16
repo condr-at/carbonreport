@@ -230,6 +230,22 @@ Optional `details` keys:
 - For limits: `{"limit":3,"current":3,"needed":1,"resource":"active_projects"}`
 - For retention: `{"deleted_at":"2025-10-01T00:00:00Z","window_days":30}`
 
+### Organization Settings Architecture
+
+- `src/app/settings/organization-settings-shell.tsx` удерживает общий «рамочный» UI и состояние вкладок. Shell — клиентский компонент, потому что он:
+   - читает `useOrganizationContext` (активная организация, feature-флаги, `refetch`, `setActiveOrganizationId`);
+   - управляет диалогом создания организации через `?mode=create` и soft-redirect на `/no-organization`;
+   - шарит единый результат загрузки между `/settings/profile|members|usage|billing|danger`, чтобы вкладки не дублировали запросы.
+- Каждая вкладка — отдельный маршрут (`/settings/<tab>/page.tsx`), который просто вызывает `OrganizationSettingsShellWithSuspense` с `activeTab` и функцией `renderContent`. Это позволяет добавлять вкладки без копирования layout’а.
+- `/src/app/projects/[id]/layout.tsx` остаётся серверным layout’ом, потому что там данные жёстко завязаны на `params.id`, и их удобно грузить до рендера, возвращая `notFound()` ещё на сервере. У настроек таких параметров нет — активная организация может меняться без смены URL, поэтому shell служит источником истины на клиенте.
+- Если понадобится приблизить настройки к серверному паттерну, roadmap такой:
+   1. Добавить серверную функцию `getActiveOrganization` (cookie/header → orgId) и вызывать её в `src/app/settings/layout.tsx`.
+   2. Прокидывать полученную организацию через `React.createContext` из серверного layout’а и заменить `useOrganizationContext` внутри вкладок на потребление этого контекста.
+   3. Переписать создание организации на server action + route refresh, потому что `setActiveOrganizationId` больше не будет доступен на клиенте.
+   4. Постепенно облегчить `OrganizationSettingsShell`, оставив там только UI-часть (табы, модалки), либо удалить shell совсем, если layout возьмёт на себя fallback/error handling.
+
+Этот раздел фиксирует, почему сейчас используется гибрид (клиентский shell + маршруты) и какие шаги потребуются, чтобы перейти на единый серверный подход без технического долга.
+
 ### Assets & Uploads
 
 - **Storage approach**: prefer external object storage (S3, Cloudflare R2). UI requests a signed upload URL via `POST /api/uploads/sign` specifying resource type (`org_logo`, `user_avatar`). Client uploads directly; backend persists the `assets` record.

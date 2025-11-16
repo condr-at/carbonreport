@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { Input } from '@/components/ui/input';

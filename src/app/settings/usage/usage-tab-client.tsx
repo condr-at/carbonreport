@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useOrganizationUsage } from '@/lib/data-client/organizations';
-import { UpgradePlanDialog } from './upgrade-plan-dialog';
+import { UpgradePlanDialog } from '../upgrade-plan-dialog';
 
 function formatDate(value: string | null) {
   if (!value) {

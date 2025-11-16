@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState, type FormEventHandler } from 'react'
 import { Loader2 } from 'lucide-react'
@@ -152,17 +152,17 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
       </div>
 
       <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Logo (optional)</Label>
-            <SquareImageUploader
-              resourceType="org_logo"
-              value={logoValue}
-              onChange={setLogoValue}
-              label="Logo preview"
-              description="PNG/JPEG/SVG · cropped to square before upload"
-              disabled={createMutation.isPending}
-            />
-          </div>
+        <div className="space-y-2">
+          <Label>Logo (optional)</Label>
+          <SquareImageUploader
+            resourceType="org_logo"
+            value={logoValue}
+            onChange={setLogoValue}
+            label="Logo preview"
+            description="PNG/JPEG/SVG · cropped to square before upload"
+            disabled={createMutation.isPending}
+          />
+        </div>
       </div>
     </form>
   )
