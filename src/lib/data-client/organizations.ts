@@ -11,6 +11,7 @@ export type OrganizationSummary = {
   plan_label: string
   plan_valid_until: string | null
   role: string
+  logo_url: string | null
   invite_status?: string
   active_projects?: number
   limits?: {

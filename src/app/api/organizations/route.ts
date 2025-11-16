@@ -28,6 +28,10 @@ type MembershipWithOrganization = {
     status: OrganizationStatus
     displayName: string
     planValidUntil: Date | null
+    logoUrl: string | null
+    logoAsset: {
+      url: string | null
+    } | null
     plan: {
       label: string
       maxActiveProjects: number
@@ -70,6 +74,11 @@ export async function GET(request: NextRequest) {
         organization: {
           include: {
             plan: true,
+            logoAsset: {
+              select: {
+                url: true,
+              },
+            },
           },
         },
       },
@@ -101,12 +110,14 @@ export async function GET(request: NextRequest) {
       )
       .map((membership) => {
         const organization = membership.organization
+        const organizationLogoUrl = organization.logoUrl ?? organization.logoAsset?.url ?? null
         const base = {
           id: organization.id,
           display_name: organization.displayName,
           plan_label: organization.plan.label,
           plan_valid_until: organization.planValidUntil,
           role: membership.role,
+          logo_url: organizationLogoUrl,
         }
 
         if (membership.inviteStatus !== OrganizationMembershipInviteStatus.ACCEPTED) {
