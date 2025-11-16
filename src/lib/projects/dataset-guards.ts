@@ -97,5 +97,6 @@ export async function requireProjectForDataset(
   }
 
   const { organization: _organization, ...rest } = project
+  void _organization
   return rest
 }
