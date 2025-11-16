@@ -1,8 +1,9 @@
 'use client'
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import Cropper, { type Area } from 'react-easy-crop'
-import Image from 'next/image'
 import { UploadCloud, ZoomIn, ZoomOut, Loader2, Trash2, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -198,13 +199,12 @@ export function SquareImageUploader({
           style={{ width: previewSize, height: previewSize }}
         >
           {previewUrl ? (
-            <Image
+            <img
               src={previewUrl}
               alt={label}
               width={previewSize}
               height={previewSize}
               className="h-full w-full object-cover"
-              unoptimized
             />
           ) : (
             <UploadCloud className="h-10 w-10 text-muted-foreground" aria-hidden />
