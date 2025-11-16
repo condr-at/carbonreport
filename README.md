@@ -86,8 +86,6 @@ npm run db:push      # Create tables in Supabase
 
 6. Configure uploads (optional):
    - For S3-compatible storage, set `ASSETS_BUCKET_NAME`, `ASSETS_BUCKET_REGION`, `ASSETS_PUBLIC_BASE_URL`, `ASSETS_UPLOADS_PREFIX`, `ASSETS_UPLOAD_TTL_SECONDS`, `ASSETS_S3_ENDPOINT` (when using a custom endpoint like Cloudflare R2), plus `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`.
-   - Providers that do not support presigned POST forms (e.g., Cloudflare R2) should use `ASSETS_S3_UPLOAD_STRATEGY=put`. We automatically default to `put` whenever the endpoint contains `.r2.cloudflarestorage.com`, but you can override this behavior explicitly with `post` or `put`.
-   - If your storage endpoint blocks browser-side PUT/POST requests (no CORS on the S3 API), enable `ASSETS_UPLOADS_REQUIRE_RELAY=true`. In this mode the client sends the cropped file to `/api/uploads/relay`, and the backend pushes it to the presigned URL on your behalf.
    - If these variables are omitted in local development, the app automatically falls back to disk-backed uploads under `public/dev-uploads`. You can force-enable or tune this mode with `ENABLE_LOCAL_UPLOADS`, `LOCAL_UPLOADS_DIR`, `LOCAL_UPLOADS_PUBLIC_PATH`, and `LOCAL_UPLOADS_PUBLIC_URL`.
    - Cloudflare R2 example: `ASSETS_S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com` (S3 API) and `ASSETS_PUBLIC_BASE_URL=https://pub-<account-id>.r2.dev/<bucket>` (public CDN). Repo defaults already point to `carbonreport-assets` in region `eeur`—replace these credentials if you provision a different storage backend.
 

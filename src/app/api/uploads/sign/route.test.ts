@@ -7,18 +7,6 @@ import * as auth from '@/lib/auth'
 import prisma from '@/lib/db'
 import { MAX_UPLOAD_SIZE_BYTES } from '@/lib/uploads'
 
-type UploadPayload =
-  | { method: 'POST'; fields: Record<string, string>; headers?: never; relay_path?: string }
-  | { method: 'PUT'; headers: Record<string, string>; fields?: never; relay_path?: string }
-
-type UploadResponse = {
-  upload: UploadPayload & {
-    asset_id: string
-    url: string
-    expires_at: string
-  }
-}
-
 const TEST_USER: User = {
   id: 'user-test-id',
   name: 'Test User',
@@ -65,8 +53,6 @@ test.afterEach(() => {
   delete process.env.ASSETS_S3_ENDPOINT
   delete process.env.AWS_ACCESS_KEY_ID
   delete process.env.AWS_SECRET_ACCESS_KEY
-  delete process.env.ASSETS_S3_UPLOAD_STRATEGY
-  delete process.env.ASSETS_UPLOADS_REQUIRE_RELAY
   delete process.env.ENABLE_LOCAL_UPLOADS
   delete process.env.LOCAL_UPLOADS_DIR
   delete process.env.LOCAL_UPLOADS_PUBLIC_PATH
@@ -130,18 +116,20 @@ test('returns presigned payload and records asset on success', async (t) => {
   })
 
   const response = await POST(request)
-  const payload = (await response.json()) as UploadResponse
+  const payload = (await response.json()) as {
+    upload: {
+      asset_id: string
+      url: string
+      fields: Record<string, string>
+      expires_at: string
+    }
+  }
 
   assert.equal(response.status, 201)
   assert.ok(payload.upload.asset_id)
   assert.ok(payload.upload.url.startsWith('https://'))
-  assert.equal(payload.upload.method, 'POST')
-  if (payload.upload.method !== 'POST') {
-    throw new Error('Expected POST upload')
-  }
   assert.ok(payload.upload.fields.key)
   assert.equal(payload.upload.fields['Content-Type'], 'image/png')
-  assert.equal(payload.upload.relay_path, undefined)
 
   const expiresAt = new Date(payload.upload.expires_at)
   assert.ok(expiresAt.getTime() > Date.now())
@@ -175,51 +163,14 @@ test('presigned URL uses custom endpoint when configured', async (t) => {
   })
 
   const response = await POST(request)
-  const payload = (await response.json()) as UploadResponse | { error?: string; code?: string }
+  const payload = (await response.json()) as {
+    upload?: { url: string }
+    error?: string
+    code?: string
+  }
 
   assert.equal(response.status, 201, JSON.stringify(payload))
-  if ('upload' in payload) {
-    assert.ok(payload.upload.url.startsWith('https://example-account.r2.cloudflarestorage.com'))
-    assert.equal(payload.upload.method, 'PUT')
-    if (payload.upload.method !== 'PUT') {
-      throw new Error('Expected PUT upload for R2 endpoint')
-    }
-    assert.equal(payload.upload.headers['Content-Type'], 'image/png')
-    assert.equal(payload.upload.relay_path, '/api/uploads/relay')
-  } else {
-    throw new Error('Missing upload payload')
-  }
-})
-
-test('honors explicit presigned PUT strategy', async (t) => {
-  stubGetCurrentUser(t)
-  process.env.ASSETS_S3_UPLOAD_STRATEGY = 'put'
-  process.env.ASSETS_UPLOADS_REQUIRE_RELAY = 'false'
-
-  const originalAssetCreate = prisma.asset.create
-  ;(prisma.asset as any).create = async (args: any) => ({ id: args.data.id })
-  t.after(() => {
-    ;(prisma.asset as any).create = originalAssetCreate
-  })
-
-  const request = stubRequest({
-    resource_type: 'org_logo',
-    file_name: 'Strategy.png',
-    mime_type: 'image/png',
-    file_size_bytes: 10_000,
-  })
-
-  const response = await POST(request)
-  const payload = (await response.json()) as UploadResponse
-
-  assert.equal(response.status, 201)
-  assert.equal(payload.upload.method, 'PUT')
-  if (payload.upload.method !== 'PUT') {
-    throw new Error('Expected PUT upload when strategy=put')
-  }
-  assert.ok(payload.upload.url.includes('https://test-bucket.s3.us-east-1.amazonaws.com'))
-  assert.equal(payload.upload.headers['Content-Type'], 'image/png')
-  assert.equal(payload.upload.relay_path, undefined)
+  assert.ok(payload.upload?.url.startsWith('https://example-account.r2.cloudflarestorage.com'))
 })
 
 test('falls back to local upload target when bucket config is missing', async (t) => {
@@ -249,16 +200,17 @@ test('falls back to local upload target when bucket config is missing', async (t
   })
 
   const response = await POST(request)
-  const payload = (await response.json()) as UploadResponse
+  const payload = (await response.json()) as {
+    upload: {
+      asset_id: string
+      url: string
+      fields: Record<string, string>
+    }
+  }
 
   assert.equal(response.status, 201)
-  assert.equal(payload.upload.method, 'POST')
-  if (payload.upload.method !== 'POST') {
-    throw new Error('Expected POST upload for local mode')
-  }
   assert.equal(payload.upload.url, '/api/uploads/local')
   assert.ok(payload.upload.fields.key.startsWith('uploads/user-avatar/'))
-  assert.equal(payload.upload.relay_path, undefined)
   assert.ok(recordedArgs)
   assert.equal(recordedArgs.data.url.startsWith('/dev-uploads/'), true)
 })

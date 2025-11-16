@@ -337,12 +337,16 @@ function OrganizationSwitcher({
     )
   }
 
-  const initials = activeOrganization.display_name
-    .split(' ')
-    .map((segment) => segment[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
+  const getInitials = (value: string) =>
+    value
+      .split(' ')
+      .map((segment) => segment[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase()
+
+  const initials = getInitials(activeOrganization.display_name)
+  const activeLogoUrl = activeOrganization.logo_url ?? null
 
   const usageLabel =
     typeof activeUsage === 'number' && typeof usageLimit === 'number'
@@ -356,9 +360,14 @@ function OrganizationSwitcher({
           type="button"
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-sm font-semibold">
-            {initials || '—'}
-          </div>
+          <Avatar className="h-9 w-9 rounded-md">
+            {activeLogoUrl ? (
+              <AvatarImage src={activeLogoUrl} alt={`${activeOrganization.display_name} logo`} />
+            ) : null}
+            <AvatarFallback className="rounded-md bg-muted text-sm font-semibold">
+              {initials || '—'}
+            </AvatarFallback>
+          </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{activeOrganization.display_name}</p>
             <p className="truncate text-xs text-muted-foreground">
@@ -374,12 +383,8 @@ function OrganizationSwitcher({
         <DropdownMenuLabel className="text-xs text-muted-foreground">Organizations</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {acceptedOrganizations.map((organization) => {
-          const initialsLabel = organization.display_name
-            .split(' ')
-            .map((segment) => segment[0])
-            .join('')
-            .slice(0, 2)
-            .toUpperCase()
+          const initialsLabel = getInitials(organization.display_name)
+          const logoUrl = organization.logo_url ?? null
           const isActive = organization.id === activeOrganization.id
           const limit = organization.limits?.max_active_projects
           const usage = organization.active_projects
@@ -390,9 +395,14 @@ function OrganizationSwitcher({
               onSelect={() => onSelect(organization.id)}
               className={cn('gap-3 p-2', isActive && 'bg-muted text-foreground')}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-sm font-semibold">
-                {initialsLabel || '—'}
-              </div>
+              <Avatar className="h-8 w-8 rounded-md">
+                {logoUrl ? (
+                  <AvatarImage src={logoUrl} alt={`${organization.display_name} logo`} />
+                ) : null}
+                <AvatarFallback className="rounded-md bg-muted text-sm font-semibold">
+                  {initialsLabel || '—'}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-sm font-medium">{organization.display_name}</span>
                 <span className="truncate text-xs text-muted-foreground">{organization.plan_label}</span>
@@ -412,18 +422,19 @@ function OrganizationSwitcher({
             <DropdownMenuLabel className="text-xs text-muted-foreground">Pending invites</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {pendingInvites.map((invite) => {
-              const initialsLabel = invite.display_name
-                .split(' ')
-                .map((segment) => segment[0])
-                .join('')
-                .slice(0, 2)
-                .toUpperCase()
+              const initialsLabel = getInitials(invite.display_name)
+              const logoUrl = invite.logo_url ?? null
 
               return (
                 <DropdownMenuItem key={invite.id} disabled className="gap-3 p-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted text-sm font-semibold text-muted-foreground">
-                    {initialsLabel || '—'}
-                  </div>
+                  <Avatar className="h-8 w-8 rounded-md">
+                    {logoUrl ? (
+                      <AvatarImage src={logoUrl} alt={`${invite.display_name} logo`} />
+                    ) : null}
+                    <AvatarFallback className="rounded-md bg-muted text-sm font-semibold text-muted-foreground">
+                      {initialsLabel || '—'}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex min-w-0 flex-col">
                     <span className="truncate text-sm font-medium text-muted-foreground">
                       {invite.display_name}
