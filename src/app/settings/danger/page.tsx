@@ -1,3 +1,5 @@
+'use client'
+
 import { OrganizationSettingsShellWithSuspense } from '../organization-settings-shell'
 import { DangerZoneTab } from './danger-zone-tab-client'
 

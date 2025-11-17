@@ -38,6 +38,14 @@ function storeOrganizationId(organizationId: string) {
   window.localStorage.setItem(LOCAL_STORAGE_KEY, organizationId)
 }
 
+function clearStoredOrganizationId() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  window.localStorage.removeItem(LOCAL_STORAGE_KEY)
+}
+
 export function OrganizationProvider({ children }: { children: ReactNode }) {
   const { data, isLoading, isError, error, refetch } = useOrganizations(true)
   const organizations = useMemo(() => data?.organizations ?? [], [data])
@@ -53,13 +61,23 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [activeOrganizationId, setActiveOrganizationIdState] = useState<string | null>(() => getStoredOrganizationId())
 
   useEffect(() => {
+    if (isLoading) {
+      return
+    }
+
     if (!acceptedOrganizations.length) {
+      if (activeOrganizationId !== null) {
+        setActiveOrganizationIdState(null)
+        clearStoredOrganizationId()
+      }
       return
     }
 
     const stored = getStoredOrganizationId()
     if (stored && acceptedOrganizations.some((org) => org.id === stored)) {
-      setActiveOrganizationIdState(stored)
+      if (stored !== activeOrganizationId) {
+        setActiveOrganizationIdState(stored)
+      }
       return
     }
 
@@ -68,7 +86,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setActiveOrganizationIdState(firstAccepted.id)
       storeOrganizationId(firstAccepted.id)
     }
-  }, [acceptedOrganizations, activeOrganizationId])
+  }, [acceptedOrganizations, activeOrganizationId, isLoading])
 
   const setActiveOrganizationId = useCallback((organizationId: string) => {
     setActiveOrganizationIdState(organizationId)

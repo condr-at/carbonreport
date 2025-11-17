@@ -1,13 +1,14 @@
 import { redirect } from 'next/navigation'
 
-type SettingsPageProps = {
-  searchParams?: Record<string, string | string[] | undefined>
-}
-
-export default function SettingsPage({ searchParams }: SettingsPageProps) {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined
   const params = new URLSearchParams()
 
-  Object.entries(searchParams ?? {}).forEach(([key, value]) => {
+  Object.entries(resolvedSearchParams ?? {}).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       value.forEach((item) => params.append(key, item ?? ''))
     } else if (typeof value === 'string') {

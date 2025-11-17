@@ -1,3 +1,5 @@
+'use client'
+
 import { OrganizationSettingsShellWithSuspense } from '../organization-settings-shell'
 import { OrganizationProfileTab } from './profile-tab-client'
 

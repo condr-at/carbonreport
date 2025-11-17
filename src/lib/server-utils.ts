@@ -314,3 +314,53 @@ export async function getBaseUrl(): Promise<string> {
   const port = process.env.PORT || '3000'
   return `http://localhost:${port}`
 }
+
+type ServerFetchInput = string | URL
+
+function ensureAbsoluteUrl(path: ServerFetchInput, origin: string) {
+  const input = typeof path === 'string' ? path : path.toString()
+  if (input.startsWith('http://') || input.startsWith('https://')) {
+    return input
+  }
+
+  if (input.startsWith('/')) {
+    return `${origin}${input}`
+  }
+
+  return `${origin}/${input}`
+}
+
+export async function serverApiFetch(path: ServerFetchInput, init?: RequestInit) {
+  const baseUrl = await getBaseUrl()
+  const absoluteUrl = ensureAbsoluteUrl(path, baseUrl)
+
+  let incomingHeaders: Headers | null = null
+  try {
+    incomingHeaders = await headers()
+  } catch {
+    incomingHeaders = null
+  }
+
+  const cookieHeader = incomingHeaders?.get('cookie') ?? null
+
+  const mergedHeaders = new Headers(init?.headers ?? undefined)
+
+  if (!mergedHeaders.has('accept')) {
+    mergedHeaders.set('accept', 'application/json')
+  }
+
+  if (cookieHeader && !mergedHeaders.has('cookie')) {
+    mergedHeaders.set('cookie', cookieHeader)
+  }
+
+  const authorization = incomingHeaders?.get('authorization')
+  if (authorization && !mergedHeaders.has('authorization')) {
+    mergedHeaders.set('authorization', authorization)
+  }
+
+  return fetch(absoluteUrl, {
+    cache: 'no-store',
+    ...init,
+    headers: mergedHeaders,
+  })
+}

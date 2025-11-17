@@ -1,3 +1,5 @@
+'use client'
+
 import { OrganizationSettingsShellWithSuspense } from '../organization-settings-shell'
 import { BillingTab } from './billing-tab-client'
 

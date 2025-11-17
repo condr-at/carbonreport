@@ -14,6 +14,7 @@ export async function cleanupTestData() {
   await prisma.dataRequest.deleteMany()
   await prisma.report.deleteMany()
   await prisma.project.deleteMany()
+  await prisma.contact.deleteMany() // Delete contacts before organizations
   await prisma.organizationUsageSnapshot.deleteMany()
   await prisma.organizationMembership.deleteMany()
   await prisma.organization.deleteMany()

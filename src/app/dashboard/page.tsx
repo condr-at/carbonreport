@@ -5,6 +5,7 @@ import { Plus, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { NextStepsWidget } from '@/components/blocks/next-steps-widget';
 import { PageHeader } from '@/components/layouts/page-header';
+import { serverApiFetch } from '@/lib/server-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,12 +17,14 @@ const MOCK_USER = {
 
 async function getProjects() {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-    const organizationResponse = await fetch(`${baseUrl}/api/organizations/current`, {
-      cache: 'no-store',
-    })
+    const organizationResponse = await serverApiFetch('/api/organizations/current')
 
     if (!organizationResponse.ok) {
+      if (organizationResponse.status === 401 || organizationResponse.status === 403) {
+        console.warn('User is not authenticated; skipping project lookup');
+        return [];
+      }
+
       if (organizationResponse.status !== 404) {
         console.error('Failed to resolve current organization:', organizationResponse.statusText)
       }
@@ -35,9 +38,8 @@ async function getProjects() {
       return []
     }
 
-    const response = await fetch(`${baseUrl}/api/projects?organization_id=${organizationId}`, {
-      cache: 'no-store',
-    });
+    const searchParams = new URLSearchParams({ organization_id: organizationId })
+    const response = await serverApiFetch(`/api/projects?${searchParams.toString()}`)
     
     if (!response.ok) {
       console.error('Failed to fetch projects:', response.statusText);

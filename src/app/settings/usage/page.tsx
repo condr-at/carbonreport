@@ -1,3 +1,5 @@
+'use client'
+
 import { OrganizationSettingsShellWithSuspense } from '../organization-settings-shell'
 import { UsageTab } from './usage-tab-client'
 

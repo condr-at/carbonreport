@@ -7,15 +7,15 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function NoOrganizationPage() {
-  const { activeOrganizationId, currentOrganization, isLoading } = useOrganizationContext()
+  const { currentOrganization, isLoading } = useOrganizationContext()
   const router = useRouter()
 
   // If organization detected after load, redirect away
   useEffect(() => {
-    if (!isLoading && (activeOrganizationId || currentOrganization?.id)) {
+    if (!isLoading && currentOrganization?.id) {
       router.replace('/projects')
     }
-  }, [isLoading, activeOrganizationId, currentOrganization, router])
+  }, [isLoading, currentOrganization?.id, router])
 
   // While loading org context, show minimal spinner skeleton
   if (isLoading) {
