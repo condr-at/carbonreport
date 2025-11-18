@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,7 @@ import { SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/comp
 import { useOrganizationContext } from '@/lib/organizations/context'
 import type { OrganizationSummary } from '@/lib/data-client/organizations'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import { useUserSettings } from '@/lib/data-client/user-settings'
 import { notifications } from '@/components/ui/notifications'
 const navigation = [
@@ -47,6 +49,12 @@ export function MainSidebar() {
   const { setOpen } = useSidebar()
   const [pendingHref, setPendingHref] = useState<string | null>(null)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [pendingOrganizationSwitch, setPendingOrganizationSwitch] = useState<{
+    id: string
+    name: string
+    startedAt: number
+  } | null>(null)
+  const [lastSwitchToastId, setLastSwitchToastId] = useState<string | null>(null)
   const {
     acceptedOrganizations,
     pendingInvites,
@@ -167,6 +175,47 @@ export function MainSidebar() {
 
   const showLockedNav = !isLoading && !isBootstrapping && !activeOrganization
 
+  const handleOrganizationSelect = useCallback((organization: OrganizationSummary) => {
+    if (organization.id === activeOrganization?.id) {
+      return
+    }
+
+    setPendingOrganizationSwitch({
+      id: organization.id,
+      name: organization.display_name,
+      startedAt: Date.now(),
+    })
+    setActiveOrganizationId(organization.id)
+  }, [activeOrganization?.id, setActiveOrganizationId])
+
+  useEffect(() => {
+    if (!pendingOrganizationSwitch) {
+      return
+    }
+
+    if (activeOrganizationId !== pendingOrganizationSwitch.id) {
+      return
+    }
+
+    const MIN_DISPLAY_MS = 400
+    const elapsed = Date.now() - pendingOrganizationSwitch.startedAt
+    const remaining = Math.max(MIN_DISPLAY_MS - elapsed, 0)
+
+    const timeout = window.setTimeout(() => {
+      setPendingOrganizationSwitch(null)
+    }, remaining)
+
+    if (lastSwitchToastId !== pendingOrganizationSwitch.id) {
+      const label = activeOrganization?.display_name ?? pendingOrganizationSwitch.name
+      notifications.success(`Switched to ${label}`)
+      setLastSwitchToastId(pendingOrganizationSwitch.id)
+    }
+
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [activeOrganization?.display_name, activeOrganizationId, lastSwitchToastId, pendingOrganizationSwitch])
+
   return (
     <>
       <SidebarHeader className="space-y-4">
@@ -185,11 +234,12 @@ export function MainSidebar() {
           isError={isError}
           error={error}
           onRetry={refetch}
-          onSelect={(id) => setActiveOrganizationId(id)}
+          onSelect={handleOrganizationSelect}
           onCreate={() => router.push('/settings/profile?mode=create')}
           activeUsage={currentOrganization?.usage.active_projects ?? null}
           usageLimit={currentOrganization?.plan.max_active_projects ?? null}
           planLabel={currentOrganization?.plan.label ?? activeOrganization?.plan_label ?? '—'}
+          isSwitching={Boolean(pendingOrganizationSwitch)}
         />
       </SidebarHeader>
 
@@ -306,6 +356,9 @@ export function MainSidebar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>
+      {pendingOrganizationSwitch ? (
+        <OrganizationSwitchPreloader organizationName={pendingOrganizationSwitch.name} />
+      ) : null}
     </>
   )
 }
@@ -318,11 +371,12 @@ type OrganizationSwitcherProps = {
   isError: boolean
   error: unknown
   onRetry: () => void
-  onSelect: (organizationId: string) => void
+  onSelect: (organization: OrganizationSummary) => void
   onCreate: () => void
   activeUsage: number | null
   usageLimit: number | null
   planLabel: string
+  isSwitching: boolean
 }
 
 function OrganizationSwitcher({
@@ -338,6 +392,7 @@ function OrganizationSwitcher({
   activeUsage,
   usageLimit,
   planLabel,
+  isSwitching,
 }: OrganizationSwitcherProps) {
   if (isLoading) {
     return (
@@ -417,10 +472,13 @@ function OrganizationSwitcher({
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{activeOrganization.display_name}</p>
-            <p className="truncate text-xs text-muted-foreground">
-              {planLabel}
-              {usageLabel ? ` · ${usageLabel} projects` : null}
-            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {isSwitching ? <Spinner className="h-3 w-3 text-primary" aria-hidden="true" /> : null}
+              <span className="truncate">
+                {planLabel}
+                {usageLabel ? ` · ${usageLabel} projects` : null}
+              </span>
+            </div>
           </div>
           <ChevronsUpDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <span className="sr-only">Open organization menu</span>
@@ -439,7 +497,7 @@ function OrganizationSwitcher({
           return (
             <DropdownMenuItem
               key={organization.id}
-              onSelect={() => onSelect(organization.id)}
+              onSelect={() => onSelect(organization)}
               className={cn('gap-3 p-2', isActive && 'bg-muted text-foreground')}
             >
               <Avatar className="h-8 w-8 rounded-md">
@@ -515,6 +573,20 @@ function NavigationSkeleton() {
       {Array.from({ length: 4 }).map((_, index) => (
         <Skeleton key={`sidebar-skeleton-${index}`} className="h-10 w-full rounded-lg" />
       ))}
+    </div>
+  )
+}
+
+function OrganizationSwitchPreloader({ organizationName }: { organizationName: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm" role="status" aria-live="assertive">
+      <Card className="flex items-center gap-3 px-6 py-4 shadow-lg">
+        <Spinner className="h-6 w-6 text-primary" aria-hidden="true" />
+        <div className="flex flex-col">
+          <span className="text-sm font-medium">Switching organization…</span>
+          <span className="text-xs text-muted-foreground">{organizationName}</span>
+        </div>
+      </Card>
     </div>
   )
 }
