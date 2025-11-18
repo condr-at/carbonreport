@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { PasswordInput } from '@/components/ui/password-input'
 
 export function LoginForm() {
   const router = useRouter()
@@ -16,9 +17,35 @@ export function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [touched, setTouched] = useState({ email: false, password: false })
+
+  const emailError = (() => {
+    if (!email) return 'Email is required'
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailPattern.test(email)) return 'Enter a valid email address'
+    return ''
+  })()
+
+  const passwordError = (() => {
+    if (!password) return 'Password is required'
+    return ''
+  })()
+
+  const canSubmit = !emailError && !passwordError
+
+  function markTouched(field: keyof typeof touched) {
+    setTouched((prev) => (prev[field] ? prev : { ...prev, [field]: true }))
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    markTouched('email')
+    markTouched('password')
+
+    if (!canSubmit) {
+      toast.error('Please fix the highlighted fields')
+      return
+    }
     setIsLoading(true)
 
     try {
@@ -62,9 +89,20 @@ export function LoginForm() {
                 autoComplete="email"
                 required
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  setEmail(event.target.value)
+                  markTouched('email')
+                }}
+                onBlur={() => markTouched('email')}
                 placeholder="you@example.com"
+                aria-invalid={touched.email && Boolean(emailError)}
+                aria-describedby={touched.email && emailError ? 'login-email-error' : undefined}
               />
+              {touched.email && emailError ? (
+                <p id="login-email-error" className="text-sm text-destructive">
+                  {emailError}
+                </p>
+              ) : null}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -73,17 +111,27 @@ export function LoginForm() {
                   Forgot password?
                 </Link>
               </div>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="current-password"
                 required
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => {
+                  setPassword(event.target.value)
+                  markTouched('password')
+                }}
+                onBlur={() => markTouched('password')}
                 placeholder="••••••••"
+                aria-invalid={touched.password && Boolean(passwordError)}
+                aria-describedby={touched.password && passwordError ? 'login-password-error' : undefined}
               />
+              {touched.password && passwordError ? (
+                <p id="login-password-error" className="text-sm text-destructive">
+                  {passwordError}
+                </p>
+              ) : null}
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full" disabled={isLoading || !canSubmit}>
               {isLoading ? 'Signing in…' : 'Sign in'}
             </Button>
           </form>
