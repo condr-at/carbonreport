@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
@@ -32,6 +32,7 @@ import { useOrganizationContext } from '@/lib/organizations/context'
 import type { OrganizationSummary } from '@/lib/data-client/organizations'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useUserSettings } from '@/lib/data-client/user-settings'
+import { notifications } from '@/components/ui/notifications'
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
@@ -45,6 +46,7 @@ export function MainSidebar() {
   const router = useRouter()
   const { setOpen } = useSidebar()
   const [pendingHref, setPendingHref] = useState<string | null>(null)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const {
     acceptedOrganizations,
     pendingInvites,
@@ -125,6 +127,43 @@ export function MainSidebar() {
       setPendingHref(null)
     }
   }, [pathname, pendingHref])
+
+  const handleLogout = useCallback(async () => {
+    if (isLoggingOut) {
+      return
+    }
+
+    setIsLoggingOut(true)
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to logout')
+      }
+
+      if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.removeItem('carbonreport.activeOrganizationId')
+        } catch {
+          // ignore storage errors
+        }
+      }
+
+      router.replace('/login')
+      router.refresh()
+    } catch (error) {
+      console.error('Logout failed', error)
+      notifications.error('Failed to logout. Please try again.')
+    } finally {
+      setIsLoggingOut(false)
+    }
+  }, [isLoggingOut, router])
 
   const showLockedNav = !isLoading && !isBootstrapping && !activeOrganization
 
@@ -253,9 +292,16 @@ export function MainSidebar() {
               Profile settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 text-destructive">
+            <DropdownMenuItem
+              className="gap-2 text-destructive"
+              onSelect={(event) => {
+                event.preventDefault()
+                void handleLogout()
+              }}
+              disabled={isLoggingOut}
+            >
               <LogOut className="h-4 w-4" />
-              Logout
+              {isLoggingOut ? 'Logging out…' : 'Logout'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
