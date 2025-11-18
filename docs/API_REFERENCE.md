@@ -20,56 +20,161 @@
 4. [Organization Plans](#organization-plans)
   - [List Plan Definitions](#list-plan-definitions)
   - [Request Plan Upgrade](#request-plan-upgrade)
-5. [Organization Memberships](#organization-memberships)
-  - [List Members](#list-members)
-  - [Invite Member](#invite-member)
-  - [Update Member Role](#update-member-role)
-  - [Remove Member](#remove-member)
-  - [Accept Invitation](#accept-invitation)
-  - [Decline Invitation](#decline-invitation)
-6. [Organization Usage](#organization-usage)
-  - [Recompute Usage Snapshot](#recompute-usage-snapshot)
-7. [Uploads](#uploads)
-8. [Projects](#projects)
-  - [List Projects](#list-projects)
-  - [Create Project](#create-project)
-  - [Update Project Status](#update-project-status)
-  - [Delete Project](#delete-project)
-  - [Restore Project](#restore-project)
-9. [Dataset](#dataset)
-10. [Reports](#reports)
-11. [Data Requests](#data-requests)
-12. [User Settings](#user-settings)
-  - [Get Settings](#get-user-settings)
-  - [Update Settings](#update-user-settings)
-  - [Change Password (Placeholder)](#change-password-placeholder)
-13. [Common Error Codes](#common-error-codes)
-
----
-
-## Overview
-
-This document describes the REST API endpoints for the Carbon Report Platform. All endpoints follow the architecture defined in `ARCHITECTURE.md`:
-
-- **Single Source of Truth**: All field data stored in `Project.dataset` JSONB
-- **Optimistic Locking**: Concurrent edit prevention via `datasetVersion` counter
-- **Code-Based Templates**: Report templates and questionnaires in `src/lib/`
- - **Type Safety**: DB-backed field IDs (DatasetFieldDefinition, snake_case) and Zod validation throughout
-
----
-
 ## Authentication
 
-**Status**: Not implemented (MVP)  
-**Future**: JWT-based authentication with session cookies
+The platform uses email/password auth backed by stateless JWTs stored in httpOnly cookies (`cr_access_token`, `cr_refresh_token`). Authentication is enforced centrally by `middleware.ts`, which verifies the access token on every request and injects `x-user-id` so API routes can trust `getCurrentUser()`.
 
-For now, endpoints accept `userId` in request body or return all data.
+- **Access token**: 24h TTL, minted on login/register/refresh. Stored in an httpOnly, SameSite=Lax cookie and never exposed to JS.
+- **Refresh token**: 90d TTL, also httpOnly. `/api/auth/refresh` rotates both tokens and invalidates previous cookies.
+- **Password policy**: ≥8 characters and must include uppercase, lowercase, and numeric characters. Passwords are hashed with bcrypt (12 rounds) before persistence.
+- **Error format**: Failures reuse the unified `{ "error": string, "code": string, "details"?: object }` envelope described in [Common Error Codes](#common-error-codes).
 
-**⚠️ IMPORTANT - Development Workaround**:
-- `POST /api/projects` currently auto-creates users via `upsert()` to bypass foreign key constraints
-- This is a **temporary dev hack** and must be removed when implementing proper authentication
-- See: `src/app/api/projects/route.ts` - search for "Auto-create user if doesn't exist"
-- **TODO**: Replace with proper JWT session validation and remove the `upsert` block
+### Endpoint Quick Reference
+
+| Method | Path | Purpose | Auth? | Notes |
+|--------|------|---------|-------|-------|
+| `POST` | `/api/auth/register` | Create a user, send verification email, issue cookies | No | Lower-cases email, splits `name` into first/last |
+| `POST` | `/api/auth/login` | Exchange credentials for cookies | No | Returns same `user` payload as register |
+| `POST` | `/api/auth/logout` | Clear cookies | Yes (middleware enforced) | Idempotent |
+| `POST` | `/api/auth/refresh` | Rotate cookies using refresh token | No (cookie-based) | Requires valid `cr_refresh_token` cookie |
+| `GET` | `/api/auth/verify-email/:token` | Flip `emailVerified` and redirect/return JSON | No | Honors `Accept: application/json` |
+| `POST` | `/api/auth/resend-verification` | Send another verification email | Yes | Skips work if already verified |
+| `POST` | `/api/auth/forgot-password` | Send reset link if email exists | No | Always returns generic message |
+| `POST` | `/api/auth/reset-password/:token` | Set a new password via token | No | Token invalidated when password changes |
+
+### POST /api/auth/register — Create account
+
+**Auth**: None (public). Creates the user row, hashes the password, and issues both cookies. A verification email is queued through Resend with a link to `/api/auth/verify-email/:token`.
+
+**Request Body**
+- `name`: 2–120 characters after trim. Stored verbatim and also split into `first_name` / `last_name` for downstream features.
+- `email`: Valid email address. Address is lower-cased before persistence to guarantee uniqueness.
+- `password`: Must satisfy the password policy listed above.
+
+**Response — 201 Created**
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "jane@example.com",
+    "name": "Jane Smith",
+    "email_verified": false
+  }
+}
+```
+
+**Common errors**
+- `400 VALIDATION_ERROR` — malformed payload or password fails policy (details include flattened Zod issues or `requirements`).
+- `409 CONFLICT` — email already registered (case-insensitive match).
+
+### POST /api/auth/login — Authenticate existing user
+
+**Auth**: None (public). Looks up the user by lower-cased email, verifies the bcrypt hash, then issues fresh cookies.
+
+**Request Body**
+- `email`: Valid email address.
+- `password`: Plain-text password; empty strings are rejected.
+
+**Response — 200 OK**
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "jane@example.com",
+    "name": "Jane Smith",
+    "email_verified": true
+  }
+}
+```
+
+**Common errors**
+- `400 VALIDATION_ERROR` — email/password missing or malformed.
+- `401 UNAUTHORIZED` — user not found, deleted, or password mismatch (generic message to avoid leaking which field failed).
+
+### POST /api/auth/logout — Clear cookies
+
+**Auth**: Required (middleware). No request body. Always responds with `{ "success": true }` while setting both auth cookies to expired values, making the operation idempotent.
+
+### POST /api/auth/refresh — Rotate session
+
+**Auth**: Cookie-based. Reads `cr_refresh_token`, verifies the JWT, fetches the associated user, and issues brand-new cookies so long-lived sessions remain valid.
+
+**Response — 200 OK**
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "jane@example.com",
+    "name": "Jane Smith",
+    "email_verified": true
+  }
+}
+```
+
+**Common errors**
+- `401 UNAUTHORIZED` — refresh cookie missing/expired/invalid or user has been deleted.
+
+### GET /api/auth/verify-email/:token — Complete verification
+
+**Auth**: Token-based (public). The token encodes the user ID and a hash of their current email + verification state. Successful validation flips `emailVerified` to `true`.
+
+- Default response is an HTTP 302 redirect to `/verify-email?status=verified` so the browser page can show a success state.
+- When the request carries `Accept: application/json`, the handler returns `{ "status": "verified" }` with `200 OK` instead of redirecting.
+- Invalid tokens redirect to `/verify-email?status=error` (HTML flows) or emit `{ "error": "Verification token is invalid", "code": "INVALID_TOKEN" }` for JSON clients.
+
+### POST /api/auth/resend-verification — Send verification email again
+
+**Auth**: Required. Uses `getCurrentUser()` (populated by the middleware header) to ensure only the authenticated user can trigger the resend.
+
+- Returns `{ "status": "sent" }` after generating a fresh token and emailing it through Resend.
+- Returns `{ "status": "already_verified" }` if the current user has `emailVerified = true` to prevent noisy emails.
+
+### POST /api/auth/forgot-password — Request a reset link
+
+**Auth**: None. Accepts `{ "email": "jane@example.com" }` and always responds `200 OK` with `{ "message": "If the email exists, you will receive a reset link shortly." }` to avoid leaking which addresses are on file. When the user exists, the API queues an email pointing to `/reset-password?token=...`.
+
+### POST /api/auth/reset-password/:token — Set a new password
+
+**Auth**: Token-based. Accepts `{ "password": "NewPass1" }`, validates it against the policy, verifies the token context (ties token to the current password hash), and updates `passwordHash` when everything matches.
+
+- **Success**: `{ "message": "Password has been reset" }` with `200 OK`.
+- **Common errors**:
+  - `400 VALIDATION_ERROR` — body missing or password too weak.
+  - `400 INVALID_TOKEN` — token expired, already used (because the password changed), or user deleted.
+
+### Resend Verification
+
+```http
+POST /api/auth/resend-verification
+```
+
+**Auth required.** If the current user is still unverified, a fresh email is dispatched. Response `{ "status": "sent" }` or `{ "status": "already_verified" }`.
+
+### Forgot Password
+
+```http
+POST /api/auth/forgot-password
+```
+
+**Request Body**
+```json
+{ "email": "jane@example.com" }
+```
+
+Always responds `200 OK` with generic message. If the user exists, sends `/reset-password?token=...` link via email.
+
+### Reset Password
+
+```http
+POST /api/auth/reset-password/:token
+```
+
+**Request Body**
+```json
+{ "password": "NewPass1" }
+```
+
+Verifies the reset token, enforces password policy, updates the stored hash. Response `{ "message": "Password has been reset" }`. Errors: `400 INVALID_TOKEN` for expired/used tokens.
 
 ---
 

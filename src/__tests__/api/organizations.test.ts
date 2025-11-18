@@ -23,6 +23,7 @@ import prisma from '@/lib/db'
 import * as auth from '@/lib/auth'
 
 beforeEach(async () => {
+  await cleanupTestData()
   await ensureTestPlans()
 })
 

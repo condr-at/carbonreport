@@ -40,6 +40,39 @@ This backlog captures the remaining work items that were previously tracked in `
 
 ---
 
+### **Authentication Rollout (P0)**
+**Status**: 🔴 Not started — dev stub still returns the first user, no JWT/cookie handling.
+
+**Objective**: Replace stubbed auth with production-ready email/password flow so dashboard pages, API routes, and middleware can trust `getCurrentUser()`.
+
+**Phases (4-8h each)**:
+1. **Phase 1 — Tokens & Middleware**
+  - Implement JWT helpers (sign/verify, ttl, cookie helpers).
+  - Add Next.js middleware enforcing auth on protected routes and injecting `x-user-id` header for server handlers.
+  - Update `getCurrentUser()` to read the injected header.
+  - DoD: Authenticated requests hit APIs successfully; unauthenticated requests receive 401/redirect.
+2. **Phase 2 — Core Auth Endpoints**
+  - `/api/auth/register`, `/login`, `/logout`, `/refresh` issuing httpOnly cookies (access 24h, refresh 90d).
+  - Zod validation, bcrypt hashing (12 rounds), shared error envelope.
+  - Unit/integration tests covering happy path + invalid credentials.
+  - DoD: Register/login flows work via API client (no UI dependency).
+3. **Phase 3 — Email Verification Flow**
+  - `/api/auth/verify-email/:token` + `/api/auth/resend-verification` using Resend templates.
+  - Stateless verification tokens tied to `emailVerified` flag.
+  - `/verify-email` page with resend CTA + success/error states.
+  - DoD: Clicking email link flips `emailVerified=true`, middleware respects state.
+4. **Phase 4 — Password Reset Flow** (Should-have, 4h)
+  - `/api/auth/forgot-password` + `/api/auth/reset-password/:token` endpoints.
+  - `/forgot-password` + `/reset-password` pages with form + validation.
+  - Email template for password reset, tokens scoped to password hash.
+  - DoD: Reset link updates password, invalid/expired links handled cleanly.
+
+**Dependencies**: Env vars (`JWT_SECRET`, expiry values, Resend API key) already provisioned in `vercel.env.template`.
+
+**Timeline**: ~2.5 days total (Phases 1-3 are P0, Phase 4 is P1 if time allows).
+
+---
+
 ## 🟡 UI Polish (High Priority)
 
 ---

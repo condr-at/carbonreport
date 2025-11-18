@@ -11,15 +11,21 @@ import { after } from 'node:test'
  * Order matters - delete in reverse FK dependency order.
  */
 export async function cleanupTestData() {
-  await prisma.dataRequest.deleteMany()
-  await prisma.report.deleteMany()
-  await prisma.project.deleteMany()
-  await prisma.contact.deleteMany() // Delete contacts before organizations
-  await prisma.organizationUsageSnapshot.deleteMany()
-  await prisma.organizationMembership.deleteMany()
-  await prisma.organization.deleteMany()
-  await prisma.asset.deleteMany()
-  await prisma.user.deleteMany()
+  const tablesToTruncate = [
+    '"data_requests"',
+    '"reports"',
+    '"projects"',
+    '"contacts"',
+    '"organization_usage_snapshots"',
+    '"organization_memberships"',
+    '"organizations"',
+    '"assets"',
+    '"users"',
+  ]
+
+  await prisma.$executeRawUnsafe(
+    `TRUNCATE TABLE ${tablesToTruncate.join(', ')} RESTART IDENTITY CASCADE`,
+  )
   // Don't delete plan_definitions - they are seeded data
 }
 

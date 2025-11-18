@@ -18,6 +18,7 @@ import prisma from '@/lib/db'
 import { PROJECT_RETENTION_DAYS } from '@/lib/server-utils'
 
 beforeEach(async () => {
+  await cleanupTestData()
   await ensureTestPlans()
 })
 
