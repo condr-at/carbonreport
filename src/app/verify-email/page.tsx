@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
@@ -36,7 +36,20 @@ function getStatusCopy(status: string | null) {
   }
 }
 
-export default function VerifyEmailPage() {
+function VerifyEmailFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+      <Card className="w-full max-w-lg">
+        <CardHeader>
+          <CardTitle>Checking verification status…</CardTitle>
+          <CardDescription>This will just take a second.</CardDescription>
+        </CardHeader>
+      </Card>
+    </div>
+  )
+}
+
+function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const status = getStatusCopy(searchParams.get('status'))
   const [isLoading, setIsLoading] = useState(false)
@@ -86,5 +99,13 @@ export default function VerifyEmailPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<VerifyEmailFallback />}>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }

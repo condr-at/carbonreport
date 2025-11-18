@@ -11,10 +11,11 @@ function wantsJson(request: Request) {
 
 export async function GET(
   request: Request,
-  { params }: { params: { token: string } },
+  { params }: { params: Promise<{ token: string }> },
 ) {
   try {
-    const claims = await verifyEmailVerificationToken(params.token)
+    const { token } = await params
+    const claims = await verifyEmailVerificationToken(token)
     const user = await prisma.user.findUnique({ where: { id: claims.sub } })
 
     if (!user || user.deletedAt) {

@@ -3,10 +3,18 @@ import Link from 'next/link'
 import { UsersRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useOrganizationContext } from '@/lib/organizations/context'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
-export default function NoOrganizationPage() {
+function NoOrganizationFallback() {
+  return (
+    <main className="flex h-full min-h-[40vh] items-center justify-center">
+      <div className="animate-pulse text-sm text-muted-foreground">Preparing organization context…</div>
+    </main>
+  )
+}
+
+function NoOrganizationContent() {
   const { currentOrganization, isLoading, isBootstrapping, isUnauthorized } = useOrganizationContext()
   const router = useRouter()
   const pathname = usePathname()
@@ -69,5 +77,13 @@ export default function NoOrganizationPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function NoOrganizationPage() {
+  return (
+    <Suspense fallback={<NoOrganizationFallback />}>
+      <NoOrganizationContent />
+    </Suspense>
   )
 }

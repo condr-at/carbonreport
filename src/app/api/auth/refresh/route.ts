@@ -9,7 +9,7 @@ import { setAuthCookies } from '@/lib/auth/cookies'
 
 export async function POST() {
   try {
-    const cookieJar = cookies()
+    const cookieJar = await cookies()
     const refreshToken = cookieJar.get(AUTH_CONFIG.refreshTokenCookie)?.value
 
     if (!refreshToken) {

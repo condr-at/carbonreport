@@ -12,7 +12,7 @@ const ResetSchema = z.object({
 
 export async function POST(
   request: Request,
-  { params }: { params: { token: string } },
+  { params }: { params: Promise<{ token: string }> },
 ) {
   try {
     const payload = await request.json().catch(() => ({}))
@@ -30,7 +30,8 @@ export async function POST(
       })
     }
 
-    const claims = await verifyPasswordResetToken(params.token)
+    const { token } = await params
+    const claims = await verifyPasswordResetToken(token)
     const user = await prisma.user.findUnique({ where: { id: claims.sub } })
 
     if (!user || user.deletedAt) {

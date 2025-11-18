@@ -15,14 +15,18 @@ function resetOverride() {
 }
 
 async function resolveUserIdFromContext() {
-  const hdrs = headers()
-  const headerUserId = hdrs.get('x-user-id')
-  if (headerUserId) {
-    return headerUserId
+  try {
+    const hdrs = await headers()
+    const headerUserId = hdrs.get('x-user-id')
+    if (headerUserId) {
+      return headerUserId
+    }
+  } catch {
+    // headers() throws during static generation when no request context exists
   }
 
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const token = cookieStore.get(AUTH_CONFIG.accessTokenCookie)?.value
     if (!token) {
       return null
