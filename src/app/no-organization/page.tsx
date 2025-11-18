@@ -4,21 +4,37 @@ import { UsersRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useOrganizationContext } from '@/lib/organizations/context'
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 export default function NoOrganizationPage() {
-  const { currentOrganization, isLoading } = useOrganizationContext()
+  const { currentOrganization, isLoading, isBootstrapping, isUnauthorized } = useOrganizationContext()
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const isCheckingOrganization = isLoading || isBootstrapping
 
   // If organization detected after load, redirect away
   useEffect(() => {
-    if (!isLoading && currentOrganization?.id) {
+    if (!isCheckingOrganization && currentOrganization?.id) {
       router.replace('/projects')
     }
-  }, [isLoading, currentOrganization?.id, router])
+  }, [isCheckingOrganization, currentOrganization?.id, router])
+
+  useEffect(() => {
+    if (!isUnauthorized) {
+      return
+    }
+
+    const redirectTarget = (() => {
+      const search = searchParams?.toString()
+      return search ? `${pathname}?${search}` : pathname
+    })()
+
+    router.replace(`/login?redirect=${encodeURIComponent(redirectTarget)}`)
+  }, [isUnauthorized, pathname, router, searchParams])
 
   // While loading org context, show minimal spinner skeleton
-  if (isLoading) {
+  if (isCheckingOrganization) {
     return (
       <main className="flex h-full min-h-[40vh] items-center justify-center">
         <div className="animate-pulse text-sm text-muted-foreground">Checking organization access…</div>

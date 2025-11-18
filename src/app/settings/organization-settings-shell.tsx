@@ -101,13 +101,14 @@ export function OrganizationSettingsShell({ activeTab, renderContent }: Organiza
     activeOrganizationId,
     currentOrganization,
     setActiveOrganizationId,
+    isBootstrapping,
   } = useOrganizationContext()
 
   useEffect(() => {
-    if (!isLoading && !activeOrganizationId && !isCreateMode) {
+    if (!isLoading && !isBootstrapping && !activeOrganizationId && !isCreateMode) {
       router.replace('/no-organization')
     }
-  }, [isLoading, activeOrganizationId, router, isCreateMode])
+  }, [isLoading, isBootstrapping, activeOrganizationId, router, isCreateMode])
 
   const handleCreateModalClose = () => {
     if (activeOrganizationId) {
@@ -146,7 +147,7 @@ export function OrganizationSettingsShell({ activeTab, renderContent }: Organiza
     </Dialog>
   )
 
-  if (isLoading) {
+  if (isLoading || isBootstrapping) {
     return (
       <>
         <OrganizationSettingsFallback />

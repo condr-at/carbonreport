@@ -43,16 +43,16 @@ export default function ForgotPasswordPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Reset your password</CardTitle>
-          <CardDescription>Enter your email and we'll send a secure reset link</CardDescription>
+          <CardDescription>Enter your email and we&rsquo;ll send a secure reset link</CardDescription>
         </CardHeader>
         <CardContent>
           {hasSubmitted ? (
             <div className="space-y-4 text-sm text-muted-foreground">
               <p>
                 If an account exists for <span className="font-medium text-foreground">{email}</span>,
-                you'll receive an email with instructions to reset your password.
+                you&rsquo;ll receive an email with instructions to reset your password.
               </p>
-              <p>Didn't get it? Check your spam folder or try again in a few minutes.</p>
+              <p>Didn&rsquo;t get it? Check your spam folder or try again in a few minutes.</p>
               <div className="text-center">
                 <Link href="/login" className="text-primary hover:underline">
                   Back to sign in

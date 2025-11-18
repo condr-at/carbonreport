@@ -48,8 +48,9 @@ type PendingAction = { type: 'archive' | 'restore' | 'delete'; projectId: string
 export default function ProjectsPage() {
   const router = useRouter();
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-  const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading } = useOrganizationContext();
+  const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading, isBootstrapping } = useOrganizationContext();
   const organizationId = activeOrganizationId ?? currentOrganization?.id ?? null;
+  const isOrgContextLoading = organizationsLoading || isBootstrapping;
 
   const {
     data: projects = [],
@@ -68,10 +69,10 @@ export default function ProjectsPage() {
   const [sortBy, setSortBy] = useState<string>('date-desc');
 
   useEffect(() => {
-    if (!organizationsLoading && !organizationId) {
+    if (!isOrgContextLoading && !organizationId) {
       router.replace('/no-organization');
     }
-  }, [organizationsLoading, organizationId, router]);
+  }, [isOrgContextLoading, organizationId, router]);
 
   const filteredProjects = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -98,7 +99,7 @@ export default function ProjectsPage() {
     });
   }, [projects, searchQuery, statusFilter, sortBy]);
 
-  if (!organizationId && !organizationsLoading) {
+  if (!organizationId && !isOrgContextLoading) {
     return null;
   }
 
@@ -208,7 +209,7 @@ export default function ProjectsPage() {
   const createDisabled =
     hasActiveProjectsLimit && typeof activeProjectsUsage === 'number' && activeProjectsUsage >= activeProjectsLimit;
 
-  const isLoadingInitial = (isLoading || organizationsLoading) && projects.length === 0;
+  const isLoadingInitial = (isLoading || isOrgContextLoading) && projects.length === 0;
   const totalProjects = projects.length;
 
   const projectsErrorMessage = projectsError instanceof Error ? projectsError.message : 'Failed to load projects';

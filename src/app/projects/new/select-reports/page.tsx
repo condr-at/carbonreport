@@ -33,8 +33,9 @@ export default function SelectReportsPage() {
   const [hasStoredProgress, setHasStoredProgress] = useState(false);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const exitTargetRef = useRef<string | null>(null);
-  const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading } = useOrganizationContext();
+  const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading, isBootstrapping } = useOrganizationContext();
   const organizationId = activeOrganizationId ?? currentOrganization?.id ?? null;
+  const isOrgContextLoading = organizationsLoading || isBootstrapping;
 
   useEffect(() => {
     // Load project data from sessionStorage
@@ -69,10 +70,10 @@ export default function SelectReportsPage() {
   }, []);
 
   useEffect(() => {
-    if (!organizationsLoading && !organizationId) {
+    if (!isOrgContextLoading && !organizationId) {
       router.push('/no-organization');
     }
-  }, [organizationsLoading, organizationId, router]);
+  }, [isOrgContextLoading, organizationId, router]);
 
   const allTemplates = useMemo(() => getAllReportTemplates(), []);
   const hasSelection = selectedTemplates.length > 0;

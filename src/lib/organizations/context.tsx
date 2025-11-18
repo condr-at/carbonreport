@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react'
 import { useOrganizations, useCurrentOrganization } from '@/lib/data-client/organizations'
 import type { OrganizationSummary, CurrentOrganizationResponse } from '@/lib/data-client/organizations'
+import { ApiError } from '@/lib/api-client'
 
 const LOCAL_STORAGE_KEY = 'carbonreport.activeOrganizationId'
 
@@ -18,6 +19,8 @@ type OrganizationContextValue = {
   error: unknown
   currentOrganization: CurrentOrganizationResponse['organization'] | null
   refetch: () => void
+  isBootstrapping: boolean
+  isUnauthorized: boolean
 }
 
 const OrganizationContext = createContext<OrganizationContextValue | undefined>(undefined)
@@ -59,9 +62,30 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   )
 
   const [activeOrganizationId, setActiveOrganizationIdState] = useState<string | null>(() => getStoredOrganizationId())
+  const [isBootstrapping, setIsBootstrapping] = useState(true)
+  const [isUnauthorized, setIsUnauthorized] = useState(false)
 
   useEffect(() => {
     if (isLoading) {
+      return
+    }
+
+    const unauthorized = isError && error instanceof ApiError && error.status === 401
+    setIsUnauthorized(unauthorized)
+
+    if (unauthorized && activeOrganizationId !== null) {
+      setActiveOrganizationIdState(null)
+      clearStoredOrganizationId()
+    }
+  }, [activeOrganizationId, error, isError, isLoading])
+
+  useEffect(() => {
+    if (isLoading) {
+      return
+    }
+
+    if (isUnauthorized) {
+      setIsBootstrapping(false)
       return
     }
 
@@ -70,6 +94,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         setActiveOrganizationIdState(null)
         clearStoredOrganizationId()
       }
+      setIsBootstrapping(false)
       return
     }
 
@@ -78,6 +103,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       if (stored !== activeOrganizationId) {
         setActiveOrganizationIdState(stored)
       }
+      setIsBootstrapping(false)
       return
     }
 
@@ -86,7 +112,9 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setActiveOrganizationIdState(firstAccepted.id)
       storeOrganizationId(firstAccepted.id)
     }
-  }, [acceptedOrganizations, activeOrganizationId, isLoading])
+
+    setIsBootstrapping(false)
+  }, [acceptedOrganizations, activeOrganizationId, isLoading, isUnauthorized])
 
   const setActiveOrganizationId = useCallback((organizationId: string) => {
     setActiveOrganizationIdState(organizationId)
@@ -107,6 +135,8 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     error,
     currentOrganization,
     refetch,
+    isBootstrapping,
+    isUnauthorized,
   }), [
     activeOrganizationId,
     setActiveOrganizationId,
@@ -118,6 +148,8 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     error,
     currentOrganization,
     refetch,
+    isBootstrapping,
+    isUnauthorized,
   ])
 
   return <OrganizationContext.Provider value={value}>{children}</OrganizationContext.Provider>

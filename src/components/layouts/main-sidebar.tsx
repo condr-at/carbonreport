@@ -55,6 +55,7 @@ export function MainSidebar() {
     error,
     currentOrganization,
     refetch,
+    isBootstrapping,
   } = useOrganizationContext()
   const hasAcceptedOrganizations = acceptedOrganizations.length > 0
   const { data: userSettings } = useUserSettings()
@@ -92,7 +93,7 @@ export function MainSidebar() {
   }, [router, isLoading, activeOrganization])
 
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading || isBootstrapping) {
       return
     }
 
@@ -113,7 +114,7 @@ export function MainSidebar() {
     if (pathname === '/no-organization') {
       router.replace('/dashboard')
     }
-  }, [activeOrganization, hasAcceptedOrganizations, isLoading, pathname, router])
+  }, [activeOrganization, hasAcceptedOrganizations, isBootstrapping, isLoading, pathname, router])
 
   useEffect(() => {
     if (!pendingHref) {
@@ -125,7 +126,7 @@ export function MainSidebar() {
     }
   }, [pathname, pendingHref])
 
-  const showLockedNav = !isLoading && !activeOrganization
+  const showLockedNav = !isLoading && !isBootstrapping && !activeOrganization
 
   return (
     <>
