@@ -57,7 +57,7 @@ export function NextStepsWidget({ projects }: NextStepsWidgetProps) {
       <CardContent>
         {displayItems.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <CheckCircle2 className="h-12 w-12 mx-auto mb-3 text-green-500" />
+            <CheckCircle2 className="h-12 w-12 mx-auto mb-3 text-success" />
             <p className="text-sm">No pending tasks found</p>
           </div>
         ) : (

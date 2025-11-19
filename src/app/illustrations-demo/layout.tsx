@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import "@/styles/extended-visuals.css";
 
 export const metadata: Metadata = {
-  title: "Illustrations Demo | Launch UI Offline",
-  description: "Offline gallery of Launch UI illustrations bundled with local CSS",
+  title: "Illustrations Demo | Extended Visuals",
+  description: "Offline gallery of snippets, illustrations, and charts that rely on extended theme styles",
 };
 
 export default function IllustrationsLayout({
@@ -11,11 +11,5 @@ export default function IllustrationsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <>
-      <link rel="stylesheet" href="/launch-ui/launch-ui-a.css" />
-      <link rel="stylesheet" href="/launch-ui/launch-ui-b.css" />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

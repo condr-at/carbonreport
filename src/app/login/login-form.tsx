@@ -99,7 +99,7 @@ export function LoginForm() {
                 aria-describedby={touched.email && emailError ? 'login-email-error' : undefined}
               />
               {touched.email && emailError ? (
-                <p id="login-email-error" className="text-sm text-destructive">
+                <p id="login-email-error" className="text-sm text-destructive" role="alert">
                   {emailError}
                 </p>
               ) : null}
@@ -126,12 +126,12 @@ export function LoginForm() {
                 aria-describedby={touched.password && passwordError ? 'login-password-error' : undefined}
               />
               {touched.password && passwordError ? (
-                <p id="login-password-error" className="text-sm text-destructive">
+                <p id="login-password-error" className="text-sm text-destructive" role="alert">
                   {passwordError}
                 </p>
               ) : null}
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading || !canSubmit}>
+            <Button type="submit" className="w-full" disabled={isLoading || !canSubmit} aria-busy={isLoading}>
               {isLoading ? 'Signing in…' : 'Sign in'}
             </Button>
           </form>

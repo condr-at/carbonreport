@@ -10,7 +10,7 @@ export function CodeEditorIllustration({ className }: CodeEditorIllustrationProp
   const codeLines = [
     { indent: 0, width: "40%", color: "text-purple-400" },
     { indent: 1, width: "60%", color: "text-blue-400" },
-    { indent: 2, width: "50%", color: "text-green-400" },
+    { indent: 2, width: "50%", color: "text-success" },
     { indent: 2, width: "55%", color: "text-yellow-400" },
     { indent: 1, width: "35%", color: "text-blue-400" },
     { indent: 0, width: "30%", color: "text-purple-400" },
@@ -26,7 +26,7 @@ export function CodeEditorIllustration({ className }: CodeEditorIllustrationProp
             <div className="flex gap-1.5">
               <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
-              <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
+              <div className="h-2.5 w-2.5 rounded-full bg-success" />
             </div>
             <div className="text-xs text-slate-400">page.tsx</div>
           </div>

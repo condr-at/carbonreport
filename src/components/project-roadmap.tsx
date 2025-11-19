@@ -53,7 +53,7 @@ export function ProjectRoadmap({ items, incompleteCount }: ProjectRoadmapProps) 
             {displayedItems.map((item, index) => (
               <div key={index} className="flex items-start gap-3">
                 {item.completed ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
                 ) : (
                   <Circle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 )}

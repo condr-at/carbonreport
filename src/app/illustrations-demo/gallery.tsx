@@ -337,34 +337,37 @@ function UsageSection() {
               <h3 className="mb-4 text-center text-xl font-semibold">Offline snippet workflow</h3>
               <div className="space-y-6">
                 <UsageStep
-                  title="1. Include the Launch UI CSS"
-                  code={`<head>
-  <link rel="stylesheet" href="/launch-ui/launch-ui-a.css" />
-  <link rel="stylesheet" href="/launch-ui/launch-ui-b.css" />
-</head>`}
-                  description="The mirrored stylesheets live in public/launch-ui and contain every utility used on the live site."
+                  title="1. Use global CSS variables"
+                  code={`/* In your globals.css */
+:root {
+  --brand: var(--primary);
+  --brand-foreground: var(--primary-foreground);
+  --light: color-mix(in oklab, var(--primary) 60%, white);
+  --light-foreground: color-mix(in oklab, var(--primary) 75%, black);
+}`}
+                  description="The illustrations use CSS variables that automatically adapt to your theme."
                 />
                 <UsageStep
                   title="2. Paste the snippet markup"
                   code={`<div class="glass-1 ...">
   <!-- full snippet content -->
 </div>`}
-                  description="Copy a card’s HTML and drop it into any HTML/MDX page or CMS block."
+                  description="Copy a card's HTML and drop it into any HTML/MDX page or CMS block."
                 />
                 <UsageStep
                   title="3. Customize tokens"
-                  code={`.launch-ui-card {
-  --brand: oklch(0.72 0.18 30);
+                  code={`:root {
+  --brand: oklch(0.8348 0.1302 160.9080); /* Supabase green */
 }`}
-                  description="Override CSS variables or wrap snippets with your own layout to match your brand."
+                  description="Override CSS variables to match your brand colors and theme."
                 />
               </div>
             </div>
           </div>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2">
-            <FeatureCard title="Offline ready" description="All assets and gradients live locally inside /launch-ui." emoji="📦" />
-            <FeatureCard title="Pure HTML" description="Snippets rely only on the provided CSS — no React components required." emoji="🧩" />
+            <FeatureCard title="Theme aware" description="All illustrations use global CSS variables and adapt to your theme automatically." emoji="🎨" />
+            <FeatureCard title="Pure HTML" description="Snippets rely only on CSS variables — no React components required." emoji="🧩" />
             <FeatureCard title="Dark-mode aware" description="The stylesheets still respond to the dark theme variables." emoji="🌙" />
             <FeatureCard title="Copy friendly" description="Markup and JSX live directly in this repo, ready to paste wherever you need." emoji="📋" />
           </div>

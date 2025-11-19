@@ -18,7 +18,7 @@ export function MockupBrowserIllustration({ className }: MockupBrowserIllustrati
             <div className="flex gap-1.5">
               <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
               <div className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
-              <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
+              <div className="h-2.5 w-2.5 rounded-full bg-success" />
             </div>
             
             {/* Address bar */}

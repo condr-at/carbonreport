@@ -132,7 +132,7 @@ export function RegisterForm() {
                   aria-describedby={touched.name && errors.name ? 'register-name-error' : undefined}
                 />
                 {touched.name && errors.name ? (
-                  <p id="register-name-error" className="text-sm text-destructive">
+                  <p id="register-name-error" className="text-sm text-destructive" role="alert">
                     {errors.name}
                   </p>
                 ) : null}
@@ -152,7 +152,7 @@ export function RegisterForm() {
                   aria-describedby={touched.email && errors.email ? 'register-email-error' : undefined}
                 />
                 {touched.email && errors.email ? (
-                  <p id="register-email-error" className="text-sm text-destructive">
+                  <p id="register-email-error" className="text-sm text-destructive" role="alert">
                     {errors.email}
                   </p>
                 ) : null}
@@ -174,7 +174,7 @@ export function RegisterForm() {
                       .join(' ') || undefined}
                   />
                   {touched.password && errors.password ? (
-                    <p id="register-password-error" className="text-sm text-destructive">
+                    <p id="register-password-error" className="text-sm text-destructive" role="alert">
                       {errors.password}
                     </p>
                   ) : null}
@@ -193,7 +193,7 @@ export function RegisterForm() {
                     aria-describedby={touched.confirmPassword && errors.confirmPassword ? 'register-confirm-password-error' : undefined}
                   />
                   {touched.confirmPassword && errors.confirmPassword ? (
-                    <p id="register-confirm-password-error" className="text-sm text-destructive">
+                    <p id="register-confirm-password-error" className="text-sm text-destructive" role="alert">
                       {errors.confirmPassword}
                     </p>
                   ) : null}
@@ -218,7 +218,7 @@ export function RegisterForm() {
                 </ul>
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading || !isFormValid}>
+            <Button type="submit" className="w-full" disabled={isLoading || !isFormValid} aria-busy={isLoading}>
               {isLoading ? 'Creating account…' : 'Create account'}
             </Button>
           </form>

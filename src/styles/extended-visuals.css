@@ -1,0 +1,248 @@
+:root {
+  /* Primary ramp derived from the active theme color */
+  --visual-primary-50: color-mix(in oklab, var(--primary) 15%, white);
+  --visual-primary-100: color-mix(in oklab, var(--primary) 25%, white);
+  --visual-primary-200: color-mix(in oklab, var(--primary) 35%, white);
+  --visual-primary-300: color-mix(in oklab, var(--primary) 45%, white);
+  --visual-primary-400: color-mix(in oklab, var(--primary) 65%, white);
+  --visual-primary-500: var(--primary);
+  --visual-primary-600: color-mix(in oklab, var(--primary) 75%, black);
+  --visual-primary-700: color-mix(in oklab, var(--primary) 82%, black);
+  --visual-primary-800: color-mix(in oklab, var(--primary) 90%, black);
+  --visual-primary-900: color-mix(in oklab, var(--primary) 95%, black);
+
+  /* Accent ramp follows the accent token so we can tint UI chrome */
+  --visual-accent-50: color-mix(in oklab, var(--accent) 20%, white);
+  --visual-accent-100: color-mix(in oklab, var(--accent) 30%, white);
+  --visual-accent-200: color-mix(in oklab, var(--accent) 40%, white);
+  --visual-accent-300: color-mix(in oklab, var(--accent) 50%, white);
+  --visual-accent-400: color-mix(in oklab, var(--accent) 65%, white);
+  --visual-accent-500: var(--accent);
+  --visual-accent-600: color-mix(in oklab, var(--accent) 70%, black);
+  --visual-accent-700: color-mix(in oklab, var(--accent) 80%, black);
+  --visual-accent-800: color-mix(in oklab, var(--accent) 88%, black);
+  --visual-accent-900: color-mix(in oklab, var(--accent) 94%, black);
+
+  /* Neutral ramp for surfaces and typography */
+  --visual-neutral-50: color-mix(in oklab, var(--muted) 25%, white);
+  --visual-neutral-100: color-mix(in oklab, var(--muted) 35%, white);
+  --visual-neutral-200: color-mix(in oklab, var(--muted) 45%, white);
+  --visual-neutral-300: color-mix(in oklab, var(--muted) 55%, white);
+  --visual-neutral-400: color-mix(in oklab, var(--muted) 70%, white);
+  --visual-neutral-500: var(--muted);
+  --visual-neutral-600: color-mix(in oklab, var(--muted) 70%, black);
+  --visual-neutral-700: color-mix(in oklab, var(--muted) 78%, black);
+  --visual-neutral-800: color-mix(in oklab, var(--muted) 86%, black);
+  --visual-neutral-900: color-mix(in oklab, var(--muted) 94%, black);
+
+  --visual-shadow-soft: color-mix(in srgb, var(--foreground) 12%, transparent);
+  --visual-shadow-strong: color-mix(in srgb, var(--foreground) 28%, transparent);
+  --visual-ring: color-mix(in oklab, var(--primary) 55%, transparent);
+}
+
+/* Motion primitives reused by snippets, illustrations, and charts */
+@keyframes hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes hover-reverse {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.35);
+  }
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--visual-accordion-height, var(--radix-accordion-content-height));
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--visual-accordion-height, var(--radix-accordion-content-height));
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes appear-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+@keyframes impulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+  50% {
+    transform: rotate(1deg);
+  }
+}
+
+@keyframes shiny-text {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@layer utilities {
+  .shadow-mockup {
+    --tw-shadow: -12px 16px 48px var(--visual-shadow-strong);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  }
+
+  .shadow-soft {
+    --tw-shadow: 0 12px 35px -10px var(--visual-shadow-soft);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+  }
+
+  .ring-visual {
+    box-shadow: 0 0 0 1px var(--visual-ring) inset;
+  }
+
+  .animate-hover {
+    animation: hover 6s ease-in-out infinite;
+  }
+
+  .animate-hover-reverse {
+    animation: hover-reverse 6s ease-in-out infinite;
+  }
+
+  .animate-wave {
+    animation: wave 2.4s ease-in-out infinite;
+    transform-origin: center bottom;
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 12s linear infinite;
+  }
+
+  .animate-accordion-down {
+    animation: accordion-down 0.2s ease-out both;
+  }
+
+  .animate-accordion-up {
+    animation: accordion-up 0.2s ease-out both;
+  }
+
+  .animate-appear {
+    animation: appear 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-appear-zoom {
+    animation: appear-zoom 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-enter {
+    animation: enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-exit {
+    animation: exit 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-impulse {
+    animation: impulse 1.8s ease-in-out infinite;
+  }
+
+  .animate-wiggle {
+    animation: wiggle 1.4s ease-in-out infinite;
+  }
+
+  .animate-shiny-text {
+    animation: shiny-text 3s linear infinite;
+    background-image: linear-gradient(
+      120deg,
+      color-mix(in oklab, var(--visual-primary-400) 60%, white),
+      color-mix(in oklab, var(--visual-primary-200) 45%, white),
+      color-mix(in oklab, var(--visual-primary-500) 70%, white)
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+}
