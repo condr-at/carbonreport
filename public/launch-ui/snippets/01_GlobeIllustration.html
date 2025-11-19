@@ -16,42 +16,46 @@
       </ellipse>
      </g>
      <defs>
-      <filter color-interpolation-filters="sRGB" filterunits="userSpaceOnUse" height="400.975" id="filter0_d_214_5932" width="400.975" x="55.5125" y="55.5125">
-       <feflood flood-opacity="0" result="BackgroundImageFix">
-       </feflood>
-       <fecolormatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0">
-       </fecolormatrix>
-       <feoffset>
-       </feoffset>
-       <fegaussianblur stddeviation="4">
-       </fegaussianblur>
-       <fecomposite in2="hardAlpha" operator="out">
-       </fecomposite>
-       <fecolormatrix type="matrix" values="0 0 0 0 0.992157 0 0 0 0 0.729412 0 0 0 0 0.454902 0 0 0 0.24 0">
-       </fecolormatrix>
-       <feblend in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_214_5932">
-       </feblend>
-       <feblend in="SourceGraphic" in2="effect1_dropShadow_214_5932" mode="normal" result="shape">
-       </feblend>
-      </filter>
-      <filter color-interpolation-filters="sRGB" filterunits="userSpaceOnUse" height="219.249" id="filter1_d_214_5932" width="438.026" x="44.9285" y="181.474">
-       <feflood flood-opacity="0" result="BackgroundImageFix">
-       </feflood>
-       <fecolormatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0">
-       </fecolormatrix>
-       <feoffset>
-       </feoffset>
-       <fegaussianblur stddeviation="4">
-       </fegaussianblur>
-       <fecomposite in2="hardAlpha" operator="out">
-       </fecomposite>
-       <fecolormatrix type="matrix" values="0 0 0 0 0.992157 0 0 0 0 0.729412 0 0 0 0 0.454902 0 0 0 0.24 0">
-       </fecolormatrix>
-       <feblend in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_214_5932">
-       </feblend>
-       <feblend in="SourceGraphic" in2="effect1_dropShadow_214_5932" mode="normal" result="shape">
-       </feblend>
-      </filter>
+    <filter color-interpolation-filters="sRGB" filterunits="userSpaceOnUse" height="400.975" id="filter0_d_214_5932" width="400.975" x="55.5125" y="55.5125">
+     <feflood flood-opacity="0" result="BackgroundImageFix">
+     </feflood>
+     <fecolormatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0">
+     </fecolormatrix>
+     <feoffset>
+     </feoffset>
+    <fegaussianblur result="blur" stddeviation="3.2">
+     </fegaussianblur>
+     <fecomposite in="blur" in2="hardAlpha" operator="out" result="shadow">
+     </fecomposite>
+     <feflood flood-color="var(--brand)" flood-opacity="0.24" result="brandTint">
+     </feflood>
+     <fecomposite in="brandTint" in2="shadow" operator="in" result="tintedShadow">
+     </fecomposite>
+     <feblend in="tintedShadow" in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_214_5932">
+     </feblend>
+     <feblend in="SourceGraphic" in2="effect1_dropShadow_214_5932" mode="normal" result="shape">
+     </feblend>
+    </filter>
+    <filter color-interpolation-filters="sRGB" filterunits="userSpaceOnUse" height="219.249" id="filter1_d_214_5932" width="438.026" x="44.9285" y="181.474">
+     <feflood flood-opacity="0" result="BackgroundImageFix">
+     </feflood>
+     <fecolormatrix in="SourceAlpha" result="hardAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0">
+     </fecolormatrix>
+     <feoffset>
+     </feoffset>
+    <fegaussianblur result="blur" stddeviation="3.2">
+     </fegaussianblur>
+     <fecomposite in="blur" in2="hardAlpha" operator="out" result="shadow">
+     </fecomposite>
+     <feflood flood-color="var(--brand)" flood-opacity="0.24" result="brandTint">
+     </feflood>
+     <fecomposite in="brandTint" in2="shadow" operator="in" result="tintedShadow">
+     </fecomposite>
+     <feblend in="tintedShadow" in2="BackgroundImageFix" mode="normal" result="effect1_dropShadow_214_5932">
+     </feblend>
+     <feblend in="SourceGraphic" in2="effect1_dropShadow_214_5932" mode="normal" result="shape">
+     </feblend>
+    </filter>
       <lineargradient gradientunits="userSpaceOnUse" id="paint0_linear_214_5932" x1="256.5" x2="256.5" y1="80" y2="433">
        <stop stop-opacity="0.8" style="stop-color:var(--brand)">
        </stop>

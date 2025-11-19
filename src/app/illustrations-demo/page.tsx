@@ -4,7 +4,7 @@ import { Gallery } from "./gallery";
 
 type SnippetLayout = "card" | "wide";
 
-const ILLUSTRATION_SNIPPETS: Array<{
+export const ILLUSTRATION_SNIPPETS: Array<{
   name: string;
   description: string;
   file: string;

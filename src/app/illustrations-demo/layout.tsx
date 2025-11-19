@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "@/styles/primitives.css";
+import "@/styles/illustrations-demo.css";
 
 export const metadata: Metadata = {
   title: "Illustrations Demo | Extended Visuals",
@@ -11,5 +12,5 @@ export default function IllustrationsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <div className="illustrations-demo-theme">{children}</div>;
 }

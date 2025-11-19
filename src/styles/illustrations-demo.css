@@ -1,0 +1,98 @@
+/* Mapping legacy amber optics to emerald primitives:
+  --brand (oklch(0.665 0.1804 47.04))      → --visual-primary-500
+  --brand-foreground (0.7577 0.159 55.91) → --visual-primary-400
+  Derived tones reuse the same relative mixes from the legacy palette. */
+
+.illustrations-demo-theme {
+  --brand: var(--visual-primary-500);
+  --brand-foreground: color-mix(in oklab, var(--visual-primary-400) 85%, white 15%);
+  --light: color-mix(in oklab, var(--brand) 65%, white);
+  --light-foreground: color-mix(in oklab, var(--brand) 30%, black);
+  --secondary: color-mix(in oklab, var(--brand) 18%, white);
+  --secondary-foreground: var(--foreground);
+  --accent: color-mix(in oklab, var(--brand) 12%, white);
+  --accent-foreground: var(--foreground);
+  --muted-foreground: color-mix(in oklab, var(--foreground) 85%, var(--brand) 8%);
+  --border: color-mix(in oklab, var(--brand) 6%, var(--background) 94%);
+  --ring: color-mix(in oklab, var(--brand) 75%, white);
+}
+
+.dark .illustrations-demo-theme {
+  --brand: color-mix(in oklab, var(--visual-primary-500) 55%, black 45%);
+  --brand-foreground: color-mix(in oklab, var(--visual-primary-200) 70%, white 30%);
+  --light: color-mix(in oklab, var(--brand) 45%, white);
+  --light-foreground: color-mix(in oklab, var(--brand) 80%, black);
+  --secondary: color-mix(in oklab, var(--brand) 25%, black 75%);
+  --accent: color-mix(in oklab, var(--brand) 35%, black 65%);
+  --muted-foreground: color-mix(in oklab, var(--foreground) 80%, var(--brand) 10%);
+  --border: color-mix(in oklab, var(--brand) 30%, black 70%);
+  --ring: color-mix(in oklab, var(--brand) 65%, white 35%);
+}
+
+/* Mask utilities ported from Launch UI so demo is self-contained */
+.fade-top {
+  -webkit-mask-image: linear-gradient(#0000, #000 35%);
+  mask-image: linear-gradient(#0000, #000 35%);
+}
+
+.fade-top-lg {
+  -webkit-mask-image: linear-gradient(#0000 15%, #000);
+  mask-image: linear-gradient(#0000 15%, #000);
+}
+
+.fade-bottom {
+  -webkit-mask-image: linear-gradient(#000 65%, #0000);
+  mask-image: linear-gradient(#000 65%, #0000);
+}
+
+.fade-bottom-lg {
+  -webkit-mask-image: linear-gradient(#000, #0000 85%);
+  mask-image: linear-gradient(#000, #0000 85%);
+}
+
+.fade-left {
+  -webkit-mask-image: linear-gradient(90deg, #0000, #000 35%);
+  mask-image: linear-gradient(90deg, #0000, #000 35%);
+}
+
+.fade-left-lg {
+  -webkit-mask-image: linear-gradient(90deg, #0000 15%, #000);
+  mask-image: linear-gradient(90deg, #0000 15%, #000);
+}
+
+.fade-right {
+  -webkit-mask-image: linear-gradient(270deg, #0000, #000 35%);
+  mask-image: linear-gradient(270deg, #0000, #000 35%);
+}
+
+.fade-right-lg {
+  -webkit-mask-image: linear-gradient(270deg, #0000 15%, #000);
+  mask-image: linear-gradient(270deg, #0000 15%, #000);
+}
+
+.fade-x {
+  -webkit-mask-image: linear-gradient(90deg, #0000, #000 25% 75%, #0000);
+  mask-image: linear-gradient(90deg, #0000, #000 25% 75%, #0000);
+}
+
+.fade-y {
+  -webkit-mask-image: linear-gradient(#0000, #000 25% 75%, #0000);
+  mask-image: linear-gradient(#0000, #000 25% 75%, #0000);
+}
+
+/* Slightly sharper glows/backdrops for the demo */
+.illustrations-demo-theme :where(.backdrop-blur-sm) {
+  --tw-backdrop-blur: blur(3.2px);
+}
+
+.illustrations-demo-theme :where(.backdrop-blur-md) {
+  --tw-backdrop-blur: blur(9.6px);
+}
+
+.illustrations-demo-theme :where(.backdrop-blur-lg) {
+  --tw-backdrop-blur: blur(12.8px);
+}
+
+.illustrations-demo-theme :where(.backdrop-blur-xl) {
+  --tw-backdrop-blur: blur(19.2px);
+}
