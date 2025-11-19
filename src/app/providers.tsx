@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { createQueryClient } from '@/lib/data-client/queryClient';
 import { OrganizationProvider } from '@/lib/organizations/context';
 import { usePathname } from 'next/navigation';
+import { ThemeProvider } from 'next-themes';
 
 const PUBLIC_ROUTES = new Set([
   '/',
@@ -52,9 +53,11 @@ export function Providers({ children }: ProvidersProps) {
   }, [children, pathname]);
 
   return (
-    <QueryClientProvider client={client}>
-      {content}
-      {process.env.NODE_ENV === 'development' ? <ReactQueryDevtools initialIsOpen={false} /> : null}
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <QueryClientProvider client={client}>
+        {content}
+        {process.env.NODE_ENV === 'development' ? <ReactQueryDevtools initialIsOpen={false} /> : null}
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
