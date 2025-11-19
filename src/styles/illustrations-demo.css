@@ -18,8 +18,8 @@
 }
 
 .dark .illustrations-demo-theme {
-  --brand: color-mix(in oklab, var(--visual-primary-500) 55%, black 45%);
-  --brand-foreground: color-mix(in oklab, var(--visual-primary-200) 70%, white 30%);
+  --brand: var(--visual-primary-500);
+  --brand-foreground: var(--visual-primary-700);
   --light: color-mix(in oklab, var(--brand) 45%, white);
   --light-foreground: color-mix(in oklab, var(--brand) 80%, black);
   --secondary: color-mix(in oklab, var(--brand) 25%, black 75%);
@@ -82,17 +82,75 @@
 
 /* Slightly sharper glows/backdrops for the demo */
 .illustrations-demo-theme :where(.backdrop-blur-sm) {
-  --tw-backdrop-blur: blur(3.2px);
+  --tw-backdrop-blur: blur(4px);
 }
 
 .illustrations-demo-theme :where(.backdrop-blur-md) {
-  --tw-backdrop-blur: blur(9.6px);
+  --tw-backdrop-blur: blur(12px);
 }
 
 .illustrations-demo-theme :where(.backdrop-blur-lg) {
-  --tw-backdrop-blur: blur(12.8px);
+  --tw-backdrop-blur: blur(15px);
 }
 
 .illustrations-demo-theme :where(.backdrop-blur-xl) {
-  --tw-backdrop-blur: blur(19.2px);
+  --tw-backdrop-blur: blur(25px);
+}
+
+/* Tinted card canvases and richer glow */
+.illustrations-demo-theme [data-slot="card-content"] {
+  background-color: var(--card);
+}
+
+.dark .illustrations-demo-theme [data-slot="card-content"] {
+  background-color: var(--background);
+}
+
+.illustrations-demo-theme [data-slot="glow"] {
+  opacity: 0.24 !important;
+}
+
+.illustrations-demo-theme .group:hover [data-slot="glow"] {
+  opacity: 0.48 !important;
+}
+
+/* Override .glass-3 to use neutral glassmorphism */
+.illustrations-demo-theme .glass-3 {
+  backdrop-filter: blur(20px);
+  --tw-gradient-from: color-mix(in oklab, white 40%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 30%, transparent) !important;
+  border-color: color-mix(in oklab, white 15%, transparent);
+}
+
+.dark .illustrations-demo-theme .glass-3 {
+  backdrop-filter: blur(20px);
+  --tw-gradient-from: color-mix(in oklab, white 6%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 4%, transparent) !important;
+  border-color: color-mix(in oklab, white 8%, transparent);
+}
+
+/* Preserve internal dividers with neutral color */
+.illustrations-demo-theme .glass-3 .border-t {
+  border-top-color: color-mix(in oklab, var(--foreground) 8%, transparent) !important;
+}
+
+.dark .illustrations-demo-theme .glass-3 .border-t {
+  border-top-color: color-mix(in oklab, var(--foreground) 15%, transparent) !important;
+}
+
+/* Tighten radial gradient for a concentrated center glow */
+.illustrations-demo-theme [data-slot="glow"] > div {
+  --tw-scale-x: 2 !important;
+  --tw-scale-y: 1.7 !important;
+  scale: var(--tw-scale-x) var(--tw-scale-y) !important;
+}
+
+.illustrations-demo-theme [data-slot="glow"] > div:first-child {
+  --tw-gradient-from-position: 2% !important;
+  --tw-gradient-to-position: 50% !important;
+}
+
+.illustrations-demo-theme [data-slot="glow"] > div:last-child {
+  --tw-gradient-from-position: 1% !important;
+  --tw-gradient-to-position: 45% !important;
 }
