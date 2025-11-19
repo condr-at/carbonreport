@@ -1,39 +1,39 @@
 :root {
-  /* Primary ramp derived from the active theme color */
-  --visual-primary-50: color-mix(in oklab, var(--primary) 15%, white);
-  --visual-primary-100: color-mix(in oklab, var(--primary) 25%, white);
-  --visual-primary-200: color-mix(in oklab, var(--primary) 35%, white);
-  --visual-primary-300: color-mix(in oklab, var(--primary) 45%, white);
-  --visual-primary-400: color-mix(in oklab, var(--primary) 65%, white);
-  --visual-primary-500: var(--primary);
-  --visual-primary-600: color-mix(in oklab, var(--primary) 75%, black);
-  --visual-primary-700: color-mix(in oklab, var(--primary) 82%, black);
-  --visual-primary-800: color-mix(in oklab, var(--primary) 90%, black);
-  --visual-primary-900: color-mix(in oklab, var(--primary) 95%, black);
+  /* Vivid emerald palette — primitives for illustrations & charts */
+  --visual-primary-50: oklch(0.97 0.04 162);
+  --visual-primary-100: oklch(0.93 0.08 162);
+  --visual-primary-200: oklch(0.88 0.12 161);
+  --visual-primary-300: oklch(0.82 0.16 160);
+  --visual-primary-400: oklch(0.75 0.18 159);
+  --visual-primary-500: oklch(0.68 0.19 158);
+  --visual-primary-600: oklch(0.58 0.16 157);
+  --visual-primary-700: oklch(0.48 0.13 156);
+  --visual-primary-800: oklch(0.835 0.13 160);
+  --visual-primary-900: oklch(0.32 0.09 155);
 
-  /* Accent ramp follows the accent token so we can tint UI chrome */
-  --visual-accent-50: color-mix(in oklab, var(--accent) 20%, white);
-  --visual-accent-100: color-mix(in oklab, var(--accent) 30%, white);
-  --visual-accent-200: color-mix(in oklab, var(--accent) 40%, white);
-  --visual-accent-300: color-mix(in oklab, var(--accent) 50%, white);
-  --visual-accent-400: color-mix(in oklab, var(--accent) 65%, white);
-  --visual-accent-500: var(--accent);
-  --visual-accent-600: color-mix(in oklab, var(--accent) 70%, black);
-  --visual-accent-700: color-mix(in oklab, var(--accent) 80%, black);
-  --visual-accent-800: color-mix(in oklab, var(--accent) 88%, black);
-  --visual-accent-900: color-mix(in oklab, var(--accent) 94%, black);
+  /* Accent ramp — warm teal for secondary UI elements */
+  --visual-accent-50: oklch(0.96 0.015 175);
+  --visual-accent-100: oklch(0.93 0.025 172);
+  --visual-accent-200: oklch(0.89 0.04 170);
+  --visual-accent-300: oklch(0.84 0.06 168);
+  --visual-accent-400: oklch(0.78 0.09 166);
+  --visual-accent-500: oklch(0.72 0.11 164);
+  --visual-accent-600: oklch(0.62 0.10 162);
+  --visual-accent-700: oklch(0.52 0.08 160);
+  --visual-accent-800: oklch(0.42 0.06 158);
+  --visual-accent-900: oklch(0.32 0.045 156);
 
-  /* Neutral ramp for surfaces and typography */
-  --visual-neutral-50: color-mix(in oklab, var(--muted) 25%, white);
-  --visual-neutral-100: color-mix(in oklab, var(--muted) 35%, white);
-  --visual-neutral-200: color-mix(in oklab, var(--muted) 45%, white);
-  --visual-neutral-300: color-mix(in oklab, var(--muted) 55%, white);
-  --visual-neutral-400: color-mix(in oklab, var(--muted) 70%, white);
-  --visual-neutral-500: var(--muted);
-  --visual-neutral-600: color-mix(in oklab, var(--muted) 70%, black);
-  --visual-neutral-700: color-mix(in oklab, var(--muted) 78%, black);
-  --visual-neutral-800: color-mix(in oklab, var(--muted) 86%, black);
-  --visual-neutral-900: color-mix(in oklab, var(--muted) 94%, black);
+  /* Neutral ramp with slight green warmth for harmony */
+  --visual-neutral-50: oklch(0.98 0.005 160);
+  --visual-neutral-100: oklch(0.95 0.008 160);
+  --visual-neutral-200: oklch(0.92 0.010 160);
+  --visual-neutral-300: oklch(0.87 0.012 160);
+  --visual-neutral-400: oklch(0.76 0.015 160);
+  --visual-neutral-500: oklch(0.65 0.018 160);
+  --visual-neutral-600: oklch(0.50 0.012 160);
+  --visual-neutral-700: oklch(0.40 0.010 160);
+  --visual-neutral-800: oklch(0.28 0.008 160);
+  --visual-neutral-900: oklch(0.18 0.005 160);
 
   --visual-shadow-soft: color-mix(in srgb, var(--foreground) 12%, transparent);
   --visual-shadow-strong: color-mix(in srgb, var(--foreground) 28%, transparent);

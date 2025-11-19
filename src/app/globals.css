@@ -67,20 +67,20 @@
   --card-foreground: oklch(0.2046 0 0);
   --popover: oklch(0.9911 0 0);
   --popover-foreground: oklch(0.4386 0 0);
-  --primary: oklch(0.8348 0.1302 160.9080);
+  --primary: var(--visual-primary-800);
   --primary-foreground: oklch(0.2626 0.0147 166.4589);
   --secondary: oklch(0.9940 0 0);
   --secondary-foreground: oklch(0.2046 0 0);
   --muted: oklch(0.9461 0 0);
-  --muted-foreground: oklch(0.2435 0 0);
-  --accent: oklch(0.9461 0 0);
+  --muted-foreground: var(--visual-neutral-600);
+  --accent: var(--visual-neutral-100);
   --accent-foreground: oklch(0.2435 0 0);
   --destructive: oklch(0.5523 0.1927 32.7272);
   --success: oklch(0.8348 0.1302 160.9080);
   --success-foreground: oklch(0.2626 0.0147 166.4589);
   --border: oklch(0.9037 0 0);
   --input: oklch(0.9731 0 0);
-  --ring: oklch(0.8348 0.1302 160.9080);
+  --ring: var(--visual-primary-500);
   --chart-1: oklch(0.8348 0.1302 160.9080);
   --chart-2: oklch(0.6231 0.1880 259.8145);
   --chart-3: oklch(0.6056 0.2189 292.7172);
@@ -97,10 +97,10 @@
   --destructive-foreground: oklch(1.0000 0 0);
 
   /* Launch UI illustration colors */
-  --brand: var(--primary);
-  --brand-foreground: var(--primary-foreground);
-  --light: color-mix(in oklab, var(--primary) 60%, white);
-  --light-foreground: color-mix(in oklab, var(--primary) 75%, black);
+  --brand: var(--visual-primary-500);
+  --brand-foreground: var(--visual-primary-300);
+  --light: var(--visual-primary-400);
+  --light-foreground: var(--visual-primary-200);
 
   /* Enhanced Button gradients */
   --gradient-lime: #32CD32, #00FF00;

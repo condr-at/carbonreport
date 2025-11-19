@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import "@/styles/extended-visuals.css";
+import "@/styles/primitives.css";
 
 export const metadata: Metadata = {
   title: "Illustrations Demo | Extended Visuals",
