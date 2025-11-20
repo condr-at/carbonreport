@@ -114,27 +114,67 @@
   opacity: 0.48 !important;
 }
 
-/* Override .glass-3 to use neutral glassmorphism */
-.illustrations-demo-theme .glass-3 {
+/* Unified Neutral Glassmorphism Overrides */
+.illustrations-demo-theme :where(.glass-1, .glass-2, .glass-3, .glass-4, .glass-5) {
   backdrop-filter: blur(20px);
-  --tw-gradient-from: color-mix(in oklab, white 40%, transparent) !important;
-  --tw-gradient-to: color-mix(in oklab, white 30%, transparent) !important;
   border-color: color-mix(in oklab, white 15%, transparent);
 }
 
-.dark .illustrations-demo-theme .glass-3 {
+.dark .illustrations-demo-theme :where(.glass-1, .glass-2, .glass-3, .glass-4, .glass-5) {
   backdrop-filter: blur(20px);
-  --tw-gradient-from: color-mix(in oklab, white 6%, transparent) !important;
-  --tw-gradient-to: color-mix(in oklab, white 4%, transparent) !important;
   border-color: color-mix(in oklab, white 8%, transparent);
 }
 
+/* Specific Gradients - Light Mode */
+.illustrations-demo-theme .glass-1 {
+  --tw-gradient-from: color-mix(in oklab, white 70%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 40%, transparent) !important;
+}
+.illustrations-demo-theme .glass-2 {
+  --tw-gradient-from: color-mix(in oklab, white 80%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 60%, transparent) !important;
+}
+.illustrations-demo-theme .glass-3 {
+  --tw-gradient-from: color-mix(in oklab, white 40%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 30%, transparent) !important;
+}
+.illustrations-demo-theme .glass-4 {
+  --tw-gradient-from: color-mix(in oklab, white 60%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 20%, transparent) !important;
+}
+.illustrations-demo-theme .glass-5 {
+  --tw-gradient-from: color-mix(in oklab, white 80%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 20%, transparent) !important;
+}
+
+/* Specific Gradients - Dark Mode */
+.dark .illustrations-demo-theme .glass-1 {
+  --tw-gradient-from: color-mix(in oklab, white 10%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 5%, transparent) !important;
+}
+.dark .illustrations-demo-theme .glass-2 {
+  --tw-gradient-from: color-mix(in oklab, white 12%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 6%, transparent) !important;
+}
+.dark .illustrations-demo-theme .glass-3 {
+  --tw-gradient-from: color-mix(in oklab, white 6%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 4%, transparent) !important;
+}
+.dark .illustrations-demo-theme .glass-4 {
+  --tw-gradient-from: color-mix(in oklab, white 8%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 4%, transparent) !important;
+}
+.dark .illustrations-demo-theme .glass-5 {
+  --tw-gradient-from: color-mix(in oklab, white 10%, transparent) !important;
+  --tw-gradient-to: color-mix(in oklab, white 4%, transparent) !important;
+}
+
 /* Preserve internal dividers with neutral color */
-.illustrations-demo-theme .glass-3 .border-t {
+.illustrations-demo-theme :where(.glass-1, .glass-2, .glass-3, .glass-4, .glass-5) .border-t {
   border-top-color: color-mix(in oklab, var(--foreground) 8%, transparent) !important;
 }
 
-.dark .illustrations-demo-theme .glass-3 .border-t {
+.dark .illustrations-demo-theme :where(.glass-1, .glass-2, .glass-3, .glass-4, .glass-5) .border-t {
   border-top-color: color-mix(in oklab, var(--foreground) 15%, transparent) !important;
 }
 
