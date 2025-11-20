@@ -187,6 +187,27 @@ function ComponentLibrary({
 }
 
 function OfflineSnippets({ cards }: { cards: IllustrationCard[] }) {
+  const specialRange = {
+    startSlug: "16_NetworkIllustration",
+    endSlug: "21_MockupResponsiveTopIllustration",
+  } as const;
+
+  const startIndex = cards.findIndex((card) => card.slug === specialRange.startSlug);
+  const endIndex = cards.findIndex((card) => card.slug === specialRange.endSlug);
+  const hasSpecialRange = startIndex !== -1 && endIndex !== -1 && startIndex <= endIndex;
+
+  const beforeCards = hasSpecialRange ? cards.slice(0, startIndex) : cards;
+  const twoColumnCards = hasSpecialRange ? cards.slice(startIndex, endIndex + 1) : [];
+  const afterCards = hasSpecialRange ? cards.slice(endIndex + 1) : [];
+
+  const sections = hasSpecialRange
+    ? [
+        { cards: beforeCards, columns: "default" as const },
+        { cards: twoColumnCards, columns: "two" as const },
+        { cards: afterCards, columns: "default" as const },
+      ]
+    : [{ cards, columns: "default" as const }];
+
   return (
     <section className="border-b border-border bg-background">
       <div className="container mx-auto px-4 py-16">
@@ -203,17 +224,44 @@ function OfflineSnippets({ cards }: { cards: IllustrationCard[] }) {
           </p>
         </header>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {cards.map((card) =>
-            card.layout === "wide" ? (
-              <WideSnippetCard key={card.slug} card={card} />
-            ) : (
-              <SnippetCard key={card.slug} card={card} />
-            )
-          )}
+        <div className="space-y-12">
+          {sections
+            .filter((section) => section.cards.length > 0)
+            .map((section, index) => (
+              <SnippetGrid key={`${section.columns}-${index}`} cards={section.cards} columns={section.columns} />
+            ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function SnippetGrid({
+  cards,
+  columns = "default",
+}: {
+  cards: IllustrationCard[];
+  columns?: "default" | "two";
+}) {
+  if (cards.length === 0) {
+    return null;
+  }
+
+  const className =
+    columns === "two" ? "grid gap-8 md:grid-cols-2" : "grid gap-8 md:grid-cols-2 lg:grid-cols-3";
+
+  return (
+    <div className={className}>
+      {cards.map((card) => {
+        const shouldForceCardLayout = columns === "two";
+
+        if (!shouldForceCardLayout && card.layout === "wide") {
+          return <WideSnippetCard key={card.slug} card={card} />;
+        }
+
+        return <SnippetCard key={card.slug} card={card} />;
+      })}
+    </div>
   );
 }
 

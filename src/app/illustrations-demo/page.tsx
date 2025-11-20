@@ -54,7 +54,6 @@ export const ILLUSTRATION_SNIPPETS: Array<{
     name: "Mockup Mobile",
     description: "Futuristic mobile mockup with glow",
     file: "09_MockupMobileIllustration.html",
-    layout: "wide",
   },
   {
     name: "Pipeline",
@@ -75,13 +74,11 @@ export const ILLUSTRATION_SNIPPETS: Array<{
     name: "Mockup Mobile Top",
     description: "Phone mockup with cards",
     file: "13_MockupMobileTopIllustration.html",
-    layout: "wide",
   },
   {
     name: "Carousel",
     description: "Sliding testimonial carousel",
     file: "14_CarouselIllustration.html",
-    layout: "wide",
   },
   {
     name: "Rising Small",
