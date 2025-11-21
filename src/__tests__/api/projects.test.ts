@@ -16,6 +16,7 @@ import {
 import { cleanupTestData } from '@/__tests__/setup'
 import prisma from '@/lib/db'
 import { PROJECT_RETENTION_DAYS } from '@/lib/server-utils'
+import type { ApiError } from '@/lib/api-error'
 
 beforeEach(async () => {
   await cleanupTestData()
@@ -64,12 +65,11 @@ test('POST /api/projects: blocks 2nd project on Free plan', async () => {
   })
 
   const { assertWithinLimit } = await import('@/lib/server-utils')
-  const { ApiError } = await import('@/lib/api-error')
 
   // Try to create second project
   await assert.rejects(
     async () => assertWithinLimit(org.id, 'project', { needed: 1 }),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 409)
       assert.equal(err.code, 'PLAN_LIMIT_EXCEEDED')
       assert.ok(err.details)
@@ -106,12 +106,11 @@ test('POST /api/projects: blocks 4th project on Pro Beta', async () => {
   await createTestProject({ organizationId: org.id, status: ProjectStatus.ACTIVE })
 
   const { assertWithinLimit } = await import('@/lib/server-utils')
-  const { ApiError } = await import('@/lib/api-error')
 
   // Try to create 4th project
   await assert.rejects(
     async () => assertWithinLimit(org.id, 'project', { needed: 1 }),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 409)
       assert.equal(err.code, 'PLAN_LIMIT_EXCEEDED')
       assert.ok(err.details)
@@ -249,7 +248,6 @@ test('POST /api/projects/:id/restore: blocks restore after retention window', as
   assert.equal(retention.days_remaining, 0) // Math.max(0, ...) ensures minimum 0
 
   const { restoreProject } = await import('@/lib/projects/service')
-  const { ApiError } = await import('@/lib/api-error')
 
   // Try to restore
   await assert.rejects(
@@ -258,7 +256,7 @@ test('POST /api/projects/:id/restore: blocks restore after retention window', as
         projectId: project.id,
         userId: org.createdByUserId,
       }),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 410)
       assert.equal(err.code, 'RETENTION_EXPIRED')
       return true
@@ -282,7 +280,6 @@ test('POST /api/projects/:id/restore: restores archived to active requires limit
   })
 
   const { restoreProject } = await import('@/lib/projects/service')
-  const { ApiError } = await import('@/lib/api-error')
 
   // Try to restore archived to active when at limit
   await assert.rejects(
@@ -291,7 +288,7 @@ test('POST /api/projects/:id/restore: restores archived to active requires limit
         projectId: archivedProject.id,
         userId: org.createdByUserId,
       }),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 409)
       assert.equal(err.code, 'PLAN_LIMIT_EXCEEDED')
       return true
@@ -359,7 +356,7 @@ test('Project status transitions: active → reported', async () => {
 })
 
 test('Project status transitions: active → deleted (soft-delete)', async () => {
-  const { org, user } = await createTestOrgWithOwner()
+  const { org } = await createTestOrgWithOwner()
 
   const project = await createTestProject({
     organizationId: org.id,
@@ -393,7 +390,6 @@ test('Project status transitions: reported → archived is blocked', async () =>
   })
 
   const { changeProjectStatus } = await import('@/lib/projects/service')
-  const { ApiError } = await import('@/lib/api-error')
 
   // Should reject reported → archived transition
   await assert.rejects(
@@ -403,7 +399,7 @@ test('Project status transitions: reported → archived is blocked', async () =>
         userId: user.id,
         targetStatus: ProjectStatus.ARCHIVED,
       }),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 409)
       assert.equal(err.code, 'CONFLICT')
       assert.match(err.message, /reported/i)

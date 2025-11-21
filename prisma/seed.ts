@@ -520,7 +520,7 @@ async function main() {
     },
   })
 
-  const proProjectSecondary = await prisma.project.create({
+  await prisma.project.create({
     data: {
       organizationId: proOrg.id,
       createdByUserId: demoOwner.id,

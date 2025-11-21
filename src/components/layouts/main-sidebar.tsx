@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Separator } from '@/components/ui/separator'
 import { SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/components/ui/sidebar'
+import { ThemeDropdownMenu } from '@/components/ui/mode-toggle'
 import { useOrganizationContext } from '@/lib/organizations/context'
 import type { OrganizationSummary } from '@/lib/data-client/organizations'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -336,6 +337,7 @@ export function MainSidebar() {
               <Settings className="h-4 w-4" />
               Profile settings
             </DropdownMenuItem>
+            <ThemeDropdownMenu />
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="gap-2 text-destructive"

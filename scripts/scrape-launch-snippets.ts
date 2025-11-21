@@ -31,11 +31,6 @@ const FILE_MAP: Record<string, string> = {
   RisingLarge: "23_RisingLarge.html",
 };
 
-type Snapshot = {
-  name: string;
-  html: string;
-};
-
 type RawSnapshot = {
   name: string | null;
   html: string;

@@ -20,7 +20,6 @@ import {
 } from '@prisma/client'
 import {
   createTestUser,
-  createTestOrg,
   createTestMembership,
   createTestProject,
   ensureTestPlans,
@@ -506,7 +505,7 @@ test('assertWithinLimit: blocks inviting verifier (feature disabled)', async () 
 // ============================================================================
 
 test('assertWithinLimit: never blocks unlimited resource (viewers)', async () => {
-  const { org } = await createTestOrgWithOwner()
+  await createTestOrgWithOwner()
 
   // Note: There's no 'viewer' limit check in assertWithinLimit
   // This is testing the pattern - viewers are unlimited

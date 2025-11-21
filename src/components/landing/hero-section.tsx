@@ -2,11 +2,18 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 import { ArrowRight, Github } from "lucide-react";
 
 export function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-x-0 top-0 z-20">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 text-sm font-semibold sm:px-6 lg:px-8">
+          <span className="tracking-tight text-muted-foreground">carbonreport</span>
+          <ModeToggle />
+        </div>
+      </div>
       {/* Gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-muted/20" />
       

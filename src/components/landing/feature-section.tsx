@@ -48,7 +48,7 @@ export function FeatureSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Everything you need. Nothing you don't.
+            Everything you need. Nothing you don&apos;t.
           </h2>
         </motion.div>
 

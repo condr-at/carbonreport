@@ -21,6 +21,7 @@ import {
 import { cleanupTestData } from '@/__tests__/setup'
 import prisma from '@/lib/db'
 import * as auth from '@/lib/auth'
+import type { ApiError } from '@/lib/api-error'
 
 beforeEach(async () => {
   await cleanupTestData()
@@ -148,11 +149,10 @@ test('Membership invite: blocks inviting editor on Free plan', async () => {
   const { org } = await createTestOrgWithOwner({ planCode: 'free' })
 
   const { assertWithinLimit } = await import('@/lib/server-utils')
-  const { ApiError } = await import('@/lib/api-error')
 
   await assert.rejects(
     async () => assertWithinLimit(org.id, 'editor', { needed: 1 }),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 409)
       assert.equal(err.code, 'SEAT_LIMIT_EXCEEDED')
       assert.ok(err.details)
@@ -184,12 +184,11 @@ test('Membership invite: blocks inviting 3rd editor on Pro Beta', async () => {
   })
 
   const { assertWithinLimit } = await import('@/lib/server-utils')
-  const { ApiError } = await import('@/lib/api-error')
 
   // Try to invite 3rd editor
   await assert.rejects(
     async () => assertWithinLimit(org.id, 'editor', { needed: 1 }),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 409)
       assert.equal(err.code, 'SEAT_LIMIT_EXCEEDED')
       assert.ok(err.details)
@@ -205,11 +204,10 @@ test('Membership invite: blocks inviting verifier (feature disabled)', async () 
   const { org } = await createTestOrgWithOwner({ planCode: 'pro_beta' })
 
   const { assertWithinLimit } = await import('@/lib/server-utils')
-  const { ApiError } = await import('@/lib/api-error')
 
   await assert.rejects(
     async () => assertWithinLimit(org.id, 'verifier', { needed: 1 }),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 409)
       assert.equal(err.code, 'SEAT_LIMIT_EXCEEDED')
       assert.ok(err.details)
@@ -298,12 +296,11 @@ test('DELETE organization: only allows OWNER to delete', async () => {
   mockUser(adminUser.id)
 
   const { assertOrgMembership } = await import('@/lib/server-utils')
-  const { ApiError } = await import('@/lib/api-error')
 
   // Try to delete as ADMIN (requires OWNER)
   await assert.rejects(
     async () => assertOrgMembership(adminUser.id, org.id, OrganizationMembershipRole.OWNER),
-    (err: typeof ApiError.prototype) => {
+    (err: ApiError) => {
       assert.equal(err.status, 403)
       assert.equal(err.code, 'FORBIDDEN')
       assert.ok(err.details)
