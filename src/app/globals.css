@@ -61,6 +61,20 @@
 
   /* Radar animation */
   --animate-spin-slow: spin 3s linear infinite;
+
+  /* Missing animations from primitives */
+  --animate-hover: hover 6s ease-in-out infinite;
+  --animate-hover-reverse: hover-reverse 6s ease-in-out infinite;
+  --animate-wave: wave 2.4s ease-in-out infinite;
+  --animate-impulse: impulse 1.8s ease-in-out infinite;
+  --animate-wiggle: wiggle 1.4s ease-in-out infinite;
+  --animate-shiny-text: shiny-text 3s linear infinite;
+  --animate-appear: appear 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-appear-zoom: appear-zoom 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-enter: enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-exit: exit 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-accordion-down: accordion-down 0.2s ease-out both;
+  --animate-accordion-up: accordion-up 0.2s ease-out both;
 }
 
 :root {
@@ -218,6 +232,127 @@
   }
 }
 
+@keyframes hover {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes hover-reverse {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.35);
+  }
+}
+
+@keyframes impulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+  50% {
+    transform: rotate(1deg);
+  }
+}
+
+@keyframes shiny-text {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes appear-zoom {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--visual-accordion-height, var(--radix-accordion-content-height));
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--visual-accordion-height, var(--radix-accordion-content-height));
+  }
+  to {
+    height: 0;
+  }
+}
+
 /* Animation utilities */
 .animate-orbit {
   animation: orbit 20s linear infinite;
@@ -229,6 +364,65 @@
 
 .animate-pulse-hover {
   animation: pulse-hover 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-hover {
+  animation: hover 6s ease-in-out infinite;
+}
+
+.animate-hover-reverse {
+  animation: hover-reverse 6s ease-in-out infinite;
+}
+
+.animate-wave {
+  animation: wave 2.4s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+
+.animate-impulse {
+  animation: impulse 1.8s ease-in-out infinite;
+}
+
+.animate-wiggle {
+  animation: wiggle 1.4s ease-in-out infinite;
+}
+
+.animate-shiny-text {
+  animation: shiny-text 3s linear infinite;
+  background-image: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--visual-primary-400) 60%, white),
+    color-mix(in oklab, var(--visual-primary-200) 45%, white),
+    color-mix(in oklab, var(--visual-primary-500) 70%, white)
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.animate-accordion-down {
+  animation: accordion-down 0.2s ease-out both;
+}
+
+.animate-accordion-up {
+  animation: accordion-up 0.2s ease-out both;
+}
+
+.animate-appear {
+  animation: appear 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-appear-zoom {
+  animation: appear-zoom 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-enter {
+  animation: enter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-exit {
+  animation: exit 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Radial gradient background */
