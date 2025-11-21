@@ -8,6 +8,22 @@
   --brand-foreground: color-mix(in oklab, var(--visual-primary-400) 85%, white 15%);
   --light: color-mix(in oklab, var(--brand) 65%, white);
   --light-foreground: color-mix(in oklab, var(--brand) 30%, black);
+  --container-sm: 24rem;
+  --container-md: 28rem;
+  --container-lg: 32rem;
+  --container-3xl: 48rem;
+  --container-4xl: 56rem;
+  --container-6xl: 72rem;
+  --shadow: #00000008;
+  --shadow-strong: #00000008;
+  --launch-ui-raised-bg: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--card) 96%, transparent) 0%,
+    color-mix(in oklab, var(--card) 85%, var(--brand-foreground) 15%) 55%,
+    color-mix(in oklab, var(--card) 78%, var(--brand) 22%) 100%
+  );
+  --launch-ui-raised-border: color-mix(in oklab, var(--border) 65%, transparent);
+  --launch-ui-raised-shadow: 0 28px 60px -35px color-mix(in oklab, black 28%, transparent);
 }
 
 .dark .illustrations-demo-theme {
@@ -15,6 +31,16 @@
   --brand-foreground: var(--visual-primary-700);
   --light: color-mix(in oklab, var(--brand) 45%, white);
   --light-foreground: color-mix(in oklab, var(--brand) 80%, black);
+  --shadow: #00000020;
+  --shadow-strong: #0008;
+  --launch-ui-raised-bg: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--card) 72%, transparent) 0%,
+    color-mix(in oklab, var(--card) 60%, var(--brand-foreground) 40%) 60%,
+    color-mix(in oklab, var(--card) 55%, var(--brand) 45%) 100%
+  );
+  --launch-ui-raised-border: color-mix(in oklab, var(--border) 55%, transparent);
+  --launch-ui-raised-shadow: 0 24px 48px -32px color-mix(in oklab, black 55%, transparent);
 }
 
 /* Mask utilities ported from Launch UI so demo is self-contained */
@@ -128,6 +154,83 @@
 
 .illustrations-demo-theme :where(.group:hover .group-hover\:\[animation-play-state\:running\]) {
   animation-play-state: running;
+}
+
+/* Launch UI utilities missed by Tailwind tree-shaking */
+.illustrations-demo-theme :where(.w-sm) {
+  width: var(--container-sm);
+}
+
+.illustrations-demo-theme :where(.rounded-t-x) {
+  border-top-left-radius: calc(var(--radius) + 1.5rem);
+  border-top-right-radius: calc(var(--radius) + 1.5rem);
+}
+
+.illustrations-demo-theme :where(.font-sm) {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-feature-settings: "ss02" 1, "ss04" 1, "cv11" 1;
+  font-variation-settings: "wdth" 112, "wght" 550;
+}
+
+.illustrations-demo-theme :where(.bg-raised) {
+  background-image: var(--launch-ui-raised-bg);
+  border-color: var(--launch-ui-raised-border);
+  box-shadow: var(--launch-ui-raised-shadow);
+  transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.illustrations-demo-theme :where(.hover\:\!bg-raised:hover) {
+  background-image: var(--launch-ui-raised-bg) !important;
+  border-color: var(--launch-ui-raised-border) !important;
+  box-shadow: var(--launch-ui-raised-shadow) !important;
+}
+
+.illustrations-demo-theme :where(.bg-linear-to-b) {
+  --tw-gradient-position: to bottom;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+@supports (background-image: linear-gradient(in lab, red, red)) {
+  .illustrations-demo-theme :where(.bg-linear-to-b) {
+    --tw-gradient-position: to bottom in oklab;
+  }
+}
+
+.illustrations-demo-theme :where(.bg-radial),
+.illustrations-demo-theme :where(.after\:bg-radial)::after {
+  --tw-gradient-position: in oklab;
+  background-image: radial-gradient(var(--tw-gradient-stops));
+}
+
+.illustrations-demo-theme :where(.from-10\%),
+.illustrations-demo-theme :where(.after\:from-10\%)::after {
+  --tw-gradient-from-position: 10%;
+}
+
+.illustrations-demo-theme :where(.from-20\%),
+.illustrations-demo-theme :where(.after\:from-20\%)::after {
+  --tw-gradient-from-position: 20%;
+}
+
+.illustrations-demo-theme :where(.via-50\%),
+.illustrations-demo-theme :where(.after\:via-50\%)::after {
+  --tw-gradient-via-position: 50%;
+}
+
+.illustrations-demo-theme :where(.to-60\%),
+.illustrations-demo-theme :where(.after\:to-60\%)::after {
+  --tw-gradient-to-position: 60%;
+}
+
+.illustrations-demo-theme :where(.to-70\%),
+.illustrations-demo-theme :where(.after\:to-70\%)::after {
+  --tw-gradient-to-position: 70%;
+}
+
+.illustrations-demo-theme :where(.to-80\%),
+.illustrations-demo-theme :where(.after\:to-80\%)::after {
+  --tw-gradient-to-position: 80%;
 }
 
 

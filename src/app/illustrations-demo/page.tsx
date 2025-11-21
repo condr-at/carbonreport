@@ -133,7 +133,7 @@ export const ILLUSTRATION_SNIPPETS: Array<{
 ];
 
 async function loadSnippets() {
-  const snippetsDir = path.join(process.cwd(), "public", "launch-ui", "snippets");
+  const snippetsDir = path.join(process.cwd(), "public", "illustrations", "snippets");
   const cards = await Promise.all(
     ILLUSTRATION_SNIPPETS.map(async (item, index) => {
       const filePath = path.join(snippetsDir, item.file);
