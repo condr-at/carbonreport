@@ -191,9 +191,36 @@
   background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
+.illustrations-demo-theme :where(.bg-linear-to-t) {
+  --tw-gradient-position: to top;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+.illustrations-demo-theme :where(.bg-linear-to-r) {
+  --tw-gradient-position: to right;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+.illustrations-demo-theme :where(.bg-linear-to-br) {
+  --tw-gradient-position: to bottom right;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
 @supports (background-image: linear-gradient(in lab, red, red)) {
   .illustrations-demo-theme :where(.bg-linear-to-b) {
     --tw-gradient-position: to bottom in oklab;
+  }
+
+  .illustrations-demo-theme :where(.bg-linear-to-t) {
+    --tw-gradient-position: to top in oklab;
+  }
+
+  .illustrations-demo-theme :where(.bg-linear-to-r) {
+    --tw-gradient-position: to right in oklab;
+  }
+
+  .illustrations-demo-theme :where(.bg-linear-to-br) {
+    --tw-gradient-position: to bottom right in oklab;
   }
 }
 

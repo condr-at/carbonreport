@@ -524,11 +524,17 @@
 
 /* Dark mode glass morphism overrides */
 :root .dark .glass-1 {
+  border-color: color-mix(in oklab, var(--border) 10%, transparent);
+  border-top-color: color-mix(in oklab, var(--border) 20%, transparent);
+  border-bottom-color: color-mix(in oklab, var(--border) 5%, transparent);
   --tw-gradient-from: color-mix(in oklab, var(--card) 5%, transparent);
-  --tw-gradient-to: transparent;
+  --tw-gradient-to: color-mix(in oklab, var(--card) 0%, transparent);
 }
 
 :root .dark .glass-2 {
+  border-color: color-mix(in oklab, var(--border) 10%, transparent);
+  border-top-color: color-mix(in oklab, var(--border) 20%, transparent);
+  border-bottom-color: color-mix(in oklab, var(--border) 5%, transparent);
   --tw-gradient-from: color-mix(in oklab, var(--card) 10%, transparent);
   --tw-gradient-to: color-mix(in oklab, var(--card) 5%, transparent);
 }
@@ -542,13 +548,19 @@
 }
 
 :root .dark .glass-4 {
-  border-bottom-color: color-mix(in oklab, var(--input) 50%, transparent);
-  --tw-gradient-from: color-mix(in oklab, var(--card) 8%, transparent);
-  --tw-gradient-to: color-mix(in oklab, var(--card) 4%, transparent);
+  border-bottom-style: var(--tw-border-style);
+  border-bottom-width: 0;
+  border-color: color-mix(in oklab, var(--border) 10%, transparent);
+  border-top-color: color-mix(in oklab, var(--border) 30%, transparent);
+  --tw-gradient-from: color-mix(in oklab, var(--primary) 10%, transparent);
+  --tw-gradient-to: color-mix(in oklab, var(--primary) 5%, transparent);
 }
 
 :root .dark .glass-5 {
-  border-bottom-color: color-mix(in oklab, var(--input) 80%, transparent);
-  --tw-gradient-from: color-mix(in oklab, var(--card) 12%, transparent);
-  --tw-gradient-to: color-mix(in oklab, var(--card) 4%, transparent);
+  border-bottom-style: var(--tw-border-style);
+  border-bottom-width: 0;
+  border-color: color-mix(in oklab, var(--border) 10%, transparent);
+  border-top-color: color-mix(in oklab, var(--border) 30%, transparent);
+  --tw-gradient-from: color-mix(in oklab, var(--primary) 15%, transparent);
+  --tw-gradient-to: color-mix(in oklab, var(--primary) 5%, transparent);
 }

@@ -44,6 +44,9 @@ yarn-error.log*
 # local upload artifacts
 /public/dev-uploads/
 
+# scrape artifacts
+temp/launch-snippets/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

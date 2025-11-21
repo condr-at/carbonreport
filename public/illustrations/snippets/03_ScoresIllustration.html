@@ -1,89 +1,174 @@
-<div class="glass-1 hover:glass-2 group text-card-foreground relative flex flex-col overflow-hidden shadow-xl transition-all gap-2 rounded-xl p-2 col-span-6 sm:col-span-3 xl:col-span-2" data-slot="card">
- <div class="flex-col gap-4 bg-background flex aspect-square items-center justify-center overflow-hidden rounded-lg p-0" data-slot="card-content">
-  <div class="relative flex h-full w-full items-center justify-center px-4">
-   <div class="flex items-start justify-center gap-8">
-    <div class="flex flex-col items-center gap-4">
-     <div class="relative flex flex-col items-center">
-      <div class="glass-5 dark:border-brand/20 outline-border/30 dark:outline-background/30 relative z-2 rounded-full p-1 outline-4 transition-transform duration-200 hover:scale-105">
-       <svg class="-rotate-90" height="64" viewbox="0 0 64 64" width="64">
-        <circle class="stroke-border/15" cx="32" cy="32" fill="none" r="24" stroke-linecap="round" stroke-width="3">
-        </circle>
-        <circle class="stroke-brand transition-all duration-1000 ease-out" cx="32" cy="32" fill="none" r="24" stroke-dasharray="150.79644737231007" stroke-dashoffset="9.04778684233861" stroke-linecap="round" stroke-width="3">
-        </circle>
-       </svg>
-       <div class="absolute inset-0 flex items-center justify-center rounded-full bg-radial to-transparent to-70% from-brand/30">
-       </div>
-       <div class="absolute inset-0 flex items-center justify-center">
-        <span class="text-lg font-medium text-brand">
-         94
-        </span>
-       </div>
+<div
+  data-slot="card"
+  class="glass-1 hover:glass-2 group text-card-foreground relative flex flex-col overflow-hidden shadow-xl transition-all gap-2 rounded-xl p-2 col-span-6 sm:col-span-3 xl:col-span-2"
+>
+  <div
+    data-slot="card-content"
+    class="flex-col gap-4 bg-background flex aspect-square items-center justify-center overflow-hidden rounded-lg p-0"
+  >
+    <div class="relative flex h-full w-full items-center justify-center px-4">
+      <div class="flex items-start justify-center gap-8">
+        <div class="flex flex-col items-center gap-4">
+          <div class="relative flex flex-col items-center">
+            <div
+              class="glass-5 dark:border-brand/20 outline-border/30 dark:outline-background/30 relative z-2 rounded-full p-1 outline-4 transition-transform duration-200 hover:scale-105"
+            >
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 64 64"
+                class="-rotate-90"
+              >
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="24"
+                  fill="none"
+                  class="stroke-border/15"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                ></circle>
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="24"
+                  fill="none"
+                  class="stroke-brand-foreground transition-all duration-1000 ease-out"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-dasharray="150.79644737231007"
+                  stroke-dashoffset="7.539822368615518"
+                ></circle>
+              </svg>
+              <div
+                class="absolute inset-0 flex items-center justify-center rounded-full bg-radial to-transparent to-70% from-brand-foreground/30"
+              ></div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span class="text-lg font-medium text-brand-foreground"
+                  >95</span
+                >
+              </div>
+            </div>
+            <div
+              class="via-foreground/10 dark:via-brand-foreground/15 absolute -top-[500%] left-1/2 h-[1000%] w-[1px] -translate-x-1/2 bg-linear-to-b from-transparent from-20% to-transparent to-90%"
+            ></div>
+          </div>
+          <span class="text-muted-foreground text-center text-sm font-medium"
+            >Performance</span
+          >
+        </div>
+        <div class="flex flex-col items-center gap-4">
+          <div class="relative flex flex-col items-center">
+            <div
+              class="glass-5 dark:border-brand/20 outline-border/30 dark:outline-background/30 relative z-2 rounded-full p-1 outline-4 transition-transform duration-200 hover:scale-105"
+            >
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 64 64"
+                class="-rotate-90"
+              >
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="24"
+                  fill="none"
+                  class="stroke-border/15"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                ></circle>
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="24"
+                  fill="none"
+                  class="stroke-foreground/50 transition-all duration-1000 ease-out"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-dasharray="150.79644737231007"
+                  stroke-dashoffset="22.619467105846525"
+                ></circle>
+              </svg>
+              <div
+                class="absolute inset-0 flex items-center justify-center rounded-full bg-radial to-transparent to-70% from-border/20"
+              ></div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span class="text-lg font-medium text-foreground/50">85</span>
+              </div>
+            </div>
+            <div
+              class="via-foreground/10 dark:via-brand-foreground/15 absolute -top-[500%] left-1/2 h-[1000%] w-[1px] -translate-x-1/2 bg-linear-to-b from-transparent from-20% to-transparent to-90%"
+            ></div>
+          </div>
+          <span class="text-muted-foreground text-center text-sm font-medium"
+            >Accessibility</span
+          >
+        </div>
+        <div class="flex flex-col items-center gap-4">
+          <div class="relative flex flex-col items-center">
+            <div
+              class="glass-5 dark:border-brand/20 outline-border/30 dark:outline-background/30 relative z-2 rounded-full p-1 outline-4 transition-transform duration-200 hover:scale-105"
+            >
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 64 64"
+                class="-rotate-90"
+              >
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="24"
+                  fill="none"
+                  class="stroke-border/15"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                ></circle>
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="24"
+                  fill="none"
+                  class="stroke-brand transition-all duration-1000 ease-out"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-dasharray="150.79644737231007"
+                  stroke-dashoffset="15.079644737231007"
+                ></circle>
+              </svg>
+              <div
+                class="absolute inset-0 flex items-center justify-center rounded-full bg-radial to-transparent to-70% from-brand/30"
+              ></div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <span class="text-lg font-medium text-brand">90</span>
+              </div>
+            </div>
+            <div
+              class="via-foreground/10 dark:via-brand-foreground/15 absolute -top-[500%] left-1/2 h-[1000%] w-[1px] -translate-x-1/2 bg-linear-to-b from-transparent from-20% to-transparent to-90%"
+            ></div>
+          </div>
+          <span class="text-muted-foreground text-center text-sm font-medium"
+            >Practices</span
+          >
+        </div>
       </div>
-      <div class="via-foreground/10 dark:via-brand-foreground/15 absolute -top-[500%] left-1/2 h-[1000%] w-[1px] -translate-x-1/2 bg-linear-to-b from-transparent from-20% to-transparent to-90%">
+      <div
+        data-slot="glow"
+        class="absolute w-full top-[50%] pointer-events-none scale-x-[1.5] opacity-20 transition-all duration-300 group-hover:opacity-30"
+      >
+        <div
+          class="from-brand-foreground/50 to-brand-foreground/0 absolute left-1/2 h-[256px] w-[60%] -translate-x-1/2 scale-[2.5] rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[512px] dark:opacity-100 -translate-y-1/2"
+        ></div>
+        <div
+          class="from-brand/30 to-brand-foreground/0 absolute left-1/2 h-[128px] w-[40%] -translate-x-1/2 scale-200 rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[256px] dark:opacity-100 -translate-y-1/2"
+        ></div>
       </div>
-     </div>
-     <span class="text-muted-foreground text-center text-sm font-medium">
-      Performance
-     </span>
     </div>
-    <div class="flex flex-col items-center gap-4">
-     <div class="relative flex flex-col items-center">
-      <div class="glass-3 border shadow-xl backdrop-blur-sm relative z-2 rounded-full p-1 transition-transform duration-200 hover:scale-105">
-       <svg class="-rotate-90" height="64" viewbox="0 0 64 64" width="64">
-        <circle class="stroke-border/15" cx="32" cy="32" fill="none" r="24" stroke-linecap="round" stroke-width="3">
-        </circle>
-        <circle class="stroke-foreground/50 transition-all duration-1000 ease-out" cx="32" cy="32" fill="none" r="24" stroke-dasharray="150.79644737231007" stroke-dashoffset="19.603538158400312" stroke-linecap="round" stroke-width="3">
-        </circle>
-       </svg>
-       <div class="absolute inset-0 flex items-center justify-center rounded-full bg-radial to-transparent to-70% from-border/20">
-       </div>
-       <div class="absolute inset-0 flex items-center justify-center">
-        <span class="text-lg font-medium text-foreground/50">
-         87
-        </span>
-       </div>
-      </div>
-      <div class="via-foreground/10 dark:via-brand-foreground/15 absolute -top-[500%] left-1/2 h-[1000%] w-[1px] -translate-x-1/2 bg-linear-to-b from-transparent from-20% to-transparent to-90%">
-      </div>
-     </div>
-     <span class="text-muted-foreground text-center text-sm font-medium">
-      Accessibility
-     </span>
-    </div>
-    <div class="flex flex-col items-center gap-4">
-     <div class="relative flex flex-col items-center">
-      <div class="glass-3 border shadow-xl backdrop-blur-sm relative z-2 rounded-full p-1 transition-transform duration-200 hover:scale-105">
-       <svg class="-rotate-90" height="64" viewbox="0 0 64 64" width="64">
-        <circle class="stroke-border/15" cx="32" cy="32" fill="none" r="24" stroke-linecap="round" stroke-width="3">
-        </circle>
-        <circle class="stroke-brand transition-all duration-1000 ease-out" cx="32" cy="32" fill="none" r="24" stroke-dasharray="150.79644737231007" stroke-dashoffset="13.571680263507915" stroke-linecap="round" stroke-width="3">
-        </circle>
-       </svg>
-       <div class="absolute inset-0 flex items-center justify-center rounded-full bg-radial to-transparent to-70% from-brand/30">
-       </div>
-       <div class="absolute inset-0 flex items-center justify-center">
-        <span class="text-lg font-medium text-brand">
-         91
-        </span>
-       </div>
-      </div>
-      <div class="via-foreground/10 dark:via-brand-foreground/15 absolute -top-[500%] left-1/2 h-[1000%] w-[1px] -translate-x-1/2 bg-linear-to-b from-transparent from-20% to-transparent to-90%">
-      </div>
-     </div>
-     <span class="text-muted-foreground text-center text-sm font-medium">
-      Practices
-     </span>
-    </div>
-   </div>
-   <div class="absolute w-full top-[50%] pointer-events-none scale-x-[1.5] opacity-20 transition-all duration-300 group-hover:opacity-30" data-slot="glow">
-    <div class="from-brand-foreground/50 to-brand-foreground/0 absolute left-1/2 h-[256px] w-[60%] -translate-x-1/2 scale-[2.5] rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[512px] dark:opacity-100 -translate-y-1/2">
-    </div>
-    <div class="from-brand/30 to-brand-foreground/0 absolute left-1/2 h-[128px] w-[40%] -translate-x-1/2 scale-200 rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[256px] dark:opacity-100 -translate-y-1/2">
-    </div>
-   </div>
   </div>
- </div>
- <h3 class="tracking-tight bg-accent/50 text-muted-foreground rounded-lg p-2 font-mono text-xs font-medium" data-slot="card-title">
-  &lt;ScoresIllustration /&gt;
- </h3>
+  <h3
+    data-slot="card-title"
+    class="tracking-tight bg-accent/50 text-muted-foreground rounded-lg p-2 font-mono text-xs font-medium"
+  >
+    &lt;ScoresIllustration /&gt;
+  </h3>
 </div>

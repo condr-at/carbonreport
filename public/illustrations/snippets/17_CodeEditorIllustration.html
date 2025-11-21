@@ -1,52 +1,99 @@
-<div class="glass-1 hover:glass-2 group text-card-foreground relative flex flex-col overflow-hidden shadow-xl transition-all gap-2 rounded-xl p-2 col-span-6 lg:col-span-3" data-slot="card">
- <div class="flex-col gap-4 bg-background flex items-center justify-center overflow-hidden rounded-lg p-8 aspect-video" data-slot="card-content">
-  <div class="h-full w-full" data-slot="code-editor-illustration">
-   <div class="relative h-full w-full">
-    <div class="absolute top-0 left-[50%] z-10 w-full -translate-x-[50%] translate-y-0">
-     <div class="glass-3 border shadow-xl backdrop-blur-sm relative flex min-h-[540px] min-w-[460px] flex-col gap-4 rounded-[12px]">
-      <div class="flex w-full items-center justify-start gap-4 overflow-hidden py-2">
-       <div class="hidden gap-2 pl-4 lg:flex">
-        <div class="bg-accent/30 dark:bg-foreground/5 size-3 rounded-full">
-        </div>
-        <div class="bg-accent/30 dark:bg-foreground/5 size-3 rounded-full">
-        </div>
-        <div class="bg-accent/30 dark:bg-foreground/5 size-3 rounded-full">
-        </div>
-       </div>
-       <div class="relative flex w-[320px]">
-        <div class="text-muted-foreground relative z-10 flex grow basis-0 items-center gap-2 px-4 py-1.5 text-xs">
-         <svg class="size-4" fill="none" height="24" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 14.1164C13.1572 14.1164 14.0952 13.1689 14.0952 12C14.0952 10.8311 13.1572 9.8836 12 9.8836C10.8428 9.8836 9.90476 10.8311 9.90476 12C9.90476 13.1689 10.8428 14.1164 12 14.1164Z" fill="currentColor">
-          </path>
-          <path d="M12 16.7619C17.7858 16.7619 22.4762 14.6299 22.4762 12C22.4762 9.37007 17.7858 7.2381 12 7.2381C6.21416 7.2381 1.52381 9.37007 1.52381 12C1.52381 14.6299 6.21416 16.7619 12 16.7619Z" stroke="currentColor" stroke-width="1.5">
-          </path>
-          <path d="M7.91731 14.381C10.8102 19.4423 14.9833 22.4793 17.2381 21.1643C19.4929 19.8493 18.9756 14.6803 16.0827 9.61905C13.1898 4.55775 9.01671 1.52075 6.7619 2.83571C4.5071 4.15067 5.02439 9.31965 7.91731 14.381Z" stroke="currentColor" stroke-width="1.5">
-          </path>
-          <path d="M7.91731 9.61905C5.02439 14.6803 4.5071 19.8493 6.7619 21.1643C9.01671 22.4793 13.1898 19.4423 16.0827 14.381C18.9756 9.31965 19.4929 4.15067 17.2381 2.83571C14.9833 1.52075 10.8102 4.55775 7.91731 9.61905Z" stroke="currentColor" stroke-width="1.5">
-          </path>
-         </svg>
-         <p>
-          page.tsx
-         </p>
-        </div>
-        <div class="text-muted-foreground relative z-10 flex grow basis-0 items-center gap-2 px-4 py-1.5 text-xs">
-         <svg class="size-4" fill="none" height="24" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M11.9997 5C9.93208 5 8.41053 5.82843 7.43594 7.48502C7.15487 7.96278 7.94335 8.41626 8.45604 8.20554C9.04899 7.96182 9.68017 7.93517 10.3497 8.12585C11.1873 8.36282 11.7845 9.0526 12.4469 9.81601C13.5249 11.0599 14.7735 12.5 17.5002 12.5C19.5669 12.5 21.0877 11.6726 22.0622 10.0181C22.3436 9.54035 21.554 9.08597 21.0409 9.29611C20.4488 9.53864 19.8185 9.56489 19.1501 9.37488C18.3138 9.13791 17.7154 8.4474 17.0529 7.68326C15.9749 6.44006 14.7263 5 11.9997 5ZM6.49984 12.5C4.43307 12.5 2.91232 13.3274 1.9378 14.9819C1.65642 15.4597 2.44604 15.914 2.95911 15.7039C3.55123 15.4614 4.18151 15.4351 4.84989 15.6251C5.68617 15.8621 6.28463 16.5526 6.94706 17.3167C8.02506 18.5599 9.27367 20 11.9997 20C14.0676 20 15.5889 19.172 16.5634 17.5163C16.8446 17.0386 16.0556 16.5847 15.5427 16.7952C14.95 17.0386 14.3192 17.0651 13.6503 16.8749C12.8133 16.6372 12.2155 15.9474 11.5531 15.1833C10.4745 13.9401 9.22714 12.5 6.49984 12.5Z" fill="currentColor">
-          </path>
-         </svg>
-         <p>
-          globals.css
-         </p>
-        </div>
-        <div class="absolute top-0 left-0 h-full w-[50%] px-2 transition-all duration-1000 ease-in-out group-hover:left-[50%]">
-         <div class="glass-3 border shadow-xl backdrop-blur-sm h-full w-full rounded-md">
-         </div>
-        </div>
-       </div>
-      </div>
-      <div class="relative w-full grow overflow-hidden">
-       <div class="absolute top-0 left-0 translate-x-0 px-8 transition-all duration-1000 ease-in-out group-hover:translate-x-[-100%] group-hover:opacity-0">
-        <pre class="text-muted-foreground font-mono text-xs"><span class="text-brand">import</span><span class="text-muted-foreground"> <!-- -->{ </span><span class="text-foreground">cn</span><span class="text-muted-foreground"> <!-- -->}<!-- --> </span><span class="text-brand">from </span><span class="text-brand-foreground">"@/lib/utils"</span><span class="text-muted-foreground">;</span>
+<div
+  data-slot="card"
+  class="glass-1 hover:glass-2 group text-card-foreground relative flex flex-col overflow-hidden shadow-xl transition-all gap-2 rounded-xl p-2 col-span-6 lg:col-span-3"
+>
+  <div
+    data-slot="card-content"
+    class="flex-col gap-4 bg-background flex items-center justify-center overflow-hidden rounded-lg p-8 aspect-video"
+  >
+    <div data-slot="code-editor-illustration" class="h-full w-full">
+      <div class="relative h-full w-full">
+        <div
+          class="absolute top-0 left-[50%] z-10 w-full -translate-x-[50%] translate-y-0"
+        >
+          <div
+            class="border-border/100 bg-muted dark:border-border/5 dark:border-t-border/15 dark:bg-accent/30 relative flex min-h-[540px] min-w-[460px] flex-col gap-4 rounded-[12px] border"
+          >
+            <div
+              class="flex w-full items-center justify-start gap-4 overflow-hidden py-2"
+            >
+              <div class="hidden gap-2 pl-4 lg:flex">
+                <div
+                  class="bg-accent dark:bg-foreground/10 size-3 rounded-full"
+                ></div>
+                <div
+                  class="bg-accent dark:bg-foreground/10 size-3 rounded-full"
+                ></div>
+                <div
+                  class="bg-accent dark:bg-foreground/10 size-3 rounded-full"
+                ></div>
+              </div>
+              <div class="relative flex w-[320px]">
+                <div
+                  class="text-muted-foreground relative z-10 flex grow basis-0 items-center gap-2 px-4 py-1.5 text-xs"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="size-4"
+                  >
+                    <path
+                      d="M12 14.1164C13.1572 14.1164 14.0952 13.1689 14.0952 12C14.0952 10.8311 13.1572 9.8836 12 9.8836C10.8428 9.8836 9.90476 10.8311 9.90476 12C9.90476 13.1689 10.8428 14.1164 12 14.1164Z"
+                      fill="currentColor"
+                    ></path>
+                    <path
+                      d="M12 16.7619C17.7858 16.7619 22.4762 14.6299 22.4762 12C22.4762 9.37007 17.7858 7.2381 12 7.2381C6.21416 7.2381 1.52381 9.37007 1.52381 12C1.52381 14.6299 6.21416 16.7619 12 16.7619Z"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    ></path>
+                    <path
+                      d="M7.91731 14.381C10.8102 19.4423 14.9833 22.4793 17.2381 21.1643C19.4929 19.8493 18.9756 14.6803 16.0827 9.61905C13.1898 4.55775 9.01671 1.52075 6.7619 2.83571C4.5071 4.15067 5.02439 9.31965 7.91731 14.381Z"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    ></path>
+                    <path
+                      d="M7.91731 9.61905C5.02439 14.6803 4.5071 19.8493 6.7619 21.1643C9.01671 22.4793 13.1898 19.4423 16.0827 14.381C18.9756 9.31965 19.4929 4.15067 17.2381 2.83571C14.9833 1.52075 10.8102 4.55775 7.91731 9.61905Z"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    ></path>
+                  </svg>
+                  <p>page.tsx</p>
+                </div>
+                <div
+                  class="text-muted-foreground relative z-10 flex grow basis-0 items-center gap-2 px-4 py-1.5 text-xs"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="size-4"
+                  >
+                    <path
+                      d="M11.9997 5C9.93208 5 8.41053 5.82843 7.43594 7.48502C7.15487 7.96278 7.94335 8.41626 8.45604 8.20554C9.04899 7.96182 9.68017 7.93517 10.3497 8.12585C11.1873 8.36282 11.7845 9.0526 12.4469 9.81601C13.5249 11.0599 14.7735 12.5 17.5002 12.5C19.5669 12.5 21.0877 11.6726 22.0622 10.0181C22.3436 9.54035 21.554 9.08597 21.0409 9.29611C20.4488 9.53864 19.8185 9.56489 19.1501 9.37488C18.3138 9.13791 17.7154 8.4474 17.0529 7.68326C15.9749 6.44006 14.7263 5 11.9997 5ZM6.49984 12.5C4.43307 12.5 2.91232 13.3274 1.9378 14.9819C1.65642 15.4597 2.44604 15.914 2.95911 15.7039C3.55123 15.4614 4.18151 15.4351 4.84989 15.6251C5.68617 15.8621 6.28463 16.5526 6.94706 17.3167C8.02506 18.5599 9.27367 20 11.9997 20C14.0676 20 15.5889 19.172 16.5634 17.5163C16.8446 17.0386 16.0556 16.5847 15.5427 16.7952C14.95 17.0386 14.3192 17.0651 13.6503 16.8749C12.8133 16.6372 12.2155 15.9474 11.5531 15.1833C10.4745 13.9401 9.22714 12.5 6.49984 12.5Z"
+                      fill="currentColor"
+                    ></path>
+                  </svg>
+                  <p>globals.css</p>
+                </div>
+                <div
+                  class="absolute top-0 left-0 h-full w-[50%] px-2 transition-all duration-1000 ease-in-out group-hover:left-[50%]"
+                >
+                  <div class="glass-4 h-full w-full rounded-md shadow-md"></div>
+                </div>
+              </div>
+            </div>
+            <div class="relative w-full grow overflow-hidden">
+              <div
+                class="absolute top-0 left-0 translate-x-0 px-8 transition-all duration-1000 ease-in-out group-hover:translate-x-[-100%] group-hover:opacity-0"
+              >
+                <pre
+                  class="text-muted-foreground font-mono text-xs"
+                ><span class="text-brand">import</span><span class="text-muted-foreground"> <!-- -->{ </span><span class="text-foreground">cn</span><span class="text-muted-foreground"> <!-- -->}<!-- --> </span><span class="text-brand">from </span><span class="text-brand-foreground">"@/lib/utils"</span><span class="text-muted-foreground">;</span>
 <span class="text-brand">import</span><span class="text-foreground"> clsx</span><span class="text-brand"> from </span><span class="text-brand-foreground"> <!-- -->"clsx"</span><span class="text-muted-foreground">;</span>
 <span class="text-brand">import</span><span class="text-muted-foreground"> <!-- -->{ </span><span class="text-foreground">PropsWithChildren</span><span class="text-muted-foreground"> }<!-- --> </span><span class="text-brand">from </span><span class="text-brand-foreground">"react"</span><span class="text-muted-foreground">;</span>
 
@@ -71,9 +118,13 @@
 <span class="text-muted-foreground"> </span><span class="text-brand-foreground">"dark:bg-green-950 bg-green-100 border-green-200 dark:border-green-900"</span><span class="text-muted-foreground">:</span>
 <span class="text-muted-foreground"> type === </span><span class="text-brand-foreground">"success"</span><span class="text-muted-foreground">,</span>
 <span class="text-muted-foreground"> <!-- --> });</span></pre>
-       </div>
-       <div class="absolute top-0 left-0 translate-x-[100%] px-8 opacity-0 transition-all duration-1000 ease-in-out group-hover:translate-x-0 group-hover:opacity-100">
-        <pre class="text-muted-foreground font-mono text-xs"><span class="text-brand">@import</span><span class="text-brand-foreground"> <!-- -->"tailwindcss"</span><span class="text-muted-foreground">;</span>
+              </div>
+              <div
+                class="absolute top-0 left-0 translate-x-[100%] px-8 opacity-0 transition-all duration-1000 ease-in-out group-hover:translate-x-0 group-hover:opacity-100"
+              >
+                <pre
+                  class="text-muted-foreground font-mono text-xs"
+                ><span class="text-brand">@import</span><span class="text-brand-foreground"> <!-- -->"tailwindcss"</span><span class="text-muted-foreground">;</span>
 
 <span class="text-brand">@plugin</span><span class="text-brand-foreground"> <!-- -->"tailwindcss-animate"</span><span class="text-muted-foreground">;</span>
 
@@ -90,20 +141,28 @@
 <span class="text-muted-foreground"> <!-- -->--color-background:<!-- --> </span><span class="text-foreground">var(--background)</span><span class="text-muted-foreground">;</span>
 <span class="text-muted-foreground"> <!-- -->--color-foreground:<!-- --> </span><span class="text-foreground">var(--foreground)</span><span class="text-muted-foreground">;</span>
 <span class="text-muted-foreground"> <!-- -->--color-sidebar-ring:<!-- --> </span><span class="text-foreground">var(--sidebar-ring)</span><span class="text-muted-foreground">;</span></pre>
-       </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          data-slot="glow"
+          class="absolute w-full -bottom-[128px] translate-y-32 scale-150 opacity-40 transition-all duration-1000 group-hover:scale-200 group-hover:opacity-60"
+        >
+          <div
+            class="from-brand-foreground/50 to-brand-foreground/0 absolute left-1/2 h-[256px] w-[60%] -translate-x-1/2 scale-[2.5] rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[512px] dark:opacity-100"
+          ></div>
+          <div
+            class="from-brand/30 to-brand-foreground/0 absolute left-1/2 h-[128px] w-[40%] -translate-x-1/2 scale-200 rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[256px] dark:opacity-100"
+          ></div>
+        </div>
       </div>
-     </div>
     </div>
-    <div class="absolute w-full -bottom-[128px] translate-y-32 scale-150 opacity-40 transition-all duration-1000 group-hover:scale-200 group-hover:opacity-60" data-slot="glow">
-     <div class="from-brand-foreground/50 to-brand-foreground/0 absolute left-1/2 h-[256px] w-[60%] -translate-x-1/2 scale-[2.5] rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[512px] dark:opacity-100">
-     </div>
-     <div class="from-brand/30 to-brand-foreground/0 absolute left-1/2 h-[128px] w-[40%] -translate-x-1/2 scale-200 rounded-[50%] bg-radial from-10% to-60% opacity-20 sm:h-[256px] dark:opacity-100">
-     </div>
-    </div>
-   </div>
   </div>
- </div>
- <h3 class="tracking-tight bg-accent/50 text-muted-foreground rounded-lg p-2 font-mono text-xs font-medium" data-slot="card-title">
-  &lt;CodeEditorIllustration /&gt;
- </h3>
+  <h3
+    data-slot="card-title"
+    class="tracking-tight bg-accent/50 text-muted-foreground rounded-lg p-2 font-mono text-xs font-medium"
+  >
+    &lt;CodeEditorIllustration /&gt;
+  </h3>
 </div>
