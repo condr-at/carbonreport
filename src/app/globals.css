@@ -58,6 +58,9 @@
   
   /* Orbit animation for illustrations */
   --animate-orbit: orbit 20s linear infinite;
+
+  /* Radar animation */
+  --animate-spin-slow: spin 3s linear infinite;
 }
 
 :root {
