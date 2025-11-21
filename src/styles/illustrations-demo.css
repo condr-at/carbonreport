@@ -101,31 +101,33 @@
   border-bottom-color: var(--border);
 }
 
-/* Marquee animation for CarouselIllustration */
+/* Carousel marquee animation utilities copied from Launch UI so the
+   illustration works in isolation. */
 @keyframes marquee {
-  from {
-    transform: translateX(0);
+  0% {
+    transform: translate(0);
   }
-  to {
+  100% {
     transform: translateX(calc(-100% - var(--gap)));
   }
 }
 
-@keyframes marquee-vertical {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(calc(-100% - var(--gap)));
-  }
+.illustrations-demo-theme :where(.animate-marquee) {
+  animation: marquee var(--duration) infinite linear;
 }
 
-.animate-marquee {
-  animation: marquee var(--duration) linear infinite;
+/* Tailwind would normally emit these utility classes, so we re-create the
+   exact rules to keep the standalone snippet interactive. */
+.illustrations-demo-theme :where(.\[animation-play-state\:paused\]) {
+  animation-play-state: paused;
 }
 
-.animate-marquee-vertical {
-  animation: marquee-vertical var(--duration) linear infinite;
+.illustrations-demo-theme :where(.\[animation-direction\:reverse\]) {
+  animation-direction: reverse;
+}
+
+.illustrations-demo-theme :where(.group:hover .group-hover\:\[animation-play-state\:running\]) {
+  animation-play-state: running;
 }
 
 
