@@ -1,7 +1,7 @@
 'use client';
 
-import { DashboardLayout } from '@/components/layouts/dashboard-layout';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/layouts/page-header';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -190,24 +190,23 @@ export default function SelectReportsPage() {
   };
 
   return (
-    <DashboardLayout contentPadding="horizontal">
-      <div className="mx-auto max-w-2xl space-y-6 pb-6">
-        {/* Header */}
-        <div className="flex items-center justify-between pt-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Create New Project</h1>
-            <p className="text-muted-foreground mt-1">Choose which reporting standards you want to include.</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => requestExit('/dashboard')}
-            disabled={isSubmitting}
-            className={isSubmitting ? 'pointer-events-none opacity-60' : undefined}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <>
+      <div className="mx-auto max-w-2xl space-y-6">
+        <PageHeader
+          title="Create New Project"
+          description="Choose which reporting standards you want to include."
+          actions={
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => requestExit('/dashboard')}
+              disabled={isSubmitting}
+              className={isSubmitting ? 'pointer-events-none opacity-60' : undefined}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          }
+        />
 
         {/* Report Selection */}
         <Card>
@@ -304,6 +303,6 @@ export default function SelectReportsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </DashboardLayout>
+    </>
   );
 }

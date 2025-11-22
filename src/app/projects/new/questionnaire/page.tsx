@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { DashboardLayout } from '@/components/layouts/dashboard-layout'
+import { PageHeader } from '@/components/layouts/page-header'
 import { TitleStatusStepper } from '@/components/stepper/title-status'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -125,11 +125,7 @@ const ENGINE_TO_TEMPLATE_MAP: Record<string, ReportTemplateCode> = {
 }
 
 export default function QuestionnairePage() {
-  return (
-    <DashboardLayout contentPadding="horizontal">
-      <QuestionnaireContent />
-    </DashboardLayout>
-  )
+  return <QuestionnaireContent />
 }
 
 function QuestionnaireContent() {
@@ -441,18 +437,16 @@ function QuestionnaireContent() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 pb-6">
-      <div className="flex items-center justify-between pt-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Расширенный опросник</h1>
-          <p className="text-muted-foreground mt-1">
-            Ответьте на вопросы — движок рекомендаций подберёт релевантные отчёты.
-          </p>
-        </div>
-        <Button variant="ghost" size="icon" onClick={() => requestExit('/dashboard')}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+    <div className="mx-auto max-w-2xl space-y-6">
+      <PageHeader
+        title="Расширенный опросник"
+        description="Ответьте на вопросы — движок рекомендаций подберёт релевантные отчёты."
+        actions={
+          <Button variant="ghost" size="icon" onClick={() => requestExit('/dashboard')}>
+            <X className="h-4 w-4" />
+          </Button>
+        }
+      />
 
       <Card className="border-muted">
         <CardHeader className="pb-4">
