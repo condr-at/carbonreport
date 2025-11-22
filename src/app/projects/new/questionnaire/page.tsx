@@ -124,6 +124,10 @@ const ENGINE_TO_TEMPLATE_MAP: Record<string, ReportTemplateCode> = {
   LCA_PRODUCT: 'ISO14067',
 }
 
+const ACTION_BAR_HEIGHT = 112
+const ACTION_BAR_GAP = 24
+const CONTENT_BOTTOM_PADDING = ACTION_BAR_HEIGHT + ACTION_BAR_GAP
+
 export default function QuestionnairePage() {
   return (
     <DashboardLayout contentPadding="horizontal">
@@ -484,7 +488,7 @@ function QuestionnaireContent() {
           </div>
         )}
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="space-y-6" style={{ paddingBottom: CONTENT_BOTTOM_PADDING }} onSubmit={handleSubmit}>
           {currentStep ? (
             currentStep.visibleGroups.map((group) => {
               const meta = QUESTION_GROUP_TITLES[group]
@@ -522,42 +526,47 @@ function QuestionnaireContent() {
             </Card>
           )}
 
-          <div className="sticky bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={!hasPreviousStep}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Предыдущий блок
-              </Button>
-              <div className="flex flex-1 justify-end gap-2 sm:flex-none">
-                {!isLastStep && (
-                  <Button type="button" variant="ghost" onClick={handleSkipCurrentStep} disabled={!currentStep}>
-                    Пропустить блок
-                  </Button>
-                )}
-                {isLastStep ? (
-                  <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Обрабатываем ответы…
-                      </>
-                    ) : (
-                      <>
-                        Перейти к выбору отчётов
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    className="flex-1 sm:flex-none"
-                    onClick={handleNextStep}
-                    disabled={!currentStep || !isCurrentStepComplete}
-                  >
-                    Далее
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                )}
+          <div
+            className="pointer-events-none fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+            style={{ minHeight: ACTION_BAR_HEIGHT }}
+          >
+            <div className="pointer-events-auto mx-auto w-full max-w-7xl px-6 py-4">
+              <div className="mx-auto flex w-full max-w-2xl flex-wrap items-center justify-between gap-3">
+                <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={!hasPreviousStep}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Предыдущий блок
+                </Button>
+                <div className="flex flex-1 justify-end gap-2 sm:flex-none">
+                  {!isLastStep && (
+                    <Button type="button" variant="ghost" onClick={handleSkipCurrentStep} disabled={!currentStep}>
+                      Пропустить блок
+                    </Button>
+                  )}
+                  {isLastStep ? (
+                    <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Обрабатываем ответы…
+                        </>
+                      ) : (
+                        <>
+                          Перейти к выбору отчётов
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      className="flex-1 sm:flex-none"
+                      onClick={handleNextStep}
+                      disabled={!currentStep || !isCurrentStepComplete}
+                    >
+                      Далее
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
