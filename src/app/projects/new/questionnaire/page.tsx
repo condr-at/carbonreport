@@ -124,10 +124,6 @@ const ENGINE_TO_TEMPLATE_MAP: Record<string, ReportTemplateCode> = {
   LCA_PRODUCT: 'ISO14067',
 }
 
-const ACTION_BAR_HEIGHT = 112
-const ACTION_BAR_GAP = 24
-const CONTENT_BOTTOM_PADDING = ACTION_BAR_HEIGHT + ACTION_BAR_GAP
-
 export default function QuestionnairePage() {
   return (
     <DashboardLayout contentPadding="horizontal">
@@ -445,133 +441,131 @@ function QuestionnaireContent() {
   }
 
   return (
-    <>
-      <div className="mx-auto max-w-2xl space-y-6">
-        <div className="sticky top-0 z-20 bg-background/95 pb-4 pt-6 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Расширенный опросник</h1>
-              <p className="text-muted-foreground mt-1">
-                Ответьте на вопросы — движок рекомендаций подберёт релевантные отчёты.
-              </p>
-            </div>
-            <Button variant="ghost" size="icon" onClick={() => requestExit('/dashboard')}>
-              <X className="h-4 w-4" />
-            </Button>
-          </header>
-
-          <div className="mt-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${Math.max(5, progressRatio * 100)}%` }}
-                />
-              </div>
-            </div>
-            {activeSteps.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Блоки опросника</p>
-                <TitleStatusStepper
-                  steps={stepperSteps}
-                  activeIndex={activeStepIndex}
-                  onStepChange={setActiveStepIndex}
-                />
-              </div>
-            )}
-          </div>
+    <div className="mx-auto max-w-2xl space-y-6 pb-6">
+      <div className="flex items-center justify-between pt-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Расширенный опросник</h1>
+          <p className="text-muted-foreground mt-1">
+            Ответьте на вопросы — движок рекомендаций подберёт релевантные отчёты.
+          </p>
         </div>
+        <Button variant="ghost" size="icon" onClick={() => requestExit('/dashboard')}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
 
+      <Card className="border-muted">
+        <CardHeader className="pb-4">
+          <CardTitle>Прогресс опросника</CardTitle>
+          <CardDescription>Заполняйте блоки последовательно или пропускайте и возвращайтесь позднее.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 pt-0">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${Math.max(5, progressRatio * 100)}%` }}
+              />
+            </div>
+          </div>
+          {activeSteps.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Блоки опросника</p>
+              <TitleStatusStepper
+                steps={stepperSteps}
+                activeIndex={activeStepIndex}
+                onStepChange={setActiveStepIndex}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <form className="space-y-6" onSubmit={handleSubmit}>
         {submissionError && (
           <div className="rounded-md border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
             {submissionError}
           </div>
         )}
-
-        <form className="space-y-6" style={{ paddingBottom: CONTENT_BOTTOM_PADDING }} onSubmit={handleSubmit}>
-          {currentStep ? (
-            currentStep.visibleGroups.map((group) => {
-              const meta = QUESTION_GROUP_TITLES[group]
-              const questions = groupedQuestions[group]
-              if (!questions || questions.length === 0) return null
-              return (
-                <Card key={group} className="border-muted">
+        {currentStep ? (
+          currentStep.visibleGroups.map((group) => {
+            const meta = QUESTION_GROUP_TITLES[group]
+            const questions = groupedQuestions[group]
+            if (!questions || questions.length === 0) return null
+            return (
+              <Card key={group} className="border-muted">
                   <CardHeader>
                     <CardTitle>{meta?.title ?? group}</CardTitle>
                     {meta?.description && <CardDescription>{meta.description}</CardDescription>}
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    {questions.map((question) => (
-                      <QuestionField
-                        key={question.id}
-                        question={question}
-                        value={answers[question.id]}
-                        onSingleChange={handleSingleChange}
-                        onMultiToggle={handleMultiToggle}
-                        onFreeTextChange={handleFreeTextChange}
-                      />
-                    ))}
-                  </CardContent>
-                </Card>
-              )
-            })
-          ) : (
-            <Card className="border-dashed">
-              <CardHeader>
-                <CardTitle>Нет вопросов для отображения</CardTitle>
-                <CardDescription>
-                  Похоже, текущий набор условий не включает активных блоков. Вернитесь назад или измените ответы.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
+                <CardContent className="space-y-6">
+                  {questions.map((question) => (
+                    <QuestionField
+                      key={question.id}
+                      question={question}
+                      value={answers[question.id]}
+                      onSingleChange={handleSingleChange}
+                      onMultiToggle={handleMultiToggle}
+                      onFreeTextChange={handleFreeTextChange}
+                    />
+                  ))}
+                </CardContent>
+              </Card>
+            )
+          })
+        ) : (
+          <Card className="border-dashed">
+            <CardHeader>
+              <CardTitle>Нет вопросов для отображения</CardTitle>
+              <CardDescription>
+                Похоже, текущий набор условий не включает активных блоков. Вернитесь назад или измените ответы.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        )}
 
-          <div
-            className="pointer-events-none fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
-            style={{ minHeight: ACTION_BAR_HEIGHT }}
-          >
-            <div className="pointer-events-auto mx-auto w-full max-w-7xl px-6 py-4">
-              <div className="mx-auto flex w-full max-w-2xl flex-wrap items-center justify-between gap-3">
-                <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={!hasPreviousStep}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Предыдущий блок
-                </Button>
-                <div className="flex flex-1 justify-end gap-2 sm:flex-none">
-                  {!isLastStep && (
-                    <Button type="button" variant="ghost" onClick={handleSkipCurrentStep} disabled={!currentStep}>
-                      Пропустить блок
-                    </Button>
-                  )}
-                  {isLastStep ? (
-                    <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Обрабатываем ответы…
-                        </>
-                      ) : (
-                        <>
-                          Перейти к выбору отчётов
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      className="flex-1 sm:flex-none"
-                      onClick={handleNextStep}
-                      disabled={!currentStep || !isCurrentStepComplete}
-                    >
-                      Далее
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={!hasPreviousStep}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Предыдущий блок
+              </Button>
+              <div className="flex flex-1 justify-end gap-2 sm:flex-none">
+                {!isLastStep && (
+                  <Button type="button" variant="ghost" onClick={handleSkipCurrentStep} disabled={!currentStep}>
+                    Пропустить блок
+                  </Button>
+                )}
+                {isLastStep ? (
+                  <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Обрабатываем ответы…
+                      </>
+                    ) : (
+                      <>
+                        Перейти к выбору отчётов
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    className="flex-1 sm:flex-none"
+                    onClick={handleNextStep}
+                    disabled={!currentStep || !isCurrentStepComplete}
+                  >
+                    Далее
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
-          </div>
-        </form>
-      </div>
+          </CardContent>
+        </Card>
+      </form>
 
       <AlertDialog open={isExitDialogOpen} onOpenChange={(open) => !open && handleExitCancel()}>
         <AlertDialogContent>
@@ -587,7 +581,7 @@ function QuestionnaireContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   )
 }
 
