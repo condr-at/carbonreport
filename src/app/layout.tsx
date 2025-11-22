@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`carbon-report-theme ${geistSans.variable} ${geistMono.variable} antialiased`}
       >

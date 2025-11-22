@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   AlertDialog,
@@ -22,12 +21,19 @@ import {
 import { clearWizardProgress, hasAnyWizardProgress } from '@/lib/wizard-progress'
 import {
   AnswerMap,
+  AnswerOption,
   AnswerValue,
   QUESTION_DEFINITIONS,
   QuestionDefinition,
   QuestionGroup,
   EvaluationResult,
   evaluateQuestionnaire,
+  GroupVisibilityMap,
+  computeGroupVisibility,
+  UNKNOWN_ANSWER_CODE,
+  UNKNOWN_ANSWER_LABEL,
+  UNKNOWN_ANSWER_DESCRIPTION,
+  hasMeaningfulAnswer,
 } from '@/lib/questionnaires/decision-engine'
 import { ReportTemplateCode } from '@/lib/report-templates/types'
 import { ArrowLeft, ArrowRight, Loader2, X } from 'lucide-react'
@@ -62,6 +68,48 @@ const QUESTION_GROUP_ORDER: QuestionGroup[] = [
   'sector',
 ]
 
+interface StepDefinition {
+  id: string
+  title: string
+  description: string
+  groups: QuestionGroup[]
+}
+
+const STEP_DEFINITIONS: StepDefinition[] = [
+  {
+    id: 'company-profile',
+    title: 'Профиль компании',
+    description: 'Базовые сведения перед выбором драйверов',
+    groups: ['profile'],
+  },
+  {
+    id: 'drivers',
+    title: 'Внешние драйверы',
+    description: 'Инициаторы, регуляторы и клиенты',
+    groups: ['initiator', 'regulator', 'client', 'financial', 'program', 'exchange'],
+  },
+  {
+    id: 'internal',
+    title: 'Внутренний контекст',
+    description: 'Внутренние инициативы и границы расчёта',
+    groups: ['internal', 'operations'],
+  },
+  {
+    id: 'execution',
+    title: 'Экспорт и ограничения',
+    description: 'Торговые цепочки, сроки и ресурсы',
+    groups: ['trade', 'constraints'],
+  },
+  {
+    id: 'sector',
+    title: 'Отраслевые детали',
+    description: 'Специфические вопросы для отрасли',
+    groups: ['sector'],
+  },
+]
+
+type StepState = StepDefinition & { visibleGroups: QuestionGroup[] }
+
 const ENGINE_TO_TEMPLATE_MAP: Record<string, ReportTemplateCode> = {
   CBAM: 'CBAM',
   CBAM_REPORT: 'CBAM',
@@ -89,6 +137,7 @@ function QuestionnaireContent() {
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false)
   const exitTargetRef = useRef<string | null>(null)
   const [submissionError, setSubmissionError] = useState<string | null>(null)
+  const [activeStepIndex, setActiveStepIndex] = useState(0)
 
   const groupedQuestions = useMemo(() => {
     const grouping: Record<QuestionGroup, QuestionDefinition[]> = {
@@ -113,12 +162,21 @@ function QuestionnaireContent() {
     return grouping
   }, [])
 
+  const groupVisibility = useMemo<GroupVisibilityMap>(() => computeGroupVisibility(answers), [answers])
+
+  const persistAnswers = useCallback((nextAnswers: AnswerMap) => {
+    setAnswers(nextAnswers)
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('wizardAnswers', JSON.stringify(nextAnswers))
+    }
+  }, [])
+
   useEffect(() => {
     try {
       const stored = typeof window !== 'undefined' ? sessionStorage.getItem('wizardAnswers') : null
       if (stored) {
         const parsed = JSON.parse(stored) as AnswerMap
-        setAnswers(parsed)
+        setAnswers(coerceStoredAnswers(parsed))
       }
     } catch (error) {
       console.warn('Failed to restore questionnaire answers', error)
@@ -129,19 +187,109 @@ function QuestionnaireContent() {
     setStoredProgress(hasAnyWizardProgress())
   }, [answers])
 
+  const stepStates = useMemo<StepState[]>(() => {
+    return STEP_DEFINITIONS.map((step) => ({
+      ...step,
+      visibleGroups: step.groups.filter(
+        (group) => groupVisibility[group] && (groupedQuestions[group]?.length ?? 0) > 0,
+      ),
+    }))
+  }, [groupVisibility, groupedQuestions])
+
+  const activeSteps = useMemo(() => stepStates.filter((step) => step.visibleGroups.length > 0), [stepStates])
+
+  useEffect(() => {
+    if (activeSteps.length === 0) {
+      setActiveStepIndex(0)
+      return
+    }
+    if (activeStepIndex >= activeSteps.length) {
+      setActiveStepIndex(activeSteps.length - 1)
+    }
+  }, [activeSteps, activeStepIndex])
+
+  const currentStep = activeSteps[activeStepIndex] ?? null
+  const isLastStep = activeSteps.length > 0 && activeStepIndex === activeSteps.length - 1
+  const hasPreviousStep = activeStepIndex > 0
+
+  const clearGroups = useCallback(
+    (groups: QuestionGroup[]) => {
+      const nextAnswers: AnswerMap = { ...answers }
+      let changed = false
+      groups.forEach((group) => {
+        groupedQuestions[group]?.forEach((question) => {
+          if (nextAnswers[question.id] !== undefined) {
+            delete nextAnswers[question.id]
+            changed = true
+          }
+        })
+      })
+      if (changed) {
+        persistAnswers(nextAnswers)
+      }
+    },
+    [answers, groupedQuestions, persistAnswers],
+  )
+
+  const goToNextStep = useCallback(() => {
+    if (activeSteps.length === 0) return
+    setActiveStepIndex((prev) => Math.min(prev + 1, activeSteps.length - 1))
+  }, [activeSteps.length])
+
+  const goToPreviousStep = useCallback(() => {
+    setActiveStepIndex((prev) => Math.max(prev - 1, 0))
+  }, [])
+
+  const handleSkipCurrentStep = () => {
+    if (!currentStep) return
+    clearGroups(currentStep.groups)
+    goToNextStep()
+  }
+
+  const handleNextStep = () => {
+    if (!isLastStep) {
+      goToNextStep()
+    }
+  }
+
+  const handlePreviousStep = () => {
+    if (hasPreviousStep) {
+      goToPreviousStep()
+    }
+  }
+
+  useEffect(() => {
+    if (!answers || Object.keys(answers).length === 0) {
+      return
+    }
+
+    const nextAnswers: AnswerMap = { ...answers }
+    let changed = false
+
+    QUESTION_GROUP_ORDER.forEach((group) => {
+      if (groupVisibility[group]) return
+      groupedQuestions[group]?.forEach((question) => {
+        if (nextAnswers[question.id] !== undefined) {
+          delete nextAnswers[question.id]
+          changed = true
+        }
+      })
+    })
+
+    if (changed) {
+      setAnswers(nextAnswers)
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('wizardAnswers', JSON.stringify(nextAnswers))
+      }
+    }
+  }, [answers, groupVisibility, groupedQuestions])
+
   const answeredCount = useMemo(() => {
     return QUESTION_DEFINITIONS.filter((question) => hasAnswer(answers[question.id])).length
   }, [answers])
 
   const totalQuestions = QUESTION_DEFINITIONS.length
   const progressRatio = totalQuestions > 0 ? answeredCount / totalQuestions : 0
-
-  const persistAnswers = useCallback((nextAnswers: AnswerMap) => {
-    setAnswers(nextAnswers)
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('wizardAnswers', JSON.stringify(nextAnswers))
-    }
-  }, [])
 
   const handleSingleChange = (questionId: string, value: string) => {
     persistAnswers({
@@ -152,8 +300,19 @@ function QuestionnaireContent() {
 
   const handleMultiToggle = (questionId: string, optionValue: string) => {
     const current = Array.isArray(answers[questionId]) ? (answers[questionId] as string[]) : []
-    const exists = current.includes(optionValue)
-    const next = exists ? current.filter((value) => value !== optionValue) : [...current, optionValue]
+
+    if (optionValue === UNKNOWN_ANSWER_CODE) {
+      const next = current.includes(UNKNOWN_ANSWER_CODE) ? [] : [UNKNOWN_ANSWER_CODE]
+      persistAnswers({
+        ...answers,
+        [questionId]: next,
+      })
+      return
+    }
+
+    const filtered = current.filter((value) => value !== UNKNOWN_ANSWER_CODE)
+    const exists = filtered.includes(optionValue)
+    const next = exists ? filtered.filter((value) => value !== optionValue) : [...filtered, optionValue]
     persistAnswers({
       ...answers,
       [questionId]: next,
@@ -239,30 +398,58 @@ function QuestionnaireContent() {
 
   return (
     <>
-      <div className="max-w-5xl mx-auto space-y-6 py-8">
-        <header className="flex flex-col gap-2 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm uppercase text-muted-foreground">Шаг 2 из 3</p>
-            <h1 className="text-3xl font-bold tracking-tight">Расширенный опросник</h1>
-            <p className="text-muted-foreground mt-1">
-              Ответьте на вопросы — движок рекомендаций подберёт релевантные отчёты.
-            </p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={() => requestExit('/dashboard')}>
-            <X className="h-4 w-4" />
-          </Button>
-        </header>
+      <div className="max-w-2xl mx-auto space-y-6 pb-6">
+        <div className="sticky top-0 z-20 bg-background/95 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Расширенный опросник</h1>
+              <p className="text-muted-foreground mt-1">
+                Ответьте на вопросы — движок рекомендаций подберёт релевантные отчёты.
+              </p>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => requestExit('/dashboard')}>
+              <X className="h-4 w-4" />
+            </Button>
+          </header>
 
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-            <div
-              className="h-full bg-primary transition-all"
-              style={{ width: `${Math.max(5, progressRatio * 100)}%` }}
-            />
+          <div className="mt-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all"
+                  style={{ width: `${Math.max(5, progressRatio * 100)}%` }}
+                />
+              </div>
+            </div>
+            {activeSteps.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Блоки опросника</p>
+                <div className="flex flex-wrap gap-2">
+                  {activeSteps.map((step, idx) => {
+                    const state = idx === activeStepIndex ? 'current' : idx < activeStepIndex ? 'done' : 'upcoming'
+                    const baseStyles =
+                      'rounded-full border px-3 py-1 text-xs sm:text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+                    const stateStyles =
+                      state === 'current'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : state === 'done'
+                          ? 'border-primary/60 bg-primary/5 text-primary'
+                          : 'border-muted text-muted-foreground'
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        className={`${baseStyles} ${stateStyles}`}
+                        onClick={() => setActiveStepIndex(idx)}
+                      >
+                        {step.title}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-          <span className="text-sm text-muted-foreground whitespace-nowrap">
-            {answeredCount} / {totalQuestions} вопросов
-          </span>
         </div>
 
         {submissionError && (
@@ -271,52 +458,75 @@ function QuestionnaireContent() {
           </div>
         )}
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          {QUESTION_GROUP_ORDER.map((group) => {
-            const meta = QUESTION_GROUP_TITLES[group]
-            const questions = groupedQuestions[group]
-            if (!questions || questions.length === 0) return null
+        <form className="space-y-6 pb-24" onSubmit={handleSubmit}>
+          {currentStep ? (
+            currentStep.visibleGroups.map((group) => {
+              const meta = QUESTION_GROUP_TITLES[group]
+              const questions = groupedQuestions[group]
+              if (!questions || questions.length === 0) return null
+              return (
+                <Card key={group} className="border-muted">
+                  <CardHeader>
+                    <CardTitle>{meta?.title ?? group}</CardTitle>
+                    {meta?.description && <CardDescription>{meta.description}</CardDescription>}
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {questions.map((question) => (
+                      <QuestionField
+                        key={question.id}
+                        question={question}
+                        value={answers[question.id]}
+                        onSingleChange={handleSingleChange}
+                        onMultiToggle={handleMultiToggle}
+                        onFreeTextChange={handleFreeTextChange}
+                      />
+                    ))}
+                  </CardContent>
+                </Card>
+              )
+            })
+          ) : (
+            <Card className="border-dashed">
+              <CardHeader>
+                <CardTitle>Нет вопросов для отображения</CardTitle>
+                <CardDescription>
+                  Похоже, текущий набор условий не включает активных блоков. Вернитесь назад или измените ответы.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
 
-            return (
-              <Card key={group} className="border-muted">
-                <CardHeader>
-                  <CardTitle>{meta?.title ?? group}</CardTitle>
-                  {meta?.description && <CardDescription>{meta.description}</CardDescription>}
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {questions.map((question) => (
-                    <QuestionField
-                      key={question.id}
-                      question={question}
-                      value={answers[question.id]}
-                      onSingleChange={handleSingleChange}
-                      onMultiToggle={handleMultiToggle}
-                      onFreeTextChange={handleFreeTextChange}
-                    />
-                  ))}
-                </CardContent>
-              </Card>
-            )
-          })}
-
-          <div className="flex items-center gap-4">
-            <Button type="button" variant="outline" onClick={() => router.push('/projects/new')}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Назад
-            </Button>
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Обрабатываем ответы…
-                </>
+          <div className="sticky bottom-0 left-0 right-0 z-20 bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={!hasPreviousStep}>
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Предыдущий блок
+                </Button>
+                <Button type="button" variant="ghost" onClick={handleSkipCurrentStep} disabled={!currentStep}>
+                  Пропустить блок
+                </Button>
+              </div>
+              {isLastStep ? (
+                <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Обрабатываем ответы…
+                    </>
+                  ) : (
+                    <>
+                      Завершить и посмотреть отчёты
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
+                </Button>
               ) : (
-                <>
-                  Рассчитать рекомендации
+                <Button type="button" className="flex-1 sm:flex-none" onClick={handleNextStep}>
+                  Далее
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </>
+                </Button>
               )}
-            </Button>
+            </div>
           </div>
         </form>
 
@@ -355,6 +565,11 @@ interface QuestionFieldProps {
 
 function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeTextChange }: QuestionFieldProps) {
   const selectedValues = Array.isArray(value) ? value : []
+  const optionsWithUnknown = useMemo(() => {
+    if (!question.options) return undefined
+    if (question.type === 'free-text') return question.options
+    return ensureUnknownOption(question.options)
+  }, [question.options, question.type])
 
   return (
     <div className="space-y-3">
@@ -363,13 +578,13 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
         {question.hint && <p className="text-sm text-muted-foreground">{question.hint}</p>}
       </div>
 
-      {question.type === 'single' && question.options && (
+      {question.type === 'single' && optionsWithUnknown && (
         <RadioGroup
           value={typeof value === 'string' ? value : ''}
           onValueChange={(nextValue) => onSingleChange(question.id, nextValue)}
         >
           <div className="space-y-2">
-            {question.options.map((option) => (
+            {optionsWithUnknown.map((option) => (
               <label
                 key={option.code}
                 className="flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-3 hover:bg-accent"
@@ -387,9 +602,9 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
         </RadioGroup>
       )}
 
-      {question.type === 'multi' && question.options && (
+      {question.type === 'multi' && optionsWithUnknown && (
         <div className="space-y-2">
-          {question.options.map((option) => (
+          {optionsWithUnknown.map((option) => (
             <label
               key={option.code}
               className="flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-3 hover:bg-accent"
@@ -422,11 +637,49 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
 }
 
 function hasAnswer(value: AnswerValue): boolean {
-  if (Array.isArray(value)) {
-    return value.length > 0
+  return hasMeaningfulAnswer(value)
+}
+
+function ensureUnknownOption(options: AnswerOption[]): AnswerOption[] {
+  if (options.some((option) => option.code === UNKNOWN_ANSWER_CODE)) {
+    return options
   }
-  if (typeof value === 'string') {
-    return value.trim().length > 0
-  }
-  return false
+
+  return [
+    ...options,
+    {
+      code: UNKNOWN_ANSWER_CODE,
+      label: UNKNOWN_ANSWER_LABEL,
+      description: UNKNOWN_ANSWER_DESCRIPTION,
+    },
+  ]
+}
+
+function coerceStoredAnswers(raw: AnswerMap): AnswerMap {
+  const result: AnswerMap = { ...raw }
+
+  QUESTION_DEFINITIONS.forEach((question) => {
+    const value = raw[question.id]
+    if (value === undefined) {
+      return
+    }
+
+    if (question.type === 'multi') {
+      if (Array.isArray(value)) {
+        return
+      }
+      if (value === null || value === '') {
+        result[question.id] = []
+        return
+      }
+      result[question.id] = [String(value)]
+      return
+    }
+
+    if (Array.isArray(value)) {
+      result[question.id] = value.length > 0 ? value[0] : null
+    }
+  })
+
+  return result
 }

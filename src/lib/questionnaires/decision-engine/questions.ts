@@ -99,7 +99,7 @@ export const QUESTION_DEFINITIONS: QuestionDefinition[] = [
     id: 'Q2.1',
     group: 'regulator',
     text: 'Какой орган или юрисдикция предъявляет требования?',
-    type: 'single',
+    type: 'multi',
     options: [
       { code: 'EU', label: 'Европейский союз' },
       { code: 'UK', label: 'Великобритания' },
@@ -307,7 +307,7 @@ export const QUESTION_DEFINITIONS: QuestionDefinition[] = [
     id: 'Q6.1',
     group: 'exchange',
     text: 'На какой бирже листинг или план листинга?',
-    type: 'single',
+    type: 'multi',
     options: [
       { code: 'EU_EXCHANGE', label: 'Биржа ЕС' },
       { code: 'LSE', label: 'London Stock Exchange' },

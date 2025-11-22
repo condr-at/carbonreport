@@ -34,7 +34,7 @@ export const RULES: RuleDefinition[] = [
 		source: '#9',
 		description: 'CSRD для компаний, листинговых на биржах ЕС',
 		conditions: [
-			{ type: 'equals', questionId: 'Q6.1', value: 'EU_EXCHANGE' },
+			{ type: 'includes', questionId: 'Q6.1', value: 'EU_EXCHANGE' },
 			{ type: 'equals', questionId: 'Q0.5', value: 'PUBLIC' },
 		],
 		outputs: { reports: ['CSRD'], tags: ['REGULATORY_MANDATORY'] },
@@ -78,7 +78,7 @@ export const RULES: RuleDefinition[] = [
 		conditions: [
 			{ type: 'equals', questionId: 'Q0.1', value: 'US' },
 			{ type: 'equals', questionId: 'Q0.5', value: 'PUBLIC' },
-			{ type: 'equals', questionId: 'Q6.1', value: 'NYSE_NASDAQ' },
+			{ type: 'includes', questionId: 'Q6.1', value: 'NYSE_NASDAQ' },
 		],
 		outputs: { reports: ['SEC_CLIMATE'], tags: ['REGULATORY_MANDATORY'] },
 	},
@@ -118,7 +118,7 @@ export const RULES: RuleDefinition[] = [
 		source: '#10',
 		description: 'UK TCFD при листинге на LSE',
 		conditions: [
-			{ type: 'equals', questionId: 'Q6.1', value: 'LSE' },
+			{ type: 'includes', questionId: 'Q6.1', value: 'LSE' },
 		],
 		outputs: { reports: ['UK_TCFD'], tags: ['REGULATORY_MANDATORY'] },
 	},
@@ -137,7 +137,7 @@ export const RULES: RuleDefinition[] = [
 		source: '#11',
 		description: 'HKEX ESG для публичных компаний',
 		conditions: [
-			{ type: 'equals', questionId: 'Q6.1', value: 'HKEX' },
+			{ type: 'includes', questionId: 'Q6.1', value: 'HKEX' },
 			{ type: 'equals', questionId: 'Q0.5', value: 'PUBLIC' },
 		],
 		outputs: { reports: ['HKEX_ESG'], tags: ['REGULATORY_MANDATORY'] },

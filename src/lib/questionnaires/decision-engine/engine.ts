@@ -2,6 +2,7 @@ import { QUESTION_DEFINITIONS, QUESTION_INDEX } from './questions'
 import { REPORT_DEFINITIONS } from './reports'
 import { RULES } from './rules'
 import { VALIDATION_RULES } from './validation-rules'
+import { sanitizeMultiSelectAnswer, sanitizeSingleSelectAnswer } from './answer-utils'
 import {
   AnswerMap,
   EvaluationResult,
@@ -197,13 +198,25 @@ function normalizeAnswers(raw: AnswerMap): AnswerMap {
 
     if (question.type === 'multi') {
       const arr = Array.isArray(value) ? value : [value]
-      normalized[key] = arr
+      const prepared = arr
         .filter((item) => item !== undefined && item !== null)
         .map((item) => String(item))
+      normalized[key] = sanitizeMultiSelectAnswer(prepared)
+    } else if (question.type === 'free-text') {
+      const scalar = Array.isArray(value) ? value[0] : value
+      if (scalar !== undefined && scalar !== null) {
+        const text = String(scalar).trim()
+        if (text.length > 0) {
+          normalized[key] = text
+        }
+      }
     } else {
       const scalar = Array.isArray(value) ? value[0] : value
-      if (scalar !== undefined && scalar !== null && String(scalar).length > 0) {
-        normalized[key] = String(scalar)
+      if (scalar !== undefined && scalar !== null) {
+        const single = sanitizeSingleSelectAnswer(String(scalar))
+        if (single) {
+          normalized[key] = single
+        }
       }
     }
   }
