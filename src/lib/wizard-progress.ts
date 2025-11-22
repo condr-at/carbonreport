@@ -3,12 +3,14 @@ export function clearWizardProgress() {
   sessionStorage.removeItem('projectData');
   sessionStorage.removeItem('wizardAnswers');
   sessionStorage.removeItem('recommendedTemplates');
+  sessionStorage.removeItem('decisionEngineResult');
 }
 
 interface WizardProgressState {
   hasProjectInfo: boolean;
   hasAnswers: boolean;
   hasRecommendations: boolean;
+  hasEngineResult: boolean;
 }
 
 export function getWizardProgressState(): WizardProgressState {
@@ -17,6 +19,7 @@ export function getWizardProgressState(): WizardProgressState {
       hasProjectInfo: false,
       hasAnswers: false,
       hasRecommendations: false,
+      hasEngineResult: false,
     };
   }
 
@@ -53,14 +56,26 @@ export function getWizardProgressState(): WizardProgressState {
     }
   }
 
+  let hasEngineResult = false;
+  const engineResultRaw = sessionStorage.getItem('decisionEngineResult');
+  if (engineResultRaw) {
+    try {
+      const parsed = JSON.parse(engineResultRaw);
+      hasEngineResult = Boolean(parsed && typeof parsed === 'object');
+    } catch {
+      hasEngineResult = true;
+    }
+  }
+
   return {
     hasProjectInfo,
     hasAnswers,
     hasRecommendations,
+    hasEngineResult,
   };
 }
 
 export function hasAnyWizardProgress(): boolean {
   const state = getWizardProgressState();
-  return state.hasProjectInfo || state.hasAnswers || state.hasRecommendations;
+  return state.hasProjectInfo || state.hasAnswers || state.hasRecommendations || state.hasEngineResult;
 }
