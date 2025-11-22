@@ -2,8 +2,23 @@ import { MainSidebar } from '@/components/layouts/main-sidebar';
 import { Sidebar, SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { PanelsTopLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+type ContentPadding = 'default' | 'horizontal' | 'none';
+
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+  contentPadding?: ContentPadding;
+  contentClassName?: string;
+}
+
+const paddingClassMap: Record<ContentPadding, string> = {
+  default: 'p-6',
+  horizontal: 'px-6',
+  none: '',
+};
+
+export function DashboardLayout({ children, contentPadding = 'default', contentClassName }: DashboardLayoutProps) {
   return (
     <SidebarProvider defaultOpen={false}>
       <div className="flex h-screen overflow-hidden">
@@ -22,7 +37,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </div>
           </header>
           <main className="flex-1 overflow-y-auto">
-            <div className="container mx-auto max-w-7xl p-6">
+            <div className={cn('container mx-auto max-w-7xl', paddingClassMap[contentPadding], contentClassName)}>
               {children}
             </div>
           </main>

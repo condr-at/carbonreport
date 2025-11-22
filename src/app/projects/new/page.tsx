@@ -116,15 +116,13 @@ export default function NewProjectPage() {
 
   return (
     <>
-      <DashboardLayout>
-        <div className="max-w-2xl mx-auto space-y-6">
+      <DashboardLayout contentPadding="horizontal">
+        <div className="mx-auto max-w-2xl space-y-6 pb-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Create New Project</h1>
-            <p className="text-muted-foreground mt-1">
-              Step 1 of 3: Project Information
-            </p>
+            <p className="text-muted-foreground mt-1">Provide the basic project details to get started.</p>
           </div>
           <Button
             variant="ghost"
@@ -133,13 +131,6 @@ export default function NewProjectPage() {
           >
             <X className="h-4 w-4" />
           </Button>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 bg-primary/40 rounded-full" />
-          <div className="flex-1 h-2 bg-muted rounded-full" />
-          <div className="flex-1 h-2 bg-muted rounded-full" />
         </div>
 
         {/* Form */}

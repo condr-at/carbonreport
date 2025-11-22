@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/layouts/dashboard-layout'
+import { TitleStatusStepper } from '@/components/stepper/title-status'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -123,7 +124,7 @@ const ENGINE_TO_TEMPLATE_MAP: Record<string, ReportTemplateCode> = {
 
 export default function QuestionnairePage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout contentPadding="horizontal">
       <QuestionnaireContent />
     </DashboardLayout>
   )
@@ -197,6 +198,7 @@ function QuestionnaireContent() {
   }, [groupVisibility, groupedQuestions])
 
   const activeSteps = useMemo(() => stepStates.filter((step) => step.visibleGroups.length > 0), [stepStates])
+  const stepperSteps = useMemo(() => activeSteps.map((step) => ({ id: step.id, title: step.title })), [activeSteps])
 
   useEffect(() => {
     if (activeSteps.length === 0) {
@@ -211,6 +213,19 @@ function QuestionnaireContent() {
   const currentStep = activeSteps[activeStepIndex] ?? null
   const isLastStep = activeSteps.length > 0 && activeStepIndex === activeSteps.length - 1
   const hasPreviousStep = activeStepIndex > 0
+  const isCurrentStepComplete = useMemo(() => {
+    if (!currentStep) {
+      return false
+    }
+
+    return currentStep.visibleGroups.every((group) => {
+      const questions = groupedQuestions[group] ?? []
+      if (questions.length === 0) {
+        return true
+      }
+      return questions.every((question) => hasProgressAnswer(answers[question.id]))
+    })
+  }, [answers, currentStep, groupedQuestions])
 
   const clearGroups = useCallback(
     (groups: QuestionGroup[]) => {
@@ -398,8 +413,8 @@ function QuestionnaireContent() {
 
   return (
     <>
-      <div className="max-w-2xl mx-auto space-y-6 pb-6">
-        <div className="sticky top-0 z-20 bg-background/95 pb-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div className="sticky top-0 z-20 bg-background/95 pb-4 pt-6 backdrop-blur supports-[backdrop-filter]:bg-background/80">
           <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Расширенный опросник</h1>
@@ -424,29 +439,11 @@ function QuestionnaireContent() {
             {activeSteps.length > 0 && (
               <div className="space-y-2">
                 <p className="text-sm font-medium">Блоки опросника</p>
-                <div className="flex flex-wrap gap-2">
-                  {activeSteps.map((step, idx) => {
-                    const state = idx === activeStepIndex ? 'current' : idx < activeStepIndex ? 'done' : 'upcoming'
-                    const baseStyles =
-                      'rounded-full border px-3 py-1 text-xs sm:text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
-                    const stateStyles =
-                      state === 'current'
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : state === 'done'
-                          ? 'border-primary/60 bg-primary/5 text-primary'
-                          : 'border-muted text-muted-foreground'
-                    return (
-                      <button
-                        key={step.id}
-                        type="button"
-                        className={`${baseStyles} ${stateStyles}`}
-                        onClick={() => setActiveStepIndex(idx)}
-                      >
-                        {step.title}
-                      </button>
-                    )
-                  })}
-                </div>
+                <TitleStatusStepper
+                  steps={stepperSteps}
+                  activeIndex={activeStepIndex}
+                  onStepChange={setActiveStepIndex}
+                />
               </div>
             )}
           </div>
@@ -458,7 +455,7 @@ function QuestionnaireContent() {
           </div>
         )}
 
-        <form className="space-y-6 pb-24" onSubmit={handleSubmit}>
+        <form className="space-y-6" onSubmit={handleSubmit}>
           {currentStep ? (
             currentStep.visibleGroups.map((group) => {
               const meta = QUESTION_GROUP_TITLES[group]
@@ -496,45 +493,44 @@ function QuestionnaireContent() {
             </Card>
           )}
 
-          <div className="sticky bottom-0 left-0 right-0 z-20 bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={!hasPreviousStep}>
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Предыдущий блок
-                </Button>
+          <div className="sticky bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Button type="button" variant="outline" onClick={handlePreviousStep} disabled={!hasPreviousStep}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Предыдущий блок
+              </Button>
+              <div className="flex flex-1 justify-end gap-2 sm:flex-none">
                 <Button type="button" variant="ghost" onClick={handleSkipCurrentStep} disabled={!currentStep}>
                   Пропустить блок
                 </Button>
+                {isLastStep ? (
+                  <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Обрабатываем ответы…
+                      </>
+                    ) : (
+                      <>
+                        Завершить и посмотреть отчёты
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    className="flex-1 sm:flex-none"
+                    onClick={handleNextStep}
+                    disabled={!currentStep || !isCurrentStepComplete}
+                  >
+                    Далее
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                )}
               </div>
-              {isLastStep ? (
-                <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Обрабатываем ответы…
-                    </>
-                  ) : (
-                    <>
-                      Завершить и посмотреть отчёты
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              ) : (
-                <Button type="button" className="flex-1 sm:flex-none" onClick={handleNextStep}>
-                  Далее
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              )}
             </div>
           </div>
         </form>
-
-        <footer className="text-center text-sm text-muted-foreground">
-          <p>
-            Движок рекомендаций сопоставит правила, приоритеты и ограничения и передаст результат на шаг выбора отчётов.
-          </p>
-        </footer>
       </div>
 
       <AlertDialog open={isExitDialogOpen} onOpenChange={(open) => !open && handleExitCancel()}>
@@ -638,6 +634,23 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
 
 function hasAnswer(value: AnswerValue): boolean {
   return hasMeaningfulAnswer(value)
+}
+
+function hasProgressAnswer(value: AnswerValue): boolean {
+  if (hasMeaningfulAnswer(value)) {
+    return true
+  }
+  return includesUnknownAnswer(value)
+}
+
+function includesUnknownAnswer(value: AnswerValue): boolean {
+  if (typeof value === 'string') {
+    return value.trim() === UNKNOWN_ANSWER_CODE
+  }
+  if (Array.isArray(value)) {
+    return value.some((item) => typeof item === 'string' && item.trim() === UNKNOWN_ANSWER_CODE)
+  }
+  return false
 }
 
 function ensureUnknownOption(options: AnswerOption[]): AnswerOption[] {
