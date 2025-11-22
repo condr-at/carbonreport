@@ -69,6 +69,8 @@ const QUESTION_GROUP_ORDER: QuestionGroup[] = [
   'sector',
 ]
 
+const WIZARD_ACTIVE_STEP_KEY = 'wizardActiveStepIndex'
+
 interface StepDefinition {
   id: string
   title: string
@@ -137,6 +139,7 @@ function QuestionnaireContent() {
   const [storedProgress, setStoredProgress] = useState(false)
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false)
   const exitTargetRef = useRef<string | null>(null)
+  const hasRestoredStepIndex = useRef(false)
   const [submissionError, setSubmissionError] = useState<string | null>(null)
   const [activeStepIndex, setActiveStepIndex] = useState(0)
 
@@ -172,6 +175,11 @@ function QuestionnaireContent() {
     }
   }, [])
 
+  const clearStoredStepIndex = useCallback(() => {
+    if (typeof window === 'undefined') return
+    sessionStorage.removeItem(WIZARD_ACTIVE_STEP_KEY)
+  }, [])
+
   useEffect(() => {
     try {
       const stored = typeof window !== 'undefined' ? sessionStorage.getItem('wizardAnswers') : null
@@ -183,6 +191,23 @@ function QuestionnaireContent() {
       console.warn('Failed to restore questionnaire answers', error)
     }
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || hasRestoredStepIndex.current) return
+    const storedIndex = sessionStorage.getItem(WIZARD_ACTIVE_STEP_KEY)
+    if (storedIndex !== null) {
+      const parsedIndex = Number.parseInt(storedIndex, 10)
+      if (!Number.isNaN(parsedIndex) && parsedIndex >= 0) {
+        setActiveStepIndex(parsedIndex)
+      }
+    }
+    hasRestoredStepIndex.current = true
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !hasRestoredStepIndex.current) return
+    sessionStorage.setItem(WIZARD_ACTIVE_STEP_KEY, String(activeStepIndex))
+  }, [activeStepIndex])
 
   useEffect(() => {
     setStoredProgress(hasAnyWizardProgress())
@@ -345,6 +370,8 @@ function QuestionnaireContent() {
     const hasProgress = storedProgress || Object.keys(answers).length > 0
     if (!hasProgress) {
       clearWizardProgress()
+      clearStoredStepIndex()
+      setActiveStepIndex(0)
       router.push(target)
       return
     }
@@ -361,6 +388,8 @@ function QuestionnaireContent() {
   const handleExitConfirm = () => {
     const target = exitTargetRef.current ?? '/dashboard'
     clearWizardProgress()
+    clearStoredStepIndex()
+    setActiveStepIndex(0)
     setIsExitDialogOpen(false)
     exitTargetRef.current = null
     router.push(target)
@@ -499,9 +528,11 @@ function QuestionnaireContent() {
                 <ArrowLeft className="mr-2 h-4 w-4" /> Предыдущий блок
               </Button>
               <div className="flex flex-1 justify-end gap-2 sm:flex-none">
-                <Button type="button" variant="ghost" onClick={handleSkipCurrentStep} disabled={!currentStep}>
-                  Пропустить блок
-                </Button>
+                {!isLastStep && (
+                  <Button type="button" variant="ghost" onClick={handleSkipCurrentStep} disabled={!currentStep}>
+                    Пропустить блок
+                  </Button>
+                )}
                 {isLastStep ? (
                   <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
                     {isSubmitting ? (
@@ -511,7 +542,7 @@ function QuestionnaireContent() {
                       </>
                     ) : (
                       <>
-                        Завершить и посмотреть отчёты
+                        Перейти к выбору отчётов
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </>
                     )}
