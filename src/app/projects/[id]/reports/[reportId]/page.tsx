@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import { ReportPageClient } from './report-page-client';
 import {
@@ -19,8 +20,12 @@ interface PageProps {
 
 async function getReport(projectId: string, reportId: string) {
   const baseUrl = await getBaseUrl();
+  const headersList = await headers();
   const res = await fetch(`${baseUrl}/api/projects/${projectId}/reports/${reportId}`, {
     cache: 'no-store',
+    headers: {
+      Cookie: headersList.get('Cookie') || '',
+    },
   });
 
   if (!res.ok) {

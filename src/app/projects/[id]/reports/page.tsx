@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import { getBaseUrl } from '@/lib/server-utils';
 import { getReportTemplate } from '@/lib/report-templates';
 
@@ -12,8 +13,12 @@ interface PageProps {
 
 async function fetchProjectWithReports(id: string) {
   const baseUrl = await getBaseUrl();
+  const headersList = await headers();
   const res = await fetch(`${baseUrl}/api/projects/${id}`, {
     cache: 'no-store',
+    headers: {
+      Cookie: headersList.get('Cookie') || '',
+    },
   });
 
   if (!res.ok) {

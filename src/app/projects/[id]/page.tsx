@@ -4,6 +4,7 @@ import { ProjectRoadmap } from '@/components/project-roadmap';
 import { ProjectPrefillHydrator } from '@/components/project-prefill-hydrator';
 import { getBaseUrl } from '@/lib/server-utils';
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -38,10 +39,14 @@ interface ProjectDetails {
 
 async function getProject(id: string): Promise<ProjectFetchResult<ProjectDetails>> {
   const baseUrl = await getBaseUrl();
+  const headersList = await headers();
 
   try {
     const res = await fetch(`${baseUrl}/api/projects/${id}`, {
       cache: 'no-store',
+      headers: {
+        Cookie: headersList.get('Cookie') || '',
+      },
     });
 
     if (res.ok) {
