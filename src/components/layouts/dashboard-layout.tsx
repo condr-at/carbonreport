@@ -21,7 +21,7 @@ const paddingClassMap: Record<ContentPadding, string> = {
 export function DashboardLayout({ children, contentPadding = 'default', contentClassName }: DashboardLayoutProps) {
   return (
     <SidebarProvider defaultOpen={false}>
-      <div className="flex h-screen overflow-hidden">
+      <div className="fixed inset-0 flex overflow-hidden bg-background">
         <Sidebar>
           <MainSidebar />
         </Sidebar>
