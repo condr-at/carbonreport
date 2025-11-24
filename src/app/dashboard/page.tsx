@@ -9,6 +9,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { MarkDashboardVisited } from '@/components/dashboard/mark-visited';
 import prisma from '@/lib/db';
+import { DashboardGreeting } from '@/components/dashboard/dashboard-greeting';
 import { OrganizationMembershipInviteStatus, OrganizationStatus, ProjectStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
@@ -114,8 +115,6 @@ export default async function DashboardPage() {
   const hasVisited = cookieStore.has('dashboard_visited');
   
   const greetingName = getGreetingName(user);
-  const baseGreeting = hasVisited ? 'Welcome back' : 'Welcome';
-  const title = greetingName ? `${baseGreeting}, ${greetingName}` : baseGreeting;
   
   // Calculate stats
   const totalProjects = projects.length;
@@ -139,7 +138,7 @@ export default async function DashboardPage() {
       <MarkDashboardVisited />
       <div className="space-y-6">
         <PageHeader
-          title={title}
+          title={<DashboardGreeting name={greetingName} hasVisited={hasVisited} />}
           description={dateStr}
           actions={(
             <Button asChild>
