@@ -3,7 +3,7 @@ import { PageHeader } from '@/components/layouts/page-header';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const GREETING_TITLE = 'Hello, John Doe 👋';
+const GREETING_TITLE = 'Hello, there 👋';
 const GREETING_DESCRIPTION = 'Loading your carbon overview...';
 
 export default function DashboardLoading() {

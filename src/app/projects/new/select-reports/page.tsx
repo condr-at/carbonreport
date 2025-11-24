@@ -9,7 +9,7 @@ import { ArrowLeft, Loader2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { getAllReportTemplates } from '@/lib/report-templates';
-import { getRecommendedTemplates } from '@/lib/questionnaires/wizard-config';
+import type { EvaluationResult } from '@/lib/questionnaires/decision-engine';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +28,8 @@ import { notifications } from '@/components/ui/notifications';
 export default function SelectReportsPage() {
   const router = useRouter();
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const [mandatoryTemplates, setMandatoryTemplates] = useState<Set<string>>(new Set());
+  const [recommendedTemplates, setRecommendedTemplates] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [hasStoredProgress, setHasStoredProgress] = useState(false);
@@ -49,20 +51,65 @@ export default function SelectReportsPage() {
     const projectData = JSON.parse(projectDataStr);
     setProjectName(projectData.name || '');
 
-    // Calculate recommendations from wizard answers
-    const wizardAnswersStr = sessionStorage.getItem('wizardAnswers');
-    if (wizardAnswersStr) {
-      const wizardAnswers = JSON.parse(wizardAnswersStr);
-      const recommended = getRecommendedTemplates(wizardAnswers);
-      setSelectedTemplates(recommended);
-    } else {
-      // Fallback: check old recommendedTemplates format
-      const recommendedStr = sessionStorage.getItem('recommendedTemplates');
-      if (recommendedStr) {
-        const recommended = JSON.parse(recommendedStr);
-        setSelectedTemplates(recommended);
+    const recommendedStr = sessionStorage.getItem('recommendedTemplates');
+    const decisionStr = sessionStorage.getItem('decisionEngineResult');
+
+    const initialSelected = new Set<string>();
+    const mandatory = new Set<string>();
+    const recommended = new Set<string>();
+
+    if (recommendedStr) {
+      try {
+        const parsed = JSON.parse(recommendedStr) as string[];
+        parsed.forEach((code) => initialSelected.add(code));
+      } catch (error) {
+        console.warn('Failed to parse recommendedTemplates from sessionStorage', error);
       }
     }
+
+    if (decisionStr) {
+      try {
+        const parsed = JSON.parse(decisionStr) as EvaluationResult;
+        const extractTemplateCodes = (reports: { id: string; definition?: { category?: string } }[]) => {
+          return reports
+            .map((report) => report.id)
+            .filter((id): id is string => typeof id === 'string' && id.length > 0);
+        };
+
+        // We only track mandatory/recommended flags by template code; mapping is already applied on questionnaire step
+        const engineRecommended = new Set<string>();
+        if (recommendedStr) {
+          try {
+            const parsedTemplates = JSON.parse(recommendedStr) as string[];
+            parsedTemplates.forEach((code) => engineRecommended.add(code));
+          } catch {
+            // ignore
+          }
+        }
+
+        // Mark all mapped templates from mandatory reports as mandatory
+        extractTemplateCodes(parsed.mandatoryReports).forEach((code) => {
+          mandatory.add(code);
+          initialSelected.add(code);
+        });
+
+        // Mark templates from recommended reports as recommended (but not mandatory)
+        extractTemplateCodes(parsed.recommendedReports).forEach((code) => {
+          if (!mandatory.has(code)) {
+            recommended.add(code);
+            initialSelected.add(code);
+          }
+        });
+
+        // Optional reports do not affect mandatory/recommended flags here
+      } catch (error) {
+        console.warn('Failed to parse decisionEngineResult from sessionStorage', error);
+      }
+    }
+
+    setSelectedTemplates(Array.from(initialSelected));
+    setMandatoryTemplates(mandatory);
+    setRecommendedTemplates(recommended);
   }, [router]);
 
   useEffect(() => {
@@ -218,19 +265,24 @@ export default function SelectReportsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
-              {allTemplates.map((template) => (
+              {allTemplates.map((template) => {
+                const isMandatory = mandatoryTemplates.has(template.code);
+                const isRecommended = !isMandatory && recommendedTemplates.has(template.code);
+                const checked = selectedTemplates.includes(template.code);
+
+                return (
                 <div
                   key={template.code}
                   className={`flex items-start space-x-4 p-4 rounded-lg border transition-colors ${
                     isSubmitting ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-accent'
                   }`}
-                  onClick={() => handleToggleTemplate(template.code)}
+                  onClick={() => !isMandatory && handleToggleTemplate(template.code)}
                 >
                   <Checkbox
                     id={template.code}
-                    checked={selectedTemplates.includes(template.code)}
-                    onCheckedChange={() => handleToggleTemplate(template.code)}
-                    disabled={isSubmitting}
+                    checked={checked}
+                    onCheckedChange={() => !isMandatory && handleToggleTemplate(template.code)}
+                    disabled={isSubmitting || isMandatory}
                   />
                   <div className="flex-1 space-y-1">
                     <Label
@@ -242,9 +294,14 @@ export default function SelectReportsPage() {
                     <p className="text-sm text-muted-foreground">
                       Version {template.version} — {template.description}
                     </p>
+                    {(isMandatory || isRecommended) && (
+                      <p className="text-xs font-medium text-primary">
+                        {isMandatory ? 'Обязательно по требованиям' : 'Рекомендовано движком'}
+                      </p>
+                    )}
                   </div>
                 </div>
-              ))}
+              );})}
             </div>
 
             {selectedTemplates.length === 0 && (

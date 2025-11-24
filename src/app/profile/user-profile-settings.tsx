@@ -250,6 +250,7 @@ export function UserProfileSettings() {
               preferredFormat="image/jpeg"
               outputSize={320}
               minSourceDimension={240}
+              pendingCacheKey={`user-avatar:${user.id}`}
             />
           </div>
         </form>

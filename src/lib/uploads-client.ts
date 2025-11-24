@@ -69,20 +69,68 @@ async function requestSignedUpload(resourceType: UploadResourceType, file: File)
   }
 }
 
-async function performUpload(url: string, fields: Record<string, string>, file: File) {
+async function performUpload(upload: SignedUploadResponse['upload'], file: File) {
   const formData = new FormData();
-  Object.entries(fields).forEach(([key, value]) => {
+  Object.entries(upload.fields).forEach(([key, value]) => {
     formData.append(key, value);
   });
   formData.append('file', file);
 
-  const response = await fetch(url, {
-    method: 'POST',
-    body: formData,
-  });
+  try {
+    const response = await fetch(upload.url, {
+      method: 'POST',
+      body: formData,
+      credentials: 'omit',
+    });
 
-  if (!response.ok) {
-    throw new UploadError('Failed to upload file to storage.', response.status);
+    if (!response.ok) {
+      throw new UploadError('Failed to upload file to storage.', response.status);
+    }
+  } catch (error) {
+    if (error instanceof UploadError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError) {
+      throw new UploadError('Network error while uploading file.', undefined, 'NETWORK_ERROR', {
+        message: error.message,
+      });
+    }
+
+    throw error;
+  }
+}
+
+async function relayUpload(upload: SignedUploadResponse['upload'], file: File) {
+  const formData = new FormData();
+  formData.append('assetId', upload.asset_id);
+  formData.append('url', upload.url);
+  formData.append('fields', JSON.stringify(upload.fields));
+  formData.append('file', file);
+
+  try {
+    const response = await fetch('/api/uploads/relay', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+      const message = typeof payload?.error === 'string' ? payload.error : 'Upload relay failed.';
+      throw new UploadError(message, response.status, payload?.code, payload?.details ?? payload);
+    }
+  } catch (error) {
+    if (error instanceof UploadError) {
+      throw error;
+    }
+
+    if (error instanceof TypeError) {
+      throw new UploadError('Upload relay failed: network error.', undefined, 'NETWORK_ERROR', {
+        message: error.message,
+      });
+    }
+
+    throw error;
   }
 }
 
@@ -90,7 +138,15 @@ export async function uploadAsset(resourceType: UploadResourceType, file: File) 
   assertFileConstraints(file);
 
   const { upload } = await requestSignedUpload(resourceType, file);
-  await performUpload(upload.url, upload.fields, file);
+  try {
+    await performUpload(upload, file);
+  } catch (error) {
+    if (error instanceof UploadError && error.code === 'NETWORK_ERROR') {
+      await relayUpload(upload, file);
+    } else {
+      throw error;
+    }
+  }
 
   return {
     assetId: upload.asset_id,

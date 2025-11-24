@@ -36,6 +36,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { useUserSettings } from '@/lib/data-client/user-settings'
 import { notifications } from '@/components/ui/notifications'
+import { usePendingAssetPreview } from '@/lib/uploads/pending-previews'
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
@@ -68,13 +69,14 @@ export function MainSidebar() {
     refetch,
     isBootstrapping,
   } = useOrganizationContext()
-  const hasAcceptedOrganizations = acceptedOrganizations.length > 0
   const { data: userSettings } = useUserSettings()
   const user = userSettings?.user
 
   const userDisplayName = user?.name ?? user?.email ?? 'Your account'
   const userEmail = user?.email ?? 'user@example.com'
-  const userAvatarUrl = user?.avatar_url ?? null
+  const pendingUserAvatarByUser = usePendingAssetPreview(user ? `user-avatar:${user.id}` : null)
+  const pendingUserAvatarByAsset = usePendingAssetPreview(user?.avatar_asset_id ?? null)
+  const userAvatarUrl = pendingUserAvatarByUser ?? pendingUserAvatarByAsset ?? user?.avatar_url ?? null
   const userInitials = useMemo(() => {
     const source = user?.name || user?.email || 'U'
     return source
@@ -104,28 +106,14 @@ export function MainSidebar() {
   }, [router, isLoading, activeOrganization])
 
   useEffect(() => {
-    if (isLoading || isBootstrapping) {
+    if (isLoading || isBootstrapping || pathname !== '/no-organization') {
       return
     }
 
-    if (!hasAcceptedOrganizations) {
-      if (
-        pathname !== '/no-organization' &&
-        !pathname?.startsWith('/settings')
-      ) {
-        router.replace('/no-organization')
-      }
-      return
-    }
-
-    if (!activeOrganization) {
-      return
-    }
-
-    if (pathname === '/no-organization') {
+    if (acceptedOrganizations.length > 0 && activeOrganization) {
       router.replace('/dashboard')
     }
-  }, [activeOrganization, hasAcceptedOrganizations, isBootstrapping, isLoading, pathname, router])
+  }, [acceptedOrganizations.length, activeOrganization, isBootstrapping, isLoading, pathname, router])
 
   useEffect(() => {
     if (!pendingHref) {
@@ -391,6 +379,8 @@ function OrganizationSwitcher({
   planLabel,
   isSwitching,
 }: OrganizationSwitcherProps) {
+  const pendingActiveLogo = usePendingAssetPreview(activeOrganization ? `org-logo:${activeOrganization.id}` : null)
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -407,7 +397,7 @@ function OrganizationSwitcher({
           <AlertCircle className="h-4 w-4" />
           <span>Failed to load organizations.</span>
         </div>
-        <Button variant="link" size="sm" onClick={onRetry} className="px-0 text-destructive">
+        <Button variant="foreground" mode="link" size="sm" onClick={onRetry} className="px-0 text-destructive">
           Retry
         </Button>
         {error instanceof Error ? (
@@ -445,7 +435,7 @@ function OrganizationSwitcher({
       .toUpperCase()
 
   const initials = getInitials(activeOrganization.display_name)
-  const activeLogoUrl = activeOrganization.logo_url ?? null
+  const activeLogoUrl = pendingActiveLogo ?? activeOrganization.logo_url ?? null
 
   const usageLabel =
     typeof activeUsage === 'number' && typeof usageLimit === 'number'
@@ -459,14 +449,14 @@ function OrganizationSwitcher({
           type="button"
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-accent"
         >
-          <Avatar className="h-9 w-9 rounded-md">
-            {activeLogoUrl ? (
-              <AvatarImage src={activeLogoUrl} alt={`${activeOrganization.display_name} logo`} />
-            ) : null}
-            <AvatarFallback className="rounded-md bg-muted text-sm font-semibold">
-              {initials || '—'}
-            </AvatarFallback>
-          </Avatar>
+          <OrganizationAvatarImage
+            organizationId={activeOrganization.id}
+            displayName={activeOrganization.display_name}
+            logoUrl={activeLogoUrl}
+            initials={initials || '—'}
+            className="h-9 w-9 rounded-md"
+            fallbackClassName="rounded-md bg-muted text-sm font-semibold"
+          />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{activeOrganization.display_name}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -497,14 +487,14 @@ function OrganizationSwitcher({
               onSelect={() => onSelect(organization)}
               className={cn('gap-3 p-2', isActive && 'bg-muted text-foreground')}
             >
-              <Avatar className="h-8 w-8 rounded-md">
-                {logoUrl ? (
-                  <AvatarImage src={logoUrl} alt={`${organization.display_name} logo`} />
-                ) : null}
-                <AvatarFallback className="rounded-md bg-muted text-sm font-semibold">
-                  {initialsLabel || '—'}
-                </AvatarFallback>
-              </Avatar>
+              <OrganizationAvatarImage
+                organizationId={organization.id}
+                displayName={organization.display_name}
+                logoUrl={logoUrl}
+                initials={initialsLabel || '—'}
+                className="h-8 w-8 rounded-md"
+                fallbackClassName="rounded-md bg-muted text-sm font-semibold"
+              />
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-sm font-medium">{organization.display_name}</span>
                 <span className="truncate text-xs text-muted-foreground">{organization.plan_label}</span>
@@ -529,14 +519,14 @@ function OrganizationSwitcher({
 
               return (
                 <DropdownMenuItem key={invite.id} disabled className="gap-3 p-2">
-                  <Avatar className="h-8 w-8 rounded-md">
-                    {logoUrl ? (
-                      <AvatarImage src={logoUrl} alt={`${invite.display_name} logo`} />
-                    ) : null}
-                    <AvatarFallback className="rounded-md bg-muted text-sm font-semibold text-muted-foreground">
-                      {initialsLabel || '—'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <OrganizationAvatarImage
+                    organizationId={invite.id}
+                    displayName={invite.display_name}
+                    logoUrl={logoUrl}
+                    initials={initialsLabel || '—'}
+                    className="h-8 w-8 rounded-md"
+                    fallbackClassName="rounded-md bg-muted text-sm font-semibold text-muted-foreground"
+                  />
                   <div className="flex min-w-0 flex-col">
                     <span className="truncate text-sm font-medium text-muted-foreground">
                       {invite.display_name}
@@ -561,6 +551,34 @@ function OrganizationSwitcher({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+type OrganizationAvatarImageProps = {
+  organizationId: string
+  displayName: string
+  logoUrl: string | null
+  initials: string
+  className?: string
+  fallbackClassName?: string
+}
+
+function OrganizationAvatarImage({
+  organizationId,
+  displayName,
+  logoUrl,
+  initials,
+  className,
+  fallbackClassName,
+}: OrganizationAvatarImageProps) {
+  const pendingLogo = usePendingAssetPreview(`org-logo:${organizationId}`)
+  const src = pendingLogo ?? logoUrl ?? null
+
+  return (
+    <Avatar className={className}>
+      {src ? <AvatarImage src={src} alt={`${displayName} logo`} /> : null}
+      <AvatarFallback className={fallbackClassName}>{initials || '—'}</AvatarFallback>
+    </Avatar>
   )
 }
 

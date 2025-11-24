@@ -2,13 +2,11 @@
  * Wizard Configuration
  * 
  * Centralized configuration for the project creation wizard.
- * Edit this file to change questionnaire logic, add new questions,
- * modify report recommendations, or add conditional steps.
- * 
- * SUPPORTS CONDITIONAL LOGIC:
- * - Questions can depend on previous answers
- * - Report recommendations based on multiple criteria
- * - Dynamic wizard flow
+ *
+ * NOTE: Detailed questionnaire logic and report recommendations are now
+ * implemented in `src/lib/questionnaires/decision-engine`. This file
+ * primarily defines wizard steps and keeps a small legacy mini-
+ * questionnaire that is no longer used for report selection.
  */
 
 // ============================================

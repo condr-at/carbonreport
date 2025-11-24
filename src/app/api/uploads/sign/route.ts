@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createPresignedPost } from '@aws-sdk/s3-presigned-post'
-import { S3Client } from '@aws-sdk/client-s3'
 import { randomUUID } from 'node:crypto'
 import prisma from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 import { MAX_UPLOAD_SIZE_BYTES, normalizeMimeType, toSafeFileStem } from '@/lib/uploads'
 import { RESOURCE_TYPE_TO_ASSET } from '@/lib/uploads/resource-map'
-import { resolveUploadConfig, type S3UploadConfig } from '@/lib/uploads/config'
+import { resolveUploadConfig } from '@/lib/uploads/config'
 import { UPLOAD_RESOURCE_TYPES, type UploadResourceType } from '@/lib/uploads/resource-types'
+import { getS3Client } from '@/lib/uploads/s3-client'
 
 const UploadRequestSchema = z.object({
   resource_type: z.enum(UPLOAD_RESOURCE_TYPES),
@@ -17,30 +17,6 @@ const UploadRequestSchema = z.object({
   mime_type: z.string().trim().min(1),
   file_size_bytes: z.number().int().positive(),
 })
-
-let cachedClient: { instance: S3Client; cacheKey: string } | null = null
-
-function getClient(config: S3UploadConfig): S3Client {
-  const credentialKey = config.credentials
-    ? `${config.credentials.accessKeyId}:${config.credentials.secretAccessKey}:${config.credentials.sessionToken ?? ''}`
-    : 'default-chain'
-  const endpointKey = config.endpoint ?? 'aws-default'
-  const cacheKey = `${config.region}:${endpointKey}:${credentialKey}`
-
-  if (!cachedClient || cachedClient.cacheKey !== cacheKey) {
-    cachedClient = {
-      cacheKey,
-      instance: new S3Client({
-        region: config.region,
-        credentials: config.credentials,
-        endpoint: config.endpoint,
-        forcePathStyle: Boolean(config.endpoint),
-      }),
-    }
-  }
-
-  return cachedClient.instance
-}
 
 function buildObjectKey(resource: UploadResourceType, assetId: string, fileName: string, extension: string, prefix: string | null): string {
   const safeStem = toSafeFileStem(fileName, assetId)
@@ -100,7 +76,7 @@ export async function POST(request: NextRequest) {
     let uploadTarget: { url: string; fields: Record<string, string> }
 
     if (config.mode === 's3') {
-      const s3 = getClient(config)
+      const s3 = getS3Client(config)
       const presigned = await createPresignedPost(s3, {
         Bucket: config.bucket,
         Key: objectKey,

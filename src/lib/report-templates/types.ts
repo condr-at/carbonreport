@@ -38,7 +38,7 @@ export interface MailtoTemplate {
 }
 
 export interface ReportTemplate {
-  code: string
+  code: ReportTemplateCode
   name: string
   version?: string
   description?: string
@@ -47,4 +47,24 @@ export interface ReportTemplate {
   mailto?: MailtoTemplate
 }
 
-export type ReportTemplateCode = 'ISO14067' | 'CBAM'
+export type ReportTemplateCode =
+  | 'ISO14067'
+  | 'CBAM'
+  | 'CSRD'
+  | 'EU_ETS'
+  | 'UK_SECR'
+  | 'SEC_CLIMATE'
+  | 'CORSIA'
+  | 'EU_MRV'
+  | 'SFDR'
+  | 'UK_TCFD'
+  | 'HKEX_ESG'
+  | 'ISO14064'
+  | 'CDP'
+  | 'CORP_GHG'
+  | 'ECOVADIS'
+  | 'SCOPE3_PACKAGE'
+  | 'CLIENT_TEMPLATE'
+  | 'SCOPE3_DETAILED'
+  | 'CARBON_NEUTRAL'
+  | 'TCFD'

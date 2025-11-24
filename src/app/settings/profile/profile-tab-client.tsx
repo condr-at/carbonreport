@@ -198,6 +198,7 @@ export function OrganizationProfileTab({ organizationId, organization }: Organiz
             onChange={handleLogoChange}
             label="Organization logo"
             description="PNG, JPEG, or SVG · auto-cropped to square"
+            pendingCacheKey={`org-logo:${organizationId}`}
           />
         </CardContent>
       </Card>

@@ -6,14 +6,37 @@ import Link from 'next/link';
 import { NextStepsWidget } from '@/components/blocks/next-steps-widget';
 import { PageHeader } from '@/components/layouts/page-header';
 import { serverApiFetch } from '@/lib/server-utils';
+import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-// Mock user for now (will be replaced with real auth)
-const MOCK_USER = {
-  id: '550e8400-e29b-41d4-a716-446655440000',
-  name: 'John Doe',
-};
+function getGreetingName(user: Awaited<ReturnType<typeof getCurrentUser>>) {
+  const normalized = (value?: string | null) => value?.trim() ?? '';
+  const first = normalized(user.firstName);
+  if (first) {
+    return first;
+  }
+
+  const fullName = normalized(user.name);
+  if (fullName) {
+    const [firstToken] = fullName.split(/\s+/);
+    if (firstToken) {
+      return firstToken;
+    }
+  }
+
+  const fallbackLast = normalized(user.lastName);
+  if (fallbackLast) {
+    return fallbackLast;
+  }
+
+  const emailHandle = user.email.split('@')[0];
+  if (emailHandle) {
+    return emailHandle;
+  }
+
+  return null;
+}
 
 async function getProjects() {
   try {
@@ -69,7 +92,8 @@ async function getProjects() {
 }
 
 export default async function DashboardPage() {
-  const projects = await getProjects();
+  const [user, projects] = await Promise.all([getCurrentUser(), getProjects()]);
+  const greetingName = getGreetingName(user) ?? 'there';
   
   // Calculate stats
   const totalProjects = projects.length;
@@ -92,7 +116,7 @@ export default async function DashboardPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <PageHeader
-          title={`Hello, ${MOCK_USER.name} 👋`}
+          title={`Hello, ${greetingName} 👋`}
           description={dateStr}
           actions={(
             <Button asChild>

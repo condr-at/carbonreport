@@ -10,6 +10,7 @@ import { notifications } from '@/components/ui/notifications'
 import { uploadAsset, type UploadResourceType, UploadError } from '@/lib/uploads-client'
 import { MAX_UPLOAD_SIZE_BYTES, toSafeFileStem } from '@/lib/uploads'
 import { cropImageToSquare, loadImage } from '@/lib/image-crop'
+import { cachePendingAssetPreview, clearPendingAssetPreview, usePendingAssetPreview } from '@/lib/uploads/pending-previews'
 
 export type SquareImageValue = {
   assetId: string | null
@@ -35,6 +36,7 @@ type SquareImageUploaderProps = {
   minSourceDimension?: number
   preferredFormat?: 'image/png' | 'image/jpeg'
   allowRemove?: boolean
+  pendingCacheKey?: string
 }
 
 const ACCEPTED_TYPES = 'image/png,image/jpeg,image/jpg,image/svg+xml'
@@ -53,6 +55,7 @@ export function SquareImageUploader({
   minSourceDimension = DEFAULT_OUTPUT_SIZE,
   preferredFormat = 'image/png',
   allowRemove = true,
+  pendingCacheKey,
 }: SquareImageUploaderProps) {
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -62,28 +65,28 @@ export function SquareImageUploader({
   const [crop, setCrop] = useState({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
-  const objectUrlRef = useRef<string | null>(null)
-
-  const previewUrl = value.url
-
-  useEffect(() => {
-    if (objectUrlRef.current && previewUrl && previewUrl !== objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current)
-      objectUrlRef.current = null
-    }
-  }, [previewUrl])
+  const pendingPreviewForAsset = usePendingAssetPreview(value.assetId)
+  const pendingPreviewForKey = usePendingAssetPreview(pendingCacheKey)
+  const previewUrl = value.url ?? pendingPreviewForAsset ?? pendingPreviewForKey
 
   useEffect(() => {
     return () => {
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current)
-        objectUrlRef.current = null
-      }
       if (pendingImage?.objectUrl) {
         URL.revokeObjectURL(pendingImage.objectUrl)
       }
     }
   }, [pendingImage])
+
+  useEffect(() => {
+    if (!value.assetId || !value.url || isDataUrl(value.url)) {
+      return
+    }
+
+    clearPendingAssetPreview(value.assetId)
+    if (pendingCacheKey) {
+      clearPendingAssetPreview(pendingCacheKey)
+    }
+  }, [value.assetId, value.url, pendingCacheKey])
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -152,12 +155,21 @@ export function SquareImageUploader({
 
       const { assetId } = await uploadAsset(resourceType, croppedFile)
 
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current)
+      const previewDataUrl = await blobToDataUrl(croppedFile)
+
+      if (value.assetId) {
+        clearPendingAssetPreview(value.assetId)
       }
-      const localUrl = URL.createObjectURL(croppedFile)
-      objectUrlRef.current = localUrl
-      onChange({ assetId, url: localUrl })
+      if (pendingCacheKey) {
+        clearPendingAssetPreview(pendingCacheKey)
+      }
+
+      cachePendingAssetPreview(assetId, previewDataUrl)
+      if (pendingCacheKey) {
+        cachePendingAssetPreview(pendingCacheKey, previewDataUrl)
+      }
+
+      onChange({ assetId, url: previewDataUrl })
       notifications.success('Image uploaded. Save changes to apply.')
       closeCropDialog()
     } catch (error) {
@@ -176,9 +188,11 @@ export function SquareImageUploader({
     if (!allowRemove || disabled) {
       return
     }
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current)
-      objectUrlRef.current = null
+    if (value.assetId) {
+      clearPendingAssetPreview(value.assetId)
+    }
+    if (pendingCacheKey) {
+      clearPendingAssetPreview(pendingCacheKey)
     }
     onChange({ assetId: null, url: null })
   }
@@ -357,4 +371,25 @@ function buildFileName(originalName: string, format: 'image/png' | 'image/jpeg')
   const safeStem = toSafeFileStem(originalName, 'square-image') || 'square-image'
   const extension = format === 'image/png' ? 'png' : 'jpg'
   return `${safeStem}-${Date.now()}.${extension}`
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+        return
+      }
+      reject(new Error('Failed to read preview.'))
+    }
+    reader.onerror = () => {
+      reject(reader.error ?? new Error('Failed to read preview.'))
+    }
+    reader.readAsDataURL(blob)
+  })
+}
+
+function isDataUrl(value: string) {
+  return value.startsWith('data:')
 }
