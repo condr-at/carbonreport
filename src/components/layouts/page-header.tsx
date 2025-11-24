@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { PageHeader as UiPageHeader } from '@/components/ui/page-header'
 
 interface PageHeaderProps {
-  title: string
+  title: ReactNode
   description?: string
   actions?: ReactNode
   className?: string

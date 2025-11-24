@@ -2,16 +2,25 @@ import { DashboardLayout } from '@/components/layouts/dashboard-layout';
 import { PageHeader } from '@/components/layouts/page-header';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cookies } from 'next/headers';
 
-const GREETING_TITLE = 'Hello, there 👋';
 const GREETING_DESCRIPTION = 'Loading your carbon overview...';
 
-export default function DashboardLoading() {
+export default async function DashboardLoading() {
+  const cookieStore = await cookies();
+  const hasVisited = cookieStore.has('dashboard_visited');
+  const greetingPrefix = hasVisited ? 'Welcome back,' : 'Welcome,';
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <PageHeader
-          title={GREETING_TITLE}
+          title={
+            <div className="flex items-center gap-2">
+              {greetingPrefix}
+              <Skeleton className="h-8 w-32" />
+            </div>
+          }
           description={GREETING_DESCRIPTION}
           actions={<Skeleton className="h-9 w-[140px]" />}
         />

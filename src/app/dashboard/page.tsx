@@ -5,8 +5,11 @@ import { Plus, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { NextStepsWidget } from '@/components/blocks/next-steps-widget';
 import { PageHeader } from '@/components/layouts/page-header';
-import { serverApiFetch } from '@/lib/server-utils';
 import { getCurrentUser } from '@/lib/auth';
+import { cookies } from 'next/headers';
+import { MarkDashboardVisited } from '@/components/dashboard/mark-visited';
+import prisma from '@/lib/db';
+import { OrganizationMembershipInviteStatus, OrganizationStatus, ProjectStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,51 +41,64 @@ function getGreetingName(user: Awaited<ReturnType<typeof getCurrentUser>>) {
   return null;
 }
 
-async function getProjects() {
+async function getProjects(userId: string) {
   try {
-    const organizationResponse = await serverApiFetch('/api/organizations/current')
+    // 1. Find the "current" organization (first accepted membership)
+    const membership = await prisma.organizationMembership.findFirst({
+      where: {
+        userId: userId,
+        inviteStatus: OrganizationMembershipInviteStatus.ACCEPTED,
+        organization: {
+          status: {
+            not: OrganizationStatus.DELETED,
+          },
+        },
+      },
+      orderBy: [{ createdAt: 'asc' }],
+      select: {
+        organizationId: true,
+      },
+    });
 
-    if (!organizationResponse.ok) {
-      if (organizationResponse.status === 401 || organizationResponse.status === 403) {
-        console.warn('User is not authenticated; skipping project lookup');
-        return [];
-      }
-
-      if (organizationResponse.status !== 404) {
-        console.error('Failed to resolve current organization:', organizationResponse.statusText)
-      }
-      return []
-    }
-
-    const organizationData = await organizationResponse.json()
-    const organizationId = organizationData?.organization?.id
-
-    if (!organizationId) {
-      return []
-    }
-
-    const searchParams = new URLSearchParams({ organization_id: organizationId })
-    const response = await serverApiFetch(`/api/projects?${searchParams.toString()}`)
-    
-    if (!response.ok) {
-      console.error('Failed to fetch projects:', response.statusText);
+    if (!membership) {
       return [];
     }
-    
-    const data = await response.json();
-    return (data.projects || []).map((project: any) => ({
+
+    const organizationId = membership.organizationId;
+
+    // 2. Fetch projects for this organization
+    const projects = await prisma.project.findMany({
+      where: {
+        organizationId: organizationId,
+        status: {
+          not: ProjectStatus.DELETED,
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        reports: {
+          select: {
+            id: true,
+            templateCode: true,
+            completion: true,
+          },
+        },
+      },
+    });
+
+    return projects.map((project) => ({
       id: project.id,
       name: project.name,
       status: project.status,
-      createdAt: project.created_at,
-      reportsCount: project.reports_count ?? project.reports?.length ?? 0,
-      reports: Array.isArray(project.reports)
-        ? project.reports.map((report: any) => ({
-            id: report.id,
-            templateCode: report.template_code,
-            completion: report.completion,
-          }))
-        : [],
+      createdAt: project.createdAt.toISOString(),
+      reportsCount: project.reports.length,
+      reports: project.reports.map((report) => ({
+        id: report.id,
+        templateCode: report.templateCode,
+        completion: report.completion,
+      })),
       checklist: project.checklist,
     }));
   } catch (error) {
@@ -92,8 +108,14 @@ async function getProjects() {
 }
 
 export default async function DashboardPage() {
-  const [user, projects] = await Promise.all([getCurrentUser(), getProjects()]);
-  const greetingName = getGreetingName(user) ?? 'there';
+  const user = await getCurrentUser();
+  const projects = await getProjects(user.id);
+  const cookieStore = await cookies();
+  const hasVisited = cookieStore.has('dashboard_visited');
+  
+  const greetingName = getGreetingName(user);
+  const baseGreeting = hasVisited ? 'Welcome back' : 'Welcome';
+  const title = greetingName ? `${baseGreeting}, ${greetingName}` : baseGreeting;
   
   // Calculate stats
   const totalProjects = projects.length;
@@ -114,9 +136,10 @@ export default async function DashboardPage() {
 
   return (
     <DashboardLayout>
+      <MarkDashboardVisited />
       <div className="space-y-6">
         <PageHeader
-          title={`Hello, ${greetingName} 👋`}
+          title={title}
           description={dateStr}
           actions={(
             <Button asChild>
