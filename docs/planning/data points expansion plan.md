@@ -133,6 +133,13 @@ _Главное: качественные, но нужны как DPs, чтоб�
 - `energy_efficiency_measures_summary`
 - `renewable_energy_strategy_summary` — RECs/PPA и т.п.
 
+- `climate_financial_impacts_summary` — текстовое поле для описания того, как климатические риски отражаются на оценках, предположениях и расчетах (SEC climate rule требует отчитаться, если климат-риски «материально» влияют на финансовые оценки).
+- `severe_weather_capitalized_costs_amount` — числовое поле (валюта отчёта) для капитализированных затрат на воздействие погодных/климатических событий.
+- `severe_weather_expensed_costs_amount` — числовое поле (валюта отчёта) для расходов, списанных в отчётном периоде из‑за погодных/климатических событий.
+- `severe_weather_losses_amount` — числовое поле (валюта отчёта) для убытков/обесценений, связанных с экстремальной погодой.
+- `carbon_offsets_financial_impacts_amount` — числовое поле для суммарных затрат на офсеты (углеродные кредиты) как «существенный компонент» стратегии.
+- `recs_financial_impacts_amount` — числовое поле для затрат на возобновляемые энергетические сертификаты (RECs/GO), если они существенны.
+
 _SBTi‑специфично (но переиспользуемо для SBTI_COMMITMENT, CSRD, TCFD):_
 
 - `sbti_commitment_status` — committed / approved / planning.
@@ -142,7 +149,7 @@ _SBTi‑специфично (но переиспользуемо для SBTI_CO
 
 _Статус данных (25.11.2025):_
 - ✅ уже есть: —.
-- ➕ требуется добавить: все перечисленные narrative/structured поля. `emission_reduction_targets_list` → repeatable группа (`target_base_year`, `target_year`, `target_scope_coverage`, `target_reduction_percent`, `target_status`). Остальные можно хранить как text/longtext.
+- ➕ требуется добавить: все перечисленные narrative/structured поля. `emission_reduction_targets_list` → repeatable группа (`target_base_year`, `target_year`, `target_scope_coverage`, `target_reduction_percent`, `target_status`). Отдельно требуется добавить новые поля SEC (`climate_financial_impacts_summary`, `severe_weather_*`, `carbon_offsets_financial_impacts_amount`, `recs_financial_impacts_amount`), потому что показать материальные финансовые эффекты — обязательное требование.
 - 📄 шаблон-only: — (даже текстовые описания нужны как переиспользуемые DPs).
 
 ---
@@ -152,6 +159,7 @@ _Статус данных (25.11.2025):_
 - `financed_emissions_total_co2e` — финансируемые выбросы портфеля.
 - `portfolio_coverage_percent` — доля охваченных активов.
 - `sfdr_pai_indicators_summary` — сводка PAI (как текстовое поле).
+- `sfdr_pai_indicator_entries` — repeatable структура (indicator_id, indicator_name, unit, current_value, previous_year_value, coverage_scope, data_source, confidence_level) для поддержки Principal Adverse Impacts (SFDR Art. 4 / Annex I).
 - `green_assets_ratio` — доля «зелёных» активов (%).
 - `taxonomy_aligned_revenue_percent`
 - `taxonomy_aligned_capex_percent`
@@ -161,7 +169,7 @@ _Статус данных (25.11.2025):_
 
 _Статус данных (25.11.2025):_
 - ✅ уже есть: —.
-- ➕ требуется добавить: все финансовые KPI/списки (`financed_emissions_total_co2e`, …, `lenders_investors_list`). Списки банков/инвесторов и референсы на формы логично хранить как repeatable записи с `item_id`.
+- ➕ требуется добавить: все финансовые KPI/списки (`financed_emissions_total_co2e`, …, `lenders_investors_list`). Списки банков/инвесторов и референсы на формы логично хранить как repeatable записи с `item_id`. `sfdr_pai_indicator_entries` → новая таблица/JSON для Annex I индикаторов, чтобы один раз заполнить показатели и подставлять в SFDR/банковские запросы.
 - 📄 шаблон-only: —.
 
 ---
@@ -257,10 +265,11 @@ _У тебя уже есть продукт/материалы/транспор�
 - `cbam_certificates_used_quantity`
 - `cbam_monitoring_methodology_description`
 - `cbam_supplier_data_availability` — статус данных по поставщикам (supplier-only/importer-of-record/нет данных).
+- `cbam_third_country_carbon_price_paid_eur` — размер уплаченного в стране происхождения углеродного налога/цены на углерод (для вычета из стоимости CBAM‑сертификатов).
 
 _Статус данных (25.11.2025):_
 - ✅ уже есть: — (в продуктовой схеме есть только данные о материалах/энергии, но нет статусов реестра).
-- ➕ требуется добавить: `cbam_importer_eori`, `cbam_authorised_declarant_id`, `cbam_goods_cn_codes`, `cbam_reporting_quarter`, `cbam_total_embedded_emissions_co2e`, `cbam_free_allowances_quantity`, `cbam_certificates_*`, `cbam_monitoring_methodology_description`, `cbam_supplier_data_availability`.
+- ➕ требуется добавить: `cbam_importer_eori`, `cbam_authorised_declarant_id`, `cbam_goods_cn_codes`, `cbam_reporting_quarter`, `cbam_total_embedded_emissions_co2e`, `cbam_free_allowances_quantity`, `cbam_certificates_*`, `cbam_monitoring_methodology_description`, `cbam_supplier_data_availability`, `cbam_third_country_carbon_price_paid_eur`.
 - 📄 шаблон-only: —.
 
 ---
@@ -311,10 +320,58 @@ _Статус данных (25.11.2025):_
 - ➕ требуется добавить: все четыре метаполя (`data_quality_assessment_summary`, `methodology_reference_documents`, `limitations_and_uncertainties_summary`, `comparability_notes`). `methodology_reference_documents` можно хранить как массив ссылок/идентификаторов.
 - 📄 шаблон-only: —.
 
+---
+
+**13. EU ETS / установки и квоты**
+
+- `eu_ets_compliance_year` — отчётный год.
+- `eu_ets_installations_list` — repeatable: `installation_id`, `installation_name`, `country`, `activity_type` (энергетика, цемент и т.п.), `capacity`, `operator_lei`, `verifier_id`, `compliance_status`.
+- `eu_ets_verified_emissions_co2e` — суммарные проверенные выбросы за год.
+- `eu_ets_allowances_surrendered_quantity` — количество сданных квот (EUA/EUAA).
+- `eu_ets_free_allowances_quantity` — бесплатные квоты.
+- `eu_ets_market_allowances_purchased_quantity` — закупленные на рынке квоты.
+- `eu_ets_market_allowances_sold_quantity` — проданные/перепроданные квоты (если есть).
+- `eu_ets_balance_surplus_quantity` — остаток/дефицит.
+- `eu_ets_verification_body_name`
+- `eu_ets_monitoring_methodology_reference` — ссылка на план мониторинга.
+- `eu_ets_compliance_statement` — текст (метка «compliant/non-compliant/late» + пояснение).
+
+_Статус данных (25.11.2025):_
+- ✅ уже есть: —.
+- ➕ требуется добавить: все поля `eu_ets_*`. Часть значений (installations_list) потребует отдельной таблицы/JSON. Необходимы для EU_ETS отчётов и для блоков shipping/aviation при интеграции с ETS.
+- 📄 шаблон-only: —.
+
+
+**Интернет-сверка (27.11.2025)**
+
+Использованные официальные источники (для повторного захода, если понадобится):
+
+- **CSRD / ESRS** — Commission Delegated Regulation (EU) 2023/2772, Annex I (ESRS 1, ESRS 2, ESRS E1–E5, S1–S4, G1):
+  - Текст: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R2772
+- **TCFD** — Task Force on Climate-related Financial Disclosures (FSB TCFD):
+  - Обзор: https://www.fsb-tcfd.org/about/
+- **SEC Climate Disclosure Rule** — The Enhancement and Standardization of Climate-Related Disclosures for Investors (Release No. 33-11275):
+  - Пресс-релиз SEC 2024-31: https://www.sec.gov/news/press-release/2024-31
+- **SFDR** — Regulation (EU) 2019/2088 on sustainability‐related disclosures in the financial services sector + PAI Annex I:
+  - Основной текст: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32019R2088
+- **CBAM** — Carbon Border Adjustment Mechanism (guidance for authorised declarants):
+  - Портал: https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en
+- **EU ETS** — EU Emissions Trading System, scope and sectors:
+  - Scope: https://climate.ec.europa.eu/eu-action/eu-emissions-trading-system-eu-ets/scope-eu-ets_en
+
+Кратко, к чему они привели:
+
+- ESRS/CSRD → подтверждение необходимости блоков 1–4 + метаполей блока 12.
+- TCFD → акцент на governance/strategy/risks/metrics (блок 4 + 11).
+- SEC climate rule → добавление финансовых полей `climate_financial_impacts_summary`, `severe_weather_*`, `carbon_offsets_financial_impacts_amount`, `recs_financial_impacts_amount`.
+- SFDR → добавление структурированного `sfdr_pai_indicator_entries` в блок 5.
+- CBAM → добавление `cbam_third_country_carbon_price_paid_eur` и уточнение CBAM‑регистровых полей в блоке 9.
+- EU ETS → новый блок 13 с установками, проверенными выбросами и квотами.
+
 
 **Карта decision engine → классы данных (reports.ts + docs/questionare logic.md)**
 
-- **Регуляторные** (`CSRD`, `EU_ETS`, `CBAM`, `CBAM_*`, `UK_SECR`, `SEC_CLIMATE`, `CORSIA`, `EU_MRV`, `SFDR`, `UK_TCFD`, `HKEX_ESG`): требуют полного набора корпоративных полей блоков 1–4, биржевых данных блока 6, CBAM-специфики блока 9, а также метаполей блока 12 для traceability.
+- **Регуляторные** (`CSRD`, `EU_ETS`, `CBAM`, `CBAM_*`, `UK_SECR`, `SEC_CLIMATE`, `CORSIA`, `EU_MRV`, `SFDR`, `UK_TCFD`, `HKEX_ESG`): требуют полного набора корпоративных полей блоков 1–4, биржевых данных блока 6, CBAM-специфики блока 9, EU ETS блока 13, а также метаполей блока 12 для traceability.
 - **Финансовые** (`TCFD_REPORT`, `BANK_TEMPLATE_FILL`, `SCOPE123_DATASET`, `CORP_GHG_VERIFIED`, `SFDR`): помимо блоков 1–4 им нужны KPI из блока 5 и часть полей блока 11 (энергетические планы) для объяснения траекторий.
 - **Клиентские / программы** (`CLIENT_SCOPE3_PACKAGE`, `CLIENT_TEMPLATE_FILL`, `SCOPE3_DETAILED`, `CARBON_NEUTRAL_CERT`, `ISO_14064_CERT`, `CDP_DISCLOSURE`, `SBTI_COMMITMENT`, `RE100_REPORTING`, `GRESB_ASSESSMENT`, `ECOVADIS_SCORE`, `BCORP_IMPACT_ASSESSMENT`): опираются на блоки 1–4 и требуют специфики блоков 7, 10, 11.
 - **Секторальные** (`BUILDING_CARBON_FOOTPRINT`, `SCOPE2_DETAILED`, `SCOPE3_CATEGORY1_SUPPLIERS`, `CORSIA`, `EU_MRV`): критично зависят от блока 8 плюс обще-корпоративных данных блоков 1–2.
@@ -360,6 +417,8 @@ _Блок 4 — политики, риски, SBTi_
 - `emission_reduction_targets_list` — repeatable (`repeatableKey=emission_target`, поля `target_base_year` (`number`), `target_year` (`number`), `target_scope_coverage` (`string`), `target_reduction_percent` (`number`), `target_status` (`string`).
 - `net_zero_target_year` — `number`, single.
 - `sbti_commitment_status`, `sbti_scope_coverage`, `sbti_target_type`, `sbti_sector_classification` — `string`, single (enum значения можно зашить в `options`).
+- `climate_financial_impacts_summary` — `text`, single.
+- `severe_weather_capitalized_costs_amount`, `severe_weather_expensed_costs_amount`, `severe_weather_losses_amount`, `carbon_offsets_financial_impacts_amount`, `recs_financial_impacts_amount` — `number`, single (значение в валюте корпоративной отчётности; при необходимости хранить `currency_code` в `metadata`).
 
 _Блок 5 — финсектор_
 - `financed_emissions_total_co2e` — `number` (т CO2e), single.
@@ -367,6 +426,7 @@ _Блок 5 — финсектор_
 - `sfdr_pai_indicators_summary` — `text`, single.
 - `banks_data_template_reference` — `string`, single (URL/ID).
 - `lenders_investors_list` — repeatable (`repeatableKey=capital_provider`, поля `name`, `type`, `exposure_or_role`).
+- `sfdr_pai_indicator_entries` — repeatable (`repeatableKey=sfdr_pai_indicator`, поля `indicator_id`, `indicator_name`, `unit`, `current_value`, `previous_year_value`, `coverage_scope`, `data_source`, `confidence_level`).
 
 _Блок 6 — листинг/SEC/HKEX_
 - `listing_exchanges` — `string[]` или repeatable `listing_exchange` с `code`, `segment`.
@@ -402,6 +462,7 @@ _Блок 9 — CBAM_
 - `cbam_free_allowances_quantity`, `cbam_certificates_purchased_quantity`, `cbam_certificates_used_quantity` — `number` (штук сертификатов).
 - `cbam_monitoring_methodology_description` — `text`.
 - `cbam_supplier_data_availability` — `string` (enum supplier_only / importer_of_record / no_data).
+- `cbam_third_country_carbon_price_paid_eur` — `number` (EUR, значение для вычета стоимости сертификатов согласно правилам CBAM).
 
 _Блок 10 — клиентские пакеты_
 - `client_request_reference` — `string`.
@@ -421,9 +482,15 @@ _Блок 12 — метаполя_
 - `data_quality_assessment_summary`, `limitations_and_uncertainties_summary`, `comparability_notes` — `text`.
 - `methodology_reference_documents` — repeatable (`repeatableKey=methodology_reference`, поля `title`, `publisher`, `url`).
 
+_Блок 13 — EU ETS_
+- `eu_ets_compliance_year` — `number` (год), single.
+- `eu_ets_installations_list` — repeatable (`repeatableKey=eu_ets_installation`, поля `installation_id`, `installation_name`, `country`, `activity_type`, `capacity`, `operator_lei`, `verifier_id`, `compliance_status`).
+- `eu_ets_verified_emissions_co2e`, `eu_ets_allowances_surrendered_quantity`, `eu_ets_free_allowances_quantity`, `eu_ets_market_allowances_purchased_quantity`, `eu_ets_market_allowances_sold_quantity`, `eu_ets_balance_surplus_quantity` — `number` (т CO2e или количество EUA, указывать единицу в `metadata`).
+- `eu_ets_verification_body_name`, `eu_ets_monitoring_methodology_reference`, `eu_ets_compliance_statement` — `text` (`monitoring_methodology_reference` может хранить URL).
 
 
-**13. По исчерпывающим источникам**
+
+**14. По исчерпывающим источникам**
 
 - **Исчерпывающие / обязательные:**
   - `docs→questionare logic.md` — одиночный источник правды по перечню отчётов, правилам и контексту (какие драйверы → какие форматы). Без него легко пропустить часть форматов или неверно понять приоритеты.
@@ -451,12 +518,8 @@ _Блок 12 — метаполя_
 
 ---
 
-**Следующий шаг: сверка с интернетом**
+**Следующий шаг: доп. сверка с интернетом**
 
-- Отдельной задачей (для другого агента) нужно пройтись по официальным гайдам/руководствам по ключевым форматам (CSRD, SFDR, SEC Climate, EU ETS, CORSIA, CBAM, ISO 14064/14067, TCFD, SBTi, CDP, EcoVadis, GRESB, RE100, B Corp и т.п.) и:
-  - проверить, не fehlen ли в этом списке дополнительные поля (включая текстовые разделы и дисклеймеры), обязательные по стандартам;
-  - разделить найденные элементы на:
-    - те, что должны стать новыми `DatasetFieldDefinition` (редактируются пользователем и/или переиспользуются между отчётами);
-    - и чисто шаблонные элементы (фиксированный boilerplate конкретного формата, остающийся в конфиге отчёта);
-  - предложить патч к этому файлу: добавить недостающие `fieldId` и пометить спорные/опциональные поля.
-- При выполнении этой интернет‑сверки агент должен использовать только файлы из блока «исчерпывающие источники» как правду о том, какие `report.id` и правила реально существуют в коде.
+- Сейчас закрыты требования CSRD/ESRS, TCFD, SEC climate rule, SFDR (PAI), CBAM и EU ETS — см. секцию «Интернет-сверка» и добавленные поля (блоки 4, 5, 9, 13).
+- Осталось пройти оставшиеся приоритетные стандарты: CORSIA, ISO 14064/14067 (корп. часть), SBTi detailed, CDP, EcoVadis, GRESB, RE100, B Corp, UK SECR и HKEX ESG, чтобы проверить дополнительные обязательные раскрытия (особенно текстовые дисклеймеры и подтверждение охвата цепочки поставок).
+- При дальнейшей сверке нужно, как и раньше, брать новости/гайдлайны только из официальных источников и отделять поля, которые должны жить в `DatasetFieldDefinition`, от чисто шаблонных текстов конкретного отчёта.
