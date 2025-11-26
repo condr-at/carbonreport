@@ -1,5 +1,24 @@
 # Marketing Strategy Framework & Artifacts Roadmap
 
+## 0. Структура файлов и папок
+
+Все стратегические артефакты (deliverables) должны жить в отдельной папке `docs/marketing/deliverables/`, чтобы не смешиваться с планами и гайдами.
+
+**Рекомендуемая структура:**
+
+```text
+docs/marketing/
+├── marketing_strategy_framework.md  # Этот файл (карта всех артефактов)
+├── marketing_research_plan.md       # План исследования (тактика)
+└── deliverables/                    # Готовые артефакты (результат)
+    ├── 01_product_vision.md         # Vision One-Pager + Problem Brief
+    ├── 02_market_landscape.md       # Market Overview + Competitive Matrix
+    ├── 03_icp_and_personas.md       # ICP, Stakeholders, User Personas
+    ├── 04_launch_strategy.md        # Beachhead Market + Launch Strategy
+    ├── 05_hypothesis_backlog.md     # Hypothesis Log + Discovery Plan
+    └── 06_beta_program.md           # Beta Program Design + Funnel
+```
+
 ## 1. Product & Vision
 
 ### 1.1 Product Vision One‑Pager
@@ -239,17 +258,33 @@
 
 ---
 
-## 9. Приоритизированный roadmap артефактов (в какой очередности писать)
+## 9. Приоритизированный roadmap создания артефактов
 
-1. **Product Vision One‑Pager** → зафиксировать, что вообще строим и зачем.
-2. **Problem & Jobs‑to‑Be‑Done Brief** → приземлить видение на конкретные задачи клиентов.
-3. **ICP Doc + User Personas** → понять, кто именно наш ранний клиент и пользователь.
-4. **Market Landscape Overview + Competitive Matrix** → проверить, что мы не выдумываем вакуум, и усилить дифференциацию.
-5. **Positioning Statement(s)** → собрать из предыдущих артефактов чёткое позиционирование.
-6. **Launch Strategy & Beachhead Market Doc + Value Metrics & North Star** → выбрать первый узкий сегмент и метрики успеха.
-7. **Customer Discovery Plan + Hypothesis Backlog** → структурировать интервью и проверки гипотез.
-8. **Beta Program Design Doc + Beta Funnel Plan** → описать, как набираем и ведём первых бета‑клиентов.
-9. **Pilot Onboarding Playbook** → стандартизировать запуск пилота, чтобы не изобретать заново для каждого.
-10. **GTM Channels Brief + Core Messaging Map** → подготовить основу для лендинга, аутрича и первых материалов.
-11. **Pricing Hypothesis Doc** → зафиксировать монетизацию, опираясь на инсайты discovery и первых пилотов.
+Ниже — порядок работы. Каждый шаг закрывает один файл из папки `deliverables/`.
+
+### Этап 1: Фундамент (1-2 дня)
+1. **`01_product_vision.md`**
+   - Написать **Product Vision One‑Pager** (что строим).
+   - Добавить **Problem & JTBD Brief** (какую боль лечим).
+2. **`02_market_landscape.md`**
+   - Сделать **Market Landscape** (где мы на карте).
+   - Заполнить **Competitive Matrix** (чем отличаемся).
+
+### Этап 2: Фокусировка (1-2 дня)
+3. **`03_icp_and_personas.md`**
+   - Описать **ICP** (кто платит).
+   - Расписать **User Personas** (кто пользуется).
+4. **`04_launch_strategy.md`**
+   - Выбрать **Beachhead Market** (с кого начнем).
+   - Сформулировать **Positioning Statement**.
+
+### Этап 3: Валидация и выход (параллельно с разработкой)
+5. **`05_hypothesis_backlog.md`**
+   - Собрать **Hypothesis Backlog** (что проверяем).
+   - Подготовить **Discovery Plan** (как проверяем).
+6. **`06_beta_program.md`**
+   - Сдизайнить **Beta Program** (условия входа).
+   - Описать **Pilot Onboarding** (как ведем за руку).
+
+*Остальные артефакты (Pricing, GTM Channels) создаются позже, по мере накопления данных.*
 
