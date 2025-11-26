@@ -87,6 +87,7 @@ Use the table below when you need to know "why does this file exist?" and the Ba
 - Canonical definitions: `prisma/seed-data/dataset-fields.ts`
 - Validation tooling: `npm run templates:check`
 - Field guidance: [`reference/data-points-hints.md`](./reference/data-points-hints.md)
+ - Data points guide & matrix: `docs/data points guide/` — план расширения полей (`data points expansion plan.md`) и матрица `datapoints-reports matrix.csv` как источник истины, какие `fieldId` где используются и реализованы.
 
 **Implementing backend changes?**
 - API specs: [`API_REFERENCE.md`](./API_REFERENCE.md)

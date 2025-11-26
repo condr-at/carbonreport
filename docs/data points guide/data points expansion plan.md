@@ -20,6 +20,25 @@
 
 ---
 
+## Связка data points ↔ отчёты
+
+- Этот документ — **источник истины по смыслу и структуре полей**:
+  блоки 1–13 описывают `fieldId`, типы, repeatable‑группы и ссылки на стандарты.
+- Файл `datapoints-reports matrix.csv` в этой же папке —
+  **источник истины по использованию полей в отчётах и продуктах**:
+  для каждого `fieldId` показывает статус реализации (`implemented`),
+  класс использования (`primary_report_class`) и матрицу `M/O/blank`
+  по всем `report.id`.
+- При добавлении нового поля:
+  1) сначала добавить/обновить блок здесь (описание поля),
+  2) затем завести для него колонку в `datapoints-reports matrix.csv`
+     и разметить строки отчётов.
+- Для понимания универсама отчётов и логики их выбора см. также
+  `docs/report recommendation engine/questionare logic.md` и
+  `docs/report recommendation engine/reports recommendations.md`.
+
+---
+
 **Что уже есть в `DatasetFieldDefinition` (срез 25.11.2025)**
 
 - Шапка и продуктовый контекст: `organization_name`, `organization_address`, `report_date`, `report_language`, `product_name`, `product_description`, `intended_market`, `functional_unit`, `system_boundary`, `total_cfp_co2e`, `cfp_result_unit`, `hotspots_summary`.
