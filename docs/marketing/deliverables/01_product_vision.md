@@ -58,82 +58,121 @@
 
 ## 3. Источники исследований
 
-> **Дисклеймер:** Описания "личных болей" (Human Side) основаны на синтезе данных из отраслевых отчетов, профессиональных форумов и анекдотических свидетельств. Ниже указаны источники с пометками о статусе верификации.
+> **Дисклеймер:** Описания "личных болей" (Human Side) основаны на синтезе данных из официальных отраслевых отчетов и верифицированных публикаций. Ниже указаны источники с рабочими ссылками.
 
 ---
 
-### Job 1: Compliance & Risk (CBAM, CSRD)
+### Верифицированные источники (с рабочими URL)
 
-| # | Источник | Ключевой инсайт | Статус |
-|---|----------|-----------------|--------|
-| 1 | **EU CBAM Transitional Registry Data (2024)** | Значительная часть импортеров пропустила первый дедлайн; сложности с "embedded emissions" и "precursor materials" | ✅ Официальный источник ЕС |
-| 2 | **Deloitte CBAM Readiness Survey (2024)** | Компании не понимают методологию без внешних консультантов | ⚠️ URL изменился, ищите на deloitte.com/cbam |
-| 3 | **PwC CSRD Readiness Report (2024)** | 72% респондентов нуждаются в помощи для понимания требований | ⚠️ URL изменился, ищите на pwc.com/csrd |
-| 4 | **KPMG EU CBAM Survey (2024)** | "Companies underestimate the complexity of data collection from non-EU suppliers" | ⚠️ Отчет существует, URL нестабилен |
-| 5 | **EU Commission CBAM FAQ & Webinars** | Официальные разъяснения по методологии, подтверждают сложность для SME | ✅ https://taxation-customs.ec.europa.eu/cbam |
+#### 1. European Commission — Carbon Border Adjustment Mechanism
+**URL:** https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en
 
-**Прямые цитаты из форумов (анонимизированы):**
-- LinkedIn (Sustainability Manager, Manufacturing, DE, 2024): *"I spent 3 weeks just understanding what 'specific embedded emissions' means for our aluminum imports."*
-- Reddit r/eupersonalfinance (2024): *"My company got a letter about CBAM. Nobody in finance or logistics knows what to do. We're hiring consultants at €200/hour."*
+**Ключевые факты из источника:**
+- CBAM вступает в дефинитивный режим с 1 января 2026 (переходный период 2023-2025)
+- Импортеры обязаны регистрироваться как "authorised CBAM declarants"
+- Применяется к cement, iron and steel, aluminium, fertilisers, electricity, hydrogen
+- "Carbon leakage occurs when companies based in the EU move carbon-intensive production abroad" — именно это регуляция призвана предотвратить
+- Сложность: "the objective of the transitional period is to serve as a pilot and learning period for all stakeholders (importers, producers and authorities)"
+- Публикуются регулярные Call for Evidence по методологии расчетов — показывает, что даже ЕС признает неопределенности
 
----
-
-### Job 2: Sales & Growth (CDP, EcoVadis, PCF)
-
-| # | Источник | Ключевой инсайт | Статус |
-|---|----------|-----------------|--------|
-| 6 | **CDP Supply Chain Report 2023** | 58% поставщиков получают запросы с дедлайном <7 дней; response rate ~70% | ✅ https://www.cdp.net/en/supply-chain |
-| 7 | **CDP Global Disclosure Statistics (2024)** | 23,000+ компаний раскрываются; средний срок заполнения анкеты 40+ часов | ✅ https://www.cdp.net/en/companies-discloser |
-| 8 | **EcoVadis Sustainable Procurement Barometer 2024** | 67% procurement teams cite "supplier data availability" as top challenge | ✅ https://resources.ecovadis.com/sustainable-procurement |
-| 9 | **EcoVadis SME Survey (2023)** | SME тратят в среднем 20-40 часов на первичную оценку | ⚠️ Данные из вебинаров EcoVadis |
-| 10 | **ISO 14067 Practitioner Forum (LinkedIn Group)** | Регулярные жалобы на несогласованность данных между Sales и Sustainability | ✅ https://www.linkedin.com/groups/4116832/ |
-
-**Прямые цитаты (анонимизированы):**
-- EcoVadis Community Forum (2024): *"We lost a tender because we couldn't provide PCF data in 48 hours. The buyer went with a competitor who had it ready."*
-- LinkedIn (Sustainability Lead, Automotive Supplier, 2024): *"Sales promised a customer we'd have ISO 14067 certification in 2 months. We don't even have the base data."*
-- YouTube comment под лекцией "CDP Disclosure Best Practices" (2023): *"This video assumes you have a dedicated team. I'm alone doing this for 3 business units."*
+**Релевантность для Job 1 (Compliance):** Официально подтверждает сложность compliance — ЕС сам признает, что нужен "learning period" для всех сторон.
 
 ---
 
-### Job 3: Strategy & Finance (Scope 3, TCFD, SBTi)
+#### 2. IBM Think — What is Carbon Accounting?
+**URL:** https://www.ibm.com/think/topics/carbon-accounting
 
-| # | Источник | Ключевой инсайт | Статус |
-|---|----------|-----------------|--------|
-| 11 | **GHG Protocol Scope 3 Standard (2023 update)** | "Data availability from suppliers is the #1 barrier" (p.104) | ✅ https://ghgprotocol.org/scope-3-calculation-guidance |
-| 12 | **GHG Protocol Survey Results (2022)** | 94% компаний считают Scope 3 сложнее Scope 1+2 вместе взятых | ✅ GHG Protocol Technical Working Group |
-| 13 | **Carbon Trust Scope 3 Research (2023)** | 81% компаний: внутренние департаменты не приоритизируют запросы | ⚠️ Отчет существует, URL нестабилен |
-| 14 | **TCFD Status Report 2023** | Только 4% компаний полностью соответствуют всем 11 рекомендациям TCFD | ✅ https://www.fsb-tcfd.org/publications/ |
-| 15 | **SBTi Progress Report 2024** | Компании тратят €10K-50K на консультантов; средний срок валидации 8-12 месяцев | ✅ https://sciencebasedtargets.org/reports |
-| 16 | **UNEP FI TCFD Implementation Guide (2023)** | Case study: "Procurement team sees carbon data requests as extra work with no budget" | ✅ https://www.unepfi.org/publications/ |
-| 17 | **WRI Corporate Climate Mitigation Report (2024)** | "Internal data silos are the primary blocker for Scope 3 accounting" | ✅ https://www.wri.org/research |
+**Ключевые факты из источника:**
 
-**Прямые цитаты (анонимизированы):**
-- Reddit r/sustainability (2024): *"How do you get colleagues to care about carbon reporting? I've sent 15 emails to logistics. Zero replies."* (47 upvotes, 32 comments)
-- LinkedIn (ESG Analyst, Financial Services, 2024): *"We hired McKinsey for €80K to write our TCFD report. They spent 2 months waiting for data from our BUs."*
-- Glassdoor review (Sustainability Manager role, 2023): *"90% of my job is chasing people for data. The other 10% is apologizing to consultants for delays."*
+**О проблеме данных:**
+> "Data stranded in silos or kept in spreadsheets: Metrics for carbon, energy, waste, water and social indicators are captured from different sources across the business, making them difficult to access in a consolidated way for reporting and decision-making."
+
+> "Data quality is inconsistent and unreliable: Data captured manually increases the likelihood of inaccurate or incomplete data due to errors."
+
+> "Time and cost to report on sustainability are high: The process of capturing the activity data and managing and allocating the factors required for calculating emissions is time and labor-intensive when managed manually with spreadsheets."
+
+**О Scope 3 и поставщиках:**
+> "Scope 3 emissions present a significant opportunity for organizations to engage their suppliers to accelerate decarbonization globally."
+
+> "Significant barriers exist to report and reduce Scope 3 emissions. The biggest challenges include:
+> - Establishing boundaries between scopes
+> - Capturing reliable data in a systematic and auditable way across numerous suppliers and locations
+> - Selecting emission factors to derive accurate calculations
+> - Engaging with suppliers to both report and reduce emissions"
+
+**О внутренних стейкхолдерах:**
+> "Although commitments, targets, strategy and GHG accounting might stem from one team within your organization, the data must be sourced from a larger pool of internal stakeholders. Ideally, a diverse group will be engaged and accountable for collecting and sharing data from the representative business units."
+
+> "Getting everyone's buy-in can be difficult, so it's important to be mindful of the challenges and address the level of effort required up front."
+
+**О работе с утилити-данными:**
+> "This seems straightforward until you consider that there are thousands of utility providers with different rules and processes for data provision. The resulting variability in each utility's willingness and ability to provide data creates difficulties, particularly for organizations with multiple facilities in different geographic locations."
+
+**Релевантность:** Прямо описывает проблемы, которые решает Carbon Report — разрозненные данные, ручной сбор, сложность работы с внутренними департаментами и поставщиками.
 
 ---
 
-### Дополнительные источники по индустрии
+#### 3. WBCSD — Reporting Matters 2025
+**URL:** https://www.wbcsd.org/resources/reporting-matters-2025-embedding-change-accelerating-impact/
 
-| # | Источник | Тип | Релевантность |
-|---|----------|-----|---------------|
-| 18 | **McKinsey Sustainability Practice Reports** | Консалтинг | Общие тренды ESG, цитаты клиентов |
-| 19 | **BCG Climate & Sustainability Hub** | Консалтинг | Benchmarks по срокам внедрения |
-| 20 | **Persefoni / Watershed / Sweep блоги** | Конкуренты | Pain points их клиентов |
-| 21 | **r/sustainability** | Reddit | Реальные жалобы практиков |
-| 22 | **r/eupersonalfinance** | Reddit | CBAM обсуждения импортеров |
-| 23 | **YouTube: CBAM explained / CSRD webinars** | Видео | Комментарии под лекциями |
-| 24 | **LinkedIn #CSRD #CBAM #Scope3** | Соцсеть | Посты sustainability-менеджеров |
-| 25 | **GreenBiz / Trellis (бывш. GreenBiz)** | Медиа | Статьи с цитатами практиков |
+**Контекст:** World Business Council for Sustainable Development объединяет 250+ глобальных компаний (Honda, Accenture, BCG, McKinsey, Holcim и др.) и регулярно публикует research по sustainability reporting.
+
+**Релевантность:** Подтверждает, что крупнейшие компании мира инвестируют в улучшение sustainability reporting — это не нишевая проблема.
 
 ---
 
-### Методология сбора инсайтов
+#### 4. GHG Protocol — Scope 3 Calculation Guidance
+**URL:** https://ghgprotocol.org/scope-3-calculation-guidance
 
-1. **Официальные отчеты (✅)** — PDF-документы с конкретными цифрами и методологией
-2. **Нестабильные URL (⚠️)** — отчеты существуют, но ссылки меняются; рекомендуется искать по названию
-3. **Анонимизированные цитаты** — собраны из публичных форумов, LinkedIn постов и YouTube комментариев; имена удалены для конфиденциальности
-4. **Композитные формулировки** — "Личная боль" в документе = синтез нескольких источников в одну узнаваемую историю
+**Ключевой факт:**
+- Scope 3 emissions составляют в среднем 5.5x больше, чем прямые выбросы компании (Scope 1)
+- Это де-факто стандарт для расчета выбросов, на который ссылаются CDP, TCFD, SBTi
 
-> **Для верификации:** Рекомендуется провести 5-10 интервью с целевыми клиентами для подтверждения гипотез.
+**Релевантность для Job 3 (Strategy & Finance):** Объясняет, почему Scope 3 — это не просто "еще один отчет", а ключевой показатель для инвесторов.
+
+---
+
+#### 5. CDP — Supply Chain Programme
+**URL:** https://www.cdp.net/en/supply-chain
+
+**Контекст:** CDP (бывший Carbon Disclosure Project) — крупнейшая платформа для disclosure экологических данных. 23,000+ компаний раскрываются ежегодно.
+
+**Релевантность для Job 2 (Sales & Growth):** Подтверждает масштаб запросов от клиентов на экологические данные.
+
+---
+
+#### 6. Science Based Targets initiative (SBTi)
+**URL:** https://sciencebasedtargets.org/reports
+
+**Контекст:** Стандарт для научно-обоснованных климатических целей, который требуют инвесторы и включают в ESG-рейтинги.
+
+**Релевантность для Job 3:** Подтверждает, что SBTi-валидация — это реальное требование для привлечения "зеленого" финансирования.
+
+---
+
+### Обоснование "личных болей" (Human Side)
+
+Формулировки в разделе Jobs-to-Be-Done основаны на паттернах, описанных в верифицированных источниках:
+
+| Боль | Подтверждение из IBM Think |
+|------|---------------------------|
+| "Я не понимаю методологию" | "Many organizations run their annual carbon accounting process by using spreadsheets, which leads to enhanced risk" |
+| "Коллеги не отвечают на запросы" | "Data must be sourced from a larger pool of internal stakeholders... Getting everyone's buy-in can be difficult" |
+| "Данные разбросаны по Excel" | "Data stranded in silos or kept in spreadsheets... making them difficult to access in a consolidated way" |
+| "Нет времени на аврал" | "Time and cost to report on sustainability are high... time and labor-intensive when managed manually" |
+| "Scope 3 — это кошмар" | "Significant barriers exist to report and reduce Scope 3 emissions... Capturing reliable data across numerous suppliers" |
+| "Поставщики не отвечают" | "Data might be held by suppliers who don't have systems and processes in place to share it" |
+
+---
+
+### Рекомендации для дальнейшей верификации
+
+Для подтверждения конкретных цифр и цитат рекомендуется:
+
+1. **Провести 5-10 интервью с целевыми клиентами** — sustainability managers в производственных компаниях
+2. **Запросить доступ к отчетам Big4:**
+   - Deloitte CBAM Readiness Survey (поиск: "deloitte cbam survey")
+   - PwC CSRD Readiness Report (поиск: "pwc csrd readiness")
+   - KPMG Sustainability Reporting Survey
+3. **Мониторить LinkedIn #CBAM #CSRD** — практики регулярно делятся опытом
+4. **Подписаться на CDP и EcoVadis newsletters** — они публикуют статистику response rates и challenges
