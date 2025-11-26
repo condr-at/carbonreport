@@ -1,48 +1,48 @@
 ### datapoints-reports matrix.csv
 
 **Last Updated:** November 26, 2025  
-**Status:** ✅ Complete Coverage Achieved (100%)
+**Status:** 🚧 Structure Complete, Mapping In Progress
 
-This file is the **source of truth** for how each data point (`fieldId`) is
-used across report types and products.
+This file is the **source of truth** for:
+1. The canonical list of all data point `fieldId`s (column names = source of truth for naming)
+2. Which fields are used by which report types
 
 ## 📊 Current State
 
-- **Total Data Points:** 261 (was 213, +48 added Nov 2025)
+- **Total Data Points:** 265 columns (excluding 3 service columns)
+- **Service Columns:** `report_type`, `__reference_urls__`, `data_points_checked_against_reference_url`
 - **Report Types:** 47 rows (42 regulatory/standard reports + 5 utility rows)
-- **Coverage:** ✅ 100% verified for all regulatory frameworks
-- **Last Audit:** November 26, 2025
+- **Mapping Status:** ⏳ Not yet filled — matrix structure is ready, field mappings pending
 
-## 📁 Related Documentation Files
+## 📁 Related Documentation
 
-**START HERE:**
-- `COVERAGE_COMPLETE_SUMMARY.md` - Executive summary of Nov 2025 audit
-- `DATA_POINTS_COVERAGE_ANALYSIS.md` - Detailed analysis and findings
-- `NEW_DATA_POINTS_REFERENCE.md` - Complete reference for 48 new fields
-- `IMPLEMENTATION_CHECKLIST.md` - Developer implementation guide
-- `VISUAL_SUMMARY.txt` - Visual charts and stats
+- `data points expansion plan.md` — semantic definitions and grouping of fields (blocks 1–13)
 
 ## File Structure
 
+**Delimiter:** `;` (semicolon)
+
 One **column** = one `fieldId` / data point
 
-**Column semantics**:
+**Column layout**:
 
-1. `data_point`: Report type identifier (e.g., CSRD, EU_ETS, CBAM)
-2. `__reference_urls__`: Official regulation/standard URL
-3. `regulatory_requirements_checked`: ✓ if verified against actual requirements
-4-261. Individual data point columns: `x` = required for this report type
+1. `report_type` — Report type identifier (e.g., CSRD, EU_ETS, CBAM)
+2. `__reference_urls__` — Official regulation/standard URL (service column, not a data point)
+3. `data_points_checked_against_reference_url` — ✓/❌ verification status (service column)
+4–263. Individual data point columns
 
 **Row types**:
 
-1. **Header row**: Data point names (fieldIds)
-2. **Report rows**: Each regulatory framework/standard with `x` marks for required fields
-3. **Utility rows**: `hint_for_UI`, `hint_for_email_request`, `implemented_in_dataset`
+1. **Header row**: Data point names (fieldIds) — **source of truth for field naming**
+2. **Report rows**: Each regulatory framework/standard with M/O marks for required/optional fields
+3. **Utility rows**: `hint_for_UI`, `hint_for_email_request`, `implemented_in_database`
 
-**Updated marking scheme (Nov 2025)**:
-- `x` — field is required/relevant for this report type
-- ✓ — (in column 3) report has been verified against regulatory requirements
-- Empty — field not applicable to this report
+**Cell value scheme for data point columns (col 4+)**:
+- `M` — Mandatory: field is required for this report type
+- `O` — Optional: field is relevant but not required
+- _(empty cell, i.e. `;;`)_ — field not applicable to this report type
+
+**Important:** Only three states are allowed: `M`, `O`, or empty (no spaces, no other markers).
 
 ## Report Types Covered
 
@@ -99,25 +99,12 @@ One **column** = one `fieldId` / data point
 - ENERGY_AUDIT_SCOPE12 - Energy audit
 - BUILDING_CARBON_FOOTPRINT - Building-specific footprint
 
-## Major Updates (November 2025)
-
-### Added 48 New Data Points:
-- **CSRD essentials** (6): Double materiality, ESRS requirements, value chain mapping
-- **Product LCA** (6): Functional unit, system boundaries, allocation methods
-- **Sector-specific** (8): Aviation (CORSIA), Maritime (EU MRV)
-- **Financial** (5): SFDR, TCFD extensions
-- **Compliance** (23): EU ETS, CBAM, UK SECR, SEC Climate extensions
-
-### Verification Status:
-All 42 regulatory/standard report types now have ✓ in `regulatory_requirements_checked` column, confirming they've been audited against actual regulatory requirements.
-
 ## Division of Responsibilities
 
-- **Field semantics and definitions** → `data points expansion plan.md` (source of truth)
-- **Implementation status** → `implemented_in_dataset` row in this matrix
-- **Field-to-report mapping** → This matrix (`x` marks)
-- **Regulatory verification** → ✓ marks in column 3
-- **Field specifications** → `NEW_DATA_POINTS_REFERENCE.md` (for new fields)
+- **Field naming (source of truth)** → column headers in `datapoints-reports matrix.csv`
+- **Field semantics and definitions** → `data points expansion plan.md`
+- **Implementation status** → `implemented_in_database` row in this matrix
+- **Field-to-report mapping** → `M`/`O` marks in report rows
 
 ## Workflow
 
@@ -125,30 +112,18 @@ All 42 regulatory/standard report types now have ✓ in `regulatory_requirements
 
 1. Research regulatory/standard requirements
 2. Add field definition to `data points expansion plan.md`
-3. Add column to `datapoints-reports matrix.csv`
-4. Mark `x` in relevant report type rows
-5. Document in `NEW_DATA_POINTS_REFERENCE.md` if major addition
-6. Implement in database (update `implemented_in_dataset` row)
-7. Mark report as checked (✓) after verification
+3. Add column to `datapoints-reports matrix.csv` (this defines canonical name)
+4. Mark `M`/`O` in relevant report type rows
+5. Implement in database (update `implemented_in_database` row to ✓)
 
 ### When updating for new regulations:
 
 1. Add new report type row
-2. Add reference URL
+2. Add reference URL in `__reference_urls__` column
 3. Research requirements thoroughly
-4. Mark required fields with `x`
+4. Mark required fields with `M`, optional with `O`
 5. Identify any missing fields → add as new columns
-6. Mark as ✓ when verification complete
-7. Update documentation
-
-## Implementation Priority
-
-Not all 261 fields need immediate implementation. See `IMPLEMENTATION_CHECKLIST.md`:
-
-- 🔴 **Wave 1** (15 critical fields): 2 weeks
-- 🟡 **Wave 2** (18 high priority): 4 weeks
-- 🟢 **Wave 3** (15 medium priority): 8 weeks
-- ⚪ **Existing** (213 fields): Already in system
+6. Mark `data_points_checked_against_reference_url` as ✓ when done
 
 ## Conditional Logic
 
@@ -160,17 +135,6 @@ Many fields are conditional based on:
 
 UI and validation logic should use this matrix to determine which fields to show/require.
 
-## 🚀 Next Steps (Post-Audit)
-
-1. [ ] Team review of 48 new fields
-2. [ ] Confirm implementation priorities
-3. [ ] Update Prisma schema for Wave 1
-4. [ ] Create database migrations
-5. [ ] Implement UI forms
-6. [ ] Add validation rules
-7. [ ] Update API endpoints
-8. [ ] Test report generation
-
 ## Related Files
 
 - `/prisma/schema.prisma` - Database schema definition
@@ -180,6 +144,5 @@ UI and validation logic should use this matrix to determine which fields to show
 
 ---
 
-**Audit Date:** November 26, 2025  
-**Coverage Status:** ✅ 100% Complete  
+**Last Updated:** November 26, 2025  
 **Next Review:** Annual or when major regulations update

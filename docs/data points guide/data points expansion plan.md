@@ -23,16 +23,13 @@
 ## Связка data points ↔ отчёты
 
 - Этот документ — **источник истины по смыслу и структуре полей**:
-  блоки 1–13 описывают `fieldId`, типы, repeatable‑группы и ссылки на стандарты.
+  блоки 1–37 описывают `fieldId`, типы, repeatable‑группы и ссылки на стандарты.
 - Файл `datapoints-reports matrix.csv` в этой же папке —
-  **источник истины по использованию полей в отчётах и продуктах**:
-  для каждого `fieldId` показывает статус реализации (`implemented`),
-  класс использования (`primary_report_class`) и матрицу `M/O/blank`
-  по всем `report.id`.
+  **источник истины по названиям полей и использованию в отчётах**:
+  колонки CSV = канонические названия `fieldId`, строки = отчёты с маркировкой `M/O/пусто`.
 - При добавлении нового поля:
-  1) сначала добавить/обновить блок здесь (описание поля),
-  2) затем завести для него колонку в `datapoints-reports matrix.csv`
-     и разметить строки отчётов.
+  1) сначала добавить колонку в `datapoints-reports matrix.csv` (это источник истины по naming),
+  2) затем добавить описание поля в соответствующий блок здесь.
 - Для понимания универсама отчётов и логики их выбора см. также
   `docs/report recommendation engine/questionare logic.md` и
   `docs/report recommendation engine/reports recommendations.md`.
@@ -60,8 +57,10 @@
 - `organization_revenue_eur` — выручка за период (EUR).
 - `organization_assets_eur` — активы / AUM (для финсектора).
 - `reporting_boundary_approach` — equity / control / operational control.
-- `countries_of_operation` — список стран присутствия.
-- `consolidated_entities_list` — включённые юрлица / площадки.
+- `countries_of_operation` **(repeatable)** — список стран присутствия.
+  Sub-fields: `country_code`, `share_percent`
+- `consolidated_entities_list` **(repeatable)** — включённые юрлица / площадки.
+  Sub-fields: `entity_name`, `jurisdiction`, `boundary_note`
 - `exclusions_scope_explanation` — что исключено и почему.
 
 _Статус данных (25.11.2025):_
@@ -122,7 +121,8 @@ _Статус данных (25.11.2025):_
 - `verifier_scope_statement` — охват верификации.
 - `verification_level_assurance` — limited / reasonable.
 - `offsets_purchased_co2e` — объём офсетов (т CO2e).
-- `offsets_programs_list` — типы/программы офсетов.
+- `offsets_programs_list` **(repeatable)** — типы/программы офсетов.
+  Sub-fields: `program_name`, `registry`, `vintage`, `volume_co2e`
 - `carbon_neutral_claim_boundary` — граница carbon-neutral заявления (компания/продукт/событие).
 
 _Статус данных (25.11.2025):_
@@ -142,11 +142,8 @@ _Главное: качественные, но нужны как DPs, чтоб�
 - `climate_risks_transition_description`
 - `climate_scenarios_used` — набор сценариев (1.5°C / 2°C / 4°C и т.п.).
 - `climate_scenario_results_summary` — ключевые выводы сценарного анализа.
-- `emission_reduction_targets_list` — цели по выбросам (структурированный список, можно как repeatable).
-  - `target_base_year`  
-  - `target_year`  
-  - `target_scope_coverage` (S1/S2/S3)  
-  - `target_reduction_percent`  
+- `emission_reduction_targets_list` **(repeatable)** — цели по выбросам.
+  Sub-fields: `target_base_year`, `target_year`, `target_scope_coverage`, `target_reduction_percent`, `target_status`
 - `net_zero_target_year` — год достижения net-zero (если есть).
 - `decarbonisation_strategy_summary` — резюме плана действий.
 - `energy_efficiency_measures_summary`
@@ -178,13 +175,15 @@ _Статус данных (25.11.2025):_
 - `financed_emissions_total_co2e` — финансируемые выбросы портфеля.
 - `portfolio_coverage_percent` — доля охваченных активов.
 - `sfdr_pai_indicators_summary` — сводка PAI (как текстовое поле).
-- `sfdr_pai_indicator_entries` — repeatable структура (indicator_id, indicator_name, unit, current_value, previous_year_value, coverage_scope, data_source, confidence_level) для поддержки Principal Adverse Impacts (SFDR Art. 4 / Annex I).
+- `sfdr_pai_indicator_entries` **(repeatable)** — Principal Adverse Impacts (SFDR Art. 4 / Annex I).
+  Sub-fields: `indicator_id`, `indicator_name`, `unit`, `current_value`, `previous_year_value`, `coverage_scope`, `data_source`, `confidence_level`
 - `green_assets_ratio` — доля «зелёных» активов (%).
 - `taxonomy_aligned_revenue_percent`
 - `taxonomy_aligned_capex_percent`
 - `taxonomy_aligned_opex_percent`
 - `banks_data_template_reference` — идентификатор/ссылка на форму банка.
-- `lenders_investors_list` — основные банки/инвесторы (для переклика с CDP/SFDR).
+- `lenders_investors_list` **(repeatable)** — основные банки/инвесторы.
+  Sub-fields: `name`, `type`, `exposure_or_role`
 
 _Статус данных (25.11.2025):_
 - ✅ уже есть: —.
@@ -195,10 +194,11 @@ _Статус данных (25.11.2025):_
 
 **6. Биржи / листинг (SEC, HKEX, UK TCFD)**
 
-- `listing_exchanges` — список бирж (EU, LSE, NYSE/NASDAQ, HKEX, др.).
+- `listing_exchanges` **(array of strings)** — список бирж (EU, LSE, NYSE/NASDAQ, HKEX, др.).
 - `issuer_is_sec_registrant` — да/нет.
 - `sec_filer_category` — large accelerated / accelerated / др.
-- `public_filing_documents_list` — ссылки на 10‑K, годовой отчёт и т.п.
+- `public_filing_documents_list` **(repeatable)** — ссылки на 10‑K, годовой отчёт и т.п.
+  Sub-fields: `title`, `url`, `fiscal_year`
 - `hkex_esg_compliance_level` — comply/explain summary.
 - `uk_tcfd_mandatory_scope` — к каким подразделениям/отчётам применимо.
 
@@ -252,14 +252,17 @@ _Здания / BUILDING_CARBON_FOOTPRINT / GRESB:_
 - `building_floor_area_m2`
 - `building_energy_consumption_mwh`
 - `building_occupancy_rate_percent`
-- `building_certifications_existing` — действующие сертификаты (LEED/BREEAM).
+- `building_certifications_existing` **(repeatable)** — действующие сертификаты (LEED/BREEAM).
+  Sub-fields: `scheme`, `level`, `valid_until`
 
 _IT / дата‑центры / SCOPE2_DETAILED / SCOPE3_CATEGORY1_SUPPLIERS:_
 
-- `it_data_centers_owned_list` — перечень ЦОД.
+- `it_data_centers_owned_list` **(repeatable)** — перечень ЦОД.
+  Sub-fields: `name`, `location`, `ownership_status`
 - `it_data_centers_total_energy_mwh`
 - `data_center_pue` — средний PUE.
-- `cloud_providers_list` — hyperscalers / SaaS.
+- `cloud_providers_list` **(repeatable)** — hyperscalers / SaaS.
+  Sub-fields: `provider_name`, `service_type`, `emissions_method`
 - `cloud_usage_emissions_co2e`
 - `supplier_emissions_data_coverage_percent` — доля поставщиков с данными.
 
@@ -276,7 +279,7 @@ _У тебя уже есть продукт/материалы/транспор�
 
 - `cbam_importer_eori` — EORI импортёра.
 - `cbam_authorised_declarant_id`
-- `cbam_goods_cn_codes` — список CN‑кодов.
+- `cbam_goods_cn_codes` **(array of strings)** — список CN‑кодов.
 - `cbam_reporting_quarter` — квартал отчётности.
 - `cbam_total_embedded_emissions_co2e`
 - `cbam_free_allowances_quantity` — количество освобождённых объёмов (если применимо).
@@ -296,10 +299,10 @@ _Статус данных (25.11.2025):_
 **10. Клиентские отчёты / пакеты данных (CLIENT_SCOPE3_PACKAGE, SCOPE3_DETAILED, SCOPE123_DATASET и др.)**
 
 - `client_request_reference` — идентификатор/название запроса клиента.
-- `client_required_categories_scope3_list` — список категорий Scope 3 по запросу.
+- `client_required_categories_scope3_list` **(array of strings)** — список категорий Scope 3 по запросу.
 - `client_reporting_format` — GHG Protocol / Excel‑шаблон / API.
 - `client_data_delivery_deadline`
-- `client_data_delivery_channels` — e‑mail / портал / API.
+- `client_data_delivery_channels` **(array of strings)** — e‑mail / портал / API.
 - `data_package_coverage_description` — что именно включает пакет (источники, годы, юрлица).
 
 _Статус данных (25.11.2025):_
@@ -313,11 +316,13 @@ _Статус данных (25.11.2025):_
 
 - `energy_total_consumption_mwh` — суммарное потребление энергии (вне продуктового контекста).
 - `renewable_energy_share_percent` — доля ВИЭ в общем потреблении.
-- `ppa_contracts_list` — список PPA/долгосрочных контрактов.
+- `ppa_contracts_list` **(repeatable)** — список PPA/долгосрочных контрактов.
+  Sub-fields: `counterparty`, `volume_mwh`, `start_year`, `end_year`, `status`
 - `recs_certificates_purchased_mwh` — объём RECs/GO.
 - `energy_audit_scope_description` — охват энергоаудита.
 - `energy_saving_potential_estimate_percent`
-- `climate_action_measures_list` — меры с оценкой ожидаемого сокращения.
+- `climate_action_measures_list` **(repeatable)** — меры с оценкой ожидаемого сокращения.
+  Sub-fields: `measure_name`, `expected_reduction_co2e`, `status`, `target_year`
 
 _Статус данных (25.11.2025):_
 - ✅ уже есть: — (существующие `energy_input_*` относятся к продукту, а не корпоративным суммарным данным).
@@ -331,10 +336,12 @@ _Статус данных (25.11.2025):_
 _Не про конкретный стандарт, но нужны для удобной перекладки данных между отчётами._
 
 - `data_quality_assessment_summary` — общая оценка качества данных (по секторам/скоупам).
-- `methodology_reference_documents` — перечень методик / PCR / стандартов.
+- `methodology_reference_documents` **(repeatable)** — перечень методик / PCR / стандартов.
+  Sub-fields: `title`, `publisher`, `url`
 - `limitations_and_uncertainties_summary`
-- `regulatory_requirements_checked` — статус (проверено ли по нормативным документам).
-- `__reference_urls__` — ссылка на нормативный документ.
+- `comparability_notes` — заметки по сравнимости данных между периодами.
+
+> **Примечание:** `__reference_urls__` и `data_points_checked_against_reference_url` — это **служебные колонки CSV-матрицы**, а не data points. Они не хранятся в `Project.dataset`.
 
 _Статус данных (25.11.2025):_
 - ✅ уже есть: —.
@@ -346,7 +353,8 @@ _Статус данных (25.11.2025):_
 **13. EU ETS / установки и квоты**
 
 - `eu_ets_compliance_year` — отчётный год.
-- `eu_ets_installations_list` — repeatable: `installation_id`, `installation_name`, `country`, `activity_type` (энергетика, цемент и т.п.), `capacity`, `operator_lei`, `verifier_id`, `compliance_status`.
+- `eu_ets_installations_list` **(repeatable)** — установки EU ETS.
+  Sub-fields: `installation_id`, `installation_name`, `country`, `activity_type`, `capacity`, `operator_lei`, `verifier_id`, `compliance_status`
 - `eu_ets_verified_emissions_co2e` — суммарные проверенные выбросы за год.
 - `eu_ets_allowances_surrendered_quantity` — количество сданных квот (EUA/EUAA).
 - `eu_ets_free_allowances_quantity` — бесплатные квоты.
@@ -519,9 +527,281 @@ _Блок 13 — EU ETS_
 - `eu_ets_verified_emissions_co2e`, `eu_ets_allowances_surrendered_quantity`, `eu_ets_free_allowances_quantity`, `eu_ets_market_allowances_purchased_quantity`, `eu_ets_market_allowances_sold_quantity`, `eu_ets_balance_surplus_quantity` — `number` (т CO2e или количество EUA, указывать единицу в `metadata`).
 - `eu_ets_verification_body_name`, `eu_ets_monitoring_methodology_reference`, `eu_ets_compliance_statement` — `text` (`monitoring_methodology_reference` может хранить URL).
 
+---
+
+**14. Governance / CSRD ESRS G1**
+
+- `board_gender_diversity_percent` — доля женщин в совете директоров (%).
+- `board_independence_percent` — доля независимых директоров (%).
+- `sustainability_officer_exists` — наличие ответственного за устойчивое развитие (boolean).
+- `due_diligence_statement` — заявление о due diligence в цепочке поставок.
+- `materiality_assessment_process` — описание процесса оценки материальности.
+- `stakeholder_engagement_description` — описание взаимодействия со стейкхолдерами.
+- `value_chain_description` — описание цепочки создания стоимости.
+- `transition_plan_description` — описание плана перехода к низкоуглеродной экономике.
+- `climate_scenario_analysis_results` — результаты сценарного анализа климатических рисков.
+- `internal_carbon_price_eur_tco2e` — внутренняя цена на углерод (EUR/т CO2e).
+- `locked_in_emissions_co2e` — «заблокированные» выбросы от существующих активов (т CO2e).
+- `avoided_emissions_co2e` — избежанные выбросы (т CO2e).
+- `climate_related_capex_eur` — капитальные затраты на климатические меры (EUR).
+- `climate_related_opex_eur` — операционные затраты на климатические меры (EUR).
+- `physical_risk_financial_impact_eur` — финансовое воздействие физических рисков (EUR).
+- `transition_risk_financial_impact_eur` — финансовое воздействие переходных рисков (EUR).
+
+---
+
+**15. Environmental — ESRS E2 (Pollution)**
+
+- `air_pollutants_nox_tonnes` — выбросы NOx (т).
+- `air_pollutants_sox_tonnes` — выбросы SOx (т).
+- `air_pollutants_pm_tonnes` — выбросы твёрдых частиц PM (т).
+
+---
+
+**16. Environmental — ESRS E3 (Water)**
+
+- `water_withdrawals_m3` — водозабор (м³).
+- `water_discharges_m3` — сброс воды (м³).
+- `water_consumption_m3` — потребление воды (м³).
+- `water_stress_areas_identified` — выявленные зоны водного стресса (text/list).
+
+---
+
+**17. Environmental — ESRS E4 (Biodiversity) + E5 (Circular Economy)**
+
+- `biodiversity_sensitive_areas_list` **(repeatable)** — перечень чувствительных к биоразнообразию территорий.
+  Sub-fields: `area_name`, `protection_status`
+- `deforestation_assessment` — оценка обезлесения / риска deforestation-free.
+- `waste_generated_total_tonnes` — общее количество отходов (т).
+- `waste_hazardous_tonnes` — опасные отходы (т).
+- `waste_recycled_tonnes` — переработанные отходы (т).
+- `waste_landfilled_tonnes` — отходы на полигоны (т).
+- `circular_economy_measures` — меры по циркулярной экономике.
+
+---
+
+**18. Social — ESRS S1 (Own Workforce)**
+
+- `own_employees_total_headcount` — общая численность сотрудников.
+- `own_employees_permanent_headcount` — постоянные сотрудники.
+- `own_employees_temporary_headcount` — временные сотрудники.
+- `collective_bargaining_coverage_percent` — охват коллективными договорами (%).
+- `adequate_wages_assessment` — оценка адекватности заработной платы.
+- `training_hours_total` — общее количество часов обучения.
+- `health_safety_incidents_total` — количество инцидентов по охране труда.
+- `health_safety_fatalities_total` — количество смертельных случаев.
+- `gender_pay_gap_percent` — гендерный разрыв в оплате (%).
+- `women_in_management_percent` — доля женщин на руководящих позициях (%).
+- `employee_turnover_rate_percent` — текучесть кадров (%).
+
+---
+
+**19. Social — ESRS S2-S4 (Value Chain, Communities, Consumers)**
+
+- `human_rights_incidents_reported` — количество выявленных нарушений прав человека.
+- `affected_communities_engagement` — описание взаимодействия с затронутыми сообществами.
+- `data_privacy_breaches_number` — количество инцидентов утечки данных.
+
+---
+
+**20. SBTi — расширенные поля**
+
+- `sbti_target_submission_year` — год подачи целей в SBTi.
+- `sbti_near_term_target_year` — год достижения near-term цели.
+- `sbti_long_term_target_year` — год достижения long-term цели.
+- `sbti_net_zero_year` — год достижения net-zero.
+- `sbti_base_year_for_targets` — базовый год для целей SBTi.
+- `sbti_boundary_coverage_percent` — процент покрытия границ организации (%).
+
+---
+
+**21. CDP — расширенные поля**
+
+- `cdp_response_status` — статус ответа на CDP (submitted/not_submitted).
+- `cdp_score_current` — текущий рейтинг CDP (A/A-/B/B-/C/C-/D/D-).
+- `cdp_water_security_metrics` — метрики водной безопасности (JSON).
+- `cdp_forest_commodities_risk` — оценка рисков лесных товаров (JSON).
+- `cdp_supplier_engagement_rating` — рейтинг вовлечения поставщиков.
+
+---
+
+**22. GHG — интенсивность и качество данных**
+
+- `ghg_intensity_per_revenue_tco2e_eur` — интенсивность выбросов на EUR выручки.
+- `ghg_intensity_per_fte_tco2e` — интенсивность выбросов на FTE.
+- `biogenic_co2_separate_co2e` — биогенный CO2 (отдельно, т CO2e).
+- `scope3_data_quality_score` — оценка качества данных Scope 3.
+- `verification_opinion_type` — тип заключения верификатора (unqualified/qualified/adverse).
+- `restatement_description` — описание пересчётов данных.
+- `sustainability_linked_loans_total` — объём sustainability-linked кредитов (EUR).
+
+---
+
+**23. CSRD — специфические поля**
+
+- `csrd_double_materiality_assessment` — результаты оценки двойной материальности (JSON).
+- `csrd_esrs_disclosure_requirements` **(array of strings)** — список применимых требований ESRS.
+- `csrd_value_chain_mapping` — картирование цепочки создания стоимости.
+- `narrative_disclosures_quality_metrics` — метрики качества нарративных раскрытий.
+- `taxonomy_alignment_criteria_details` — детализация критериев EU Taxonomy (DNSH).
+- `csrd_assurance_provider_details` — информация о провайдере аудита CSRD.
+
+---
+
+**24. EU ETS — расширенные поля**
+
+- `eu_ets_installation_permit_numbers` — номера разрешений установок (array).
+- `eu_ets_activity_level_data` — данные уровня активности (JSON).
+- `eu_ets_fall_back_methodology_used` — использование резервной методологии (boolean + text).
+
+---
+
+**25. CBAM — расширенные поля**
+
+- `cbam_production_process_description` — описание производственного процесса.
+- `cbam_precursor_materials_emissions` — выбросы от precursor-материалов (т CO2e).
+- `cbam_installation_boundaries` — границы установки для CBAM.
+
+---
+
+**26. UK SECR**
+
+- `uk_secr_company_size_category` — категория размера компании (Large/Quoted/LLP).
+- `uk_secr_energy_intensity_ratio` — коэффициент энергоёмкости.
+- `uk_secr_quantification_methodology` — методология квантификации.
+
+---
+
+**27. SEC Climate**
+
+- `sec_materiality_determination_process` — процесс определения материальности.
+- `sec_severe_weather_event_descriptions` — описания погодных событий (JSON array).
+- `sec_attestation_provider_details` — информация о провайдере аттестации.
+- `sec_safe_harbor_forward_looking_statements` — safe harbor оговорки.
+
+---
+
+**28. CORSIA (авиация)**
+
+- `corsia_eligible_fuel_types` — типы допустимого авиатоплива (array).
+- `corsia_sustainability_certification_scheme` — схема сертификации SAF.
+- `corsia_offset_credits_vintage_year` — год выпуска офсетных кредитов.
+- `corsia_monitoring_plan_reference` — ссылка на план мониторинга.
+
+---
+
+**29. EU MRV (морской транспорт)**
+
+- `eu_mrv_ship_imo_number` — номер ИМО судна (string).
+- `eu_mrv_ship_technical_efficiency` — техническая эффективность (EEDI/EEXI).
+- `eu_mrv_cargo_carried_tonnes` — перевезённый груз (т).
+- `eu_mrv_ice_class_notation` — ледовый класс судна.
+
+---
+
+**30. SFDR — расширенные поля**
+
+- `sfdr_article_classification` — классификация по статьям SFDR (6/8/9).
+- `sfdr_do_no_significant_harm_assessment` — оценка DNSH (JSON).
+- `sfdr_principal_adverse_impacts_metrics` — метрики PAI (JSON array).
+
+---
+
+**31. TCFD — расширенные поля**
+
+- `tcfd_metrics_targets_disclosure` — раскрытие метрик и целей (JSON).
+- `tcfd_resilience_assessment_results` — результаты оценки устойчивости.
+
+---
+
+**32. HKEX ESG — расширенные поля**
+
+- `hkex_esg_kpi_list` **(repeatable)** — список КПЭ по HKEX ESG Guide.
+  Sub-fields: `aspect`, `kpi_code`, `value`, `unit`, `target`
+- `hkex_esg_reporting_principles_application` — применение принципов отчётности.
+
+---
+
+**33. Product LCA / ISO 14067 / EPD**
+
+- `product_functional_unit_definition` — определение функциональной единицы.
+- `product_system_boundary_description` — описание границ системы.
+- `product_allocation_methodology` — методология распределения (mass/economic/energy).
+- `product_cutoff_criteria` — критерии отсечения для LCA.
+- `product_life_cycle_stages_included` **(array of strings)** — включённые стадии жизненного цикла.
+- `product_data_quality_indicators` — индикаторы качества данных (JSON).
+
+---
+
+**34. RE100 — расширенные поля**
+
+- `re100_interim_targets_list` **(repeatable)** — промежуточные цели по ВИЭ.
+  Sub-fields: `year`, `target_percent`
+- `re100_re_sourcing_methods` **(array of strings)** — методы обеспечения ВИЭ.
+
+---
+
+**35. GRESB — расширенные поля**
+
+- `gresb_asset_type_breakdown` **(repeatable)** — разбивка по типам активов.
+  Sub-fields: `asset_type`, `count`, `percent`
+- `gresb_standing_investments_count` — количество инвестиций в портфеле.
+
+---
+
+**36. B Corp — расширенные поля**
+
+- `bcorp_impact_areas_scores` **(repeatable)** — баллы по областям воздействия.
+  Sub-fields: `area`, `score`
+- `bcorp_governance_structure_description` — описание структуры управления.
+
+---
+
+**37. Прочие / кастомные поля**
+
+- `custom_client_fields` **(repeatable)** — кастомные поля по запросу клиента.
+  Sub-fields: `field_name`, `field_type`, `value`
+
+---
+
+## 📋 Справочник repeatable полей
+
+Все поля, которые хранят массивы или структурированные списки записей. Sub-fields — это внутренняя структура JSON, не требующая отдельных колонок в CSV-матрице.
+
+| Поле | Блок | Sub-fields |
+|------|------|------------|
+| `countries_of_operation` | 1 | `country_code`, `share_percent` |
+| `consolidated_entities_list` | 1 | `entity_name`, `jurisdiction`, `boundary_note` |
+| `offsets_programs_list` | 3 | `program_name`, `registry`, `vintage`, `volume_co2e` |
+| `emission_reduction_targets_list` | 4 | `target_base_year`, `target_year`, `target_scope_coverage`, `target_reduction_percent`, `target_status` |
+| `sfdr_pai_indicator_entries` | 5 | `indicator_id`, `indicator_name`, `unit`, `current_value`, `previous_year_value`, `coverage_scope`, `data_source`, `confidence_level` |
+| `lenders_investors_list` | 5 | `name`, `type`, `exposure_or_role` |
+| `listing_exchanges` | 6 | _(array of strings)_ |
+| `public_filing_documents_list` | 6 | `title`, `url`, `fiscal_year` |
+| `it_data_centers_owned_list` | 8 | `name`, `location`, `ownership_status` |
+| `cloud_providers_list` | 8 | `provider_name`, `service_type`, `emissions_method` |
+| `building_certifications_existing` | 8 | `scheme`, `level`, `valid_until` |
+| `cbam_goods_cn_codes` | 9 | _(array of strings)_ |
+| `client_required_categories_scope3_list` | 10 | _(array of strings)_ |
+| `client_data_delivery_channels` | 10 | _(array of strings)_ |
+| `ppa_contracts_list` | 11 | `counterparty`, `volume_mwh`, `start_year`, `end_year`, `status` |
+| `climate_action_measures_list` | 11 | `measure_name`, `expected_reduction_co2e`, `status`, `target_year` |
+| `methodology_reference_documents` | 12 | `title`, `publisher`, `url` |
+| `eu_ets_installations_list` | 13 | `installation_id`, `installation_name`, `country`, `activity_type`, `capacity`, `operator_lei`, `verifier_id`, `compliance_status` |
+| `biodiversity_sensitive_areas_list` | 17 | `area_name`, `protection_status` |
+| `hkex_esg_kpi_list` | 32 | `aspect`, `kpi_code`, `value`, `unit`, `target` |
+| `csrd_esrs_disclosure_requirements` | 23 | _(array of strings)_ |
+| `product_life_cycle_stages_included` | 33 | _(array of strings)_ |
+| `re100_interim_targets_list` | 34 | `year`, `target_percent` |
+| `re100_re_sourcing_methods` | 34 | _(array of strings)_ |
+| `gresb_asset_type_breakdown` | 35 | `asset_type`, `count`, `percent` |
+| `bcorp_impact_areas_scores` | 36 | `area`, `score` |
+| `custom_client_fields` | 37 | `field_name`, `field_type`, `value` |
+
+---
 
 
-**14. По исчерпывающим источникам**
+**38. По исчерпывающим источникам**
 
 - **Исчерпывающие / обязательные:**
   - `docs→questionare logic.md` — одиночный источник правды по перечню отчётов, правилам и контексту (какие драйверы → какие форматы). Без него легко пропустить часть форматов или неверно понять приоритеты.

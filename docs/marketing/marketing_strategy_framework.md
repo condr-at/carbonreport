@@ -262,29 +262,73 @@ docs/marketing/
 
 Ниже — порядок работы. Каждый шаг закрывает один файл из папки `deliverables/`.
 
-### Этап 1: Фундамент (1-2 дня)
+### Этап 1: Фундамент ✅ ЗАВЕРШЁН
 1. **`01_product_vision.md`**
-   - Написать **Product Vision One‑Pager** (что строим).
-   - Добавить **Problem & JTBD Brief** (какую боль лечим).
+   - [x] Написать **Product Vision One‑Pager** (что строим).
+   - [x] Добавить **Problem & JTBD Brief** (какую боль лечим).
 2. **`02_market_landscape.md`**
-   - Сделать **Market Landscape** (где мы на карте).
-   - Заполнить **Competitive Matrix** (чем отличаемся).
+   - [x] Сделать **Market Landscape** (где мы на карте).
+   - [x] Заполнить **Competitive Matrix** (чем отличаемся).
+   - [x] Собрать **User Voice** (30+ цитат из Reddit, G2).
 
-### Этап 2: Фокусировка (1-2 дня)
-3. **`03_icp_and_personas.md`**
-   - Описать **ICP** (кто платит).
-   - Расписать **User Personas** (кто пользуется).
+### Этап 2: Фокусировка — ГИПОТЕЗЫ (требуют валидации)
+3. **`03_icp_and_personas.md`** ⚠️ HYPOTHESIS v0.1
+   - [x] Описать **ICP** (гипотетические профили на основе desk research).
+   - [x] Расписать **User Personas** (гипотетические, требуют интервью).
+   - [x] Добавить **Stakeholder Map** (гипотетический buying committee).
+   - [x] Включить **Validation Plan** (как проверять гипотезы).
+   - [ ] **TODO:** Провести 10-15 customer interviews для валидации.
+   - [ ] **TODO:** Обновить до v1.0 после получения pilot data.
 4. **`04_launch_strategy.md`**
-   - Выбрать **Beachhead Market** (с кого начнем).
-   - Сформулировать **Positioning Statement**.
+   - [ ] Выбрать **Beachhead Market** (с кого начнем).
+   - [ ] Сформулировать **Positioning Statement**.
 
 ### Этап 3: Валидация и выход (параллельно с разработкой)
 5. **`05_hypothesis_backlog.md`**
-   - Собрать **Hypothesis Backlog** (что проверяем).
-   - Подготовить **Discovery Plan** (как проверяем).
+   - [ ] Собрать **Hypothesis Backlog** (что проверяем).
+   - [ ] Подготовить **Discovery Plan** (как проверяем).
 6. **`06_beta_program.md`**
-   - Сдизайнить **Beta Program** (условия входа).
-   - Описать **Pilot Onboarding** (как ведем за руку).
+   - [ ] Сдизайнить **Beta Program** (условия входа).
+   - [ ] Описать **Pilot Onboarding** (как ведем за руку).
 
 *Остальные артефакты (Pricing, GTM Channels) создаются позже, по мере накопления данных.*
+
+---
+
+## 10. Data Gaps & Future Research
+
+> Этот раздел фиксирует, какие данные отсутствуют и как их получить.
+
+### 10.1 Критические пробелы (блокируют GTM)
+
+| Пробел | Почему важно | Как закрыть | Приоритет |
+|--------|--------------|-------------|-----------|
+| **Реальный budget на tools** | Определяет pricing strategy | Customer interviews (вопрос про бюджет) | 🔥 Critical |
+| **Decision maker в SME** | Определяет sales process | Interviews: "кто подписывает чек?" | 🔥 Critical |
+| **Willingness to pay** | Валидация бизнес-модели | Pricing page fake door test | 🔥 Critical |
+| **Time spent on current process** | Quantifies pain for ROI calc | Interviews + pilot baseline | 🟡 High |
+
+### 10.2 Важные пробелы (влияют на messaging)
+
+| Пробел | Почему важно | Как закрыть | Приоритет |
+|--------|--------------|-------------|-----------|
+| **Consultant white-label needs** | Определяет ICP #2 feature set | 3-5 consultant interviews | 🟡 High |
+| **Supplier response rates** | Validates supplier portal value | Pilot data tracking | 🟡 High |
+| **Geographic specifics** | EU vs UK vs non-EU priorities | Segment analysis in interviews | 🟡 Medium |
+
+### 10.3 Источники данных для сбора
+
+| Источник | Что узнаём | Effort | Timeline |
+|----------|------------|--------|----------|
+| **Customer Interviews (10-15)** | Decision process, budget, pains, current tools | High | 2-4 недели |
+| **LinkedIn Research** | Job titles, company patterns, who posts about CBAM | Low | 1 неделя |
+| **LinkedIn Sales Navigator** | Company firmographics, org structures | Medium | 1 неделя |
+| **Competitor Case Studies** | Customer names, sizes, industries | Low | Done partially |
+| **Crunchbase** | Funding, company size, growth | Low | 1 день |
+| **Pilot Data** | Actual usage, activation, retention | High | После запуска пилотов |
+| **Pricing Experiments** | Click-through on pricing tiers | Medium | После landing page |
+
+### 10.4 Interview Script (готов к использованию)
+
+См. `03_icp_and_personas.md`, раздел 5.2 — готовый скрипт для discovery calls.
 
