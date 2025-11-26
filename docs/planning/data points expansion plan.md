@@ -358,6 +358,12 @@ _Статус данных (25.11.2025):_
   - Портал: https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en
 - **EU ETS** — EU Emissions Trading System, scope and sectors:
   - Scope: https://climate.ec.europa.eu/eu-action/eu-emissions-trading-system-eu-ets/scope-eu-ets_en
+ - **SBTi Corporate Net-Zero Standard** — корпоративный нетто‑ноль, структура near‑term / long‑term целей и охвата по скопам:
+   - Хаб стандарта: https://sciencebasedtargets.org/net-zero
+ - **ISO 14064-1:2018** — организационный GHG‑инвентарь (границы, базовый год, пересчёты, поглощения):
+   - Карточка стандарта: https://www.iso.org/standard/66453.html
+ - **ICAO CORSIA** — авиация, офсетная схема CORSIA, структура отчётности по топливу/выбросам/охвату рейсов:
+   - Портал CORSIA: https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx
 
 Кратко, к чему они привели:
 
@@ -481,6 +487,10 @@ _Блок 11 — энергетика/планы_
 _Блок 12 — метаполя_
 - `data_quality_assessment_summary`, `limitations_and_uncertainties_summary`, `comparability_notes` — `text`.
 - `methodology_reference_documents` — repeatable (`repeatableKey=methodology_reference`, поля `title`, `publisher`, `url`).
+
+_Блок 12b — ответственность за отчёт_
+- `responsible_officer_name` — `string`, single. Имя/ФИО ответственного лица (sign-off) за отчёт; нужно для подписи, внутреннего трекинга и подстановки в шаблоны разных форматов.
+- `responsible_officer_role` — `string`, single. Должность/роль этого лица (например, «CFO», «Head of Sustainability»); важно для отчётов регуляторам и инвесторам, где требуется явно указать уровень ответственности.
 
 _Блок 13 — EU ETS_
 - `eu_ets_compliance_year` — `number` (год), single.

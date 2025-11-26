@@ -94,6 +94,14 @@ This backlog captures the remaining work items that were previously tracked in `
 - AC: Badge displays "Deleted X days ago • Expires in Y days".
 - DoD: UI updated in projects list component.
 
+### **Regulatory Version & Legal Disclaimers**
+- Add visible versioning for regulatory standards used in reports.
+  - AC: Each regulatory report template (CSRD/ESRS, SEC_CLIMATE, SFDR, CBAM, EU_ETS, etc.) shows `Standard version last reviewed: YYYY‑MM` in UI (and PDF if applicable).
+  - DoD: Version metadata wired from config/code, not hardcoded per template.
+- Add unobtrusive, dismissible legal disclaimer banner in app layout.
+  - AC: Banner text clarifies that the product is a data/automation tool and **not** legal advice; appears on first visits and can be dismissed per user.
+  - DoD: Dismissal state persisted; copy reviewed and stored in a single config.
+
 ---
 
 ## 🟩 Completed (Recent)
@@ -147,6 +155,7 @@ This backlog captures the remaining work items that were previously tracked in `
 - Add JSDoc to newly introduced helpers (dataset, data-requests, mailto).
 - Automate HAR capture and regression alerts for SSR payload metrics. _Note_: `NEXT_PUBLIC_LAZY_DATA_REQUESTS` env var already provisioned on Vercel; no perf improvement yet — further analysis required.
 - Define staging deployment checklist (backup, rollback, smoke tests).
+ - Legal & policy docs: draft and publish Terms of Use / Privacy Policy / Data Processing terms including a clear statement that reports are generated on a best-effort basis and do not constitute legal advice.
 
 ---
 
