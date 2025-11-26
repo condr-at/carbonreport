@@ -90,19 +90,29 @@
 
 ### 1.3 Фокус Carbon Report
 
-#### На чём концентрируемся (12-18 месяцев):
-- **Product Carbon Footprint (PCF)** — расчёт углеродного следа на уровне продукта/SKU
-- **CBAM compliance** — готовые отчёты под требования EU Carbon Border Adjustment
-- **Supplier data collection** — автоматизация сбора данных от поставщиков
-- **SME-friendly UX** — простота без LCA-экспертизы
-- **Быстрый time-to-value** — первый отчёт за дни, не месяцы
+#### Архитектурная модель
+**Core** = Data collection workflow (таблица + рассылки + статус-трекинг). Это решает 80% боли независимо от типа отчёта.
 
-#### Что сознательно НЕ трогаем:
-- Полная corporate LCA по ISO 14040/14044
-- Generic ESG reporting (GRI, SASB, TCFD)
-- Scope 1/2 calculations (пока)
-- Enterprise features (SSO, complex permissions)
+**Output** = 44+ шаблонов экспорта. Каждый шаблон — это маппинг датасета → требуемый формат. Не отдельный продукт, а опция.
+
+#### Beachhead (12-18 месяцев marketing/sales focus):
+- **CBAM** — жёсткий дедлайн 2026, регуляторное давление, чёткий ICP
+- **ISO 14067 / PCF** — запросы от B2B клиентов, "48 часов на отчёт"
+- **Supplier data collection** — универсальная боль, подтверждена 7+ источниками
+
+#### Long tail (доступно, но не фокус маркетинга):
+- CDP, EcoVadis, TCFD, GRESB, SBTi, EPD, bank templates и 30+ других
+- Работают "из коробки" благодаря универсальному датасету
+- Позволяют захватить "брошенок" — компании с нишевыми запросами без хороших инструментов
+
+#### Что сознательно НЕ делаем (anti-scope):
+- Полная corporate LCA по ISO 14040/14044 (оставляем SimaPro/GaBi)
+- Расчёт Scope 1/2 (это commodity, у всех есть)
+- Enterprise features (SSO, complex permissions) — пока
 - Custom consulting services
+- Методологический консалтинг (мы — tool, не advisor)
+
+> **TODO:** Провести landscape по каждому из 44 шаблонов — где реальный спрос, где конкуренция, где "брошенки" без хороших инструментов.
 
 ---
 

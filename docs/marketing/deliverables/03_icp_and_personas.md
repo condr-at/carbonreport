@@ -23,6 +23,14 @@
 
 ---
 
+> **Связь с продуктовой архитектурой (см. `01_product_vision.md`):**
+> - **Core value** = сбор данных от распределённой команды к дедлайну (Job 0)
+> - **Output** = 44+ шаблонов экспорта (CBAM, ISO 14067, CDP, TCFD и др.)
+> - **Beachhead** = ICP #1 (CBAM) и Job 2 (PCF для B2B)
+> - Все ICP используют один и тот же Core workflow, отличается только Output
+
+---
+
 ## 1. Ideal Customer Profiles (ICP)
 
 ### 1.1 ICP #1: SME-производитель под CBAM (Primary)
