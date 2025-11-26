@@ -333,6 +333,8 @@ _Не про конкретный стандарт, но нужны для уд�
 - `data_quality_assessment_summary` — общая оценка качества данных (по секторам/скоупам).
 - `methodology_reference_documents` — перечень методик / PCR / стандартов.
 - `limitations_and_uncertainties_summary`
+- `regulatory_requirements_checked` — статус (проверено ли по нормативным документам).
+- `__reference_urls__` — ссылка на нормативный документ.
 
 _Статус данных (25.11.2025):_
 - ✅ уже есть: —.

@@ -18,6 +18,7 @@ One **column** = one `fieldId` from `data points expansion plan.md`.
     - `M` — mandatory / core for this report type.
     - `O` — optional / nice-to-have / sometimes required.
     - blank — generally not used for this report.
+- `regulatory_requirements_checked`: status indicating if the requirements have been checked against regulations.
 - `__reference_urls__`: service row with links to official sources for
     selected report ids (CSRD, SEC, TCFD, CBAM, EU ETS, SBTi, ...).
 
