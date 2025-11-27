@@ -1,7 +1,7 @@
 # ICP, Stakeholders & User Personas
 
 **Последнее обновление:** Ноябрь 2025  
-**Статус:** ⚠️ ГИПОТЕЗА v0.1 — требует валидации
+**Статус:** ⚠️ ГИПОТЕЗА v0.2 — требует валидации, частично проверено через web research
 
 ---
 
@@ -18,6 +18,13 @@
 > - Анализ реальных сделок (нет sales data)
 > - Валидация pricing sensitivity
 > - Подтверждение decision-making process
+>
+> **Результаты web research верификации (Ноябрь 2025):**
+> - ✅ CBAM 2026 дедлайн — ПОДТВЕРЖДЁН (EU официальные источники)
+> - ✅ McKinsey: "70% оф CPOs don't understand where Scope 3 emissions are generated" — боль сбора данных реальна
+> - ✅ BCG: "80-90% of GHG emissions are Scope 3" — supply chain focus валиден
+> - ⚠️ Бюджеты на инструменты — НЕ ВАЛИДИРОВАНО (конкуренты скрывают цены)
+> - ⚠️ Персоны — ГИПОТЕЗЫ, требуют интервью
 > 
 > Перед использованием в sales/marketing — обязательна валидация по плану в разделе 5.
 
@@ -25,7 +32,8 @@
 
 > **Связь с продуктовой архитектурой (см. `01_product_vision.md`):**
 > - **Core value** = сбор данных от распределённой команды к дедлайну (Job 0)
-> - **Output** = 44+ шаблонов экспорта (CBAM, ISO 14067, CDP, TCFD и др.)
+> - **Output (Phase 1)** = шаблоны экспорта: CBAM, ISO 14067, EPD, client-specific
+> - **Output (Phase 2)** = CDP, TCFD, CSRD и др. (corporate-level)
 > - **Beachhead** = ICP #1 (CBAM) и Job 2 (PCF для B2B)
 > - Все ICP используют один и тот же Core workflow, отличается только Output
 
@@ -46,12 +54,12 @@
 | **Регуляторное давление** | CBAM (обязательно с 2026), возможно CSRD | EU regulations |
 | **Текущий стек** | Excel + email + внешний консультант (1-2 раза в год) | Reddit quotes, market research |
 | **ESG-зрелость** | Низкая-средняя: нет выделенной sustainability-команды | Гипотеза |
-| **Бюджет на инструменты** | €500-5,000/год (гипотеза, требует валидации) | Competitor pricing analysis |
+| **Бюджет на инструменты** | €500-5,000/год ⚠️ **НЕ ВАЛИДИРОВАНО** | Конкуренты скрывают цены |
 
 **Почему этот ICP:**
-- Жёсткий регуляторный дедлайн (CBAM 2026) создаёт срочность
+- Жёсткий регуляторный дедлайн (CBAM 2026) создаёт срочность ✅ **ПОДТВЕРЖДЕНО** (ec.europa.eu)
 - Текущие решения (Excel) не масштабируются под требования
-- Enterprise-инструменты слишком дороги ($25K+)
+- Enterprise-инструменты слишком дороги ($25K+) ⚠️ **НЕ ВАЛИДИРОВАНО** — цены скрыты
 - Нет времени/экспертизы на LCA-софт (SimaPro, GaBi)
 
 **Сигналы квалификации (гипотетические):**
@@ -174,8 +182,8 @@
 | **CFO** | Минимизировать cost of compliance | ROI неочевиден, скрытые затраты | "Дешевле чем консультант + штраф" |
 | **COO** | Не отвлекать команду от operations | Ещё один инструмент, обучение | "Минимальный time investment" |
 | **Sustainability Manager** | Выполнить KPI по отчётности | Сложность, зависимость от вендора | "Упрощает мою работу в 3x" |
-| **Quality Manager** | Соответствие стандартам | Точность данных, аудируемость | "Audit-ready отчёты" |
-| **Procurement** | Получить данные от поставщиков | Поставщики не будут отвечать | "Supplier portal делает за меня" |
+| **Quality Manager** | Соответствие стандартам | Точность данных, аудируемость | "Готово к передаче верификатору" 🔴 **НЕ "audit-ready"** |
+| **Procurement** | Получить данные от поставщиков | Поставщики не будут отвечать | "Email-запросы без регистрации поставщика" ⚠️ MVP |
 | **IT** | Безопасность, интеграции | Ещё один SaaS, data privacy | "GDPR compliant, EU hosting" |
 
 **Пробелы в данных:**
@@ -187,7 +195,7 @@
 
 ## 3. User Personas (внутри продукта)
 
-### 3.1 Persona: "Марина" — Sustainability Manager
+### 3.1 Persona: "Maria" — Sustainability Manager
 
 > **⚠️ Гипотетическая персона** на основе Reddit quotes и JTBD analysis
 
@@ -232,7 +240,7 @@
 
 ---
 
-### 3.2 Persona: "Алексей" — Operations/Quality Manager
+### 3.2 Persona: "Thomas" — Operations/Quality Manager
 
 > **⚠️ Гипотетическая персона** — часто sustainability "падает" на operations
 
@@ -271,9 +279,10 @@
 
 ---
 
-### 3.3 Persona: "Дмитрий" — Поставщик (Data Contributor)
+### 3.3 Supplier Experience (Data Contributor)
 
-> **⚠️ Гипотетическая персона** — критически важная для supplier engagement
+> **⚠️ ВАЖНО:** Поставщик — это НЕ наш ICP. Это участник workflow нашего клиента.
+> Мы не продаём поставщикам. Мы помогаем нашим клиентам получить от них данные.
 
 **Контекст:**
 - Получает запрос на carbon данные от клиента (нашего пользователя)
@@ -285,27 +294,31 @@
 
 > "The data collection piece is always underestimated. You need supplier buy-in and most SME suppliers have zero carbon expertise."
 
-**Jobs-to-be-Done:**
-1. Ответить на запрос клиента, чтобы не потерять контракт
-2. Потратить минимум времени
-3. Не раскрыть конфиденциальные данные
+**Мотивация поставщика (обеспечивается buyer'ом, не нами):**
+- Ответить на запрос клиента, чтобы не потерять контракт
+- Связь с preferred supplier status или payment terms
+- Мы не создаём мотивацию — мы снижаем friction
 
-**Боли:**
-- Не понимает, что от него хотят
-- Нет данных в нужном формате
-- Боится раскрыть коммерческую информацию
-- "У меня 10 клиентов — каждый присылает свою анкету"
+**Источники мотивации (из CDP/EcoVadis research):**
+- Response rate to CDP supply chain requests: ~70-80% для крупных buyers
+- Мотивация #1: "Requirement from customer" (не выбор, а условие контракта)
+- Мотивация #2: "Benchmark against peers"
 
-**Что хочет от Carbon Report (supplier portal):**
-- ✅ Простая форма на 5-10 полей
-- ✅ Понятные подсказки "что вводить"
-- ✅ Возможность приложить документ (а не заполнять вручную)
-- ✅ Уверенность, что данные защищены
-- ❌ НЕ хочет: регистрироваться, учить платформу, платить
+> "Our suppliers respond when we tie it to payment terms or preferred status. Otherwise, crickets." — Reddit r/supplychain
 
+**Что Carbon Report делает для supplier experience (MVP):**
+- Формирует pre-filled email с чётким запросом
+- Минимизирует количество полей (5-10, не 50)
+- Не требует регистрации от поставщика
+- Использует привычный канал (email)
+
+**Roadmap (при валидации):**
+- Simple web form без регистрации
+- Автоматические напоминания
+- Загрузка файлов
 ---
 
-### 3.4 Persona: "Анна" — LCA-консультант
+### 3.4 Persona: "Anna" — LCA/ESG Consultant
 
 > **⚠️ Гипотетическая персона** для ICP #2
 
@@ -343,10 +356,11 @@
 
 | Persona | Job 1: Compliance | Job 2: Sales/Tenders | Job 3: Investment |
 |---------|-------------------|----------------------|-------------------|
-| **Марина** (Sust. Manager) | 🔥 Primary user | 🟡 Secondary | 🟡 Secondary |
-| **Алексей** (Operations) | 🟡 Data contributor | ⚪ Rare | ⚪ Rare |
-| **Дмитрий** (Supplier) | 🔥 Critical for Scope 3 | 🔥 Critical for PCF | ⚪ Rare |
-| **Анна** (Consultant) | 🔥 Delivers for clients | 🔥 Delivers for clients | 🟡 Secondary |
+| **Maria** (Sust. Manager) | 🔥 Primary user | 🟡 Secondary | 🟡 Secondary |
+| **Thomas** (Operations) | 🟡 Data contributor | ⚪ Rare | ⚪ Rare |
+| **Anna** (Consultant) | 🔥 Delivers for clients | 🔥 Delivers for clients | 🟡 Secondary |
+
+> **Примечание:** Поставщик (Supplier) — не персона, а участник workflow. См. раздел 3.3 Supplier Experience.
 
 ---
 

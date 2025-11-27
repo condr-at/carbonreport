@@ -1,22 +1,33 @@
-### datapoints-reports matrix.csv
+### datapoints-reports matrix files
 
-**Last Updated:** November 26, 2025  
-**Status:** 🚧 Structure Complete, Mapping In Progress
+**Last Updated:** November 27, 2025  
+**Status:** ✅ PRODUCT matrix complete, CORPORATE matrix in progress
 
-This file is the **source of truth** for:
+This folder contains **two matrix files**:
+1. `datapoints-reports-PRODUCT.csv` — Product-level reports (CBAM, EPD, PCF, Building)
+2. `datapoints-reports-CORPORATE.csv` — Corporate-level reports (CSRD, EU_ETS, SEC, etc.)
+
+These files are the **source of truth** for:
 1. The canonical list of all data point `fieldId`s (column names = source of truth for naming)
 2. Which fields are used by which report types
 
+---
+
 ## 📊 Current State
 
-- **Total Data Points:** 265 columns (excluding 3 service columns)
-- **Service Columns:** `report_type`, `__reference_urls__`, `data_points_checked_against_reference_url`
-- **Report Types:** 47 rows (42 regulatory/standard reports + 5 utility rows)
-- **Mapping Status:** ⏳ Not yet filled — matrix structure is ready, field mappings pending
+### PRODUCT Matrix (`datapoints-reports-PRODUCT.csv`)
+- **Total Data Points:** 59 columns (excluding 3 service columns)
+- **Report Types:** 9 product reports + 3 utility rows
+- **Mapping Status:** ✅ Complete — verified against official sources (Nov 27, 2025)
+
+### CORPORATE Matrix (`datapoints-reports-CORPORATE.csv`)
+- **Total Data Points:** 205 columns (excluding 3 service columns)
+- **Report Types:** 38 corporate reports + 3 utility rows
+- **Mapping Status:** ⏳ In progress — structure ready, field mappings pending
 
 ## 📁 Related Documentation
 
-- `data points expansion plan.md` — semantic definitions and grouping of fields (blocks 1–13)
+- `data points expansion plan.md` — semantic definitions and grouping of fields (blocks 1–37)
 
 ## File Structure
 
@@ -24,27 +35,82 @@ This file is the **source of truth** for:
 
 One **column** = one `fieldId` / data point
 
-**Column layout**:
-
+**Service Columns (col 1–3):**
 1. `report_type` — Report type identifier (e.g., CSRD, EU_ETS, CBAM)
 2. `__reference_urls__` — Official regulation/standard URL (service column, not a data point)
-3. `data_points_checked_against_reference_url` — ✓/❌ verification status (service column)
-4–263. Individual data point columns
+3. `data_points_checked_against_reference_url` — ✔️/❌ verification status (service column)
 
-**Row types**:
+**Column layout (col 4+):** Individual data point columns
+
+**Row types:**
 
 1. **Header row**: Data point names (fieldIds) — **source of truth for field naming**
 2. **Report rows**: Each regulatory framework/standard with M/O marks for required/optional fields
 3. **Utility rows**: `hint_for_UI`, `hint_for_email_request`, `implemented_in_database`
 
-**Cell value scheme for data point columns (col 4+)**:
+**Cell value scheme for data point columns (col 4+):**
 - `M` — Mandatory: field is required for this report type
 - `O` — Optional: field is relevant but not required
 - _(empty cell, i.e. `;;`)_ — field not applicable to this report type
 
 **Important:** Only three states are allowed: `M`, `O`, or empty (no spaces, no other markers).
 
-## Report Types Covered
+---
+
+## 📦 PRODUCT Matrix — Report Types (9)
+
+| Report Type | Description | Reference |
+|-------------|-------------|-----------|
+| `CBAM` | Carbon Border Adjustment Mechanism (basic) | EU Regulation |
+| `EPD_OR_ISO_14067` | Environmental Product Declaration / ISO 14067 | ISO Standard |
+| `PRODUCT_PCF` | Product Carbon Footprint (GHG Protocol) | GHG Protocol |
+| `BUILDING_CARBON_FOOTPRINT` | Building-specific carbon footprint | EN 15978 / ISO 21930 |
+| `CBAM_DATA_PACKAGE` | Full CBAM data package with verification | EU Regulation |
+| `CBAM_REPORT` | Quarterly CBAM report submission | EU Regulation |
+| `CBAM_ALLOWANCES` | CBAM allowances management | EU Regulation |
+| `CBAM_MONITORING_ALERT` | CBAM monitoring compliance alert | EU Regulation |
+| `CBAM_PREP_METHOD` | CBAM preparation methodology | EU Regulation |
+
+### PRODUCT Matrix Data Points (59 fields)
+
+**Block: Core/Period (4 fields)**
+- `reporting_period_start`, `reporting_period_end`, `countries_of_operation`, `exclusions_scope_explanation`
+
+**Block: Base Year (2 fields)**
+- `base_year`, `base_year_emissions_co2e`
+
+**Block: Verification (4 fields)**
+- `verification_standard`, `verifier_organization_name`, `verifier_scope_statement`, `verification_level_assurance`
+
+**Block: Building (10 fields)**
+- `building_type`, `building_floor_area_m2`, `building_construction_year`, `building_energy_consumption_mwh`
+- `building_occupancy_rate_percent`, `building_certifications_existing`, `building_embodied_carbon_co2e`
+- `building_operational_carbon_co2e`, `building_reference_study_period_years`, `building_life_cycle_module`
+
+**Block: CBAM (21 fields)**
+- `cbam_importer_eori`, `cbam_authorised_declarant_id`, `cbam_goods_cn_codes`, `cbam_reporting_quarter`
+- `cbam_total_embedded_emissions_co2e`, `cbam_embedded_emissions_direct_co2e`, `cbam_embedded_emissions_indirect_co2e`
+- `cbam_specific_embedded_emissions_tco2e_per_tonne`, `cbam_free_allowances_quantity`
+- `cbam_certificates_purchased_quantity`, `cbam_certificates_used_quantity`
+- `cbam_monitoring_methodology_description`, `cbam_supplier_data_availability`
+- `cbam_third_country_carbon_price_paid_eur`, `cbam_production_process_description`
+- `cbam_precursor_materials_emissions`, `cbam_installation_id`, `cbam_installation_country`
+- `cbam_installation_boundaries`, `cbam_goods_quantity_tonnes`, `cbam_emission_factor_electricity`
+
+**Block: Product LCA/PCF (11 fields)**
+- `product_name`, `product_description`, `product_functional_unit_definition`
+- `product_system_boundary_description`, `product_life_cycle_stages_included`
+- `product_allocation_methodology`, `product_cutoff_criteria`, `product_data_quality_indicators`
+- `product_total_pcf_co2e`, `product_pcf_per_functional_unit`, `product_biogenic_carbon_co2e`
+
+**Block: Meta/Quality (6 fields)**
+- `data_quality_assessment_summary`, `methodology_reference_documents`
+- `limitations_and_uncertainties_summary`, `comparability_notes`
+- `responsible_officer_name`, `responsible_officer_role`
+
+---
+
+## 🏢 CORPORATE Matrix — Report Types Covered
 
 ### EU Regulations (11)
 - CSRD - Corporate Sustainability Reporting Directive
@@ -85,7 +151,7 @@ One **column** = one `fieldId` / data point
 - BCORP_IMPACT_ASSESSMENT - B Corporation Certification
 - ECOVADIS_SCORE - Supplier sustainability rating
 
-### Client/Internal Use (9)
+### Client/Internal Use (12)
 - CLIENT_SCOPE3_PACKAGE - Client Scope 3 data delivery
 - CLIENT_TEMPLATE_FILL - Client template completion
 - BANK_TEMPLATE_FILL - Financial institution template
@@ -97,7 +163,10 @@ One **column** = one `fieldId` / data point
 - CLIMATE_ACTION_PLAN - Climate strategy document
 - RECS_OR_PPA_STRATEGY - Renewable energy strategy
 - ENERGY_AUDIT_SCOPE12 - Energy audit
-- BUILDING_CARBON_FOOTPRINT - Building-specific footprint
+
+> **Note:** `BUILDING_CARBON_FOOTPRINT` is in the PRODUCT matrix, not CORPORATE.
+
+---
 
 ## Division of Responsibilities
 
@@ -144,5 +213,5 @@ UI and validation logic should use this matrix to determine which fields to show
 
 ---
 
-**Last Updated:** November 26, 2025  
-**Next Review:** Annual or when major regulations update
+**Last Updated:** November 27, 2025  
+**Next Review:** When CBAM definitive phase starts (Jan 2026) or major regulations update
