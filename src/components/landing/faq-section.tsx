@@ -1,80 +1,72 @@
-"use client";
-
-import { motion } from "framer-motion";
+import AnimationContainer from "../global/animation-container";
+import MaxWidthWrapper from "../global/max-width-wrapper";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "../ui/accordion";
 
-const faqs = [
+const FAQ = [
   {
-    question: "Why good design is critical for your business?",
-    answer: "Good design builds trust, improves user experience, and directly impacts conversion rates. In competitive markets, professional design is what sets successful products apart.",
+    id: "1",
+    question: "How does Carbon Report calculate emissions?",
+    answer:
+      "We use industry-standard methodologies and emission factors to calculate your carbon footprint based on your activities and data inputs.",
   },
   {
-    question: "Why use Launch UI instead of a no-code tool?",
-    answer: "Launch UI gives you full control over your code, no vendor lock-in, better performance, and unlimited customization. You own the code forever with a one-time payment.",
+    id: "2",
+    question: "Can I integrate Carbon Report with other tools?",
+    answer:
+      "Yes! Professional and Enterprise plans include API access and custom integrations with popular business tools.",
   },
   {
-    question: "How Launch UI is different from other component libraries?",
-    answer: "Unlike generic templates, Launch UI components are carefully hand-crafted with unique designs. They're built on industry-standard tools (React, Tailwind, shadcn/ui) you already know.",
+    id: "3",
+    question: "Is my data secure?",
+    answer:
+      "Absolutely. We use enterprise-grade encryption and security measures to protect your data. We're also compliant with major data protection regulations.",
   },
   {
-    question: "What does it mean that 'The code is yours'?",
-    answer: "You get the full source code with a one-time purchase. No subscriptions, no recurring fees, no limitations. Use it in unlimited projects forever.",
+    id: "4",
+    question: "Can I cancel my subscription anytime?",
+    answer:
+      "Yes, you can cancel your subscription at any time. No questions asked, no hidden fees.",
   },
   {
-    question: "Are Figma files included?",
-    answer: "Yes! All components come with professionally designed Figma files, making it easy to customize designs before implementation.",
-  },
-  {
-    question: "Can I get a discount?",
-    answer: "We occasionally offer discounts for students, non-profits, and during special promotions. Follow us on Twitter for announcements.",
+    id: "5",
+    question: "Do you offer support?",
+    answer:
+      "Yes! All plans include email support. Professional and Enterprise plans also get priority support and dedicated account managers respectively.",
   },
 ];
 
 export function FaqSection() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl sm:text-5xl font-bold mb-4">
-            Questions and Answers
+    <div id="faq">
+      <MaxWidthWrapper className="py-10">
+        <AnimationContainer delay={0.1}>
+        <div className="flex flex-col items-center justify-center w-full pt-12">
+          <h2 className="mt-6 text-2xl font-semibold text-center lg:text-3xl xl:text-4xl">
+            Frequently Asked Questions
           </h2>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <Accordion type="single" collapsible className="space-y-4">
-            {faqs.map((faq, index) => (
-              <AccordionItem
-                key={index}
-                value={`item-${index}`}
-                className="border border-border rounded-lg px-6 bg-card"
-              >
-                <AccordionTrigger className="text-left hover:no-underline">
-                  <span className="font-semibold">{faq.question}</span>
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  {faq.answer}
-                </AccordionContent>
+          <p className="max-w-lg mt-6 text-center text-muted-foreground">
+            Here are some of the most common questions we get asked. If you have
+            a question that isn&apos;t answered here, feel free to reach out to
+            us.
+          </p>
+        </div>
+        <div className="max-w-3xl mx-auto w-full mt-12">
+          <Accordion type="single" collapsible>
+            {FAQ.map((faq) => (
+              <AccordionItem key={faq.id} value={faq.id}>
+                <AccordionTrigger>{faq.question}</AccordionTrigger>
+                <AccordionContent>{faq.answer}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
-        </motion.div>
-      </div>
-    </section>
+        </div>
+      </AnimationContainer>
+      </MaxWidthWrapper>
+    </div>
   );
 }

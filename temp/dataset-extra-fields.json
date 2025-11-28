@@ -1,0 +1,21 @@
+[
+  "cfp_result_unit",
+  "energy_input_amount",
+  "energy_input_type",
+  "energy_input_unit",
+  "energy_source_renewable_percent",
+  "hotspots_summary",
+  "material_data_source",
+  "material_input_amount",
+  "material_input_name",
+  "material_input_unit",
+  "material_origin_country",
+  "organization_address",
+  "organization_name",
+  "report_date",
+  "report_language",
+  "transport_load_factor",
+  "waste_quantity",
+  "waste_treatment_route",
+  "waste_type"
+]

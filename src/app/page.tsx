@@ -1,24 +1,22 @@
-import { HeroSection } from "@/components/landing/hero-section";
-import { BentoGridSection } from "@/components/landing/bento-grid-section";
-import { FeatureSection } from "@/components/landing/feature-section";
-import { SocialProofSection } from "@/components/landing/social-proof-section";
-import { StatsSection } from "@/components/landing/stats-section";
-import { PricingSection } from "@/components/landing/pricing-section";
-import { FaqSection } from "@/components/landing/faq-section";
-import { CtaSection } from "@/components/landing/cta-section";
-import { Footer } from "@/components/landing/footer";
+import CTA from "@/components/sections/cta/default";
+import FAQ from "@/components/sections/faq/default";
+import Footer from "@/components/sections/footer/default";
+import Hero from "@/components/sections/hero/default";
+import Items from "@/components/sections/items/default";
+import Navbar from "@/components/sections/navbar/default";
+import Pricing from "@/components/sections/pricing/default";
+import { LayoutLines } from "@/components/ui/layout-lines";
 
-export default function LandingPage() {
+export default function Home() {
   return (
-    <main className="min-h-screen bg-background">
-      <HeroSection />
-      <BentoGridSection />
-      <FeatureSection />
-      <SocialProofSection />
-      <StatsSection />
-      <PricingSection />
-      <FaqSection />
-      <CtaSection />
+    <main className="bg-background text-foreground min-h-screen w-full">
+      <LayoutLines />
+      <Navbar />
+      <Hero />
+      <Items />
+      <Pricing />
+      <FAQ />
+      <CTA />
       <Footer />
     </main>
   );

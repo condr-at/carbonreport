@@ -37,11 +37,14 @@ export interface MailtoTemplate {
   // Variables: {{contact_name}}, {{requester_signature}}, {{field_display_name}}, {{field_list}}, {{deadline}}
 }
 
+export type ProjectScope = 'product' | 'corporate' | 'both'
+
 export interface ReportTemplate {
   code: ReportTemplateCode
   name: string
   version?: string
   description?: string
+  scope: ProjectScope // Which project types can use this template
   layoutMeta?: ReportTemplateLayoutMeta
   sections: ReportTemplateSection[]
   mailto?: MailtoTemplate
@@ -55,6 +58,11 @@ export type ReportTemplateCode =
   | 'UK_SECR'
   | 'SEC_CLIMATE'
   | 'CORSIA'
+  | 'GHG_PROTOCOL_CORPORATE'
+  | 'CDP'
+  | 'IFRS_S2'
+  | 'TCFD'
+  | 'BUILDING_LCA'
   | 'EU_MRV'
   | 'SFDR'
   | 'UK_TCFD'

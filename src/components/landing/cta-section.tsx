@@ -1,31 +1,34 @@
-"use client";
-
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import AnimationContainer from "../global/animation-container";
+import MaxWidthWrapper from "../global/max-width-wrapper";
+import { LampContainer } from "../ui/lamp";
+import { Button } from "../ui/button";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export function CtaSection() {
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-muted/30">
-      <div className="max-w-4xl mx-auto text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
-            Start building
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Get lifetime access to all templates and components. Join thousands of developers already building with our platform.
-          </p>
-          <Button size="lg" className="text-lg px-8">
-            Get Started
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
-        </motion.div>
-      </div>
-    </section>
+    <MaxWidthWrapper className="pt-20">
+      <AnimationContainer delay={0.1} className="w-full">
+        <LampContainer className="max-w-2xl mx-auto">
+          <div className="flex flex-col items-center justify-center relative w-full text-center">
+            <h2 className="bg-gradient-to-b from-foreground to-foreground/60 py-4 bg-clip-text text-center text-4xl md:text-7xl !leading-[1.15] font-medium font-heading tracking-tight text-transparent mt-8">
+              Start your sustainability journey today
+            </h2>
+            <p className="text-muted-foreground mt-6 max-w-md mx-auto text-base md:text-lg">
+              Join thousands of organizations using Carbon Report to measure
+              and reduce their environmental impact.
+            </p>
+            <div className="mt-6">
+              <Button asChild size="lg">
+                <Link href="/register" className="flex items-center">
+                  Get started for free
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </LampContainer>
+      </AnimationContainer>
+    </MaxWidthWrapper>
   );
 }

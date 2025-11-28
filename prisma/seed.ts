@@ -80,12 +80,21 @@ async function seedReportTemplates() {
   })
 
   for (const [templateIndex, templateSeed] of REPORT_TEMPLATE_SEED.entries()) {
+    // Map scope string to Prisma enum
+    const scopeMap = {
+      product: 'PRODUCT' as const,
+      corporate: 'CORPORATE' as const,
+      both: 'BOTH' as const,
+    }
+    const templateScope = scopeMap[templateSeed.scope]
+
     const template = await prisma.reportTemplate.create({
       data: {
         code: templateSeed.code,
         name: templateSeed.name,
         version: templateSeed.version ?? null,
         description: templateSeed.description ?? null,
+        scope: templateScope,
         layoutMeta: templateSeed.layoutMeta
           ? (templateSeed.layoutMeta as Prisma.InputJsonValue)
           : undefined,
@@ -205,10 +214,10 @@ function createMockDataset(projectType: 'ebike' | 'steel') {
     updates['report_language'] = 'English'
     updates['product_name'] = 'E-Bike Model X Pro'
     updates['product_description'] = 'Electric bicycle with 750W motor and lithium battery'
-    updates['intended_market'] = 'European Union, North America'
-    updates['functional_unit'] = '1 electric bicycle'
-    updates['system_boundary'] = 'Cradle-to-gate including raw materials, manufacturing, and packaging'
-    updates['total_cfp_co2e'] = '145.5'
+    updates['product_geographic_validity'] = 'European Union, North America'
+    updates['product_functional_unit_definition'] = '1 electric bicycle'
+    updates['product_system_boundary_description'] = 'Cradle-to-gate including raw materials, manufacturing, and packaging'
+    updates['product_total_pcf_co2e'] = '145.5'
     updates['cfp_result_unit'] = 'kg CO2e'
 
     updates['material_input_name'] = { '1': 'Aluminum frame' }
@@ -227,10 +236,10 @@ function createMockDataset(projectType: 'ebike' | 'steel') {
     updates['report_language'] = 'English'
     updates['product_name'] = 'Steel Beam 200x100'
     updates['product_description'] = 'Structural steel beam for construction projects'
-    updates['intended_market'] = 'European Union'
-    updates['functional_unit'] = '1 ton of steel beams'
-    updates['system_boundary'] = 'Cradle-to-gate: mining, processing, manufacturing'
-    updates['total_cfp_co2e'] = '1850'
+    updates['product_geographic_validity'] = 'European Union'
+    updates['product_functional_unit_definition'] = '1 ton of steel beams'
+    updates['product_system_boundary_description'] = 'Cradle-to-gate: mining, processing, manufacturing'
+    updates['product_total_pcf_co2e'] = '1850'
     updates['cfp_result_unit'] = 'kg CO2e'
 
     updates['material_input_name'] = { '1': 'Iron ore', '2': 'Coking coal' }
@@ -283,6 +292,13 @@ async function main() {
   console.log('✅ Cleaned')
 
   console.log('🧱 Seeding dataset field definitions...')
+  // Map scope string to Prisma enum
+  const fieldScopeMap = {
+    product: 'PRODUCT' as const,
+    corporate: 'CORPORATE' as const,
+    both: 'BOTH' as const,
+  }
+
   await prisma.datasetFieldDefinition.createMany({
     data: DATASET_FIELD_SEED.map((field) => ({
       fieldId: field.fieldId,
@@ -291,7 +307,7 @@ async function main() {
       type: field.type ?? 'text',
       dataType: field.dataType,
       unit: field.unit ?? null,
-      scope: field.scope,
+      scope: fieldScopeMap[field.scope],
       options: field.options ?? null,
       validation: field.validation ?? null,
       isRepeatable: field.isRepeatable ?? false,

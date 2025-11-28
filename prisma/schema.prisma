@@ -58,6 +58,21 @@ enum ProjectStatus {
   @@map("project_status")
 }
 
+enum ProjectType {
+  PRODUCT   @map("product")
+  CORPORATE @map("corporate")
+
+  @@map("project_type")
+}
+
+enum ProjectScope {
+  PRODUCT   @map("product")
+  CORPORATE @map("corporate")
+  BOTH      @map("both")
+
+  @@map("project_scope")
+}
+
 // ================================
 // Users & Authentication
 // ================================
@@ -207,7 +222,7 @@ model Project {
   organizationId  String        @map("organization_id")
   createdByUserId String        @map("created_by_user_id")
   name            String
-  projectType     String        @default("product") @map("project_type") // 'product' | 'corporate'
+  projectType     ProjectType   @default(PRODUCT) @map("project_type")
   dataset         Json // JSONB: { data_points: [...] }
   datasetVersion  Int           @default(0) @map("dataset_version") // Optimistic locking
   mailtoTemplate  Json?         @map("mailto_template")
@@ -251,19 +266,21 @@ model Report {
 }
 
 model ReportTemplate {
-  id          String   @id @default(uuid())
-  code        String   @unique // e.g., "ISO14067"
+  id          String       @id @default(uuid())
+  code        String       @unique // e.g., "ISO14067"
   name        String
   version     String?
   description String?
-  layoutMeta  Json?    @map("layout_meta") // Arbitrary layout configuration
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  scope       ProjectScope @default(BOTH) // product, corporate, or both
+  layoutMeta  Json?        @map("layout_meta") // Arbitrary layout configuration
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
 
   // Relations
   sections ReportTemplateSection[]
   reports  Report[]
 
+  @@index([scope])
   @@map("report_templates")
 }
 
@@ -366,7 +383,7 @@ model DatasetFieldDefinition {
   type                       String                       @default("text") // KEEP for backward compat
   dataType                   String                       @default("text") @map("data_type") // text, textarea, number, currency, percentage, date, year, select, multiselect, country, json
   unit                       String? // "tCO2e", "EUR", "MWh", "m²", "%"
-  scope                      String                       @default("both") // 'product' | 'corporate' | 'both'
+  scope                      ProjectScope                 @default(BOTH) // 'product' | 'corporate' | 'both'
   options                    Json?
   validation                 Json?
   isRepeatable               Boolean                      @default(false) @map("is_repeatable")

@@ -16,6 +16,7 @@ export type ApiErrorCode =
   | 'PRECONDITION_FAILED'
   | 'SERVICE_UNAVAILABLE'
   | 'INTERNAL_ERROR'
+  | 'UPLOAD_RELAY_FAILED'
 
 export type ApiErrorDetails = Record<string, unknown> | undefined
 

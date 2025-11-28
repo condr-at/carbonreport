@@ -9,7 +9,7 @@ import { CBAMTemplate } from './cbam'
  * Import this in your application to access templates.
  */
 
-export const REPORT_TEMPLATES: Record<ReportTemplateCode, ReportTemplate> = {
+export const REPORT_TEMPLATES: Partial<Record<ReportTemplateCode, ReportTemplate>> = {
   ISO14067: ISO14067Template,
   CBAM: CBAMTemplate,
 }

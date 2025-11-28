@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { useOrganizationContext } from '@/lib/organizations/context'
@@ -12,6 +12,8 @@ interface OrganizationGateProps {
 
 export function OrganizationGate({ children }: OrganizationGateProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const {
     acceptedOrganizations,
     activeOrganizationId,
@@ -23,7 +25,8 @@ export function OrganizationGate({ children }: OrganizationGateProps) {
 
   const hasOrganizations = acceptedOrganizations.length > 0
   const isPending = isLoading || isBootstrapping
-  const shouldRedirectToOnboarding = !isPending && !hasOrganizations && !isError
+  const isCreatingOrganization = pathname === '/settings/profile' && searchParams.get('mode') === 'create'
+  const shouldRedirectToOnboarding = !isPending && !hasOrganizations && !isError && !isCreatingOrganization
   const isAwaitingSelection = hasOrganizations && !activeOrganizationId
   const showOverlay = isPending || shouldRedirectToOnboarding || isAwaitingSelection
 

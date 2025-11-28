@@ -136,9 +136,9 @@ export function OrganizationSettingsShell({ activeTab, renderContent }: Organiza
         </DialogHeader>
         <CreateOrganizationForm
           variant="plain"
-          onCreated={(organizationId) => {
+          onCreated={async (organizationId) => {
+            await refetch()
             setActiveOrganizationId(organizationId)
-            void refetch()
             router.replace('/settings/profile')
           }}
           onCancel={handleCreateModalClose}

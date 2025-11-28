@@ -24,6 +24,7 @@ export const CBAMTemplate: ReportTemplate = {
   name: 'EU CBAM Declaration',
   version: '1.0',
   description: 'Carbon Border Adjustment Mechanism declaration for EU imports',
+  scope: 'product',
   layoutMeta: {
     layout: 'tabbed',
   },
@@ -36,7 +37,7 @@ export const CBAMTemplate: ReportTemplate = {
         { fieldId: 'organization_name', isRequired: true, displayOrder: 10 },
         { fieldId: 'product_name', isRequired: true, displayOrder: 20 },
         { fieldId: 'product_description', displayOrder: 30 },
-        { fieldId: 'functional_unit', displayOrder: 40 },
+        { fieldId: 'product_functional_unit_definition', displayOrder: 40 },
       ],
     },
     {
@@ -44,7 +45,7 @@ export const CBAMTemplate: ReportTemplate = {
       title: 'Declared Emissions',
       blockComponent: 'ghg-summary',
       fields: [
-        { fieldId: 'total_cfp_co2e', isRequired: true, displayOrder: 10 },
+        { fieldId: 'product_total_pcf_co2e', isRequired: true, displayOrder: 10 },
         { fieldId: 'cfp_result_unit', isRequired: true, displayOrder: 20 },
         { fieldId: 'hotspots_summary', displayOrder: 30 },
       ],
@@ -71,8 +72,8 @@ export const CBAMTemplate: ReportTemplate = {
         repeatableKey: 'transport_segment',
       },
       fields: [
-        { fieldId: 'transport_mode', isRequired: true, displayOrder: 10 },
-        { fieldId: 'transport_distance', displayOrder: 20 },
+        { fieldId: 'product_transport_mode', isRequired: true, displayOrder: 10 },
+        { fieldId: 'product_transport_distance_km', displayOrder: 20 },
         { fieldId: 'transport_load_factor', displayOrder: 30 },
       ],
     },

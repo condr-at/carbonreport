@@ -51,8 +51,10 @@ function VerifyEmailFallback() {
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
-  const status = getStatusCopy(searchParams.get('status'))
+  const statusParam = searchParams.get('status')
+  const status = getStatusCopy(statusParam)
   const [isLoading, setIsLoading] = useState(false)
+  const isVerified = statusParam === 'verified'
 
   async function handleResend() {
     setIsLoading(true)
@@ -84,17 +86,27 @@ function VerifyEmailContent() {
           <CardDescription>{status.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5 text-sm text-muted-foreground">
-          <p>
-            Open the email from <span className="text-foreground font-medium">Carbon Report</span> and click the
-            verification link. This confirms you own the address you used to register.
-          </p>
+          {!isVerified && (
+            <p>
+              Open the email from <span className="text-foreground font-medium">Carbon Report</span> and click the
+              verification link. This confirms you own the address you used to register.
+            </p>
+          )}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <Button onClick={handleResend} disabled={isLoading}>
-              {isLoading ? 'Sending…' : 'Resend email'}
-            </Button>
-            <Link href="/login" className="text-primary hover:underline">
-              Back to sign in
-            </Link>
+            {isVerified ? (
+              <Button asChild className="w-full">
+                <Link href="/login">Sign in</Link>
+              </Button>
+            ) : (
+              <>
+                <Button onClick={handleResend} disabled={isLoading}>
+                  {isLoading ? 'Sending…' : 'Resend email'}
+                </Button>
+                <Link href="/login" className="text-primary hover:underline">
+                  Back to sign in
+                </Link>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>

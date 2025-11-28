@@ -791,7 +791,7 @@ export function DatasetTable({
         </div>
         {selectedRowIds.size > 0 && (
           <Button
-            variant="default"
+            variant="primary"
             size="sm"
             onClick={() => {
               const selectedRows = rows.filter((r) => selectedRowIds.has(r.id));

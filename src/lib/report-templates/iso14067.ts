@@ -24,6 +24,7 @@ export const ISO14067Template: ReportTemplate = {
   name: 'ISO 14067 Carbon Footprint Report',
   version: '1.0',
   description: 'International standard for quantifying the carbon footprint of products',
+  scope: 'product',
   layoutMeta: {
     layout: 'stacked-sections',
   },
@@ -39,8 +40,8 @@ export const ISO14067Template: ReportTemplate = {
         { fieldId: 'report_language', displayOrder: 30 },
         { fieldId: 'product_name', isRequired: true, displayOrder: 40 },
         { fieldId: 'product_description', displayOrder: 50 },
-        { fieldId: 'intended_market', displayOrder: 60 },
-        { fieldId: 'functional_unit', isRequired: true, displayOrder: 70 },
+        { fieldId: 'product_geographic_validity', displayOrder: 60 },
+        { fieldId: 'product_functional_unit_definition', isRequired: true, displayOrder: 70 },
       ],
     },
     {
@@ -48,7 +49,7 @@ export const ISO14067Template: ReportTemplate = {
       title: 'System Boundary & Scope',
       blockComponent: 'boundary',
       fields: [
-        { fieldId: 'system_boundary', isRequired: true, displayOrder: 10 },
+        { fieldId: 'product_system_boundary_description', isRequired: true, displayOrder: 10 },
         { fieldId: 'hotspots_summary', displayOrder: 20 },
       ],
     },
@@ -57,7 +58,7 @@ export const ISO14067Template: ReportTemplate = {
       title: 'GHG Emissions Results',
       blockComponent: 'ghg-summary',
       fields: [
-        { fieldId: 'total_cfp_co2e', isRequired: true, displayOrder: 10 },
+        { fieldId: 'product_total_pcf_co2e', isRequired: true, displayOrder: 10 },
         { fieldId: 'cfp_result_unit', isRequired: true, displayOrder: 20 },
       ],
     },
