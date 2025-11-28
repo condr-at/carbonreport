@@ -29,8 +29,8 @@ export const REPORT_TEMPLATE_SEED: ReportTemplateSeed[] = [
           { fieldId: 'report_language', displayOrder: 30 },
           { fieldId: 'product_name', isRequired: true, displayOrder: 40 },
           { fieldId: 'product_description', displayOrder: 50 },
-          { fieldId: 'intended_market', displayOrder: 60 },
-          { fieldId: 'functional_unit', isRequired: true, displayOrder: 70 },
+          { fieldId: 'product_geographic_validity', displayOrder: 60 },
+          { fieldId: 'product_functional_unit_definition', isRequired: true, displayOrder: 70 },
         ],
       },
       {
@@ -38,7 +38,7 @@ export const REPORT_TEMPLATE_SEED: ReportTemplateSeed[] = [
         title: 'System Boundary & Scope',
         blockComponent: 'boundary',
         fields: [
-          { fieldId: 'system_boundary', isRequired: true, displayOrder: 10 },
+          { fieldId: 'product_life_cycle_stages_included', isRequired: true, displayOrder: 10 },
           { fieldId: 'hotspots_summary', displayOrder: 20 },
         ],
       },
@@ -47,7 +47,7 @@ export const REPORT_TEMPLATE_SEED: ReportTemplateSeed[] = [
         title: 'GHG Emissions Results',
         blockComponent: 'ghg-summary',
         fields: [
-          { fieldId: 'total_cfp_co2e', isRequired: true, displayOrder: 10 },
+          { fieldId: 'product_total_pcf_co2e', isRequired: true, displayOrder: 10 },
           { fieldId: 'cfp_result_unit', isRequired: true, displayOrder: 20 },
         ],
       },
@@ -99,7 +99,7 @@ export const REPORT_TEMPLATE_SEED: ReportTemplateSeed[] = [
           { fieldId: 'organization_name', isRequired: true, displayOrder: 10 },
           { fieldId: 'product_name', isRequired: true, displayOrder: 20 },
           { fieldId: 'product_description', displayOrder: 30 },
-          { fieldId: 'functional_unit', displayOrder: 40 },
+          { fieldId: 'product_functional_unit_definition', displayOrder: 40 },
         ],
       },
       {
@@ -107,7 +107,7 @@ export const REPORT_TEMPLATE_SEED: ReportTemplateSeed[] = [
         title: 'Declared Emissions',
         blockComponent: 'ghg-summary',
         fields: [
-          { fieldId: 'total_cfp_co2e', isRequired: true, displayOrder: 10 },
+          { fieldId: 'product_total_pcf_co2e', isRequired: true, displayOrder: 10 },
           { fieldId: 'cfp_result_unit', isRequired: true, displayOrder: 20 },
           { fieldId: 'hotspots_summary', displayOrder: 30 },
         ],
@@ -134,8 +134,8 @@ export const REPORT_TEMPLATE_SEED: ReportTemplateSeed[] = [
           repeatableKey: 'transport_segment',
         },
         fields: [
-          { fieldId: 'transport_mode', isRequired: true, displayOrder: 10 },
-          { fieldId: 'transport_distance', displayOrder: 20 },
+          { fieldId: 'product_transport_mode', isRequired: true, displayOrder: 10 },
+          { fieldId: 'product_transport_distance_km', displayOrder: 20 },
           { fieldId: 'transport_load_factor', displayOrder: 30 },
         ],
       },

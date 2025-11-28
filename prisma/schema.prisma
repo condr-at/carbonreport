@@ -207,6 +207,7 @@ model Project {
   organizationId  String        @map("organization_id")
   createdByUserId String        @map("created_by_user_id")
   name            String
+  projectType     String        @default("product") @map("project_type") // 'product' | 'corporate'
   dataset         Json // JSONB: { data_points: [...] }
   datasetVersion  Int           @default(0) @map("dataset_version") // Optimistic locking
   mailtoTemplate  Json?         @map("mailto_template")
@@ -362,17 +363,22 @@ model DatasetFieldDefinition {
   fieldId                    String                       @unique @map("field_id") // e.g., "ProductDescription_ProductName"
   label                      String
   hint                       String?
-  type                       String                       @default("text")
+  type                       String                       @default("text") // KEEP for backward compat
+  dataType                   String                       @default("text") @map("data_type") // text, textarea, number, currency, percentage, date, year, select, multiselect, country, json
+  unit                       String? // "tCO2e", "EUR", "MWh", "m²", "%"
+  scope                      String                       @default("both") // 'product' | 'corporate' | 'both'
   options                    Json?
   validation                 Json?
   isRepeatable               Boolean                      @default(false) @map("is_repeatable")
   repeatableKey              String?                      @map("repeatable_key")
+  isRequired                 Boolean                      @default(false) @map("is_required") // globally required field
   // Sorting/ordering for UI (ascending); smaller first
   sortOrder                  Int                          @default(0) @map("sort_order")
   createdAt                  DateTime                     @default(now()) @map("created_at")
   updatedAt                  DateTime                     @updatedAt @map("updated_at")
   ReportTemplateFieldMapping ReportTemplateFieldMapping[]
 
+  @@index([scope]) // for filtering by scope
   @@map("dataset_field_definitions")
 }
 

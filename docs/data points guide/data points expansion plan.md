@@ -24,11 +24,25 @@
 
 - Этот документ — **источник истины по смыслу и структуре полей**:
   блоки 1–37 описывают `fieldId`, типы, repeatable‑группы и ссылки на стандарты.
-- Файл `datapoints-reports matrix.csv` в этой же папке —
-  **источник истины по названиям полей и использованию в отчётах**:
-  колонки CSV = канонические названия `fieldId`, строки = отчёты с маркировкой `M/O/пусто`.
+- Файлы матриц в этой же папке —
+  **источники истины по названиям полей и использованию в отчётах**:
+  
+  | Файл | Описание | Статус |
+  |------|----------|--------|
+  | `datapoints-reports-PRODUCT.csv` | Продуктовые отчёты (оригинал) | Базовый |
+  | `datapoints-reports-PRODUCT-2026.csv` | Продуктовые отчёты с 2026+ полями | **Актуальный** |
+  | `datapoints-reports-CORPORATE.csv` | Корпоративные отчёты (оригинал) | Базовый |
+  | `datapoints-reports-CORPORATE-2026.csv` | Корпоративные отчёты с 2026+ полями | **Актуальный** |
+  
+  Колонки CSV = канонические названия `fieldId`, строки = отчёты с маркировкой `M/O/пусто`.
+  
+- **-2026.csv файлы содержат:**
+  - Все оригинальные поля из базовых файлов
+  - Новые поля для соответствия требованиям 2026+ (IFRS S2, SEC Climate, ESRS E1, EU ETS Phase 4, SBTi FLAG, CBAM Annex IV/V/VI)
+  - Обновлённые reference URLs на официальные источники (EUR-Lex, ISO, SEC и т.д.)
+  
 - При добавлении нового поля:
-  1) сначала добавить колонку в `datapoints-reports matrix.csv` (это источник истины по naming),
+  1) сначала добавить колонку в соответствующий `-2026.csv` файл (это источник истины по naming),
   2) затем добавить описание поля в соответствующий блок здесь.
 - Для понимания универсама отчётов и логики их выбора см. также
   `docs/report recommendation engine/questionare logic.md` и
@@ -43,6 +57,134 @@
 - Поддержка рецензентов: `reviewer_name`, `reviewer_affiliation`.
 - Всё перечисленное заточено под ISO 14067 / продуктовый CFP; корпоративных, регуляторных и финансовых полей пока нет.
 - Вывод: любые новые `fieldId` из блоков 1–12 ниже отсутствуют и требуют явного описания в `DatasetFieldDefinition` перед тем, как их смогут читать шаблоны отчётов.
+
+---
+
+## 🔄 Обновление 27.11.2025 — сверка с 2026+ требованиями
+
+### Созданы расширенные матрицы:
+- `datapoints-reports-PRODUCT-2026.csv` — 49 новых полей для продуктовых отчётов
+- `datapoints-reports-CORPORATE-2026.csv` — 36 новых полей для корпоративных отчётов
+
+### Источники для 2026+ полей:
+- **CBAM Regulation (EU) 2023/956** — Annex IV, V, VI (EUR-Lex CELEX:32023R0956)
+- **IFRS S2 Climate-related Disclosures** — ifrs.org/ifrs-s2
+- **SEC Climate Rule 33-11275** — sec.gov/rules/final/2024/33-11275.pdf
+- **CSRD/ESRS (EU) 2023/2772** — EUR-Lex CELEX:32023R2772
+- **ISO 14067:2018** — Product carbon footprint
+- **EN 15804/15978** — Building sustainability standards
+- **SBTi Criteria v5.1** — sciencebasedtargets.org
+
+### Ключевые добавленные категории полей:
+
+**IFRS S2 / ISSB (обязательно с 2024+):**
+- `issb_s2_applied` — применяется ли IFRS S2
+- `climate_resilience_assessment` — оценка климатической устойчивости (IFRS S2 §22)
+- `climate_related_opportunities_description` — описание климатических возможностей
+- `current_period_climate_impacts_financial` — финансовые последствия за текущий период
+- `anticipated_climate_impacts_financial` — ожидаемые финансовые последствия
+- `climate_targets_progress_quantitative` — количественный прогресс по целям
+
+**SEC Climate Rule 33-11275:**
+- `sec_material_climate_risks_disclosure` — раскрытие материальных климатических рисков
+- `sec_scope1_attestation_level` — уровень аттестации Scope 1 (limited/reasonable)
+- `sec_scope2_attestation_level` — уровень аттестации Scope 2
+- `sec_ghg_attestation_provider` — поставщик аттестации GHG
+- `sec_climate_targets_material_impact` — материальное влияние климатических целей
+
+**ESRS E1 дополнения:**
+- `esrs_e1_gross_scope123_co2e` — валовые выбросы Scope 1+2+3 (E1-6)
+- `esrs_e1_ghg_removals_co2e` — поглощения GHG (E1-7)
+- `esrs_e1_ghg_mitigation_projects_co2e` — проекты по снижению (E1-7)
+- `esrs_e1_internal_carbon_pricing_schemes` — схемы внутреннего ценообразования углерода
+- `esrs_e1_energy_consumption_high_impact_sectors_mwh` — энергопотребление в секторах высокого воздействия
+- `esrs_e1_energy_intensity_per_revenue` — энергоинтенсивность на выручку
+- `esrs_e1_renewable_energy_production_mwh` — собственное производство ВИЭ
+
+**GHG Protocol — разбивка по газам (Scope 1):**
+- `scope1_co2_emissions` — отдельно CO₂
+- `scope1_ch4_emissions` — отдельно CH₄
+- `scope1_n2o_emissions` — отдельно N₂O
+- `scope1_hfcs_emissions` — отдельно HFCs
+- `scope1_pfcs_emissions` — отдельно PFCs
+- `scope1_sf6_emissions` — отдельно SF₆
+- `scope1_nf3_emissions` — отдельно NF₃
+
+**Scope 3 агрегаты:**
+- `scope3_upstream_total_co2e` — суммарно upstream Scope 3
+- `scope3_downstream_total_co2e` — суммарно downstream Scope 3
+- `scope3_calculation_methodology_per_category` — методология расчета по категориям
+- `scope2_residual_mix_emissions_co2e` — выбросы по residual mix
+
+**EU ETS Phase 4 / 2026+:**
+- `eu_ets_phase` — фаза EU ETS (4)
+- `eu_ets_benchmark_values` — бенчмарк-значения
+- `eu_ets_carbon_leakage_exposure` — подверженность утечке углерода
+- `eu_ets_innovation_fund_eligible` — право на Innovation Fund
+
+**SBTi FLAG / Net-Zero:**
+- `sbti_flag_target_set` — целевые показатели FLAG (Forest, Land, Agriculture)
+- `sbti_value_chain_target` — цель по цепочке создания стоимости
+- `sbti_validation_date` — дата валидации SBTi
+
+**CBAM расширения (Annex IV/V/VI):**
+- `cbam_installation_id` — уникальный ID установки
+- `cbam_installation_country` — страна установки
+- `cbam_installation_boundaries` — границы установки
+- `cbam_goods_quantity_tonnes` — количество товара в тоннах
+- `cbam_emission_factor_electricity` — эмиссионный фактор электричества
+- `cbam_activity_level_tonnes` — уровень активности
+- `cbam_attributed_emissions_co2e` — атрибутированные выбросы
+- `cbam_system_boundaries_description` — описание системных границ
+- `cbam_installation_location_coordinates` — координаты (широта, долгота до 6 знаков)
+- `cbam_installation_main_economic_activity` — основная экономическая деятельность
+- `cbam_operator_name` — наименование оператора
+- `cbam_operator_contact` — контакт оператора
+- `cbam_verification_report_date` — дата верификационного отчёта
+- `cbam_verifier_name` — наименование верификатора
+- `cbam_verifier_accreditation_number` — номер аккредитации верификатора
+- `cbam_installation_visit_date` — дата посещения установки
+- `cbam_emission_attribution_method` — метод атрибуции выбросов
+- `cbam_default_value_used` — использовано дефолтное значение (да/нет)
+- `cbam_country_specific_default_value_source` — источник дефолтных значений по стране
+
+**Building carbon footprint (EN 15978):**
+- `building_module_a1a3_emissions_co2e` — модуль A1-A3 (производство)
+- `building_module_a4_emissions_co2e` — модуль A4 (транспорт)
+- `building_module_a5_emissions_co2e` — модуль A5 (строительство)
+- `building_module_b_emissions_co2e` — модуль B (эксплуатация)
+- `building_module_c_emissions_co2e` — модуль C (конец жизненного цикла)
+- `building_module_d_benefits_co2e` — модуль D (выгоды за границами системы)
+- `building_structural_system` — конструктивная система
+- `building_facade_type` — тип фасада
+- `building_hvac_system_type` — тип HVAC системы
+- `building_energy_class` — класс энергоэффективности
+- `building_energy_consumption_heating_mwh` — потребление на отопление
+- `building_energy_consumption_cooling_mwh` — потребление на охлаждение
+- `building_energy_consumption_electricity_mwh` — потребление электричества
+- `building_renewable_energy_share_percent` — доля ВИЭ
+- `building_net_zero_target_year` — год достижения net-zero
+- `building_decarbonisation_pathway` — путь декарбонизации
+
+**Product PCF расширения (ISO 14067):**
+- `product_pcf_co2_emissions` — отдельно CO₂
+- `product_pcf_ch4_emissions` — отдельно CH₄
+- `product_pcf_n2o_emissions` — отдельно N₂O
+- `product_pcf_other_ghg_emissions` — прочие GHG
+- `product_primary_data_percentage` — процент первичных данных
+- `product_lca_database_used` — использованная БД LCA
+- `product_lca_software_used` — использованное ПО LCA
+- `product_declared_unit` — заявленная единица (для EPD)
+- `product_reference_service_life_years` — референсный срок службы
+- `product_end_of_life_scenario` — сценарий конца жизни
+- `product_transport_distance_km` — расстояние транспортировки
+- `product_transport_mode` — вид транспорта
+- `product_packaging_emissions_co2e` — выбросы от упаковки
+- `product_use_phase_emissions_co2e` — выбросы фазы использования
+- `product_pcr_or_pefcr_reference` — ссылка на PCR/PEFCR
+- `product_geographic_validity` — географическая валидность
+- `product_temporal_validity` — временная валидность
+- `product_technology_coverage` — технологический охват
 
 ---
 
@@ -381,27 +523,72 @@ _Статус данных (25.11.2025):_
   - Обзор: https://www.fsb-tcfd.org/about/
 - **SEC Climate Disclosure Rule** — The Enhancement and Standardization of Climate-Related Disclosures for Investors (Release No. 33-11275):
   - Пресс-релиз SEC 2024-31: https://www.sec.gov/news/press-release/2024-31
+  - Полный текст: https://www.sec.gov/rules/final/2024/33-11275.pdf
+- **IFRS S2 Climate-related Disclosures** — ISSB climate standard (обязателен с 2024):
+  - Навигатор: https://www.ifrs.org/issued-standards/ifrs-sustainability-standards-navigator/ifrs-s2-climate-related-disclosures/
 - **SFDR** — Regulation (EU) 2019/2088 on sustainability‐related disclosures in the financial services sector + PAI Annex I:
   - Основной текст: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32019R2088
-- **CBAM** — Carbon Border Adjustment Mechanism (guidance for authorised declarants):
+- **CBAM** — Carbon Border Adjustment Mechanism (Regulation (EU) 2023/956):
+  - Полный текст регламента: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R0956
   - Портал: https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en
 - **EU ETS** — EU Emissions Trading System, scope and sectors:
   - Scope: https://climate.ec.europa.eu/eu-action/eu-emissions-trading-system-eu-ets/scope-eu-ets_en
- - **SBTi Corporate Net-Zero Standard** — корпоративный нетто‑ноль, структура near‑term / long‑term целей и охвата по скопам:
-   - Хаб стандарта: https://sciencebasedtargets.org/net-zero
- - **ISO 14064-1:2018** — организационный GHG‑инвентарь (границы, базовый год, пересчёты, поглощения):
-   - Карточка стандарта: https://www.iso.org/standard/66453.html
- - **ICAO CORSIA** — авиация, офсетная схема CORSIA, структура отчётности по топливу/выбросам/охвату рейсов:
-   - Портал CORSIA: https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx
+- **SBTi Corporate Net-Zero Standard** — корпоративный нетто‑ноль, структура near‑term / long‑term целей и охвата по скопам:
+  - Хаб стандарта: https://sciencebasedtargets.org/net-zero
+  - Критерии: https://sciencebasedtargets.org/resources/files/SBTi-criteria.pdf
+- **ISO 14064-1:2018** — организационный GHG‑инвентарь (границы, базовый год, пересчёты, поглощения):
+  - Карточка стандарта: https://www.iso.org/standard/66453.html
+- **ISO 14067:2018** — продуктовый углеродный след:
+  - Карточка стандарта: https://www.iso.org/standard/71206.html
+- **EN 15978:2011** — оценка экологических показателей зданий:
+  - Стандарт: https://www.en-standard.eu/csn-en-15978-sustainability-of-construction-works-assessment-of-environmental-performance-of-buildings-calculation-method/
+- **GHG Protocol** — корпоративный и продуктовый стандарты:
+  - Corporate: https://ghgprotocol.org/corporate-standard
+  - Product: https://ghgprotocol.org/product-standard
+  - Scope 3: https://ghgprotocol.org/corporate-value-chain-scope-3-standard
+  - Scope 2 Guidance: https://ghgprotocol.org/scope-2-guidance
+- **ICAO CORSIA** — авиация, офсетная схема CORSIA, структура отчётности по топливу/выбросам/охвату рейсов:
+  - Портал CORSIA: https://www.icao.int/environmental-protection/CORSIA/Pages/default.aspx
+- **EU MRV** — морской транспорт:
+  - Regulation (EU) 2015/757: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32015R0757
 
 Кратко, к чему они привели:
 
-- ESRS/CSRD → подтверждение необходимости блоков 1–4 + метаполей блока 12.
+- ESRS/CSRD → подтверждение необходимости блоков 1–4 + метаполей блока 12 + новые ESRS E1 поля (gross emissions, removals, mitigation projects, internal carbon pricing).
 - TCFD → акцент на governance/strategy/risks/metrics (блок 4 + 11).
-- SEC climate rule → добавление финансовых полей `climate_financial_impacts_summary`, `severe_weather_*`, `carbon_offsets_financial_impacts_amount`, `recs_financial_impacts_amount`.
+- SEC climate rule → добавление финансовых полей `climate_financial_impacts_summary`, `severe_weather_*`, `carbon_offsets_financial_impacts_amount`, `recs_financial_impacts_amount`, а также SEC-специфичных `sec_scope1_attestation_level`, `sec_scope2_attestation_level`, `sec_ghg_attestation_provider`, `sec_material_climate_risks_disclosure`, `sec_climate_targets_material_impact`.
+- IFRS S2 → добавление `issb_s2_applied`, `climate_resilience_assessment`, `climate_related_opportunities_description`, `current_period_climate_impacts_financial`, `anticipated_climate_impacts_financial`, `climate_targets_progress_quantitative`.
 - SFDR → добавление структурированного `sfdr_pai_indicator_entries` в блок 5.
-- CBAM → добавление `cbam_third_country_carbon_price_paid_eur` и уточнение CBAM‑регистровых полей в блоке 9.
-- EU ETS → новый блок 13 с установками, проверенными выбросами и квотами.
+- CBAM → расширенные поля Annex IV/V/VI: `cbam_installation_*`, `cbam_operator_*`, `cbam_verifier_*`, `cbam_emission_attribution_method`, `cbam_default_value_used`, `cbam_country_specific_default_value_source`.
+- EU ETS → блок 13 расширен: `eu_ets_phase`, `eu_ets_benchmark_values`, `eu_ets_carbon_leakage_exposure`, `eu_ets_innovation_fund_eligible`.
+- SBTi → расширенные поля: `sbti_flag_target_set`, `sbti_value_chain_target`, `sbti_validation_date`.
+- GHG Protocol → разбивка Scope 1 по газам (`scope1_co2_emissions`, `scope1_ch4_emissions`, `scope1_n2o_emissions`, `scope1_hfcs_emissions`, `scope1_pfcs_emissions`, `scope1_sf6_emissions`, `scope1_nf3_emissions`), агрегаты Scope 3 (`scope3_upstream_total_co2e`, `scope3_downstream_total_co2e`, `scope3_calculation_methodology_per_category`), `scope2_residual_mix_emissions_co2e`.
+- ISO 14067 / Product PCF → расширенные поля для EPD: разбивка по газам, `product_primary_data_percentage`, `product_lca_database_used`, `product_lca_software_used`, `product_declared_unit`, `product_reference_service_life_years`, `product_end_of_life_scenario`, `product_transport_*`, `product_packaging_emissions_co2e`, `product_use_phase_emissions_co2e`, `product_pcr_or_pefcr_reference`, `product_geographic_validity`, `product_temporal_validity`, `product_technology_coverage`.
+- EN 15978 (Building) → модульная разбивка выбросов (A1-A3, A4, A5, B, C, D), технические характеристики здания, энергопотребление по категориям, путь декарбонизации.
+
+
+---
+
+## 📊 Сводная таблица новых полей 2026+
+
+### CORPORATE (36 новых полей в `datapoints-reports-CORPORATE-2026.csv`)
+
+| Категория | Количество | Ключевые поля |
+|-----------|------------|---------------|
+| IFRS S2 / ISSB | 6 | `issb_s2_applied`, `climate_resilience_assessment`, `climate_related_opportunities_description`, `current_period_climate_impacts_financial`, `anticipated_climate_impacts_financial`, `climate_targets_progress_quantitative` |
+| SEC Climate | 5 | `sec_material_climate_risks_disclosure`, `sec_scope1_attestation_level`, `sec_scope2_attestation_level`, `sec_ghg_attestation_provider`, `sec_climate_targets_material_impact` |
+| ESRS E1 | 7 | `esrs_e1_gross_scope123_co2e`, `esrs_e1_ghg_removals_co2e`, `esrs_e1_ghg_mitigation_projects_co2e`, `esrs_e1_internal_carbon_pricing_schemes`, `esrs_e1_energy_*` |
+| GHG Protocol | 11 | `scope1_co2/ch4/n2o/hfcs/pfcs/sf6/nf3_emissions`, `scope2_residual_mix_emissions_co2e`, `scope3_upstream/downstream_total_co2e`, `scope3_calculation_methodology_per_category` |
+| EU ETS Phase 4 | 4 | `eu_ets_phase`, `eu_ets_benchmark_values`, `eu_ets_carbon_leakage_exposure`, `eu_ets_innovation_fund_eligible` |
+| SBTi | 3 | `sbti_flag_target_set`, `sbti_value_chain_target`, `sbti_validation_date` |
+
+### PRODUCT (49 новых полей в `datapoints-reports-PRODUCT-2026.csv`)
+
+| Категория | Количество | Ключевые поля |
+|-----------|------------|---------------|
+| CBAM Annex IV/V/VI | 19 | `cbam_installation_*`, `cbam_operator_*`, `cbam_verifier_*`, `cbam_emission_attribution_method`, `cbam_default_value_*` |
+| Product PCF / ISO 14067 | 14 | `product_pcf_co2/ch4/n2o/other_emissions`, `product_primary_data_percentage`, `product_lca_*`, `product_declared_unit`, `product_reference_service_life_years`, `product_end_of_life_scenario`, `product_transport_*`, `product_packaging_emissions_co2e`, `product_use_phase_emissions_co2e`, `product_pcr_or_pefcr_reference`, `product_geographic/temporal_validity`, `product_technology_coverage` |
+| Building EN 15978 | 16 | `building_module_a1a3/a4/a5/b/c/d_*`, `building_structural_system`, `building_facade_type`, `building_hvac_system_type`, `building_energy_class`, `building_energy_consumption_heating/cooling/electricity_mwh`, `building_renewable_energy_share_percent`, `building_net_zero_target_year`, `building_decarbonisation_pathway` |
 
 
 **Карта decision engine → классы данных (reports.ts + docs/questionare logic.md)**
