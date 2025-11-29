@@ -10,12 +10,12 @@ import MagicBadge from "../ui/magic-badge";
 export function HeroSection() {
   return (
     <MaxWidthWrapper>
-      <div className="flex flex-col items-center justify-center w-full text-center bg-gradient-to-br from-background via-background to-primary/5 relative py-32 md:py-40">
+      <div className="flex flex-col items-center justify-center w-full text-center bg-gradient-to-br from-background via-background to-[#727a17]/5 relative py-32 md:py-40">
         <AnimationContainer delay={0.1} className="flex flex-col items-center justify-center w-full text-center">
           <MagicBadge title="🌱 Track Your Carbon Impact" />
           <h1 className="text-4xl md:text-6xl lg:text-7xl !leading-[1.15] font-bold font-heading text-foreground mt-6 max-w-4xl">
             Measure, Monitor, and{" "}
-            <span className="bg-gradient-to-br from-primary to-primary/60 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-br from-[#414d0b] to-[#727a17] bg-clip-text text-transparent">
               Reduce
             </span>{" "}
             Your Carbon Footprint
@@ -45,7 +45,7 @@ export function HeroSection() {
           className="relative pt-20 pb-20 md:py-32 px-2 bg-transparent w-full"
         >
           <div className="relative w-full max-w-5xl mx-auto rounded-xl border border-border/50 shadow-2xl overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#727a17]/10 via-transparent to-[#414d0b]/5" />
             <div className="aspect-video w-full bg-muted/50 flex items-center justify-center">
               <p className="text-muted-foreground text-sm">Dashboard Preview</p>
             </div>

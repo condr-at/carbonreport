@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/layouts/dashboard-layout';
 import { queryClientOptions } from '@/lib/data-client/queryClient';
@@ -13,7 +15,9 @@ export default async function ContactsPage() {
   return (
     <DashboardLayout>
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <ContactsPageClient initialContacts={contacts} />
+        <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+          <ContactsPageClient initialContacts={contacts} />
+        </Suspense>
       </HydrationBoundary>
     </DashboardLayout>
   );

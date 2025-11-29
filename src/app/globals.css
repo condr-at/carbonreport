@@ -79,48 +79,70 @@
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.9911 0 0);
-  --foreground: oklch(0.2046 0 0);
-  --card: oklch(0.9911 0 0);
-  --card-foreground: oklch(0.2046 0 0);
-  --popover: oklch(0.9911 0 0);
-  --popover-foreground: oklch(0.4386 0 0);
-  --primary: var(--visual-primary-800);
-  --primary-foreground: oklch(0.2626 0.0147 166.4589);
-  --secondary: oklch(0.9940 0 0);
-  --secondary-foreground: oklch(0.2046 0 0);
-  --muted: oklch(0.9461 0 0);
-  --muted-foreground: var(--visual-neutral-600);
-  --accent: var(--visual-neutral-100);
-  --accent-foreground: oklch(0.2435 0 0);
-  --destructive: oklch(0.5523 0.1927 32.7272);
-  --success: oklch(0.8348 0.1302 160.9080);
-  --success-foreground: oklch(0.2626 0.0147 166.4589);
-  --border: oklch(0.9037 0 0);
-  --input: oklch(0.9731 0 0);
-  --ring: var(--visual-primary-500);
-  --chart-1: oklch(0.8348 0.1302 160.9080);
-  --chart-2: oklch(0.6231 0.1880 259.8145);
-  --chart-3: oklch(0.6056 0.2189 292.7172);
-  --chart-4: oklch(0.7686 0.1647 70.0804);
-  --chart-5: oklch(0.6959 0.1491 162.4796);
-  --sidebar: oklch(0.9911 0 0);
-  --sidebar-foreground: oklch(0.5452 0 0);
-  --sidebar-primary: oklch(0.8348 0.1302 160.9080);
-  --sidebar-primary-foreground: oklch(0.2626 0.0147 166.4589);
-  --sidebar-accent: oklch(0.9461 0 0);
-  --sidebar-accent-foreground: oklch(0.2435 0 0);
-  --sidebar-border: oklch(0.9037 0 0);
-  --sidebar-ring: oklch(0.8348 0.1302 160.9080);
-  --destructive-foreground: oklch(1.0000 0 0);
+
+  /* Light Theme - Custom teal palette */
+  /* Name: custom color palette
+     Author: Ilias Ism
+     URL: https://gradient.page */
+
+  /* Semantic Mappings for Light Theme */
+  --background: hsl(178, 98.4%, 98.22%);
+  --foreground: hsl(178, 6.8%, 0.44%);
+  
+  --muted: hsl(178, 6.8%, 91.1%);
+  --muted-foreground: hsl(178, 3.4%, 41.1%);
+  
+  --popover: hsl(178, 40.36%, 94.66%);
+  --popover-foreground: hsl(178, 6.8%, 0.55%);
+  
+  --card: hsl(178, 40.36%, 94.66%);
+  --card-foreground: hsl(178, 6.8%, 0.55%);
+  
+  --border: hsl(178, 11.8%, 89.44%);
+  --input: hsl(178, 11.8%, 89.44%);
+  
+  --primary: hsl(178, 68%, 11%);
+  --primary-foreground: hsl(178, 1.36%, 91.1%);
+  
+  --secondary: hsl(178, 34.68%, 84.87%);
+  --secondary-foreground: hsl(178, 5.08%, 11.1%);
+  
+  --accent: hsl(178, 34.68%, 84.87%);
+  --accent-foreground: hsl(178, 5.08%, 11.1%);
+  
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  
+  --success: hsl(178, 68%, 35%);
+  --success-foreground: hsl(178, 1.36%, 91.1%);
+  
+  --ring: hsl(178, 68%, 11%);
+
+  /* Charts */
+  --chart-1: hsl(178, 68%, 45%);
+  --chart-2: hsl(178, 55%, 35%);
+  --chart-3: hsl(178, 45%, 55%);
+  --chart-4: hsl(178, 35%, 65%);
+  --chart-5: hsl(178, 68%, 11%);
+
+  /* Sidebar */
+  --sidebar: hsl(178, 40.36%, 96%);
+  --sidebar-foreground: hsl(178, 3.4%, 41.1%);
+  --sidebar-primary: hsl(178, 34.68%, 84.87%);
+  --sidebar-primary-foreground: hsl(178, 5.08%, 11.1%);
+  --sidebar-accent: hsl(178, 34.68%, 84.87%);
+  --sidebar-accent-foreground: hsl(178, 5.08%, 11.1%);
+  --sidebar-border: hsl(178, 11.8%, 89.44%);
+  --sidebar-ring: hsl(178, 68%, 11%);
 
   /* Launch UI illustration colors */
-  --brand: var(--visual-primary-500);
-  --brand-foreground: var(--visual-primary-300);
-  --light: var(--visual-primary-400);
-  --light-foreground: var(--visual-primary-200);
+  --brand: hsl(178, 68%, 45%);
+  --brand-foreground: hsl(178, 68%, 11%);
+  --light: hsl(178, 45%, 75%);
+  --light-foreground: hsl(178, 68%, 11%);
 
   /* Enhanced Button gradients */
+  --gradient: linear-gradient(to top left, #093028, #237A57);
   --gradient-lime: #32CD32, #00FF00;
   --gradient-ocean: #1E90FF, #00CED1;
   --gradient-wine: #8B0000, #DC143C;
@@ -128,47 +150,74 @@
 }
 
 .dark {
-  --background: oklch(0.1822 0 0);
-  --foreground: oklch(0.9288 0.0126 255.5078);
-  --card: oklch(0.2046 0 0);
-  --card-foreground: oklch(0.9288 0.0126 255.5078);
-  --popover: oklch(0.2603 0 0);
-  --popover-foreground: oklch(0.7348 0 0);
-  --primary: oklch(0.4365 0.1044 156.7556);
-  --primary-foreground: oklch(0.9213 0.0135 167.1556);
-  --secondary: oklch(0.2603 0 0);
-  --secondary-foreground: oklch(0.9851 0 0);
-  --muted: oklch(0.2393 0 0);
-  --muted-foreground: oklch(0.7122 0 0);
-  --accent: oklch(0.3132 0 0);
-  --accent-foreground: oklch(0.9851 0 0);
-  --destructive: oklch(0.3123 0.0852 29.7877);
-  --success: oklch(0.4365 0.1044 156.7556);
-  --success-foreground: oklch(0.9213 0.0135 167.1556);
-  --border: oklch(0.2809 0 0);
-  --input: oklch(0.2603 0 0);
-  --ring: oklch(0.8003 0.1821 151.7110);
-  --chart-1: oklch(0.8003 0.1821 151.7110);
-  --chart-2: oklch(0.7137 0.1434 254.6240);
-  --chart-3: oklch(0.7090 0.1592 293.5412);
-  --chart-4: oklch(0.8369 0.1644 84.4286);
-  --chart-5: oklch(0.7845 0.1325 181.9120);
-  --sidebar: oklch(0.1822 0 0);
-  --sidebar-foreground: oklch(0.6301 0 0);
-  --sidebar-primary: oklch(0.4365 0.1044 156.7556);
-  --sidebar-primary-foreground: oklch(0.9213 0.0135 167.1556);
-  --sidebar-accent: oklch(0.3132 0 0);
-  --sidebar-accent-foreground: oklch(0.9851 0 0);
-  --sidebar-border: oklch(0.2809 0 0);
-  --sidebar-ring: oklch(0.8003 0.1821 151.7110);
-  --destructive-foreground: oklch(1.0000 0 0);
+  /* Dark Theme - Custom mint/slate palette */
+  --color-background: hsl(155, 13%, 6.24%);
 
-  /* Launch UI illustration colors for dark mode */
-  --brand: var(--primary);
-  --brand-foreground: var(--primary-foreground);
-  --light: color-mix(in oklab, var(--primary) 35%, black);
-  --light-foreground: color-mix(in oklab, var(--primary) 80%, white);
+  /* Semantic Mappings for Dark Theme */
+  --background: hsl(155, 13%, 6.24%);
+  --foreground: hsl(155, 2%, 98.9%);
+  
+  --muted: hsl(155, 10%, 12%);
+  --muted-foreground: hsl(155, 2%, 62.4%);
+  
+  --popover: hsl(155, 13%, 3.9%);
+  --popover-foreground: hsl(155, 2%, 98.9%);
+  
+  --card: hsl(155, 13%, 3.9%);
+  --card-foreground: hsl(155, 2%, 98.9%);
+  
+  --border: hsl(155, 10%, 19.5%);
+  --input: hsl(155, 10%, 19.5%);
+  
+  --primary: hsl(155, 20%, 78%);
+  --primary-foreground: hsl(155, 2%, 9.1%);
+  
+  --secondary: hsl(155, 10%, 12%);
+  --secondary-foreground: hsl(155, 2%, 98.9%);
+  
+  --accent: hsl(155, 10%, 12%);
+  --accent-foreground: hsl(155, 20%, 78%);
+  
+  --destructive: hsl(0, 62.8%, 50%);
+  --destructive-foreground: hsl(155, 2%, 98.9%);
+  
+  --success: hsl(155, 45%, 55%);
+  --success-foreground: hsl(155, 2%, 9.1%);
+  
+  --ring: hsl(155, 20%, 78%);
+
+  /* Charts */
+  --chart-1: hsl(155, 45%, 45%);
+  --chart-2: hsl(155, 35%, 55%);
+  --chart-3: hsl(155, 25%, 35%);
+  --chart-4: hsl(155, 15%, 25%);
+  --chart-5: hsl(155, 20%, 78%);
+
+  /* Sidebar */
+  --sidebar: hsl(155, 10%, 9.1%);
+  --sidebar-foreground: hsl(155, 2%, 62.4%);
+  --sidebar-primary: hsl(155, 10%, 12%);
+  --sidebar-primary-foreground: hsl(155, 20%, 78%);
+  --sidebar-accent: hsl(155, 10%, 12%);
+  --sidebar-accent-foreground: hsl(155, 20%, 78%);
+  --sidebar-border: hsl(155, 10%, 19.5%);
+  --sidebar-ring: hsl(155, 20%, 78%);
+
+  /* Launch UI illustration colors */
+  --brand: hsl(155, 45%, 45%);
+  --brand-foreground: hsl(155, 20%, 78%);
+  --light: hsl(155, 25%, 25%);
+  --light-foreground: hsl(155, 20%, 78%);
+
+  /* Enhanced Button gradients */
+  --gradient: linear-gradient(to top left, #BBD2C5, #536976);
+  --gradient-lime: #32CD32, #00FF00;
+  --gradient-ocean: #1E90FF, #00CED1;
+  --gradient-wine: #8B0000, #DC143C;
+  --gradient-rust: #B7410E, #FF6347;
 }
+
+
 
 @layer base {
   * {

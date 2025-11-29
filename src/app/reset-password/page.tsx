@@ -8,17 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { PublicPageFrame } from '@/components/layouts/public-page-frame'
 
 function ResetPasswordFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+    <PublicPageFrame>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Loading reset form…</CardTitle>
           <CardDescription>Just a moment while we verify your reset link.</CardDescription>
         </CardHeader>
       </Card>
-    </div>
+    </PublicPageFrame>
   )
 }
 
@@ -32,7 +33,7 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+      <PublicPageFrame>
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Reset link required</CardTitle>
@@ -47,7 +48,7 @@ function ResetPasswordContent() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </PublicPageFrame>
     )
   }
 
@@ -84,7 +85,7 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+    <PublicPageFrame>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Choose a new password</CardTitle>
@@ -125,7 +126,7 @@ function ResetPasswordContent() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </PublicPageFrame>
   )
 }
 

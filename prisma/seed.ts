@@ -7,6 +7,7 @@ import {
   Prisma,
   PrismaClient,
   ProjectStatus,
+  ProjectType,
 } from '@prisma/client'
 import { DATASET_FIELD_SEED } from './seed-data/dataset-fields'
 import { REPORT_TEMPLATE_SEED } from './seed-data/report-templates'
@@ -489,6 +490,7 @@ async function main() {
       organizationId: freeOrg.id,
       createdByUserId: demoOwner.id,
       name: 'Electric Bicycle Carbon Assessment',
+      projectType: ProjectType.PRODUCT,
       status: ProjectStatus.ACTIVE,
       datasetVersion: 0,
       mailtoTemplate: defaultMailtoTemplate as Prisma.InputJsonValue,
@@ -517,6 +519,7 @@ async function main() {
       organizationId: proOrg.id,
       createdByUserId: demoOwner.id,
       name: 'Steel Components CBAM Report',
+      projectType: ProjectType.PRODUCT,
       status: ProjectStatus.ACTIVE,
       datasetVersion: 0,
       mailtoTemplate: defaultMailtoTemplate as Prisma.InputJsonValue,
@@ -545,6 +548,7 @@ async function main() {
       organizationId: proOrg.id,
       createdByUserId: demoOwner.id,
       name: 'Supply Chain Footprint Pilot',
+      projectType: ProjectType.CORPORATE,
       status: ProjectStatus.ARCHIVED,
       datasetVersion: 0,
       mailtoTemplate: defaultMailtoTemplate as Prisma.InputJsonValue,

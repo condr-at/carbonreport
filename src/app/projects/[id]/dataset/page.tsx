@@ -67,6 +67,7 @@ export default async function DatasetPage({ params }: PageProps) {
       <DatasetPageClient
         projectId={project.id}
         projectName={project.name}
+        projectType={project.projectType}
         projectOwnerName={ownerName}
         initialDataset={resolvedDataset}
         initialDatasetVersion={resolvedDatasetVersion}

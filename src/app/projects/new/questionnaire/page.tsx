@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PageHeader } from '@/components/layouts/page-header'
 import { TitleStatusStepper } from '@/components/stepper/title-status'
@@ -143,7 +143,11 @@ const ENGINE_TO_TEMPLATE_MAP: Record<string, ReportTemplateCode> = {
 }
 
 export default function QuestionnairePage() {
-  return <QuestionnaireContent />
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+      <QuestionnaireContent />
+    </Suspense>
+  )
 }
 
 function QuestionnaireContent() {

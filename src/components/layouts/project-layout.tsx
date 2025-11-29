@@ -33,6 +33,7 @@ interface ProjectLayoutProps {
     id: string;
     name: string;
     status: string;
+    projectType: string;
     updatedAt: string;
   };
 }

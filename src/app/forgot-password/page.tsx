@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { PublicPageFrame } from '@/components/layouts/public-page-frame'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -39,7 +40,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+    <PublicPageFrame>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Reset your password</CardTitle>
@@ -84,6 +85,6 @@ export default function ForgotPasswordPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PublicPageFrame>
   )
 }

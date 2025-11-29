@@ -222,9 +222,10 @@ model Project {
   organizationId  String        @map("organization_id")
   createdByUserId String        @map("created_by_user_id")
   name            String
-  projectType     ProjectType   @default(PRODUCT) @map("project_type")
+  projectType     ProjectType   @map("project_type")
   dataset         Json // JSONB: { data_points: [...] }
   datasetVersion  Int           @default(0) @map("dataset_version") // Optimistic locking
+  datasetSchemaVersion Int?     @map("dataset_schema_version")
   mailtoTemplate  Json?         @map("mailto_template")
   checklist       Json
   status          ProjectStatus @default(ACTIVE)

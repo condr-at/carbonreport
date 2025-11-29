@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: 'bg-primary text-primary-foreground hover:bg-primary/90 data-[state=open]:bg-primary/90',
-        mono: 'bg-zinc-950 text-white dark:bg-zinc-300 dark:text-black hover:bg-zinc-950/90 dark:hover:bg-zinc-300/90 data-[state=open]:bg-zinc-950/90 dark:data-[state=open]:bg-zinc-300/90',
+        mono: 'bg-foreground text-background hover:bg-foreground/90 data-[state=open]:bg-foreground/90',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90 data-[state=open]:bg-destructive/90',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/90 data-[state=open]:bg-secondary/90',
@@ -130,37 +130,37 @@ const buttonVariants = cva(
         variant: 'primary',
         mode: 'default',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'mono',
         mode: 'default',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'secondary',
         mode: 'default',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'outline',
         mode: 'default',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'dashed',
         mode: 'default',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'destructive',
         mode: 'default',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
 
       // Shadow support
@@ -168,37 +168,37 @@ const buttonVariants = cva(
         variant: 'primary',
         mode: 'icon',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'mono',
         mode: 'icon',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'secondary',
         mode: 'icon',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'outline',
         mode: 'icon',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'dashed',
         mode: 'icon',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
       {
         variant: 'destructive',
         mode: 'icon',
         appearance: 'default',
-        className: 'shadow-xs shadow-black/5',
+        className: 'shadow-xs shadow-foreground/5',
       },
 
       // Link

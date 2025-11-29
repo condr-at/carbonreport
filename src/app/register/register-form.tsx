@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
+import { PublicPageFrame } from '@/components/layouts/public-page-frame'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -109,7 +110,7 @@ export function RegisterForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+    <PublicPageFrame>
       <Card className="w-full max-w-xl">
         <CardHeader>
           <CardTitle>Create your account</CardTitle>
@@ -230,6 +231,6 @@ export function RegisterForm() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </PublicPageFrame>
   )
 }

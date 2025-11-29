@@ -28,7 +28,17 @@ export type DataPoint = z.infer<typeof DataPointSchema>
  */
 export const DatasetSchema = z.object({
   data_points: z.array(DataPointSchema),
-})
+  // Corporate fields
+  organization_info: z.record(z.unknown()).optional(),
+  facilities: z.array(z.unknown()).optional(),
+  subsidiaries: z.array(z.unknown()).optional(),
+  reporting_period: z.record(z.unknown()).optional(),
+  // Product fields
+  product_info: z.record(z.unknown()).optional(),
+  bom_items: z.array(z.unknown()).optional(),
+  processes: z.array(z.unknown()).optional(),
+  transport_stages: z.array(z.unknown()).optional(),
+}).passthrough()
 
 export type Dataset = z.infer<typeof DatasetSchema>
 
@@ -57,8 +67,27 @@ export function safeValidateDataset(dataset: unknown): {
 /**
  * Helper: Create empty dataset
  */
-export function createEmptyDataset(): Dataset {
-  return { data_points: [] }
+export function createEmptyDataset(type: 'product' | 'corporate' = 'product'): Dataset {
+  const base = { data_points: [] }
+  
+  if (type === 'corporate') {
+    return {
+      ...base,
+      organization_info: {},
+      facilities: [],
+      subsidiaries: [],
+      reporting_period: {},
+    }
+  }
+
+  // Product
+  return {
+    ...base,
+    product_info: {},
+    bom_items: [],
+    processes: [],
+    transport_stages: [],
+  }
 }
 
 /**

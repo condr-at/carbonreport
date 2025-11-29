@@ -6,8 +6,9 @@ import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { PublicPageFrame } from '@/components/layouts/public-page-frame'
 
-function getStatusCopy(status: string | null) {
+function getStatusCopy(status: string | null, message?: string | null) {
   switch (status) {
     case 'verified':
       return {
@@ -18,7 +19,7 @@ function getStatusCopy(status: string | null) {
     case 'error':
       return {
         title: 'Link expired or invalid',
-        description: 'Request a new verification email below.',
+        description: message ? `Error: ${message}` : 'Request a new verification email below.',
         variant: 'error' as const,
       }
     case 'sent':
@@ -38,21 +39,22 @@ function getStatusCopy(status: string | null) {
 
 function VerifyEmailFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+    <PublicPageFrame>
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Checking verification status…</CardTitle>
           <CardDescription>This will just take a second.</CardDescription>
         </CardHeader>
       </Card>
-    </div>
+    </PublicPageFrame>
   )
 }
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const statusParam = searchParams.get('status')
-  const status = getStatusCopy(statusParam)
+  const messageParam = searchParams.get('message')
+  const status = getStatusCopy(statusParam, messageParam)
   const [isLoading, setIsLoading] = useState(false)
   const isVerified = statusParam === 'verified'
 
@@ -79,7 +81,7 @@ function VerifyEmailContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+    <PublicPageFrame>
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>{status.title}</CardTitle>
@@ -110,7 +112,7 @@ function VerifyEmailContent() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PublicPageFrame>
   )
 }
 

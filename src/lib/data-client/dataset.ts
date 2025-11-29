@@ -150,6 +150,61 @@ function handleDatasetMutationError(
   notifications.error(fallbackMessage);
 }
 
+export function useUpdateFullDataset(projectId: string) {
+  const queryClient = useQueryClient();
+  const queryKey = projectKeys.dataset(projectId);
+
+  return useMutation({
+    mutationFn: async (variables: { dataset: Dataset }) => {
+      const latest = getLatestDataset(queryClient, queryKey);
+      const datasetVersion = latest?.datasetVersion ?? 0;
+
+      return request<DatasetResponse>(`/api/projects/${projectId}/dataset`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          dataset: variables.dataset,
+          datasetVersion,
+        }),
+      });
+    },
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey });
+      const snapshot = getLatestDataset(queryClient, queryKey);
+
+      if (snapshot) {
+        const optimistic = {
+          ...snapshot,
+          dataset: variables.dataset,
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+        queryClient.setQueryData(queryKey, optimistic);
+      }
+      return { snapshot };
+    },
+    onError: (error, variables, context) => {
+      if (context?.snapshot) {
+        queryClient.setQueryData(queryKey, context.snapshot);
+      }
+      handleDatasetMutationError(queryClient, queryKey, error, 'Failed to update dataset.');
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          datasetVersion: data.datasetVersion,
+          version: data.version,
+          updatedAt: data.updatedAt,
+        };
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey });
+    },
+  });
+}
+
 export function useUpdateDatasetField(projectId: string) {
   const queryClient = useQueryClient();
   const queryKey = projectKeys.dataset(projectId);

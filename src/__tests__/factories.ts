@@ -9,6 +9,7 @@ import {
   OrganizationMembershipRole,
   OrganizationMembershipInviteStatus,
   ProjectStatus,
+  ProjectType,
   type User,
   type Organization,
   type OrganizationMembership,
@@ -169,6 +170,7 @@ export async function createTestProject(
       organizationId,
       createdByUserId,
       name: `Test Project ${testSlug('proj')}`,
+      projectType: ProjectType.PRODUCT,
       dataset: dataset ?? { data_points: [] },
       datasetVersion: 0,
       checklist: checklist ?? {},
@@ -240,30 +242,32 @@ export async function createTestOrgWithOwner(
  * Ensure plans are seeded (call this in test setup if needed)
  */
 export async function ensureTestPlans() {
-  const existingPlans = await prisma.planDefinition.findMany()
-  
-  if (existingPlans.length === 0) {
-    await prisma.planDefinition.createMany({
-      data: [
-        {
-          planCode: 'free',
-          label: 'Free',
-          description: 'Free plan with basic features',
-          maxActiveProjects: 1,
-          maxEditors: 0,
-          maxVerifiers: 0,
-          maxViewers: null, // unlimited
-        },
-        {
-          planCode: 'pro_beta',
-          label: 'Pro Beta',
-          description: 'Beta professional plan',
-          maxActiveProjects: 3,
-          maxEditors: 2,
-          maxVerifiers: 0,
-          maxViewers: null, // unlimited
-        },
-      ],
+  const plans = [
+    {
+      planCode: 'free',
+      label: 'Free',
+      description: 'Free plan with basic features',
+      maxActiveProjects: 1,
+      maxEditors: 0,
+      maxVerifiers: 0,
+      maxViewers: null, // unlimited
+    },
+    {
+      planCode: 'pro_beta',
+      label: 'Pro Beta',
+      description: 'Beta professional plan',
+      maxActiveProjects: 3,
+      maxEditors: 2,
+      maxVerifiers: 0,
+      maxViewers: null, // unlimited
+    },
+  ]
+
+  for (const plan of plans) {
+    await prisma.planDefinition.upsert({
+      where: { planCode: plan.planCode },
+      update: {},
+      create: plan,
     })
   }
 }

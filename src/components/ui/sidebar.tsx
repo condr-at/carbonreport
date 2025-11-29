@@ -56,7 +56,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTM
         <div
           data-slot="sidebar-backdrop"
           className={cn(
-            "fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-200 md:hidden",
+            "fixed inset-0 z-40 bg-foreground/40 backdrop-blur-sm transition-opacity duration-200 md:hidden",
             open ? "pointer-events-auto visible opacity-100" : "pointer-events-none invisible opacity-0",
           )}
           aria-hidden="true"
@@ -66,7 +66,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTM
           ref={ref}
           data-slot="sidebar"
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-card shadow-sm transition-transform duration-200 md:static md:translate-x-0",
+            "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r bg-sidebar shadow-sm transition-transform duration-200 md:static md:translate-x-0",
             open ? "translate-x-0" : "-translate-x-full",
             className,
           )}

@@ -1,3 +1,5 @@
+"use client";
+
 import { type VariantProps } from "class-variance-authority";
 import { Menu } from "lucide-react";
 import { ReactNode } from "react";
@@ -14,6 +16,7 @@ import {
 } from "@/components/ui/navbar";
 import Navigation from "@/components/ui/navigation";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 interface NavbarLink {
   text: string;
@@ -90,6 +93,7 @@ export default function Navbar({
           </NavbarLeft>
           <NavbarRight>
             <div className="hidden md:flex items-center gap-4">
+              <ModeToggle />
               {actions.map((action, index) =>
                 action.isButton ? (
                   <Button
@@ -122,6 +126,9 @@ export default function Navbar({
               </SheetTrigger>
               <SheetContent>
                 <div className="flex flex-col gap-4 p-4">
+                  <div className="flex justify-end">
+                    <ModeToggle />
+                  </div>
                   {mobileLinks.map((link, index) => (
                     <a
                       key={index}

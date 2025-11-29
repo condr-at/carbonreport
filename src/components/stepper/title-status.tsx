@@ -77,7 +77,7 @@ export function TitleStatusStepper({
                   'flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition-colors',
                   'data-[state=active]:border-primary data-[state=active]:bg-primary/5',
                   'data-[state=completed]:border-primary/60 data-[state=completed]:bg-primary/5',
-                  'data-[state=inactive]:border-muted data-[state=inactive]:bg-muted/20',
+                  'data-[state=inactive]:border-border data-[state=inactive]:bg-muted/20',
                 )}
               >
                 <StepperIndicator className="flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold data-[state=completed]:border-primary data-[state=active]:border-primary">

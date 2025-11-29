@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { FolderOpen, Loader2, Plus, Search } from 'lucide-react';
 
 import { ProjectCard } from '@/components/blocks/project-card';
@@ -46,6 +46,14 @@ import {
 type PendingAction = { type: 'archive' | 'restore' | 'delete'; projectId: string } | null;
 
 export default function ProjectsPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+      <ProjectsPageContent />
+    </Suspense>
+  );
+}
+
+function ProjectsPageContent() {
   const router = useRouter();
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading, isBootstrapping } = useOrganizationContext();

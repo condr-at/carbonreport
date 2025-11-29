@@ -6,12 +6,13 @@ import {
   OrganizationStatus,
   Prisma,
   ProjectStatus,
+  ProjectType,
 } from '@prisma/client'
 import prisma from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 import { assertOrgMembership, assertWithinLimit } from '@/lib/server-utils'
-import { getReportTemplate } from '@/lib/report-templates'
+import { getReportTemplate, getAllReportTemplates } from '@/lib/report-templates'
 import { createEmptyDataset } from '@/lib/dataset-validation'
 import { scheduleUsageRecompute } from '@/lib/organizations/usage-scheduler'
 
@@ -19,6 +20,7 @@ const CreateProjectSchema = z.object({
   id: z.string().uuid().optional(),
   organization_id: z.string().uuid(),
   name: z.string().trim().min(3).max(200),
+  type: z.enum(['product', 'corporate']),
   template_codes: z.array(z.string().trim()).min(1),
 })
 
@@ -179,6 +181,7 @@ export async function POST(request: NextRequest) {
   const projectIdOverride = parsed.data.id
   const organizationId = parsed.data.organization_id
     const name = parsed.data.name
+    const type = parsed.data.type
     const templateCodes = [...new Set(parsed.data.template_codes)]
 
     const organization = await prisma.organization.findFirst({
@@ -207,8 +210,21 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Validate template compatibility with project type
+    for (const code of templateCodes) {
+      const template = getReportTemplate(code as any)
+      if (template) {
+        if (type === 'corporate' && template.scope === 'product') {
+          throw new ApiError(400, 'VALIDATION_ERROR', `Template ${code} is not compatible with corporate projects`)
+        }
+        if (type === 'product' && template.scope === 'corporate') {
+          throw new ApiError(400, 'VALIDATION_ERROR', `Template ${code} is not compatible with product projects`)
+        }
+      }
+    }
+
     const defaultMailtoTemplate = buildDefaultMailtoTemplate(templateCodes)
-    const dataset = createEmptyDataset()
+    const dataset = createEmptyDataset(type)
 
     const result = await prisma.$transaction(async (tx) => {
       const project = await tx.project.create({
@@ -217,6 +233,7 @@ export async function POST(request: NextRequest) {
           organizationId,
           createdByUserId: user.id,
           name,
+          projectType: type === 'corporate' ? ProjectType.CORPORATE : ProjectType.PRODUCT,
           status: ProjectStatus.ACTIVE,
           dataset: dataset as Prisma.InputJsonValue,
           datasetVersion: 0,

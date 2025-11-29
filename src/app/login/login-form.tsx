@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
+import { PublicPageFrame } from '@/components/layouts/public-page-frame'
 
 export function LoginForm() {
   const router = useRouter()
@@ -73,7 +74,7 @@ export function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-8">
+    <PublicPageFrame>
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Sign in</CardTitle>
@@ -143,6 +144,6 @@ export function LoginForm() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </PublicPageFrame>
   )
 }

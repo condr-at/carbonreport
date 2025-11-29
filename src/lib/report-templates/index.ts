@@ -1,3 +1,4 @@
+import { GeneratedReportTemplates } from './generated';
 import { ReportTemplate, ReportTemplateCode } from './types'
 import { ISO14067Template } from './iso14067'
 import { CBAMTemplate } from './cbam'
@@ -10,6 +11,7 @@ import { CBAMTemplate } from './cbam'
  */
 
 export const REPORT_TEMPLATES: Partial<Record<ReportTemplateCode, ReportTemplate>> = {
+  ...GeneratedReportTemplates,
   ISO14067: ISO14067Template,
   CBAM: CBAMTemplate,
 }

@@ -11,6 +11,7 @@ export interface ProjectSummary {
   id: string;
   name: string;
   status: string;
+  projectType: string;
   updatedAt: string;
   datasetVersion: number;
   mailtoTemplate: Record<string, unknown> | null;
@@ -34,6 +35,7 @@ export async function getProjectSummary(
       id: true,
       name: true,
       status: true,
+      projectType: true,
       createdAt: true,
       datasetVersion: true,
       mailtoTemplate: true,
@@ -55,6 +57,7 @@ export async function getProjectSummary(
     id: project.id,
     name: project.name,
     status: project.status,
+    projectType: project.projectType,
     updatedAt: project.createdAt.toISOString(),
     datasetVersion: project.datasetVersion,
     mailtoTemplate: (project.mailtoTemplate as Record<string, unknown> | null) ?? null,

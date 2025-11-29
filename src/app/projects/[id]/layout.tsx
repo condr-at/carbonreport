@@ -23,7 +23,7 @@ export default async function ProjectLayoutSegment({ children, params }: Project
   tracker.logTimings('project-layout');
 
   return (
-    <ProjectLayout project={{ id: project.id, name: project.name, status: project.status, updatedAt: project.updatedAt }}>
+    <ProjectLayout project={{ id: project.id, name: project.name, status: project.status, projectType: project.projectType, updatedAt: project.updatedAt }}>
       <Suspense fallback={<ProjectTabSkeleton />}>{children}</Suspense>
     </ProjectLayout>
   );

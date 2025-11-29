@@ -123,6 +123,7 @@ async function verifyToken(token: string, expectedPurpose: TokenPurpose) {
   const { payload } = await jwtVerify<BaseClaims>(token, secret, {
     issuer: AUTH_CONFIG.issuer,
     audience: 'carbon-report-users',
+    clockTolerance: 15,
   })
 
   if (payload.purpose !== expectedPurpose) {

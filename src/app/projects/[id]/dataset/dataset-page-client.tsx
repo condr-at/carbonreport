@@ -20,9 +20,13 @@ import { useDataRequests } from '@/lib/data-client/data-requests';
 import { useProjectContacts } from '@/lib/data-client/contacts';
 import { Skeleton } from '@/components/ui/skeleton';
 
+import { CorporateDataEntry } from '@/components/data-entry/corporate-data-entry';
+import { ProductDataEntry } from '@/components/data-entry/product-data-entry';
+
 interface DatasetPageClientProps {
   projectId: string;
   projectName: string;
+  projectType: string;
   projectOwnerName: string;
   initialDataset?: Dataset | null;
   initialDatasetVersion?: number;
@@ -36,6 +40,7 @@ interface DatasetPageClientProps {
 export function DatasetPageClient({
   projectId,
   projectName,
+  projectType,
   projectOwnerName,
   initialDataset,
   initialDatasetVersion,
@@ -196,6 +201,14 @@ export function DatasetPageClient({
         </CardContent>
       </Card>
     );
+  }
+
+  if (projectType === 'CORPORATE') {
+    return <CorporateDataEntry projectId={projectId} />;
+  }
+
+  if (projectType === 'PRODUCT') {
+    return <ProductDataEntry projectId={projectId} />;
   }
 
   if (rows.length === 0) {

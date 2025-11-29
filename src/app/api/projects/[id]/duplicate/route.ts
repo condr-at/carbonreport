@@ -34,6 +34,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         organizationId: true,
         name: true,
         status: true,
+        projectType: true,
         dataset: true,
         datasetVersion: true,
         mailtoTemplate: true,
@@ -69,6 +70,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           organizationId: source.organizationId,
           createdByUserId: user.id,
           name: targetName,
+          projectType: source.projectType,
           status: ProjectStatus.ACTIVE,
           // Copy dataset verbatim; start fresh optimistic counter at 0 for simplicity
           dataset: source.dataset as Prisma.InputJsonValue,

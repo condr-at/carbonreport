@@ -32,6 +32,7 @@ export default function SelectReportsPage() {
   const [recommendedTemplates, setRecommendedTemplates] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectName, setProjectName] = useState('');
+  const [projectType, setProjectType] = useState<'corporate' | 'product' | null>(null);
   const [hasStoredProgress, setHasStoredProgress] = useState(false);
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const exitTargetRef = useRef<string | null>(null);
@@ -50,6 +51,7 @@ export default function SelectReportsPage() {
 
     const projectData = JSON.parse(projectDataStr);
     setProjectName(projectData.name || '');
+    setProjectType(projectData.type || null);
 
     const recommendedStr = sessionStorage.getItem('recommendedTemplates');
     const decisionStr = sessionStorage.getItem('decisionEngineResult');
@@ -122,7 +124,12 @@ export default function SelectReportsPage() {
     }
   }, [isOrgContextLoading, organizationId, router]);
 
-  const allTemplates = useMemo(() => getAllReportTemplates(), []);
+  const allTemplates = useMemo(() => {
+    const templates = getAllReportTemplates();
+    if (!projectType) return templates;
+    return templates.filter(t => t.scope === 'both' || t.scope === projectType);
+  }, [projectType]);
+  
   const hasSelection = selectedTemplates.length > 0;
   const hasProgress = hasStoredProgress || hasSelection;
 
@@ -189,6 +196,7 @@ export default function SelectReportsPage() {
         body: JSON.stringify({
           organization_id: organizationId,
           name: projectData.name,
+          type: projectData.type,
           template_codes: selectedTemplates,
         }),
       });
