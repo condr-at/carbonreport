@@ -58,40 +58,10 @@ export class ServerTimingTracker {
   }
 
   async commit(): Promise<void> {
-    const headerValue = this.getHeaderValue();
-    if (!headerValue) {
-      return;
-    }
-
-    try {
-      const headerList = await headers();
-      const mutable = headerList as unknown as Headers;
-
-      if (typeof mutable?.get === 'function' && typeof (mutable as any)?.set === 'function') {
-        const existing = mutable.get(HEADER_NAME);
-        const combined = existing ? `${existing}, ${headerValue}` : headerValue;
-
-        try {
-          mutable.set(HEADER_NAME, combined);
-          return;
-        } catch (setError) {
-          if (!this.headerAttachFailed && process.env.NODE_ENV !== 'production') {
-            console.debug(`[server-timing] failed to set ${HEADER_NAME} header`, setError);
-          }
-          this.headerAttachFailed = true;
-        }
-      }
-
-      if (!this.headerAttachFailed && process.env.NODE_ENV !== 'production') {
-        console.debug('[server-timing] header object is not mutable; skipping set');
-      }
-      this.headerAttachFailed = true;
-    } catch (error) {
-      if (!this.headerAttachFailed && process.env.NODE_ENV !== 'production') {
-        console.debug('[server-timing] header update skipped', error);
-      }
-      this.headerAttachFailed = true;
-    }
+    // In Next.js App Router, headers() returns a read-only interface to request headers.
+    // We cannot set response headers here.
+    // Timings are still logged to the console via logTimings().
+    return Promise.resolve();
   }
 
   logTimings(label?: string): void {

@@ -25,9 +25,9 @@ import type { DataRequestSummary } from '@/lib/data-requests/types';
 import { TableRow } from '@/lib/dataset-utils-v2';
 import { cn } from '@/lib/utils';
 import {
-  useAddDatasetItem,
-  useDeleteDatasetItem,
-  useUpdateDatasetField,
+  useBatchedAddDatasetItem,
+  useBatchedDeleteDatasetItem,
+  useBatchedUpdateDatasetField,
 } from '@/lib/data-client/dataset';
 
 interface DatasetTableProps {
@@ -51,22 +51,22 @@ interface DatasetTableProps {
 
 type DisplayRow =
   | {
-      kind: 'single';
-      id: string;
-      fieldLabel: string;
-      fieldHint: string | null;
-      data: TableRow;
-    }
+    kind: 'single';
+    id: string;
+    fieldLabel: string;
+    fieldHint: string | null;
+    data: TableRow;
+  }
   | {
-      kind: 'group';
-      id: string;
-      repeatableKey: string;
-      fieldLabel: string;
-      fieldHint: string | null;
-      rows: TableRow[];
-      items: RepeatableGroupItem[];
-      matchedRowIds: Set<string>;
-    };
+    kind: 'group';
+    id: string;
+    repeatableKey: string;
+    fieldLabel: string;
+    fieldHint: string | null;
+    rows: TableRow[];
+    items: RepeatableGroupItem[];
+    matchedRowIds: Set<string>;
+  };
 
 interface RepeatableGroupItem {
   itemId: string | null;
@@ -92,6 +92,8 @@ const REPEATABLE_GROUP_HINTS: Record<string, string> = {
     'List waste streams generated during production along with quantities and treatment routes.',
   review_team:
     'Document members of the critical review team, their affiliation, and scope of review.',
+  coming_soon:
+    'Placeholder for upcoming features and data points.',
 };
 
 export function DatasetTable({
@@ -101,11 +103,10 @@ export function DatasetTable({
   onRequestMultiple,
   dataRequests = [],
 }: DatasetTableProps) {
-  const updateFieldMutation = useUpdateDatasetField(projectId);
-  const addItemMutation = useAddDatasetItem(projectId);
-  const deleteItemMutation = useDeleteDatasetItem(projectId);
+  const updateFieldMutation = useBatchedUpdateDatasetField(projectId);
+  const addItemMutation = useBatchedAddDatasetItem(projectId);
+  const deleteItemMutation = useBatchedDeleteDatasetItem(projectId);
   const [editingCell, setEditingCell] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set());
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
@@ -149,10 +150,6 @@ export function DatasetTable({
 
   const handleCellSave = useCallback(
     async (row: TableRow, newValue: string) => {
-      if (updateFieldMutation.isPending) {
-        return;
-      }
-
       const currentValue = row.value ?? '';
       const nextValue = newValue ?? '';
 
@@ -162,7 +159,7 @@ export function DatasetTable({
       }
 
       try {
-        await updateFieldMutation.mutateAsync({
+        updateFieldMutation.mutate({
           fieldId: row.fieldId,
           itemId: row.itemId ?? null,
           value: nextValue,
@@ -174,63 +171,83 @@ export function DatasetTable({
     [updateFieldMutation]
   );
 
-  const renderEditableCell = useCallback(
-    (row: TableRow) => {
-      const isEditing = editingCell === row.id;
-      const isUpdating =
-        updateFieldMutation.isPending &&
-        updateFieldMutation.variables?.fieldId === row.fieldId &&
-        (updateFieldMutation.variables?.itemId ?? null) === (row.itemId ?? null);
+  // Extracted EditableCell to isolate state and prevent table re-renders on keystroke
+  const EditableCell = ({
+    row,
+    isEditing,
+    isUpdating,
+    onStartEdit,
+    onStopEdit,
+    onSave,
+  }: {
+    row: TableRow;
+    isEditing: boolean;
+    isUpdating: boolean;
+    onStartEdit: () => void;
+    onStopEdit: () => void;
+    onSave: (row: TableRow, newValue: string) => Promise<void>;
+  }) => {
+    const [value, setValue] = useState(row.value ?? '');
 
-      if (isEditing) {
-        return (
-          <div className="flex items-center gap-2">
-            <Input
-              type={row.type === 'number' ? 'number' : 'text'}
-              value={editValue}
-              disabled={isUpdating}
-              onChange={(e) => setEditValue(e.target.value)}
-              onBlur={() => handleCellSave(row, editValue)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleCellSave(row, editValue);
-                } else if (e.key === 'Escape') {
-                  setEditingCell(null);
-                }
-              }}
-              autoFocus
-              className="h-8"
-            />
-            {isUpdating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-          </div>
-        );
+    // Sync local state with prop when not editing or when row value updates externally
+    useEffect(() => {
+      if (!isEditing) {
+        setValue(row.value ?? '');
       }
+    }, [row.value, isEditing]);
 
+    if (isEditing) {
       return (
-        <button
-          type="button"
-          disabled={isUpdating}
-          className={cn(
-            'flex min-h-[32px] w-full items-center gap-2 rounded px-2 py-1 text-left transition hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring',
-            isUpdating && 'cursor-wait opacity-80'
-          )}
-          onClick={() => {
-            setEditingCell(row.id);
-            setEditValue(row.value ?? '');
-          }}
-        >
-          {isUpdating ? (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          ) : row.value ? (
-            row.value
-          ) : (
-            <span className="italic text-muted-foreground">Click to edit</span>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <Input
+            type={row.type === 'number' ? 'number' : 'text'}
+            value={value}
+            disabled={isUpdating}
+            onChange={(e) => setValue(e.target.value)}
+            onBlur={() => {
+              onSave(row, value);
+              onStopEdit();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                onSave(row, value);
+                onStopEdit();
+              } else if (e.key === 'Escape') {
+                setValue(row.value ?? '');
+                onStopEdit();
+              }
+            }}
+            autoFocus
+            className="h-8"
+          />
+          {isUpdating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        </div>
       );
-    },
-    [editingCell, editValue, handleCellSave, updateFieldMutation]
-  );
+    }
+
+    return (
+      <button
+        type="button"
+        disabled={isUpdating}
+        className={cn(
+          'flex min-h-[32px] w-full items-center gap-2 rounded px-2 py-1 text-left transition hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring',
+          isUpdating && 'cursor-wait opacity-80'
+        )}
+        onClick={() => {
+          setValue(row.value ?? '');
+          onStartEdit();
+        }}
+      >
+        {isUpdating ? (
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        ) : row.value ? (
+          row.value
+        ) : (
+          <span className="italic text-muted-foreground">Click to edit</span>
+        )}
+      </button>
+    );
+  };
 
   // Define table columns
   const requestsByField = useMemo(() => {
@@ -573,7 +590,19 @@ export function DatasetTable({
               </span>
             );
           }
-          return renderEditableCell(row.original.data);
+
+          const fieldRow = row.original.data;
+
+          return (
+            <EditableCell
+              row={fieldRow}
+              isEditing={editingCell === fieldRow.id}
+              isUpdating={false}
+              onStartEdit={() => setEditingCell(fieldRow.id)}
+              onStopEdit={() => setEditingCell(null)}
+              onSave={handleCellSave}
+            />
+          );
         },
         size: 220,
       },
@@ -585,7 +614,9 @@ export function DatasetTable({
       setSelectedRowIds,
       expandedGroups,
       setExpandedGroups,
-      renderEditableCell,
+      editingCell,
+      handleCellSave,
+      updateFieldMutation,
       getRequestsForRow,
       formatPendingContacts,
     ]
@@ -594,15 +625,13 @@ export function DatasetTable({
   const renderGroupContent = useCallback(
     (group: Extract<DisplayRow, { kind: 'group' }>) => {
       const handleAddItem = () => {
-        if (!group.repeatableKey || addItemMutation.isPending) {
+        if (!group.repeatableKey) {
           return;
         }
         addItemMutation.mutate({ repeatableKey: group.repeatableKey });
       };
 
-      const isAdding =
-        addItemMutation.isPending &&
-        addItemMutation.variables?.repeatableKey === group.repeatableKey;
+      const isAdding = false;
 
       if (group.items.length === 0) {
         return (
@@ -659,8 +688,8 @@ export function DatasetTable({
                     const rowCheckState: CheckedState = isAllSelected
                       ? true
                       : isAnySelected
-                      ? 'indeterminate'
-                      : false;
+                        ? 'indeterminate'
+                        : false;
 
                     return (
                       <tr
@@ -702,7 +731,14 @@ export function DatasetTable({
 
                           return (
                             <td key={fieldRow.id} className="px-3 py-2 align-top">
-                              {renderEditableCell(fieldRow)}
+                              <EditableCell
+                                row={fieldRow}
+                                isEditing={editingCell === fieldRow.id}
+                                isUpdating={false}
+                                onStartEdit={() => setEditingCell(fieldRow.id)}
+                                onStopEdit={() => setEditingCell(null)}
+                                onSave={handleCellSave}
+                              />
                             </td>
                           );
                         })}
@@ -711,9 +747,8 @@ export function DatasetTable({
                             <Button
                               variant="ghost"
                               size="sm"
-                              disabled={deleteItemMutation.isPending}
                               onClick={() => {
-                                if (!item.itemId || deleteItemMutation.isPending) {
+                                if (!item.itemId) {
                                   return;
                                 }
                                 deleteItemMutation.mutate({
@@ -722,16 +757,8 @@ export function DatasetTable({
                                 });
                               }}
                             >
-                              {deleteItemMutation.isPending &&
-                              deleteItemMutation.variables?.itemId === item.itemId &&
-                              deleteItemMutation.variables?.repeatableKey === group.repeatableKey ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                              ) : (
-                                <>
-                                  <Trash2 className="mr-1 h-4 w-4 text-destructive" />
-                                  Delete
-                                </>
-                              )}
+                              <Trash2 className="mr-1 h-4 w-4 text-destructive" />
+                              Delete
                             </Button>
                           )}
                         </td>
@@ -763,7 +790,9 @@ export function DatasetTable({
     [
       selectedRowIds,
       setSelectedRowIds,
-      renderEditableCell,
+      editingCell,
+      handleCellSave,
+      updateFieldMutation,
       addItemMutation,
       deleteItemMutation,
     ]
@@ -801,7 +830,7 @@ export function DatasetTable({
                 itemId: row.itemId ?? null,
                 fieldHint: row.fieldHint ?? null,
               }));
-              
+
               if (onRequestMultiple) {
                 onRequestMultiple(fields);
               } else if (fields.length > 0) {
@@ -851,8 +880,8 @@ export function DatasetTable({
               const isSelected =
                 original.kind === 'group'
                   ? original.items.some((item) =>
-                      item.rows.some((fieldRow) => selectedRowIds.has(fieldRow.id))
-                    )
+                    item.rows.some((fieldRow) => selectedRowIds.has(fieldRow.id))
+                  )
                   : selectedRowIds.has(original.data.id);
 
               return (

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "./providers";
+import { SyncProvider } from "@/lib/sync/sync-manager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +31,10 @@ export default function RootLayout({
         className={`carbon-report-theme ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <Toaster />
-          {children}
+          <SyncProvider>
+            <Toaster />
+            {children}
+          </SyncProvider>
         </Providers>
       </body>
     </html>
