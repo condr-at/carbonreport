@@ -9,7 +9,7 @@
  * - Optimistic updates
  */
 
-import { Fragment, useState, useMemo, useCallback, useEffect } from 'react';
+import React, { Fragment, useState, useMemo, useCallback, useEffect } from 'react';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 import {
   useReactTable,
@@ -172,7 +172,7 @@ export function DatasetTable({
   );
 
   // Extracted EditableCell to isolate state and prevent table re-renders on keystroke
-  const EditableCell = ({
+  const EditableCell = useMemo(() => React.memo(({
     row,
     isEditing,
     isUpdating,
@@ -247,7 +247,14 @@ export function DatasetTable({
         )}
       </button>
     );
-  };
+  }, (prev, next) => {
+    return (
+      prev.isEditing === next.isEditing &&
+      prev.isUpdating === next.isUpdating &&
+      prev.row.value === next.row.value &&
+      prev.row.id === next.row.id
+    );
+  }), []);
 
   // Define table columns
   const requestsByField = useMemo(() => {
@@ -628,7 +635,17 @@ export function DatasetTable({
         if (!group.repeatableKey) {
           return;
         }
-        addItemMutation.mutate({ repeatableKey: group.repeatableKey });
+        // Collect field IDs for this group to initialize them optimistically
+        // We can get them from the first item's rows, or if no items, we can't easily know them 
+        // without looking at the table columns definition or a separate metadata source.
+        // Fortunately, 'group.rows' contains ALL rows for this group across all items.
+        // We can extract unique fieldIds from there.
+        const fieldIds = Array.from(new Set(group.rows.map(r => r.fieldId)));
+
+        addItemMutation.mutate({
+          repeatableKey: group.repeatableKey,
+          fieldIds
+        });
       };
 
       const isAdding = false;
@@ -640,7 +657,6 @@ export function DatasetTable({
             <Button
               variant="outline"
               size="sm"
-              disabled={addItemMutation.isPending}
               onClick={handleAddItem}
             >
               {isAdding ? (
@@ -773,7 +789,6 @@ export function DatasetTable({
             <Button
               variant="outline"
               size="sm"
-              disabled={addItemMutation.isPending}
               onClick={handleAddItem}
             >
               {isAdding ? (

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DatasetTable, type DataRequestSummary } from '@/components/dataset-table';
 import { RequestDataModal } from '@/components/request-data-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Database } from 'lucide-react';
+import { Database, AlertTriangle } from 'lucide-react';
 import {
   TableRow,
   type FieldDefinition,
@@ -19,9 +19,8 @@ import { useProjectDataset, type ProjectDataset } from '@/lib/data-client/datase
 import { useDataRequests } from '@/lib/data-client/data-requests';
 import { useProjectContacts } from '@/lib/data-client/contacts';
 import { Skeleton } from '@/components/ui/skeleton';
-
-import { CorporateDataEntry } from '@/components/data-entry/corporate-data-entry';
-import { ProductDataEntry } from '@/components/data-entry/product-data-entry';
+import { migrateLegacyData } from '@/lib/migrations/migrate-legacy-data';
+import { SYSTEM_FIELD_DEFINITIONS } from '@/lib/system-definitions';
 
 interface DatasetPageClientProps {
   projectId: string;
@@ -65,24 +64,32 @@ export function DatasetPageClient({
     mailtoTemplate?: { subject: string; body: string } | null;
   } | null>(null);
 
+  // Memoize initial payload to prevent re-creation
   const initialDatasetPayload = useMemo<ProjectDataset | undefined>(() => {
     if (initialDataset === undefined || initialDatasetVersion === undefined) {
       return undefined;
     }
 
+    // Perform on-the-fly migration for initial data
+    const migratedDataset = initialDataset ? migrateLegacyData(initialDataset) : ({ data_points: [] } as Dataset);
+
     return {
       projectId,
       projectName,
-      dataset: initialDataset ?? ({ data_points: [] } as Dataset),
+      dataset: migratedDataset,
       datasetVersion: initialDatasetVersion,
       version: initialDatasetVersion,
       updatedAt: new Date().toISOString(),
     };
   }, [projectId, projectName, initialDataset, initialDatasetVersion]);
 
-  const datasetQuery = useProjectDataset(projectId, { initialData: initialDatasetPayload });
+  const datasetQuery = useProjectDataset(projectId, {
+    initialData: initialDatasetPayload,
+    staleTime: Infinity, // Prevent refetching on navigation to preserve optimistic updates
+  });
   const datasetVersion = datasetQuery.data?.datasetVersion ?? initialDatasetVersion ?? 0;
 
+  // Handle lazy loading state
   const [hasLoadedInitialDataset, setHasLoadedInitialDataset] = useState(!isInitialLazyLoad);
 
   useEffect(() => {
@@ -95,14 +102,39 @@ export function DatasetPageClient({
     }
   }, [datasetQuery.status, hasLoadedInitialDataset, isInitialLazyLoad]);
 
+
+
   const isLoadingInitialDataset = isInitialLazyLoad && !hasLoadedInitialDataset;
 
+  // Merge system definitions with DB definitions
+  const combinedDefinitions = useMemo(() => {
+    const dbFieldIds = new Set(fieldDefinitions.map(f => f.field_id));
+    const missingSystemFields = SYSTEM_FIELD_DEFINITIONS.filter(f => !dbFieldIds.has(f.field_id));
+    return [...fieldDefinitions, ...missingSystemFields];
+  }, [fieldDefinitions]);
+
+  // Unified Row Generation
   const rows = useMemo<TableRow[]>(() => {
-    const dataPoints = (datasetQuery.data?.dataset?.data_points ?? []) as DataPoint[];
-    const complete = initializeFullDataset(fieldDefinitions, dataPoints);
-    const enriched = enrichDataPoints(complete, fieldDefinitions);
+    // 1. Get raw data points (migrated)
+    let dataPoints = (datasetQuery.data?.dataset?.data_points ?? []) as DataPoint[];
+
+    // 2. Ensure migration runs on live updates too (if backend sends legacy format)
+    if (datasetQuery.data?.dataset) {
+      const migrated = migrateLegacyData(datasetQuery.data.dataset);
+      dataPoints = migrated.data_points;
+    }
+
+    // 3. Initialize full dataset (creates rows for ALL definitions)
+    // Note: In a real app, we might want to filter 'fieldDefinitions' to only show relevant fields.
+    // For now, we show ALL fields as requested ("Master View").
+    const complete = initializeFullDataset(combinedDefinitions, dataPoints);
+
+    // 4. Enrich with metadata (labels, types)
+    const enriched = enrichDataPoints(complete, combinedDefinitions);
+
+    // 5. Flatten to table rows
     return flattenToTableRows(enriched);
-  }, [datasetQuery.data?.dataset, fieldDefinitions]);
+  }, [datasetQuery.data?.dataset, combinedDefinitions]);
 
   const resolveMailtoTemplate = useCallback(
     (): { subject: string; body: string } | null => {
@@ -203,48 +235,52 @@ export function DatasetPageClient({
     );
   }
 
-  if (projectType === 'CORPORATE') {
-    return <CorporateDataEntry projectId={projectId} />;
-  }
-
-  if (projectType === 'PRODUCT') {
-    return <ProductDataEntry projectId={projectId} />;
-  }
-
-  if (rows.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Database className="h-16 w-16 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold">No Data Yet</h3>
-          <p className="text-sm text-muted-foreground mt-1 text-center">
-            Your dataset is empty. Add fields from report templates or create
-            custom fields.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            Dataset Version: {datasetVersion}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DatasetTable
-            projectId={projectId}
-            rows={rows}
-            dataRequests={dataRequests}
-            onRequestData={handleRequestData}
-            onRequestMultiple={handleRequestMultiple}
-          />
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        {/* Migration Notice (Temporary) */}
+        {(datasetQuery.data?.dataset?.facilities?.length ?? 0) > 0 && (
+          <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/50 dark:text-yellow-200">
+            <div className="flex items-center gap-2 font-medium">
+              <AlertTriangle className="h-4 w-4" />
+              Data Migration Active
+            </div>
+            <div className="mt-1 pl-6">
+              Your legacy data (Facilities/BOMs) is being automatically migrated to the new unified format.
+              Please verify your data below.
+            </div>
+          </div>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              Dataset Version: {datasetVersion}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {rows.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Database className="h-16 w-16 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold">No Data Yet</h3>
+                <p className="text-sm text-muted-foreground mt-1 text-center">
+                  Your dataset is empty. Add fields from report templates or create
+                  custom fields.
+                </p>
+              </div>
+            ) : (
+              <DatasetTable
+                projectId={projectId}
+                rows={rows}
+                dataRequests={dataRequests}
+                onRequestData={handleRequestData}
+                onRequestMultiple={handleRequestMultiple}
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {requestDataModal && (
         <RequestDataModal

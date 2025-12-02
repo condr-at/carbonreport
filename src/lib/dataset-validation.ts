@@ -21,6 +21,33 @@ export const DataPointSchema = z.object({
 
 export type DataPoint = z.infer<typeof DataPointSchema>
 
+export const FacilitySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  address: z.string(),
+  country: z.string(),
+});
+
+export const EnergyEntrySchema = z.object({
+  id: z.string(),
+  facilityId: z.string(),
+  source: z.string(),
+  amount: z.number(),
+  unit: z.string(),
+});
+
+export const BOMItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  weight: z.number(),
+  origin: z.string(),
+  materialType: z.string(),
+});
+
+export type Facility = z.infer<typeof FacilitySchema>;
+export type EnergyEntry = z.infer<typeof EnergyEntrySchema>;
+export type BOMItem = z.infer<typeof BOMItemSchema>;
+
 /**
  * Dataset Schema
  * 
@@ -30,12 +57,13 @@ export const DatasetSchema = z.object({
   data_points: z.array(DataPointSchema),
   // Corporate fields
   organization_info: z.record(z.unknown()).optional(),
-  facilities: z.array(z.unknown()).optional(),
+  facilities: z.array(FacilitySchema).optional(), // Legacy: migrating to data_points
   subsidiaries: z.array(z.unknown()).optional(),
   reporting_period: z.record(z.unknown()).optional(),
   // Product fields
   product_info: z.record(z.unknown()).optional(),
-  bom_items: z.array(z.unknown()).optional(),
+  bom_items: z.array(BOMItemSchema).optional(), // Legacy: migrating to data_points
+  energy_entries: z.array(EnergyEntrySchema).optional(), // Legacy: migrating to data_points
   processes: z.array(z.unknown()).optional(),
   transport_stages: z.array(z.unknown()).optional(),
 }).passthrough()
@@ -69,7 +97,7 @@ export function safeValidateDataset(dataset: unknown): {
  */
 export function createEmptyDataset(type: 'product' | 'corporate' = 'product'): Dataset {
   const base = { data_points: [] }
-  
+
   if (type === 'corporate') {
     return {
       ...base,

@@ -6,7 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
-import { useProjectDataset, useUpdateFullDataset } from '@/lib/data-client/dataset';
+import {
+  useProjectDataset,
+  useBatchedUpdateFacility,
+  useBatchedAddFacility,
+  useBatchedDeleteFacility,
+  useBatchedUpdateEnergy,
+  useBatchedAddEnergy,
+  useBatchedDeleteEnergy
+} from '@/lib/data-client/dataset';
 import type { Dataset } from '@/lib/dataset-validation';
 
 interface CorporateDataEntryProps {
@@ -30,8 +38,15 @@ interface EnergyEntry {
 
 export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
   const { data: projectDataset } = useProjectDataset(projectId);
-  const updateDataset = useUpdateFullDataset(projectId);
   const dataset = projectDataset?.dataset;
+
+  const updateFacility = useBatchedUpdateFacility(projectId);
+  const addFacility = useBatchedAddFacility(projectId);
+  const deleteFacility = useBatchedDeleteFacility(projectId);
+
+  const updateEnergy = useBatchedUpdateEnergy(projectId);
+  const addEnergy = useBatchedAddEnergy(projectId);
+  const deleteEnergy = useBatchedDeleteEnergy(projectId);
 
   const facilities = (dataset?.facilities as Facility[]) || [];
   const energyEntries = ((dataset as any)?.energy_entries as EnergyEntry[]) || [];
@@ -43,23 +58,15 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
       address: '',
       country: '',
     };
-    const newDataset = {
-      ...dataset,
-      facilities: [...facilities, newFacility],
-    } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    addFacility.mutate({ facility: newFacility });
   };
 
   const handleUpdateFacility = (id: string, field: keyof Facility, value: string) => {
-    const newFacilities = facilities.map(f => f.id === id ? { ...f, [field]: value } : f);
-    const newDataset = { ...dataset, facilities: newFacilities } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    updateFacility.mutate({ facilityId: id, field, value });
   };
 
   const handleDeleteFacility = (id: string) => {
-    const newFacilities = facilities.filter(f => f.id !== id);
-    const newDataset = { ...dataset, facilities: newFacilities } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    deleteFacility.mutate({ facilityId: id });
   };
 
   const handleAddEnergy = () => {
@@ -70,23 +77,15 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
       amount: 0,
       unit: 'kWh',
     };
-    const newDataset = {
-      ...dataset,
-      energy_entries: [...energyEntries, newEnergy],
-    } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    addEnergy.mutate({ entry: newEnergy });
   };
 
   const handleUpdateEnergy = (id: string, field: keyof EnergyEntry, value: string | number) => {
-    const newEntries = energyEntries.map(e => e.id === id ? { ...e, [field]: value } : e);
-    const newDataset = { ...dataset, energy_entries: newEntries } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    updateEnergy.mutate({ energyId: id, field, value });
   };
 
   const handleDeleteEnergy = (id: string) => {
-    const newEntries = energyEntries.filter(e => e.id !== id);
-    const newDataset = { ...dataset, energy_entries: newEntries } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    deleteEnergy.mutate({ energyId: id });
   };
 
   return (
@@ -96,7 +95,7 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
         <TabsTrigger value="energy">Energy (Scope 1&2)</TabsTrigger>
         <TabsTrigger value="supply">Supply Chain (Scope 3)</TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="structure">
         <Card>
           <CardHeader>
@@ -119,20 +118,20 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
                     {facilities.map((facility) => (
                       <tr key={facility.id} className="border-b last:border-0">
                         <td className="p-3">
-                          <Input 
-                            value={facility.name} 
+                          <Input
+                            value={facility.name}
                             onChange={(e) => handleUpdateFacility(facility.id, 'name', e.target.value)}
                           />
                         </td>
                         <td className="p-3">
-                          <Input 
-                            value={facility.address} 
+                          <Input
+                            value={facility.address}
                             onChange={(e) => handleUpdateFacility(facility.id, 'address', e.target.value)}
                           />
                         </td>
                         <td className="p-3">
-                          <Input 
-                            value={facility.country} 
+                          <Input
+                            value={facility.country}
                             onChange={(e) => handleUpdateFacility(facility.id, 'country', e.target.value)}
                           />
                         </td>
@@ -168,7 +167,7 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
             <CardDescription>Enter energy consumption data for each facility.</CardDescription>
           </CardHeader>
           <CardContent>
-             <div className="space-y-4">
+            <div className="space-y-4">
               <div className="rounded-md border">
                 <table className="w-full text-sm">
                   <thead>
@@ -184,8 +183,8 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
                     {energyEntries.map((entry) => (
                       <tr key={entry.id} className="border-b last:border-0">
                         <td className="p-3">
-                          <Select 
-                            value={entry.facilityId} 
+                          <Select
+                            value={entry.facilityId}
                             onValueChange={(val) => handleUpdateEnergy(entry.id, 'facilityId', val)}
                           >
                             <SelectTrigger>
@@ -199,8 +198,8 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
                           </Select>
                         </td>
                         <td className="p-3">
-                           <Select 
-                            value={entry.source} 
+                          <Select
+                            value={entry.source}
                             onValueChange={(val) => handleUpdateEnergy(entry.id, 'source', val)}
                           >
                             <SelectTrigger>
@@ -214,15 +213,15 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
                           </Select>
                         </td>
                         <td className="p-3">
-                          <Input 
+                          <Input
                             type="number"
-                            value={entry.amount} 
+                            value={entry.amount}
                             onChange={(e) => handleUpdateEnergy(entry.id, 'amount', parseFloat(e.target.value))}
                           />
                         </td>
                         <td className="p-3">
-                          <Input 
-                            value={entry.unit} 
+                          <Input
+                            value={entry.unit}
                             onChange={(e) => handleUpdateEnergy(entry.id, 'unit', e.target.value)}
                           />
                         </td>
@@ -233,7 +232,7 @@ export function CorporateDataEntry({ projectId }: CorporateDataEntryProps) {
                         </td>
                       </tr>
                     ))}
-                     {energyEntries.length === 0 && (
+                    {energyEntries.length === 0 && (
                       <tr>
                         <td colSpan={5} className="p-4 text-center text-muted-foreground">
                           No energy data added yet.

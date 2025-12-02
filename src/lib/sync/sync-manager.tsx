@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { request } from '@/lib/api-client';
 import { notifications } from '@/components/ui/notifications';
 
@@ -13,24 +14,33 @@ export interface SyncOperation {
     retryCount: number;
 }
 
+export interface BatchResult {
+    timestamp: number;
+    results: Array<{ id: string; success: boolean; error?: string }>;
+}
+
 interface SyncContextType {
     queue: SyncOperation[];
     addToQueue: (type: string, payload: any) => void;
     isSyncing: boolean;
     lastSyncTime: number | null;
+    lastBatchResult: BatchResult | null;
 }
 
 const SyncContext = createContext<SyncContextType | null>(null);
 
 const STORAGE_KEY = 'carbon_report_sync_queue';
-const BATCH_INTERVAL_MS = 2000;
+const BATCH_INTERVAL_MS = 5000;
 const MAX_RETRIES = 3;
 
 export function SyncProvider({ children }: { children: React.ReactNode }) {
     const [queue, setQueue] = useState<SyncOperation[]>([]);
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
+    const [lastBatchResult, setLastBatchResult] = useState<BatchResult | null>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const pathname = usePathname();
+    const prevPathname = useRef(pathname);
 
     // Load queue from localStorage on mount
     useEffect(() => {
@@ -82,6 +92,24 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
             const successIds = new Set(results.filter((r) => r.success).map((r) => r.id));
             const failedIds = new Set(results.filter((r) => !r.success).map((r) => r.id));
 
+            console.log('[SyncManager] Batch sent', {
+                operationCount: pending.length,
+                successCount: successIds.size,
+                failCount: failedIds.size,
+                timestamp: Date.now(),
+            });
+
+            // Check for permanent failures (items that will be dropped)
+            const permanentFailures = results.filter(r => {
+                if (r.success) return false;
+                const op = pending.find(p => p.id === r.id);
+                return op && op.retryCount >= MAX_RETRIES - 1;
+            });
+
+            if (permanentFailures.length > 0) {
+                notifications.error(`Failed to sync ${permanentFailures.length} changes. Please refresh the page.`);
+            }
+
             setQueue((prev) => {
                 const nextQueue = prev.filter((op) => {
                     // Remove successful items
@@ -112,6 +140,11 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
                 // Optional: Notify user if critical failures
             }
 
+            setLastBatchResult({
+                timestamp: Date.now(),
+                results,
+            });
+
         } catch (error) {
             console.error('Batch sync failed', error);
             // Mark all as pending to retry
@@ -127,6 +160,26 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
             setIsSyncing(false);
         }
     }, [queue, isSyncing]);
+
+    // Trigger sync on navigation
+    useEffect(() => {
+        if (pathname !== prevPathname.current) {
+            prevPathname.current = pathname;
+            void processQueue(); // Send immediately
+        }
+    }, [pathname, processQueue]);
+
+    // Trigger sync on visibility change (tab close/hide)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                void processQueue();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [processQueue]);
 
     // Debounce sync
     useEffect(() => {
@@ -229,7 +282,7 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <SyncContext.Provider value={{ queue, addToQueue, isSyncing, lastSyncTime }}>
+        <SyncContext.Provider value={{ queue, addToQueue, isSyncing, lastSyncTime, lastBatchResult }}>
             {children}
         </SyncContext.Provider>
     );

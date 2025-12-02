@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { DashboardLayout } from './dashboard-layout';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -62,6 +62,7 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
   const skipNextValueChange = useRef(false);
   const statusMutation = useUpdateProjectStatus();
   const isMutationPending = statusMutation.isPending;
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setCurrentStatus(project.status);
@@ -96,7 +97,9 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
       }
 
       setPendingTab(nextTabId);
-      router.push(`${baseHref}${target.href}`);
+      startTransition(() => {
+        router.push(`${baseHref}${target.href}`);
+      });
     },
     [activeTab, baseHref, router],
   );

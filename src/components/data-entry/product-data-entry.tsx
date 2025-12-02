@@ -5,7 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Trash2 } from 'lucide-react';
-import { useProjectDataset, useUpdateFullDataset } from '@/lib/data-client/dataset';
+import {
+  useProjectDataset,
+  useBatchedUpdateBOM,
+  useBatchedAddBOM,
+  useBatchedDeleteBOM
+} from '@/lib/data-client/dataset';
 import type { Dataset } from '@/lib/dataset-validation';
 
 interface ProductDataEntryProps {
@@ -22,8 +27,11 @@ interface BOMItem {
 
 export function ProductDataEntry({ projectId }: ProductDataEntryProps) {
   const { data: projectDataset } = useProjectDataset(projectId);
-  const updateDataset = useUpdateFullDataset(projectId);
   const dataset = projectDataset?.dataset;
+
+  const updateBOM = useBatchedUpdateBOM(projectId);
+  const addBOM = useBatchedAddBOM(projectId);
+  const deleteBOM = useBatchedDeleteBOM(projectId);
 
   const bomItems = (dataset?.bom_items as BOMItem[]) || [];
 
@@ -35,23 +43,15 @@ export function ProductDataEntry({ projectId }: ProductDataEntryProps) {
       origin: '',
       materialType: '',
     };
-    const newDataset = {
-      ...dataset,
-      bom_items: [...bomItems, newItem],
-    } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    addBOM.mutate({ item: newItem });
   };
 
   const handleUpdateBOMItem = (id: string, field: keyof BOMItem, value: string | number) => {
-    const newItems = bomItems.map(item => item.id === id ? { ...item, [field]: value } : item);
-    const newDataset = { ...dataset, bom_items: newItems } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    updateBOM.mutate({ bomId: id, field, value });
   };
 
   const handleDeleteBOMItem = (id: string) => {
-    const newItems = bomItems.filter(item => item.id !== id);
-    const newDataset = { ...dataset, bom_items: newItems } as Dataset;
-    updateDataset.mutate({ dataset: newDataset });
+    deleteBOM.mutate({ bomId: id });
   };
 
   return (
@@ -62,7 +62,7 @@ export function ProductDataEntry({ projectId }: ProductDataEntryProps) {
         <TabsTrigger value="logistics">Logistics</TabsTrigger>
         <TabsTrigger value="packaging">Packaging</TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="bom">
         <Card>
           <CardHeader>
@@ -86,27 +86,27 @@ export function ProductDataEntry({ projectId }: ProductDataEntryProps) {
                     {bomItems.map((item) => (
                       <tr key={item.id} className="border-b last:border-0">
                         <td className="p-3">
-                          <Input 
-                            value={item.name} 
+                          <Input
+                            value={item.name}
                             onChange={(e) => handleUpdateBOMItem(item.id, 'name', e.target.value)}
                           />
                         </td>
                         <td className="p-3">
-                          <Input 
+                          <Input
                             type="number"
-                            value={item.weight} 
+                            value={item.weight}
                             onChange={(e) => handleUpdateBOMItem(item.id, 'weight', parseFloat(e.target.value))}
                           />
                         </td>
                         <td className="p-3">
-                          <Input 
-                            value={item.origin} 
+                          <Input
+                            value={item.origin}
                             onChange={(e) => handleUpdateBOMItem(item.id, 'origin', e.target.value)}
                           />
                         </td>
                         <td className="p-3">
-                          <Input 
-                            value={item.materialType} 
+                          <Input
+                            value={item.materialType}
                             onChange={(e) => handleUpdateBOMItem(item.id, 'materialType', e.target.value)}
                           />
                         </td>
@@ -142,7 +142,7 @@ export function ProductDataEntry({ projectId }: ProductDataEntryProps) {
             <CardDescription>Coming Soon</CardDescription>
           </CardHeader>
           <CardContent>
-             <p className="text-muted-foreground">Process editor will be implemented here.</p>
+            <p className="text-muted-foreground">Process editor will be implemented here.</p>
           </CardContent>
         </Card>
       </TabsContent>
@@ -154,7 +154,7 @@ export function ProductDataEntry({ projectId }: ProductDataEntryProps) {
             <CardDescription>Coming Soon</CardDescription>
           </CardHeader>
           <CardContent>
-             <p className="text-muted-foreground">Logistics editor will be implemented here.</p>
+            <p className="text-muted-foreground">Logistics editor will be implemented here.</p>
           </CardContent>
         </Card>
       </TabsContent>
@@ -166,7 +166,7 @@ export function ProductDataEntry({ projectId }: ProductDataEntryProps) {
             <CardDescription>Coming Soon</CardDescription>
           </CardHeader>
           <CardContent>
-             <p className="text-muted-foreground">Packaging editor will be implemented here.</p>
+            <p className="text-muted-foreground">Packaging editor will be implemented here.</p>
           </CardContent>
         </Card>
       </TabsContent>

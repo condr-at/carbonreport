@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notifications } from '@/components/ui/notifications';
 import { request, ApiError } from '@/lib/api-client';
-import type { Dataset, DataPoint } from '@/lib/dataset-validation';
+import type { Dataset, DataPoint, Facility, EnergyEntry, BOMItem } from '@/lib/dataset-validation';
 import { projectKeys } from './keys';
 import { logOptimistic } from './logging';
 
@@ -423,8 +425,19 @@ import { useBatchSync } from '@/lib/sync/sync-manager';
 
 export function useBatchedUpdateDatasetField(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue } = useBatchSync();
+  const { addToQueue, lastBatchResult } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
+
+  // Listen for batch failures
+  useEffect(() => {
+    if (!lastBatchResult) return;
+
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) {
+      // Invalidate cache to refetch fresh data
+      void queryClient.invalidateQueries({ queryKey });
+    }
+  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: UpdateFieldVariables) => {
@@ -460,11 +473,21 @@ export function useBatchedUpdateDatasetField(projectId: string) {
 
 export function useBatchedAddDatasetItem(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue } = useBatchSync();
+  const { addToQueue, lastBatchResult } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
+  // Listen for batch failures
+  useEffect(() => {
+    if (!lastBatchResult) return;
+
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) {
+      void queryClient.invalidateQueries({ queryKey });
+    }
+  }, [lastBatchResult, queryClient, queryKey]);
+
   return {
-    mutate: (variables: AddItemVariables) => {
+    mutate: (variables: AddItemVariables & { fieldIds?: string[] }) => {
       const newItemId = crypto.randomUUID();
 
       // 1. Add to sync queue
@@ -480,70 +503,49 @@ export function useBatchedAddDatasetItem(projectId: string) {
           return current;
         }
 
-        // For "add item", we don't strictly need to add data points if the item is empty.
-        // But the UI might expect at least one row or the group structure to update.
-        // The `DatasetTable` derives items from data points.
-        // So we should probably add a placeholder data point or rely on the UI to handle "empty" items if we track them separately.
-        // However, looking at `DatasetTable`, it groups by `itemId`.
-        // If there are NO data points with that `itemId`, the item doesn't exist in the table.
-        // So we MUST add at least one data point to make it show up?
-        // Or we need to update the `DatasetTable` to handle this.
-        // Actually, `useAddDatasetItem` (legacy) returned `createdDataPoints`.
-        // Usually it creates default fields.
-        // Since we are batching, we can't run server logic to "create default fields".
-        // We have to create them HERE on the client if we want them to show up immediately.
+        const newPoints: DataPoint[] = [];
 
-        // Let's assume for now we just want the UI to not crash.
-        // To make it show up, we might need to know WHICH fields to create.
-        // This is tricky without schema knowledge on client.
+        // Use provided fieldIds to create placeholder data points
+        if (variables.fieldIds && variables.fieldIds.length > 0) {
+          variables.fieldIds.forEach(fieldId => {
+            newPoints.push({
+              field_id: fieldId,
+              item_id: newItemId,
+              value: '',
+            });
+          });
+        }
 
-        // ALTERNATIVE: Just add a dummy data point for the first field of the group?
-        // Or maybe we don't show it until the user types?
-        // But the user clicked "Add Item", they expect to see a new row.
-
-        // Let's try to add a placeholder data point for the group.
-        // We don't know the field IDs easily here.
-        // But we can find them from the existing dataset if there are other items!
-
-        const existingPoints = current.dataset?.data_points ?? [];
-        // Find a field belonging to this repeatable group
-        // This is hard without metadata.
-
-        // Fallback: We just trigger the mutation and let the server handle it?
-        // But then it's not optimistic.
-
-        // OK, for now, let's just send the batch. The UI might not show the new item instantly 
-        // unless we hack the cache.
-        // But wait, `DatasetTable` uses `rows`.
-        // If we don't update cache, `rows` won't change.
-
-        // Let's try to find *any* fieldId associated with this repeatableKey from the current dataset?
-        // This is a bit hacky but might work for optimistic UI.
-
-        return current;
+        return {
+          ...current,
+          dataset: {
+            ...current.dataset,
+            data_points: [...current.dataset.data_points, ...newPoints],
+          },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
       });
 
-      // Since we can't easily generate the correct default fields on the client without more metadata,
-      // we might have to accept that "Add Item" is slightly less optimistic or requires a refetch.
-      // BUT, we can still batch it!
-      // The `addToQueue` is done.
-      // We can invalidate queries immediately to trigger a fetch?
-      // No, that defeats the purpose of batching (blocking).
-
-      // Better approach:
-      // The `DatasetTable` should be able to handle "optimistic items".
-      // But that requires changing `DatasetTable`.
-
-      // For now, let's just log it.
-      logOptimistic('mutate:batched', { action: 'dataset.add-item', projectId, repeatableKey: variables.repeatableKey });
+      logOptimistic('mutate:start', { action: 'dataset.add-item', projectId, repeatableKey: variables.repeatableKey });
     }
   };
 }
 
 export function useBatchedDeleteDatasetItem(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue } = useBatchSync();
+  const { addToQueue, lastBatchResult } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
+
+  // Listen for batch failures
+  useEffect(() => {
+    if (!lastBatchResult) return;
+
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) {
+      void queryClient.invalidateQueries({ queryKey });
+    }
+  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: DeleteItemVariables) => {
@@ -568,7 +570,299 @@ export function useBatchedDeleteDatasetItem(projectId: string) {
         };
       });
 
-      logOptimistic('mutate:batched', { action: 'dataset.delete-item', projectId, itemId: variables.itemId });
+      logOptimistic('mutate:start', { action: 'dataset.delete-item', projectId, itemId: variables.itemId });
+    }
+  };
+}
+
+// --- Corporate / Product Batched Hooks ---
+
+export function useBatchedUpdateFacility(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { facilityId: string; field: keyof Facility; value: string }) => {
+      addToQueue('dataset/update-facility', { projectId, ...variables });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const facilities = (current.dataset.facilities as Facility[]) || [];
+        const index = facilities.findIndex(f => f.id === variables.facilityId);
+        if (index === -1) return current;
+
+        const nextFacilities = [...facilities];
+        nextFacilities[index] = { ...nextFacilities[index], [variables.field]: variables.value };
+
+        return {
+          ...current,
+          dataset: { ...current.dataset, facilities: nextFacilities },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.update-facility', projectId, facilityId: variables.facilityId });
+    }
+  };
+}
+
+export function useBatchedAddFacility(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { facility: Facility }) => {
+      addToQueue('dataset/add-facility', { projectId, facility: variables.facility });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const facilities = (current.dataset.facilities as Facility[]) || [];
+        return {
+          ...current,
+          dataset: { ...current.dataset, facilities: [...facilities, variables.facility] },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.add-facility', projectId });
+    }
+  };
+}
+
+export function useBatchedDeleteFacility(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { facilityId: string }) => {
+      addToQueue('dataset/delete-facility', { projectId, facilityId: variables.facilityId });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const facilities = (current.dataset.facilities as Facility[]) || [];
+        return {
+          ...current,
+          dataset: { ...current.dataset, facilities: facilities.filter(f => f.id !== variables.facilityId) },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.delete-facility', projectId, facilityId: variables.facilityId });
+    }
+  };
+}
+
+export function useBatchedUpdateEnergy(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { energyId: string; field: keyof EnergyEntry; value: string | number }) => {
+      addToQueue('dataset/update-energy', { projectId, ...variables });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const entries = (current.dataset.energy_entries as EnergyEntry[]) || [];
+        const index = entries.findIndex(e => e.id === variables.energyId);
+        if (index === -1) return current;
+
+        const nextEntries = [...entries];
+
+        nextEntries[index] = { ...nextEntries[index], [variables.field]: variables.value };
+
+        return {
+          ...current,
+          dataset: { ...current.dataset, energy_entries: nextEntries },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.update-energy', projectId, energyId: variables.energyId });
+    }
+  };
+}
+
+export function useBatchedAddEnergy(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { entry: EnergyEntry }) => {
+      addToQueue('dataset/add-energy', { projectId, entry: variables.entry });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const entries = (current.dataset.energy_entries as EnergyEntry[]) || [];
+        return {
+          ...current,
+          dataset: { ...current.dataset, energy_entries: [...entries, variables.entry] },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.add-energy', projectId });
+    }
+  };
+}
+
+export function useBatchedDeleteEnergy(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { energyId: string }) => {
+      addToQueue('dataset/delete-energy', { projectId, energyId: variables.energyId });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const entries = (current.dataset.energy_entries as EnergyEntry[]) || [];
+        return {
+          ...current,
+          dataset: { ...current.dataset, energy_entries: entries.filter(e => e.id !== variables.energyId) },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.delete-energy', projectId, energyId: variables.energyId });
+    }
+  };
+}
+
+export function useBatchedUpdateBOM(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { bomId: string; field: keyof BOMItem; value: string | number }) => {
+      addToQueue('dataset/update-bom', { projectId, ...variables });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const items = (current.dataset.bom_items as BOMItem[]) || [];
+        const index = items.findIndex(i => i.id === variables.bomId);
+        if (index === -1) return current;
+
+        const nextItems = [...items];
+
+        nextItems[index] = { ...nextItems[index], [variables.field]: variables.value };
+
+        return {
+          ...current,
+          dataset: { ...current.dataset, bom_items: nextItems },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.update-bom', projectId, bomId: variables.bomId });
+    }
+  };
+}
+
+export function useBatchedAddBOM(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { item: BOMItem }) => {
+      addToQueue('dataset/add-bom', { projectId, item: variables.item });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const items = (current.dataset.bom_items as BOMItem[]) || [];
+        return {
+          ...current,
+          dataset: { ...current.dataset, bom_items: [...items, variables.item] },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.add-bom', projectId });
+    }
+  };
+}
+
+export function useBatchedDeleteBOM(projectId: string) {
+  const queryClient = useQueryClient();
+  const { addToQueue, lastBatchResult } = useBatchSync();
+  const queryKey = projectKeys.dataset(projectId);
+
+  useEffect(() => {
+    if (!lastBatchResult) return;
+    const failures = lastBatchResult.results.filter(r => !r.success);
+    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
+  }, [lastBatchResult, queryClient, queryKey]);
+
+  return {
+    mutate: (variables: { bomId: string }) => {
+      addToQueue('dataset/delete-bom', { projectId, bomId: variables.bomId });
+
+      queryClient.setQueryData<ProjectDataset>(queryKey, (current) => {
+        if (!current?.dataset) return current;
+        const items = (current.dataset.bom_items as BOMItem[]) || [];
+        return {
+          ...current,
+          dataset: { ...current.dataset, bom_items: items.filter(i => i.id !== variables.bomId) },
+          version: Date.now(),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      logOptimistic('mutate:start', { action: 'dataset.delete-bom', projectId, bomId: variables.bomId });
     }
   };
 }

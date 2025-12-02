@@ -19,6 +19,7 @@ import { useDataRequests } from '@/lib/data-client/data-requests';
 import { useProjectContacts } from '@/lib/data-client/contacts';
 import type { ContactSummary } from '@/lib/contacts/types';
 import { Database, RefreshCcw, FileText } from 'lucide-react';
+import { migrateLegacyData } from '@/lib/migrations/migrate-legacy-data';
 
 interface ReportSectionSummary {
   key: string;
@@ -115,11 +116,20 @@ export function ReportPageClient({
 
   const datasetQuery = useProjectDataset(projectId, {
     initialData: initialDatasetPayload,
+    staleTime: Infinity, // Prevent refetching on navigation to preserve optimistic updates
   });
   const datasetVersion = datasetQuery.data?.datasetVersion ?? initialDatasetVersion;
 
   const rows = useMemo<TableRow[]>(() => {
-    const dataPoints = (datasetQuery.data?.dataset?.data_points ?? []) as DataPoint[];
+    // 1. Get raw data points
+    let dataPoints = (datasetQuery.data?.dataset?.data_points ?? []) as DataPoint[];
+
+    // 2. Apply migration if needed (to access Facilities/BOMs as data points)
+    if (datasetQuery.data?.dataset) {
+      const migrated = migrateLegacyData(datasetQuery.data.dataset);
+      dataPoints = migrated.data_points;
+    }
+
     const filtered = dataPoints.filter((point) => fieldIdSet.has(point.field_id));
     const complete = initializeFullDataset(fieldDefinitions, filtered);
     const enriched = enrichDataPoints(complete, fieldDefinitions);
