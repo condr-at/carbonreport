@@ -1,1 +1,0 @@
--- No-op: original structure is now covered by baseline migration 20241017000000_initial_schema.
