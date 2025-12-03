@@ -1,0 +1,264 @@
+/* Mapping legacy amber optics to emerald primitives:
+  --brand (oklch(0.665 0.1804 47.04))      → --visual-primary-500
+  --brand-foreground (0.7577 0.159 55.91) → --visual-primary-400
+  Derived tones reuse the same relative mixes from the legacy palette. */
+
+.illustrations-demo-theme {
+  --brand: var(--visual-primary-500);
+  --brand-foreground: color-mix(in oklab, var(--visual-primary-400) 85%, white 15%);
+  --light: color-mix(in oklab, var(--brand) 65%, white);
+  --light-foreground: color-mix(in oklab, var(--brand) 30%, black);
+  --container-sm: 24rem;
+  --container-md: 28rem;
+  --container-lg: 32rem;
+  --container-3xl: 48rem;
+  --container-4xl: 56rem;
+  --container-6xl: 72rem;
+  --shadow: #00000008;
+  --shadow-strong: #00000008;
+  --launch-ui-raised-bg: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--card) 96%, transparent) 0%,
+    color-mix(in oklab, var(--card) 85%, var(--brand-foreground) 15%) 55%,
+    color-mix(in oklab, var(--card) 78%, var(--brand) 22%) 100%
+  );
+  --launch-ui-raised-border: color-mix(in oklab, var(--border) 65%, transparent);
+  --launch-ui-raised-shadow: 0 28px 60px -35px color-mix(in oklab, black 28%, transparent);
+}
+
+.dark .illustrations-demo-theme {
+  --brand: var(--visual-primary-500);
+  --brand-foreground: var(--visual-primary-700);
+  --light: color-mix(in oklab, var(--brand) 45%, white);
+  --light-foreground: color-mix(in oklab, var(--brand) 80%, black);
+  --shadow: #00000020;
+  --shadow-strong: #0008;
+  --launch-ui-raised-bg: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--card) 72%, transparent) 0%,
+    color-mix(in oklab, var(--card) 60%, var(--brand-foreground) 40%) 60%,
+    color-mix(in oklab, var(--card) 55%, var(--brand) 45%) 100%
+  );
+  --launch-ui-raised-border: color-mix(in oklab, var(--border) 55%, transparent);
+  --launch-ui-raised-shadow: 0 24px 48px -32px color-mix(in oklab, black 55%, transparent);
+}
+
+/* Mask utilities ported from Launch UI so demo is self-contained */
+.fade-top {
+  -webkit-mask-image: linear-gradient(#0000, #000 35%);
+  mask-image: linear-gradient(#0000, #000 35%);
+}
+
+.fade-top-lg {
+  -webkit-mask-image: linear-gradient(#0000 15%, #000);
+  mask-image: linear-gradient(#0000 15%, #000);
+}
+
+.fade-bottom {
+  -webkit-mask-image: linear-gradient(#000 65%, #0000);
+  mask-image: linear-gradient(#000 65%, #0000);
+}
+
+.fade-bottom-lg {
+  -webkit-mask-image: linear-gradient(#000, #0000 85%);
+  mask-image: linear-gradient(#000, #0000 85%);
+}
+
+.fade-left {
+  -webkit-mask-image: linear-gradient(90deg, #0000, #000 35%);
+  mask-image: linear-gradient(90deg, #0000, #000 35%);
+}
+
+.fade-left-lg {
+  -webkit-mask-image: linear-gradient(90deg, #0000 15%, #000);
+  mask-image: linear-gradient(90deg, #0000 15%, #000);
+}
+
+.fade-right {
+  -webkit-mask-image: linear-gradient(270deg, #0000, #000 35%);
+  mask-image: linear-gradient(270deg, #0000, #000 35%);
+}
+
+.fade-right-lg {
+  -webkit-mask-image: linear-gradient(270deg, #0000 15%, #000);
+  mask-image: linear-gradient(270deg, #0000 15%, #000);
+}
+
+.fade-x {
+  -webkit-mask-image: linear-gradient(90deg, #0000, #000 25% 75%, #0000);
+  mask-image: linear-gradient(90deg, #0000, #000 25% 75%, #0000);
+}
+
+.fade-y {
+  -webkit-mask-image: linear-gradient(#0000, #000 25% 75%, #0000);
+  mask-image: linear-gradient(#0000, #000 25% 75%, #0000);
+}
+
+/* Slightly sharper glows/backdrops for the demo */
+.illustrations-demo-theme :where(.backdrop-blur-sm) {
+  --tw-backdrop-blur: blur(4px);
+}
+
+.illustrations-demo-theme :where(.backdrop-blur-md) {
+  --tw-backdrop-blur: blur(12px);
+}
+
+.illustrations-demo-theme :where(.backdrop-blur-lg) {
+  --tw-backdrop-blur: blur(15px);
+}
+
+.illustrations-demo-theme :where(.backdrop-blur-xl) {
+  --tw-backdrop-blur: blur(25px);
+}
+
+/* Tinted card canvases and richer glow */
+.illustrations-demo-theme [data-slot="card-content"] {
+  background-color: var(--card);
+}
+
+.dark .illustrations-demo-theme [data-slot="card-content"] {
+  background-color: var(--background);
+}
+
+/* Fix for glass-3 border visibility in dark mode */
+.dark .illustrations-demo-theme .glass-3 {
+  border-color: var(--border);
+  border-top-color: var(--border);
+  border-bottom-color: var(--border);
+}
+
+/* Carousel marquee animation utilities copied from Launch UI so the
+   illustration works in isolation. */
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+  100% {
+    transform: translateX(calc(-100% - var(--gap)));
+  }
+}
+
+.illustrations-demo-theme :where(.animate-marquee) {
+  animation: marquee var(--duration) infinite linear;
+}
+
+/* Tailwind would normally emit these utility classes, so we re-create the
+   exact rules to keep the standalone snippet interactive. */
+.illustrations-demo-theme :where(.\[animation-play-state\:paused\]) {
+  animation-play-state: paused;
+}
+
+.illustrations-demo-theme :where(.\[animation-direction\:reverse\]) {
+  animation-direction: reverse;
+}
+
+.illustrations-demo-theme :where(.group:hover .group-hover\:\[animation-play-state\:running\]) {
+  animation-play-state: running;
+}
+
+/* Launch UI utilities missed by Tailwind tree-shaking */
+.illustrations-demo-theme :where(.w-sm) {
+  width: var(--container-sm);
+}
+
+.illustrations-demo-theme :where(.rounded-t-x) {
+  border-top-left-radius: calc(var(--radius) + 1.5rem);
+  border-top-right-radius: calc(var(--radius) + 1.5rem);
+}
+
+.illustrations-demo-theme :where(.font-sm) {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-feature-settings: "ss02" 1, "ss04" 1, "cv11" 1;
+  font-variation-settings: "wdth" 112, "wght" 550;
+}
+
+.illustrations-demo-theme :where(.bg-raised) {
+  background-image: var(--launch-ui-raised-bg);
+  border-color: var(--launch-ui-raised-border);
+  box-shadow: var(--launch-ui-raised-shadow);
+  transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.illustrations-demo-theme :where(.hover\:\!bg-raised:hover) {
+  background-image: var(--launch-ui-raised-bg) !important;
+  border-color: var(--launch-ui-raised-border) !important;
+  box-shadow: var(--launch-ui-raised-shadow) !important;
+}
+
+.illustrations-demo-theme :where(.bg-linear-to-b) {
+  --tw-gradient-position: to bottom;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+.illustrations-demo-theme :where(.bg-linear-to-t) {
+  --tw-gradient-position: to top;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+.illustrations-demo-theme :where(.bg-linear-to-r) {
+  --tw-gradient-position: to right;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+.illustrations-demo-theme :where(.bg-linear-to-br) {
+  --tw-gradient-position: to bottom right;
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}
+
+@supports (background-image: linear-gradient(in lab, red, red)) {
+  .illustrations-demo-theme :where(.bg-linear-to-b) {
+    --tw-gradient-position: to bottom in oklab;
+  }
+
+  .illustrations-demo-theme :where(.bg-linear-to-t) {
+    --tw-gradient-position: to top in oklab;
+  }
+
+  .illustrations-demo-theme :where(.bg-linear-to-r) {
+    --tw-gradient-position: to right in oklab;
+  }
+
+  .illustrations-demo-theme :where(.bg-linear-to-br) {
+    --tw-gradient-position: to bottom right in oklab;
+  }
+}
+
+.illustrations-demo-theme :where(.bg-radial),
+.illustrations-demo-theme :where(.after\:bg-radial)::after {
+  --tw-gradient-position: in oklab;
+  background-image: radial-gradient(var(--tw-gradient-stops));
+}
+
+.illustrations-demo-theme :where(.from-10\%),
+.illustrations-demo-theme :where(.after\:from-10\%)::after {
+  --tw-gradient-from-position: 10%;
+}
+
+.illustrations-demo-theme :where(.from-20\%),
+.illustrations-demo-theme :where(.after\:from-20\%)::after {
+  --tw-gradient-from-position: 20%;
+}
+
+.illustrations-demo-theme :where(.via-50\%),
+.illustrations-demo-theme :where(.after\:via-50\%)::after {
+  --tw-gradient-via-position: 50%;
+}
+
+.illustrations-demo-theme :where(.to-60\%),
+.illustrations-demo-theme :where(.after\:to-60\%)::after {
+  --tw-gradient-to-position: 60%;
+}
+
+.illustrations-demo-theme :where(.to-70\%),
+.illustrations-demo-theme :where(.after\:to-70\%)::after {
+  --tw-gradient-to-position: 70%;
+}
+
+.illustrations-demo-theme :where(.to-80\%),
+.illustrations-demo-theme :where(.after\:to-80\%)::after {
+  --tw-gradient-to-position: 80%;
+}
+
+
+
