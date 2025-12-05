@@ -76,6 +76,7 @@ export function initializeFullDataset(
   // Preserve legacy data points for fields that no longer exist in definitions
   for (const dp of existingDataPoints) {
     if (fieldDefinitions.some((def) => def.field_id === dp.field_id)) continue
+    if (!dp.value || dp.value.trim() === '') continue
     result.push(dp)
   }
 

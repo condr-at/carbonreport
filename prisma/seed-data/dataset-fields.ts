@@ -684,32 +684,6 @@ export const DATASET_FIELD_SEED: DatasetFieldSeed[] = [
   },
 
   // ================================
-  // Coming Soon (scope: 'both', repeatable)
-  // ================================
-  {
-    fieldId: 'coming_soon_feature_name',
-    label: 'Feature name',
-    hint: 'Name of the upcoming feature.',
-    type: 'text',
-    dataType: 'text',
-    scope: 'both',
-    isRepeatable: true,
-    repeatableKey: 'coming_soon',
-    sortOrder: 2000,
-  },
-  {
-    fieldId: 'coming_soon_eta',
-    label: 'Estimated release',
-    hint: 'Expected release date.',
-    type: 'text',
-    dataType: 'text',
-    scope: 'both',
-    isRepeatable: true,
-    repeatableKey: 'coming_soon',
-    sortOrder: 2010,
-  },
-
-  // ================================
   // Corporate Emissions (scope: 'corporate')
   // ================================
   {
@@ -3470,12 +3444,36 @@ export const DATASET_FIELD_SEED: DatasetFieldSeed[] = [
     sortOrder: 5380,
   },
   {
-    fieldId: 'custom_client_fields',
-    label: 'Custom fields',
-    hint: 'Custom client fields',
+    fieldId: 'custom_client_field_name',
+    label: 'Custom field name',
+    hint: 'Name of the bespoke field requested by a client or stakeholder.',
     type: 'text',
-    dataType: 'json',
+    dataType: 'text',
     scope: 'both',
+    isRepeatable: true,
+    repeatableKey: 'custom_client_fields',
     sortOrder: 5390,
+  },
+  {
+    fieldId: 'custom_client_field_type',
+    label: 'Custom field type',
+    hint: 'Format or instructions (text, number, attachment link, etc.).',
+    type: 'text',
+    dataType: 'text',
+    scope: 'both',
+    isRepeatable: true,
+    repeatableKey: 'custom_client_fields',
+    sortOrder: 5400,
+  },
+  {
+    fieldId: 'custom_client_field_value',
+    label: 'Custom field value',
+    hint: 'Recorded value that satisfies the custom requirement.',
+    type: 'text',
+    dataType: 'textarea',
+    scope: 'both',
+    isRepeatable: true,
+    repeatableKey: 'custom_client_fields',
+    sortOrder: 5410,
   },
 ]

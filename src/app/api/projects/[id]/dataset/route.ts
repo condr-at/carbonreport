@@ -27,6 +27,8 @@ const UpdateDatasetSchema = z.object({
   datasetVersion: z.number().int().min(0),
 })
 
+const LEGACY_FIELD_IDS = new Set(['custom_client_fields'])
+
 function buildMetadata(version: number) {
   const updatedAt = new Date().toISOString()
   return { version, updatedAt }
@@ -37,7 +39,12 @@ async function findMissingFieldIds(fieldIds: string[]): Promise<string[]> {
     return []
   }
 
-  const uniqueIds = Array.from(new Set(fieldIds.filter((id) => id && id.trim().length > 0)))
+  const filteredIds = fieldIds.filter((id) => id && id.trim().length > 0 && !LEGACY_FIELD_IDS.has(id))
+  if (!filteredIds.length) {
+    return []
+  }
+
+  const uniqueIds = Array.from(new Set(filteredIds))
   if (!uniqueIds.length) {
     return []
   }

@@ -92,8 +92,8 @@ const REPEATABLE_GROUP_HINTS: Record<string, string> = {
     'List waste streams generated during production along with quantities and treatment routes.',
   review_team:
     'Document members of the critical review team, their affiliation, and scope of review.',
-  coming_soon:
-    'Placeholder for upcoming features and data points.',
+  custom_client_fields:
+    'Track bespoke questionnaire fields (name, type, and the value you provided).',
 };
 
 const EditableCell = React.memo(({

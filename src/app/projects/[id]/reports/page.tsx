@@ -16,6 +16,12 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+interface ProjectReportSummary {
+  id: string;
+  templateCode: string;
+  completion: number;
+}
+
 async function fetchProjectWithReports(id: string) {
   const baseUrl = await getBaseUrl();
   const headersList = await headers();
@@ -45,13 +51,30 @@ export default async function ReportsPage({ params }: PageProps) {
     notFound();
   }
 
-  const reports = Array.isArray(project.reports)
-    ? project.reports.map((report: any) => ({
-        id: report?.id,
-        templateCode: report?.template_code ?? report?.templateCode ?? '',
-        completion: typeof report?.completion === 'number' ? report.completion : 0,
-      }))
-      .filter((r: any) => Boolean(r.id))
+  const reports: ProjectReportSummary[] = Array.isArray(project.reports)
+    ? (project.reports as unknown[])
+        .map((report: any) => {
+          const id = typeof report?.id === 'string' ? report.id : null;
+          const templateCode = typeof report?.template_code === 'string'
+            ? report.template_code
+            : typeof report?.templateCode === 'string'
+              ? report.templateCode
+              : '';
+          const completion = typeof report?.completion === 'number' ? report.completion : 0;
+
+          if (!id) {
+            return null;
+          }
+
+          const mappedReport: ProjectReportSummary = {
+            id,
+            templateCode,
+            completion,
+          };
+
+          return mappedReport;
+        })
+        .filter((report): report is ProjectReportSummary => report !== null)
     : [];
 
   const orderIndex = new Map<ReportTemplateCode, number>(
@@ -59,7 +82,7 @@ export default async function ReportsPage({ params }: PageProps) {
   );
 
   const visibleReports = reports
-    .filter((report) => isUserFacingReportTemplate(report.templateCode))
+    .filter((report) => isUserFacingReportTemplate(report.templateCode as ReportTemplateCode))
     .sort((a, b) => {
       const aIndex = orderIndex.get(a.templateCode as ReportTemplateCode) ?? Number.MAX_SAFE_INTEGER;
       const bIndex = orderIndex.get(b.templateCode as ReportTemplateCode) ?? Number.MAX_SAFE_INTEGER;
