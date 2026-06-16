@@ -55,7 +55,7 @@ Use the table below when you need to know "why does this file exist?" and the Ba
 
 1. **User flows & IA**: [`UX_GUIDE.md`](./UX_GUIDE.md)
 2. **Design system**: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)
-3. **Product direction**: [`planning/ROADMAP.md`](./planning/ROADMAP.md)
+3. **Product direction**: [`PRODUCT_READINESS_REVIEW.md`](./PRODUCT_READINESS_REVIEW.md) → [`planning/ROADMAP.md`](./planning/ROADMAP.md)
 
 ---
 
@@ -63,6 +63,8 @@ Use the table below when you need to know "why does this file exist?" and the Ba
 
 | File | Who | Why |
 | --- | --- | --- |
+| [`PRODUCT_READINESS_REVIEW.md`](./PRODUCT_READINESS_REVIEW.md) | Product, Founders, Leads | Honest human-readable assessment of product readiness, product thesis, and near-term decisions. |
+| [`AGENT_PRODUCT_GUARDRAILS.md`](./AGENT_PRODUCT_GUARDRAILS.md) | Engineers, AI agents | Execution guardrails for product-facing changes: source-of-truth hierarchy, UX rules, messaging constraints, and acceptance criteria. |
 | [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) | **Everyone** | **Quick status**: Multi-org readiness (85%), blockers, timeline |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Engineers, PMs | High-level system & data architecture (supersedes archived requirements docs). |
 | [`DEVELOPMENT.md`](./DEVELOPMENT.md) | Engineers | Day-to-day workflow, active technical debt, validation tooling. |
