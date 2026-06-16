@@ -36,7 +36,7 @@ import {
   UNKNOWN_ANSWER_DESCRIPTION,
   hasMeaningfulAnswer,
 } from '@/lib/questionnaires/decision-engine'
-import { ReportTemplateCode } from '@/lib/report-templates/types'
+import { deriveTemplateCodesFromEvaluation } from '@/lib/questionnaires/report-template-mapping'
 import { ArrowLeft, ArrowRight, Loader2, X } from 'lucide-react'
 
 const QUESTION_GROUP_TITLES: Record<QuestionGroup, { title: string; description?: string }> = {
@@ -112,35 +112,6 @@ const STEP_DEFINITIONS: StepDefinition[] = [
 ]
 
 type StepState = StepDefinition & { visibleGroups: QuestionGroup[] }
-
-const ENGINE_TO_TEMPLATE_MAP: Record<string, ReportTemplateCode> = {
-  CSRD: 'CSRD',
-  EU_ETS: 'EU_ETS',
-  CBAM: 'CBAM',
-  UK_SECR: 'UK_SECR',
-  SEC_CLIMATE: 'SEC_CLIMATE',
-  CORSIA: 'CORSIA',
-  EU_MRV: 'EU_MRV',
-  SFDR: 'SFDR',
-  UK_TCFD: 'UK_TCFD',
-  HKEX_ESG: 'HKEX_ESG',
-  ISO_14064_CERT: 'ISO14064',
-  CDP_DISCLOSURE: 'CDP',
-  CORP_GHG: 'CORP_GHG',
-  CORP_GHG_VERIFIED: 'CORP_GHG',
-  CORP_GHG_SIMPLIFIED: 'CORP_GHG',
-  CORP_GHG_ANNUAL: 'CORP_GHG',
-  CORP_GHG_PUBLIC: 'CORP_GHG',
-  CORP_GHG_INTERNAL: 'CORP_GHG',
-  ECOVADIS_SCORE: 'ECOVADIS',
-  EPD_OR_ISO_14067: 'ISO14067',
-  PRODUCT_PCF: 'ISO14067',
-  CLIENT_SCOPE3_PACKAGE: 'SCOPE3_PACKAGE',
-  CLIENT_TEMPLATE_FILL: 'CLIENT_TEMPLATE',
-  SCOPE3_DETAILED: 'SCOPE3_DETAILED',
-  CARBON_NEUTRAL_CERT: 'CARBON_NEUTRAL',
-  TCFD_REPORT: 'TCFD',
-}
 
 export default function QuestionnairePage() {
   return (
@@ -442,20 +413,8 @@ function QuestionnaireContent() {
   const persistEvaluation = (result: EvaluationResult) => {
     if (typeof window === 'undefined') return
     sessionStorage.setItem('decisionEngineResult', JSON.stringify(result))
-    const templateCodes = deriveTemplateCodes(result)
+    const templateCodes = deriveTemplateCodesFromEvaluation(result)
     sessionStorage.setItem('recommendedTemplates', JSON.stringify(templateCodes))
-  }
-
-  const deriveTemplateCodes = (result: EvaluationResult): ReportTemplateCode[] => {
-    const codes = new Set<ReportTemplateCode>()
-    const allReports = [...result.mandatoryReports, ...result.recommendedReports, ...result.optionalReports]
-    allReports.forEach((report) => {
-      const mapped = ENGINE_TO_TEMPLATE_MAP[report.id]
-      if (mapped) {
-        codes.add(mapped)
-      }
-    })
-    return Array.from(codes)
   }
 
   return (

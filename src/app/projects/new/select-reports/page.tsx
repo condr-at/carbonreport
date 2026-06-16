@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { getReportTemplate, type ReportTemplate } from '@/lib/report-templates';
 import type { EvaluationResult } from '@/lib/questionnaires/decision-engine';
+import type { ReportTemplateCode } from '@/lib/report-templates/types';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,6 +30,7 @@ import {
   getUserFacingReportMeta,
   isUserFacingReportTemplate,
 } from '@/lib/report-templates/user-facing';
+import { mapEngineReportIdToTemplateCode } from '@/lib/questionnaires/report-template-mapping';
 
 export default function SelectReportsPage() {
   const router = useRouter();
@@ -83,20 +85,9 @@ export default function SelectReportsPage() {
         const parsed = JSON.parse(decisionStr) as EvaluationResult;
         const extractTemplateCodes = (reports: { id: string; definition?: { category?: string } }[]) => {
           return reports
-            .map((report) => report.id)
-            .filter((id): id is string => typeof id === 'string' && id.length > 0);
+            .map((report) => mapEngineReportIdToTemplateCode(report.id))
+            .filter((code): code is ReportTemplateCode => typeof code === 'string' && code.length > 0);
         };
-
-        // We only track mandatory/recommended flags by template code; mapping is already applied on questionnaire step
-        const engineRecommended = new Set<string>();
-        if (recommendedStr) {
-          try {
-            const parsedTemplates = JSON.parse(recommendedStr) as string[];
-            parsedTemplates.forEach((code) => engineRecommended.add(code));
-          } catch {
-            // ignore
-          }
-        }
 
         // Mark all mapped templates from mandatory reports as mandatory
         extractTemplateCodes(parsed.mandatoryReports).forEach((code) => {
