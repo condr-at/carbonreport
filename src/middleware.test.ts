@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { NextRequest } from 'next/server'
-import { middleware } from '../middleware'
+import { middleware } from './middleware'
 import { createAccessToken } from '@/lib/auth/jwt'
 import { AUTH_CONFIG } from '@/lib/auth/config'
 
