@@ -91,9 +91,10 @@
       "unrelated TTL values"
     ],
     "providerUiEvent": "DNS verified",
-    "screenshots": [
-      "11-email-dns-blocked.png",
-      "12-dns-updated.png"
+    "evidence": [
+      "dns-before.txt",
+      "dns-after.txt",
+      "dns-after.json"
     ]
   },
   "applicationResend": {

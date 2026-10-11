@@ -1,8 +1,8 @@
+import { isDeepStrictEqual } from 'node:util';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
 import {
-    validateDataset,
     type Dataset,
     type DataPoint,
     FacilitySchema,
@@ -15,16 +15,19 @@ import {
 import { getCurrentUser } from '@/lib/auth';
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error';
 import { OrganizationMembershipRole, type Prisma } from '@prisma/client';
+import type { SyncResult } from '@/lib/sync/queue';
 import { requireProjectForDataset } from '@/lib/projects/dataset-guards';
 
 const BatchOperationSchema = z.object({
-    id: z.string(),
+    id: z.string().min(1),
+    actorId: z.string().min(1),
+    expectedDatasetVersion: z.number().int().min(0),
     type: z.string(),
     payload: z.any(),
 });
 
 const BatchRequestSchema = z.object({
-    operations: z.array(BatchOperationSchema),
+    operations: z.array(BatchOperationSchema).min(1).max(500),
 });
 
 const UpdateFieldPayloadSchema = z.object({
@@ -56,6 +59,7 @@ async function findMissingFieldIds(fieldIds: string[]): Promise<string[]> {
 const AddItemPayloadSchema = z.object({
     projectId: z.string(),
     repeatableKey: z.string(),
+    fieldIds: z.array(z.string().min(1)).min(1),
     itemId: z.string(), // Client-generated ID
 });
 
@@ -117,6 +121,18 @@ const DeleteBOMPayloadSchema = z.object({
     bomId: z.string(),
 });
 
+function applyEntityAddition<T extends { id: string }>(items: T[], value: T, olderReplay: boolean, label: string) {
+    const index = items.findIndex(item => item.id === value.id);
+    if (index < 0) items.push(value);
+    else if (!isDeepStrictEqual(items[index], value)) {
+        if (!olderReplay) throw new ApiError(409, 'VERSION_CONFLICT', `This ${label} changed. Review the latest values.`);
+        // Reconstruct add + later updates in this temporary copy. An older
+        // version can only be acknowledged if the WHOLE final dataset matches;
+        // the version check below prevents this copy from ever being written.
+        items[index] = value;
+    }
+}
+
 export async function POST(request: NextRequest) {
     try {
         const user = await getCurrentUser();
@@ -132,10 +148,13 @@ export async function POST(request: NextRequest) {
         }
 
         const operations = parsed.data.operations;
-        const results: Array<{ id: string; success: boolean; error?: string }> = [];
+        const results: SyncResult[] = [];
+        if (operations.some(op => op.actorId !== user.id)) {
+            throw new ApiError(401, 'UNAUTHORIZED', 'Sign in to the account that owns these drafts.');
+        }
 
         // Group dataset updates by project to minimize DB calls
-        const datasetUpdatesByProject = new Map<string, Array<{ opId: string; type: string; payload: any }>>();
+        const datasetUpdatesByProject = new Map<string, Array<{ opId: string; type: string; expectedDatasetVersion: number; payload: any }>>();
 
         for (const op of operations) {
             if (op.type.startsWith('dataset/')) {
@@ -182,7 +201,7 @@ export async function POST(request: NextRequest) {
                         payloadParsed = DeleteBOMPayloadSchema.safeParse(op.payload);
                         break;
                     default:
-                        results.push({ id: op.id, success: false, error: `Unsupported dataset operation: ${op.type}` });
+                        results.push({ id: op.id, success: false, code: 'VALIDATION_ERROR', error: `Unsupported dataset operation: ${op.type}` });
                         continue;
                 }
 
@@ -191,54 +210,35 @@ export async function POST(request: NextRequest) {
                     if (!datasetUpdatesByProject.has(projectId)) {
                         datasetUpdatesByProject.set(projectId, []);
                     }
-                    datasetUpdatesByProject.get(projectId)!.push({ opId: op.id, type: op.type, payload: payloadParsed.data });
+                    datasetUpdatesByProject.get(projectId)!.push({ opId: op.id, type: op.type, expectedDatasetVersion: op.expectedDatasetVersion, payload: payloadParsed.data });
                 } else {
-                    results.push({ id: op.id, success: false, error: `Invalid payload for ${op.type}` });
+                    results.push({ id: op.id, success: false, code: 'VALIDATION_ERROR', error: `Invalid payload for ${op.type}` });
                 }
             } else {
-                results.push({ id: op.id, success: false, error: `Unsupported operation type: ${op.type}` });
+                results.push({ id: op.id, success: false, code: 'VALIDATION_ERROR', error: `Unsupported operation type: ${op.type}` });
             }
         }
 
-        // Process dataset updates per project
+        // A project batch uses the version the author saw, never a silently rebased
+        // server snapshot. All operations for that project commit in one CAS write.
         for (const [projectId, updates] of datasetUpdatesByProject) {
-            let retries = 0;
-            const MAX_RETRIES = 3;
-            let success = false;
-
-            while (retries < MAX_RETRIES && !success) {
-                try {
-                    // 1. Read LATEST version and data
-                    const project = await requireProjectForDataset(user.id, projectId, {
-                        includeDataset: true,
-                        requireWritable: true,
-                        role: OrganizationMembershipRole.EDITOR,
-                    });
-
-                    const currentDataset = (project.dataset as Dataset | null) ?? ({ data_points: [] } as Dataset);
-                    let dataPoints = currentDataset.data_points ?? [];
-
-                    // Collect all field IDs to validate (only for update-field)
-                    const updatesWithFields = updates.filter(u => u.type === 'dataset/update-field');
-                    const allFieldIds = updatesWithFields.map(u => u.payload.fieldId);
-                    // We only need to check missing fields once, not on every retry, but it's cheap enough
-                    const missingFieldIds = await findMissingFieldIds(allFieldIds);
-
-                    if (missingFieldIds.length > 0) {
-                        // Fail all updates for this project if any field is invalid
-                        updates.forEach(u => {
-                            results.push({ id: u.opId, success: false, error: `Unknown field IDs: ${missingFieldIds.join(', ')}` });
-                        });
-                        success = true; // "Success" in processing, even if operations failed
-                        break;
-                    }
-
+            try {
+                const project = await requireProjectForDataset(user.id, projectId, {
+                    includeDataset: true, requireWritable: true, role: OrganizationMembershipRole.EDITOR,
+                });
+                const currentDataset = structuredClone((project.dataset as Dataset | null) ?? ({ data_points: [] } as Dataset));
+                const before = structuredClone(currentDataset);
+                const olderReplay = updates.every(update => update.expectedDatasetVersion < project.datasetVersion);
+                let dataPoints = currentDataset.data_points ?? [];
+                const allFieldIds = updates.flatMap(u => u.type === 'dataset/update-field' ? [u.payload.fieldId] : u.type === 'dataset/add-item' ? u.payload.fieldIds : []);
+                const missingFieldIds = await findMissingFieldIds(allFieldIds);
+                if (missingFieldIds.length) throw new ApiError(400, 'VALIDATION_ERROR', 'Unknown dataset field IDs');
                     // Apply updates in order
                     updates.forEach(({ type, payload }) => {
                         if (type === 'dataset/update-field') {
                             const { fieldId, itemId, value } = payload;
                             const existingIndex = dataPoints.findIndex(
-                                (dp) => dp.field_id === fieldId && (itemId === null ? dp.item_id === null : dp.item_id === itemId)
+                                (dp) => dp.field_id === fieldId && (dp.item_id ?? null) === itemId
                             );
 
                             const updatedDataPoint: DataPoint = {
@@ -253,7 +253,11 @@ export async function POST(request: NextRequest) {
                                 dataPoints.push(updatedDataPoint);
                             }
                         } else if (type === 'dataset/add-item') {
-                            // No-op for data structure
+                            for (const fieldId of payload.fieldIds) {
+                                if (!dataPoints.some(dp => dp.field_id === fieldId && dp.item_id === payload.itemId)) {
+                                    dataPoints.push({ field_id: fieldId, item_id: payload.itemId, value: '' });
+                                }
+                            }
                         } else if (type === 'dataset/delete-item') {
                             const { itemId } = payload;
                             dataPoints = dataPoints.filter((dp) => dp.item_id !== itemId);
@@ -263,6 +267,7 @@ export async function POST(request: NextRequest) {
                             const { facilityId, field, value } = payload;
                             const facilities = (currentDataset.facilities as Facility[]) || [];
                             const index = facilities.findIndex(f => f.id === facilityId);
+                            if (index < 0) throw new ApiError(409, 'VERSION_CONFLICT', 'This item was removed. Review the latest values.');
                             if (index >= 0) {
                                 facilities[index] = { ...facilities[index], [field]: value };
                                 currentDataset.facilities = facilities;
@@ -270,7 +275,7 @@ export async function POST(request: NextRequest) {
                         } else if (type === 'dataset/add-facility') {
                             const { facility } = payload;
                             const facilities = (currentDataset.facilities as Facility[]) || [];
-                            facilities.push(facility);
+                            applyEntityAddition(facilities, facility, olderReplay, 'facility');
                             currentDataset.facilities = facilities;
                         } else if (type === 'dataset/delete-facility') {
                             const { facilityId } = payload;
@@ -282,6 +287,7 @@ export async function POST(request: NextRequest) {
                             const { energyId, field, value } = payload;
                             const entries = (currentDataset.energy_entries as EnergyEntry[]) || [];
                             const index = entries.findIndex(e => e.id === energyId);
+                            if (index < 0) throw new ApiError(409, 'VERSION_CONFLICT', 'This item was removed. Review the latest values.');
                             if (index >= 0) {
                                 entries[index] = { ...entries[index], [field]: value };
                                 currentDataset.energy_entries = entries;
@@ -289,7 +295,7 @@ export async function POST(request: NextRequest) {
                         } else if (type === 'dataset/add-energy') {
                             const { entry } = payload;
                             const entries = (currentDataset.energy_entries as EnergyEntry[]) || [];
-                            entries.push(entry);
+                            applyEntityAddition(entries, entry, olderReplay, 'energy entry');
                             currentDataset.energy_entries = entries;
                         } else if (type === 'dataset/delete-energy') {
                             const { energyId } = payload;
@@ -301,6 +307,7 @@ export async function POST(request: NextRequest) {
                             const { bomId, field, value } = payload;
                             const items = (currentDataset.bom_items as BOMItem[]) || [];
                             const index = items.findIndex(i => i.id === bomId);
+                            if (index < 0) throw new ApiError(409, 'VERSION_CONFLICT', 'This item was removed. Review the latest values.');
                             if (index >= 0) {
                                 items[index] = { ...items[index], [field]: value };
                                 currentDataset.bom_items = items;
@@ -308,7 +315,7 @@ export async function POST(request: NextRequest) {
                         } else if (type === 'dataset/add-bom') {
                             const { item } = payload;
                             const items = (currentDataset.bom_items as BOMItem[]) || [];
-                            items.push(item);
+                            applyEntityAddition(items, item, olderReplay, 'BOM item');
                             currentDataset.bom_items = items;
                         } else if (type === 'dataset/delete-bom') {
                             const { bomId } = payload;
@@ -317,59 +324,34 @@ export async function POST(request: NextRequest) {
                         }
                     });
 
-                    // Update data_points in the main object before saving
-                    currentDataset.data_points = dataPoints;
 
-                    // Save to DB
-                    await prisma.project.update({
-                        where: {
-                            id: projectId,
-                            datasetVersion: project.datasetVersion, // Optimistic locking
-                        },
-                        data: {
-                            dataset: currentDataset as unknown as Prisma.InputJsonValue,
-                            datasetVersion: { increment: 1 },
-                        },
-                    });
-
-                    // Mark all as success
-                    updates.forEach(u => {
-                        results.push({ id: u.opId, success: true });
-                    });
-                    success = true;
-
-                } catch (error: any) {
-                    if (error?.code === 'P2025') {
-                        // Version conflict: retry
-                        retries++;
-                        console.warn(`Version conflict for project ${projectId}, retrying (${retries}/${MAX_RETRIES})...`);
-                        if (retries >= MAX_RETRIES) {
-                            console.error(`Max retries reached for project ${projectId}`);
-                            updates.forEach(u => {
-                                results.push({
-                                    id: u.opId,
-                                    success: false,
-                                    error: 'VERSION_CONFLICT_MAX_RETRIES'
-                                });
-                            });
-                            success = true; // Stop retrying
-                        }
-                        // Loop will retry
-                    } else {
-                        // Other error: fail immediately
-                        console.error(`Failed to process batch for project ${projectId}`, error);
-                        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-                        updates.forEach(u => {
-                            results.push({ id: u.opId, success: false, error: errorMessage });
-                        });
-                        success = true; // Stop retrying
-                    }
+                currentDataset.data_points = dataPoints;
+                // A lost response can be retried without repeating the write. If a
+                // later writer changed the values, normal version conflict applies.
+                if (isDeepStrictEqual(currentDataset, before)) {
+                    updates.forEach(u => results.push({ id: u.opId, success: true, datasetVersion: project.datasetVersion, writeApplied: false }));
+                    continue;
                 }
+                if (updates.some(u => u.expectedDatasetVersion !== project.datasetVersion)) {
+                    throw new ApiError(409, 'VERSION_CONFLICT', 'Dataset changed in another session. Your draft is kept.', { currentVersion: project.datasetVersion });
+                }
+                const saved = await prisma.project.update({
+                    where: { id: projectId, datasetVersion: project.datasetVersion,
+                        status: { notIn: ['DELETED', 'REPORTED'] }, organization: { status: { not: 'DELETED' } } },
+                    data: { dataset: currentDataset as unknown as Prisma.InputJsonValue, datasetVersion: { increment: 1 } },
+                    select: { datasetVersion: true },
+                });
+                updates.forEach(u => results.push({ id: u.opId, success: true, datasetVersion: saved.datasetVersion, writeApplied: true }));
+            } catch (error: unknown) {
+                const conflict = error && typeof error === 'object' && 'code' in error && error.code === 'P2025';
+                const apiError = conflict
+                    ? new ApiError(409, 'VERSION_CONFLICT', 'Dataset changed in another session. Your draft is kept.')
+                    : ensureApiError(error, 'Could not save these changes. Please retry.');
+                updates.forEach(u => results.push({ id: u.opId, success: false, code: apiError.code,
+                    error: apiError.message, currentVersion: apiError.details?.currentVersion as number | undefined }));
             }
         }
-
         return NextResponse.json({ results });
-
     } catch (error) {
         return errorResponse(ensureApiError(error, 'Batch processing failed'));
     }

@@ -19,7 +19,7 @@ const PatchDataPointSchema = z.object({
   field_id: z.string().min(1, 'field_id is required'),
   item_id: z.string().nullable(),
   value: z.string(),
-  datasetVersion: z.number().int().min(0).optional(),
+  datasetVersion: z.number().int().min(0),
 })
 
 const UpdateDatasetSchema = z.object({

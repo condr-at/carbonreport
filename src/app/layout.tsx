@@ -22,7 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Carbon Report",
-  description: "Product carbon footprint and compliance reporting workspace.",
+  description: "Supplier emissions data and CBAM review preparation workspace.",
 };
 
 export default function RootLayout({

@@ -35,3 +35,19 @@ test('a scalar dataset edit preserves product context, repeatable data and unrel
   ] })
   assert.deepEqual(dataset, originalDataset, 'reading and preparing the update must not mutate the existing dataset')
 })
+
+
+test('scalar editing requires the dataset version the editor saw', async t => {
+  __setCurrentUserResolver(async () => ({ id: 'editor' }) as any)
+  t.after(__resetCurrentUserResolver)
+  const original = prisma.project.findUnique
+  let reads = 0
+  prisma.project.findUnique = (async () => { reads++; throw new Error('Unexpected database read') }) as any
+  t.after(() => { prisma.project.findUnique = original })
+  const response = await PATCH(new NextRequest('http://localhost/api/projects/project/dataset', {
+    method: 'PATCH', body: JSON.stringify({ field_id: 'product_name', item_id: null, value: 'New name' }),
+  }), { params: Promise.resolve({ id: 'project' }) })
+  assert.equal(response.status, 400)
+  assert.equal((await response.json()).code, 'VALIDATION_ERROR')
+  assert.equal(reads, 0)
+})

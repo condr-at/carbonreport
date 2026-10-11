@@ -39,7 +39,7 @@
 
 На основном домене **9/9 smoke**: главная/вход/регистрация — 200; Contacts/detail, Requests и Dashboard без cookies — 307 на вход с сохранением целевого пути; защищённый API — 401; неверные данные входа — 401 вместо прежнего 500. [Точные запросы и ответы](production-smoke.json), [повторяемый скрипт](smoke.mjs). В Chrome подтверждены переход Contacts → login и открытие формы регистрации; [снимок исправления](production-contacts-redirect.png).
 
-**Автодеплой восстановлен и проверен.** После входа владельца в правильный аккаунт через Project Settings → Git переподключён тот же `condr-at/carbonreport`, production branch `main`; Git credential изменился, конфигурация проекта сохранена. [Состояние подключения](git-reconnected.png).
+**Автодеплой восстановлен и проверен.** После входа владельца в правильный аккаунт через Project Settings → Git переподключён тот же `condr-at/carbonreport`, production branch `main`; Git credential изменился, конфигурация проекта сохранена. Результат подтверждён последующим автоматическим Git-деплоем ниже.
 
 Обычный `git push origin main` с уточнением инструкции деплоя (`0719b1a`) автоматически создал `dpl_8MADYAKPrSSNvE441yJRVN2bTZYz`, **source=`git`, production, READY**, `aliasAssigned=true`, домен `carbonreport.app`. GitHub status `Vercel` завершился `success` / `Deployment has completed`. Сборка завершилась 2026-10-11 в 12:43:39 Europe/Belgrade. [Точные метаданные и SHA](git-autodeployment.json), [лог сборки](git-autodeploy-build.log), [снимок READY](git-autodeploy-ready.png), [deployment](https://vercel.com/conrad-projects/carbonreport/8MADYAKPrSSNvE441yJRVN2bTZYz).
 
@@ -47,7 +47,7 @@
 
 ## База данных
 
-До публикации старая production-версия возвращала 500 на вход с синтетическим несуществующим аккаунтом; подключение к базе из production env не работало. После входа владельца Supabase показал, что связанный проект `qdwbxmgojariranrjoat` (`carbonreport-dev`, несмотря на использование production-сайтом) приостановлен. Выполнено Resume, dashboard подтвердил восстановление; [скриншот](supabase-restored.png). Подключение через production DATABASE_URL снова успешно, неверный вход возвращает 401 вместо 500.
+До публикации старая production-версия возвращала 500 на вход с синтетическим несуществующим аккаунтом; подключение к базе из production env не работало. После входа владельца Supabase показал, что связанный проект `qdwbxmgojariranrjoat` (`carbonreport-dev`, несмотря на использование production-сайтом) приостановлен. Выполнено Resume, dashboard подтвердил восстановление. Подключение через production DATABASE_URL снова успешно, неверный вход возвращает 401 вместо 500.
 
 В базе не было ни одного `cbam_pkg_*` определения. Выполнен существующий `npm run db:sync-cbam-fields` с явно загруженным production env: [лог](cbam-sync.log). Отдельный запрос подтвердил все **34/34** используемых поля (28 новых + 6 общих), missing=[]: [точный список](catalog-verified.json).
 

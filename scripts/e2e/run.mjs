@@ -10,6 +10,7 @@ import { e2eConfig, isolatedEnv } from './config.mjs'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const config = e2eConfig()
 const env = isolatedEnv(config)
+if (process.env.E2E_CAPTURE_LANDING === '1') env.E2E_LANDING_ASSETS = path.join(root, 'public/landing')
 const modules = path.resolve(process.env.E2E_NODE_MODULES ?? path.join(root, 'node_modules'))
 // Reject a running app before touching the test database.
 await new Promise((resolve, reject) => {
@@ -58,7 +59,15 @@ try {
     await new Promise(resolve => setTimeout(resolve, 200))
   }
   if (!ready) throw new Error('E2E Next server did not become ready.')
-  await run(['--import', 'tsx', '--test', '--test-concurrency=1', 'scripts/e2e/supplier-package.test.mjs', 'scripts/e2e/auth-session.test.mjs'])
+  await run(['--import', 'tsx', '--test', '--test-concurrency=1', 'scripts/e2e/supplier-package.test.mjs', 'scripts/e2e/auth-session.test.mjs', 'scripts/e2e/data-safety.test.mjs'])
+  if (process.env.E2E_CAPTURE_LANDING === '1') {
+    await run(['scripts/e2e/capture-landing.mjs'])
+    // Capture writes reviewed assets back to the repo; serve that exact set here too.
+    await fs.cp(path.join(root, 'public/landing'), path.join(stage, 'public/landing'), { recursive: true })
+  }
+  env.E2E_LANDING_BASE_URL = config.baseUrl
+  env.E2E_LANDING_ARTIFACTS = path.join(config.artifacts, 'landing')
+  await run(['--test', 'scripts/e2e/landing.test.mjs'])
 } finally {
   if (server && server.exitCode === null) {
     const exited = new Promise(resolve => server.once('exit', resolve))

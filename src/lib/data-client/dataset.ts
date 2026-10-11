@@ -475,7 +475,7 @@ export function useBatchedAddDatasetItem(projectId: string) {
 
 
   return {
-    mutate: (variables: AddItemVariables & { fieldIds?: string[] }) => {
+    mutate: (variables: AddItemVariables & { fieldIds: string[] }) => {
       const newItemId = crypto.randomUUID();
 
       // 1. Add to sync queue

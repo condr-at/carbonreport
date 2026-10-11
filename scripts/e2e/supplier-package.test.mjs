@@ -74,7 +74,7 @@ test('fresh browser registration → supplier ZIP, persisted data, invalid input
   const downloads = await fs.mkdtemp(path.join(config.artifacts, 'downloads-'))
   await ownerContext.setDownloadBehavior({ policy: 'allow', downloadPath: downloads })
   const runId = `${Date.now()}`
-  const projectName = `E2E private supplier ${runId}`
+  const projectName = 'Hot-rolled steel — Supplier package'
   let projectId, reportId, endpoint, saved
   try {
     await t.test('register and create organization, product and supplier report through UI', async () => {
@@ -101,6 +101,13 @@ test('fresh browser registration → supplier ZIP, persisted data, invalid input
       projectId = created.project.id
       reportId = created.reports.find(report => report.template_code === 'CBAM_DATA_PACKAGE').id
       endpoint = `/api/projects/${projectId}/reports/${reportId}/supplier-package`
+      await fs.writeFile(path.join(config.artifacts, 'preview-fixture.json'), JSON.stringify({
+        label: 'Synthetic E2E demonstration, not a customer or accepted regulatory report',
+        accountEmail: `owner-${runId}@example.test`, projectId, reportId,
+        reportPath: `/projects/${projectId}/reports/${reportId}`,
+        datasetPath: `/projects/${projectId}/dataset`,
+        passwordSource: 'Fixed local registration fixture in scripts/e2e/supplier-package.test.mjs',
+      }, null, 2))
       await owner.waitForFunction(id => location.pathname === `/projects/${id}`, {}, projectId)
       await owner.locator(`a[href="/projects/${projectId}/reports/${reportId}"]`).click()
       await waitText(owner, 'CBAM Supplier Review Package')

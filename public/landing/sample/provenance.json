@@ -1,0 +1,121 @@
+{
+  "source": "Actual local product UI and actual downloaded synthetic supplier ZIP",
+  "projectId": "58764d2c-031f-43f2-8305-5ac8a725bff3",
+  "reportId": "241dc206-005e-4249-ba62-04f29ab579fa",
+  "datasetVersion": 7,
+  "zipSha256": "79449c7a392108e3a6fd6e18a56950a127bee160f7af912d9ddcbb7f8bac226c",
+  "assets": [
+    {
+      "filename": "form-light.webp",
+      "width": 1200,
+      "height": 900,
+      "theme": "light",
+      "source": "/projects/58764d2c-031f-43f2-8305-5ac8a725bff3/reports/241dc206-005e-4249-ba62-04f29ab579fa",
+      "step": "4. Emissions",
+      "framing": "Actual step Card at original CSS size; repeated report header and navigation excluded",
+      "clip": {
+        "x": 338,
+        "y": 408,
+        "width": 1200,
+        "height": 900
+      },
+      "cardBounds": {
+        "left": 490.234375,
+        "top": 424.6875,
+        "right": 1386.234375,
+        "bottom": 1488.625
+      },
+      "viewport": {
+        "width": 1600,
+        "height": 1700
+      }
+    },
+    {
+      "filename": "review-light.webp",
+      "width": 1200,
+      "height": 900,
+      "theme": "light",
+      "source": "/projects/58764d2c-031f-43f2-8305-5ac8a725bff3/reports/241dc206-005e-4249-ba62-04f29ab579fa",
+      "step": "6. Review & download",
+      "framing": "Actual step Card at original CSS size; repeated report header and navigation excluded",
+      "clip": {
+        "x": 338,
+        "y": 408,
+        "width": 1200,
+        "height": 900
+      },
+      "cardBounds": {
+        "left": 490.234375,
+        "top": 424.6875,
+        "right": 1386.234375,
+        "bottom": 1210.3125
+      },
+      "viewport": {
+        "width": 1600,
+        "height": 1700
+      }
+    },
+    {
+      "filename": "form-dark.webp",
+      "width": 1200,
+      "height": 900,
+      "theme": "dark",
+      "source": "/projects/58764d2c-031f-43f2-8305-5ac8a725bff3/reports/241dc206-005e-4249-ba62-04f29ab579fa",
+      "step": "4. Emissions",
+      "framing": "Actual step Card at original CSS size; repeated report header and navigation excluded",
+      "clip": {
+        "x": 338,
+        "y": 408,
+        "width": 1200,
+        "height": 900
+      },
+      "cardBounds": {
+        "left": 490.234375,
+        "top": 424.6875,
+        "right": 1386.234375,
+        "bottom": 1488.625
+      },
+      "viewport": {
+        "width": 1600,
+        "height": 1700
+      }
+    },
+    {
+      "filename": "review-dark.webp",
+      "width": 1200,
+      "height": 900,
+      "theme": "dark",
+      "source": "/projects/58764d2c-031f-43f2-8305-5ac8a725bff3/reports/241dc206-005e-4249-ba62-04f29ab579fa",
+      "step": "6. Review & download",
+      "framing": "Actual step Card at original CSS size; repeated report header and navigation excluded",
+      "clip": {
+        "x": 338,
+        "y": 408,
+        "width": 1200,
+        "height": 900
+      },
+      "cardBounds": {
+        "left": 490.234375,
+        "top": 424.6875,
+        "right": 1386.234375,
+        "bottom": 1210.3125
+      },
+      "viewport": {
+        "width": 1600,
+        "height": 1700
+      }
+    },
+    {
+      "filename": "summary.webp",
+      "width": 960,
+      "height": 1280,
+      "source": "summary.html in verified browser download",
+      "theme": "export original"
+    },
+    {
+      "filename": "sample/summary.html",
+      "source": "summary.html in verified browser download",
+      "unmodified": true
+    }
+  ]
+}

@@ -9,7 +9,8 @@
  * - Optimistic updates
  */
 
-import React, { Fragment, useState, useMemo, useCallback, useEffect } from 'react';
+import React, { Fragment, useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useBatchSync } from '@/lib/sync/sync-manager';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 import {
   useReactTable,
@@ -112,6 +113,7 @@ const EditableCell = React.memo(({
   onSave: (row: TableRow, newValue: string) => Promise<void>;
 }) => {
   const [value, setValue] = useState(row.value ?? '');
+  const originalValue = useRef(row.value ?? '');
 
   // Sync local state with prop when not editing or when row value updates externally
   useEffect(() => {
@@ -128,17 +130,20 @@ const EditableCell = React.memo(({
           aria-label={`${row.fieldLabel} value`}
           value={value}
           disabled={isUpdating}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {
+            setValue(e.target.value);
+            // Persist every keystroke before a blur, reload or navigation can lose it.
+            void onSave(row, e.target.value);
+          }}
           onBlur={() => {
-            onSave(row, value);
             onStopEdit();
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              onSave(row, value);
               onStopEdit();
             } else if (e.key === 'Escape') {
-              setValue(row.value ?? '');
+              setValue(originalValue.current);
+              void onSave(row, originalValue.current);
               onStopEdit();
             }
           }}
@@ -160,7 +165,8 @@ const EditableCell = React.memo(({
         isUpdating && 'cursor-wait opacity-80'
       )}
       onClick={() => {
-        setValue(row.value ?? '');
+        originalValue.current = row.value ?? '';
+        setValue(originalValue.current);
         onStartEdit();
       }}
     >
@@ -191,6 +197,7 @@ export function DatasetTable({
   onRequestMultiple,
   dataRequests = [],
 }: DatasetTableProps) {
+  const { isReady } = useBatchSync();
   const updateFieldMutation = useBatchedUpdateDatasetField(projectId);
   const addItemMutation = useBatchedAddDatasetItem(projectId);
   const deleteItemMutation = useBatchedDeleteDatasetItem(projectId);
@@ -238,25 +245,12 @@ export function DatasetTable({
 
   const handleCellSave = useCallback(
     async (row: TableRow, newValue: string) => {
-      const currentValue = row.value ?? '';
-      const nextValue = newValue ?? '';
-
-      if (nextValue === currentValue) {
-        setEditingCell(null);
-        return;
-      }
-
-      try {
-        updateFieldMutation.mutate({
-          fieldId: row.fieldId,
-          itemId: row.itemId ?? null,
-          value: nextValue,
-        });
-      } finally {
-        setEditingCell(null);
-      }
+      if (!isReady || newValue === (row.value ?? '')) return;
+      updateFieldMutation.mutate({
+        fieldId: row.fieldId, itemId: row.itemId ?? null, value: newValue,
+      });
     },
-    [updateFieldMutation]
+    [isReady, updateFieldMutation]
   );
 
   // Define table columns
@@ -607,7 +601,7 @@ export function DatasetTable({
             <EditableCell
               row={fieldRow}
               isEditing={editingCell === fieldRow.id}
-              isUpdating={false}
+              isUpdating={!isReady}
               onStartEdit={() => setEditingCell(fieldRow.id)}
               onStopEdit={() => setEditingCell(null)}
               onSave={handleCellSave}
@@ -625,6 +619,7 @@ export function DatasetTable({
       expandedGroups,
       setExpandedGroups,
       editingCell,
+      isReady,
       handleCellSave,
       getRequestsForRow,
       formatPendingContacts,
@@ -659,6 +654,7 @@ export function DatasetTable({
             <Button
               variant="outline"
               size="sm"
+              disabled={!isReady}
               onClick={handleAddItem}
             >
               {isAdding ? (
@@ -752,7 +748,7 @@ export function DatasetTable({
                               <EditableCell
                                 row={fieldRow}
                                 isEditing={editingCell === fieldRow.id}
-                                isUpdating={false}
+                                isUpdating={!isReady}
                                 onStartEdit={() => setEditingCell(fieldRow.id)}
                                 onStopEdit={() => setEditingCell(null)}
                                 onSave={handleCellSave}
@@ -765,6 +761,7 @@ export function DatasetTable({
                             <Button
                               variant="ghost"
                               size="sm"
+                              disabled={!isReady}
                               onClick={() => {
                                 if (!item.itemId) {
                                   return;
@@ -791,6 +788,7 @@ export function DatasetTable({
             <Button
               variant="outline"
               size="sm"
+              disabled={!isReady}
               onClick={handleAddItem}
             >
               {isAdding ? (
@@ -808,6 +806,7 @@ export function DatasetTable({
       selectedRowIds,
       setSelectedRowIds,
       editingCell,
+      isReady,
       handleCellSave,
       addItemMutation,
       deleteItemMutation,
@@ -910,7 +909,16 @@ export function DatasetTable({
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-4 py-2 align-top">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        {cell.column.id === 'value' && row.original.kind === 'single' ? (
+                          <EditableCell
+                            row={row.original.data}
+                            isEditing={editingCell === row.original.data.id}
+                            isUpdating={!isReady}
+                            onStartEdit={() => setEditingCell(row.original.kind === 'single' ? row.original.data.id : null)}
+                            onStopEdit={() => setEditingCell(null)}
+                            onSave={handleCellSave}
+                          />
+                        ) : flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>
                     ))}
                   </tr>

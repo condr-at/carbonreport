@@ -1,0 +1,174 @@
+{
+  "scope": "Disposable local DB; synthetic users; browser fault injection; no real email",
+  "checks": [
+    {
+      "scenario": "stale write",
+      "winner": {
+        "value": "First session saved name",
+        "version": 1
+      },
+      "conflictCodes": [
+        "VERSION_CONFLICT"
+      ],
+      "draftSurvivedReload": true,
+      "explicitDiscardPreservedWinner": true
+    },
+    {
+      "scenario": "reload before blur",
+      "durableBeforeNavigation": true,
+      "saved": {
+        "value": "Typed draft before leaving the cell",
+        "version": 1
+      }
+    },
+    {
+      "scenario": "500 then reload and retry",
+      "simulatedFailures": 3,
+      "saved": {
+        "value": "Draft retained after server failure",
+        "version": 1
+      },
+      "queueClearedAfterAcknowledgement": true
+    },
+    {
+      "scenario": "network response lost after commit",
+      "firstStatus": 200,
+      "replaySucceeded": true,
+      "unchangedStateAfterReplay": {
+        "value": "Server committed but acknowledgement lost",
+        "version": 1
+      }
+    },
+    {
+      "scenario": "session expiry and shared-workspace account switch",
+      "refreshStatuses": [
+        200,
+        401
+      ],
+      "retainedActor": "b4c461d9-a6de-49c3-880e-dd055bff44e8",
+      "otherActor": "9cf28ce9-04d4-483d-a7bc-d347e2232e6d",
+      "automaticForeignQueueSubmissions": 0,
+      "explicitForeignReplayStatus": 401,
+      "baseline": {
+        "value": "Draft saved after automatic session renewal",
+        "version": 1
+      },
+      "restoredByOwner": {
+        "value": "Private unsaved draft owned by first account",
+        "version": 2
+      }
+    }
+  ],
+  "browserErrors": [],
+  "requestTrace": [
+    {
+      "page": 0,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 1,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 2,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 3,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 500
+    },
+    {
+      "page": 3,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 500
+    },
+    {
+      "page": 3,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 500
+    },
+    {
+      "page": 3,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 4,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 5,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "page": 5,
+      "pathname": "/api/auth/refresh",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 5,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 5,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "page": 5,
+      "pathname": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "page": 5,
+      "pathname": "/api/auth/login",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 5,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "page": 5,
+      "pathname": "/api/auth/logout",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 5,
+      "pathname": "/api/auth/login",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "page": 5,
+      "pathname": "/api/batch",
+      "method": "POST",
+      "status": 200
+    }
+  ],
+  "unclosedPages": []
+}

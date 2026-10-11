@@ -1,0 +1,543 @@
+# Subtest: returns generic success when user exists
+ok 1 - returns generic success when user exists
+# Subtest: returns same generic success when user does not exist
+ok 2 - returns same generic success when user does not exist
+# Subtest: returns generic success for invalid payloads
+ok 3 - returns generic success for invalid payloads
+# Subtest: preserves the same anti-enumeration response on provider_error
+ok 4 - preserves the same anti-enumeration response on provider_error
+# Subtest: preserves the same anti-enumeration response on transport_error
+ok 5 - preserves the same anti-enumeration response on transport_error
+# Subtest: preserves the same anti-enumeration response on not_configured
+ok 6 - preserves the same anti-enumeration response on not_configured
+# Subtest: returns auth cookies for valid credentials
+ok 7 - returns auth cookies for valid credentials
+# Subtest: rejects invalid credentials
+ok 8 - rejects invalid credentials
+# Subtest: rejects missing users
+ok 9 - rejects missing users
+# Subtest: clears auth cookies on logout
+ok 10 - clears auth cookies on logout
+# Subtest: refresh uses current database user and renews both signed cookies
+ok 11 - refresh uses current database user and renews both signed cookies
+# Subtest: refresh rejects missing token with 401 and expires both cookies
+ok 12 - refresh rejects missing token with 401 and expires both cookies
+# Subtest: refresh rejects malformed token with 401 and expires both cookies
+ok 13 - refresh rejects malformed token with 401 and expires both cookies
+# Subtest: refresh rejects expired token with 401 and expires both cookies
+ok 14 - refresh rejects expired token with 401 and expires both cookies
+# Subtest: refresh rejects wrong-purpose token with 401 and expires both cookies
+ok 15 - refresh rejects wrong-purpose token with 401 and expires both cookies
+# Subtest: refresh rejects legacy token with 401 and expires both cookies
+ok 16 - refresh rejects legacy token with 401 and expires both cookies
+# Subtest: refresh rejects missing-user against current database state
+ok 17 - refresh rejects missing-user against current database state
+# Subtest: refresh rejects deleted-user against current database state
+ok 18 - refresh rejects deleted-user against current database state
+# Subtest: refresh rejects password-changed against current database state
+ok 19 - refresh rejects password-changed against current database state
+# Subtest: database failure stays 500 without deleting a potentially valid session
+ok 20 - database failure stays 500 without deleting a potentially valid session
+# Subtest: creates user, sends verification flow, and returns auth cookies
+ok 21 - creates user, sends verification flow, and returns auth cookies
+# Subtest: keeps the created account and session without claiming sent on provider_error
+ok 22 - keeps the created account and session without claiming sent on provider_error
+# Subtest: keeps the created account and session without claiming sent on transport_error
+ok 23 - keeps the created account and session without claiming sent on transport_error
+# Subtest: keeps the created account and session without claiming sent on not_configured
+ok 24 - keeps the created account and session without claiming sent on not_configured
+# Subtest: keeps the created account and session without claiming sent on missing_acceptance
+ok 25 - keeps the created account and session without claiming sent on missing_acceptance
+# Subtest: rejects duplicate email addresses
+ok 26 - rejects duplicate email addresses
+# Subtest: rejects passwords that fail policy
+ok 27 - rejects passwords that fail policy
+# Subtest: returns already_verified when user is already verified
+ok 28 - returns already_verified when user is already verified
+# Subtest: returns sent when user is unverified
+ok 29 - returns sent when user is unverified
+# Subtest: does not report sent when resend encounters provider_error
+ok 30 - does not report sent when resend encounters provider_error
+# Subtest: does not report sent when resend encounters transport_error
+ok 31 - does not report sent when resend encounters transport_error
+# Subtest: does not report sent when resend encounters not_configured
+ok 32 - does not report sent when resend encounters not_configured
+# Subtest: reset rejects malformed token as INVALID_TOKEN without database writes
+ok 33 - reset rejects malformed token as INVALID_TOKEN without database writes
+# Subtest: reset rejects expired token as INVALID_TOKEN without database writes
+ok 34 - reset rejects expired token as INVALID_TOKEN without database writes
+# Subtest: reset rejects wrong-purpose token as INVALID_TOKEN without database writes
+ok 35 - reset rejects wrong-purpose token as INVALID_TOKEN without database writes
+# Subtest: reset rejects missing-context token as INVALID_TOKEN without database writes
+ok 36 - reset rejects missing-context token as INVALID_TOKEN without database writes
+# Subtest: reset rejects missing-subject token as INVALID_TOKEN without database writes
+ok 37 - reset rejects missing-subject token as INVALID_TOKEN without database writes
+# Subtest: reset rejects deleted-user without mutation
+ok 38 - reset rejects deleted-user without mutation
+# Subtest: reset rejects missing-user without mutation
+ok 39 - reset rejects missing-user without mutation
+# Subtest: reset rejects reused-token without mutation
+ok 40 - reset rejects reused-token without mutation
+# Subtest: reset enforces password policy before mutation
+ok 41 - reset enforces password policy before mutation
+# Subtest: reset is single-use, rejects old password/session, and starts a new authenticated session
+ok 42 - reset is single-use, rejects old password/session, and starts a new authenticated session
+# Subtest: concurrent reset requests consume the same token exactly once
+ok 43 - concurrent reset requests consume the same token exactly once
+# Subtest: verifies user and returns JSON success when token is valid
+ok 44 - verifies user and returns JSON success when token is valid
+# Subtest: returns JSON error when token is invalid
+ok 45 - returns JSON error when token is invalid
+# Subtest: redirects to verify-email page when HTML flow is used
+ok 46 - redirects to verify-email page when HTML flow is used
+# Subtest: stale batch retains the other session value and returns an explicit conflict without a write
+ok 47 - stale batch retains the other session value and returns an explicit conflict without a write
+# Subtest: a concurrent CAS failure is a conflict, never reread and silently replayed
+ok 48 - a concurrent CAS failure is a conflict, never reread and silently replayed
+# Subtest: a lost successful response can be acknowledged again without a second version increment
+ok 49 - a lost successful response can be acknowledged again without a second version increment
+# Subtest: accepted batch commits once and preserves unrelated dataset context
+ok 50 - accepted batch commits once and preserves unrelated dataset context
+# Subtest: new repeatable rows persist blank placeholders and replay does not duplicate them
+ok 51 - new repeatable rows persist blank placeholders and replay does not duplicate them
+# Subtest: another signed-in editor cannot replay a different account draft
+ok 52 - another signed-in editor cannot replay a different account draft
+# Subtest: batch version is mandatory and missing/negative versions never reach the database
+ok 53 - batch version is mandatory and missing/negative versions never reach the database
+# Subtest: stable facility, energy and BOM IDs make an uncertain addition safe to replay
+ok 54 - stable facility, energy and BOM IDs make an uncertain addition safe to replay
+# Subtest: a matching replay cannot authorize a queued edit over another session newer value
+ok 55 - a matching replay cannot authorize a queued edit over another session newer value
+# Subtest: facility add plus edit replays as one no-op and cannot replace a foreign UUID value
+ok 56 - facility add plus edit replays as one no-op and cannot replace a foreign UUID value
+# Subtest: energy add plus edit replays as one no-op and cannot replace a foreign UUID value
+ok 57 - energy add plus edit replays as one no-op and cannot replace a foreign UUID value
+# Subtest: bom add plus edit replays as one no-op and cannot replace a foreign UUID value
+ok 58 - bom add plus edit replays as one no-op and cannot replace a foreign UUID value
+# Subtest: chosen deadline reaches persistence and is returned by creation, list and page hydration
+ok 59 - chosen deadline reaches persistence and is returned by creation, list and page hydration
+# Subtest: reads immediately reflect request mutations even when a stale response survives in a local cache
+ok 60 - reads immediately reflect request mutations even when a stale response survives in a local cache
+# Subtest: a scalar dataset edit preserves product context, repeatable data and unrelated fields
+ok 61 - a scalar dataset edit preserves product context, repeatable data and unrelated fields
+# Subtest: scalar editing requires the dataset version the editor saw
+ok 62 - scalar editing requires the dataset version the editor saw
+# Subtest: report GET rejects an unauthenticated caller before database reads
+ok 63 - report GET rejects an unauthenticated caller before database reads
+# Subtest: report GET rejects an authenticated outsider with known project and report IDs
+ok 64 - report GET rejects an authenticated outsider with known project and report IDs
+# Subtest: report GET rejects a pending organization membership
+ok 65 - report GET rejects a pending organization membership
+# Subtest: report GET rejects a deleted organization even for its owner
+ok 66 - report GET rejects a deleted organization even for its owner
+# Subtest: report GET rejects a deleted project during retention
+ok 67 - report GET rejects a deleted project during retention
+# Subtest: report GET rejects a deleted project after retention expires
+ok 68 - report GET rejects a deleted project after retention expires
+# Subtest: report GET preserves report JSON for an accepted VIEWER_READONLY
+ok 69 - report GET preserves report JSON for an accepted VIEWER_READONLY
+# Subtest: report GET preserves report JSON for an accepted OWNER
+ok 70 - report GET preserves report JSON for an accepted OWNER
+# Subtest: report GET does not return another project report through an authorized project URL
+ok 71 - report GET does not return another project report through an authorized project URL
+# Subtest: unauthenticated GET and PATCH stop before database access
+ok 72 - unauthenticated GET and PATCH stop before database access
+# Subtest: rejects an outsider before reading report or dataset
+ok 73 - rejects an outsider before reading report or dataset
+# Subtest: rejects a pending membership before reading report or dataset
+ok 74 - rejects a pending membership before reading report or dataset
+# Subtest: accepted VIEWER_READONLY can read, with accurate edit capability
+ok 75 - accepted VIEWER_READONLY can read, with accurate edit capability
+# Subtest: accepted VIEWER_VERIFIER can read, with accurate edit capability
+ok 76 - accepted VIEWER_VERIFIER can read, with accurate edit capability
+# Subtest: accepted EDITOR can read, with accurate edit capability
+ok 77 - accepted EDITOR can read, with accurate edit capability
+# Subtest: accepted ADMIN can read, with accurate edit capability
+ok 78 - accepted ADMIN can read, with accurate edit capability
+# Subtest: accepted OWNER can read, with accurate edit capability
+ok 79 - accepted OWNER can read, with accurate edit capability
+# Subtest: VIEWER_READONLY cannot write even with a known project, report and version
+ok 80 - VIEWER_READONLY cannot write even with a known project, report and version
+# Subtest: VIEWER_VERIFIER cannot write even with a known project, report and version
+ok 81 - VIEWER_VERIFIER cannot write even with a known project, report and version
+# Subtest: reported projects are readable without edit capability and reject writes
+ok 82 - reported projects are readable without edit capability and reject writes
+# Subtest: deleted organizations and projects do not expose package data
+    # Subtest: deleted organization
+    ok 1 - deleted organization
+    # Subtest: deleted project
+    ok 2 - deleted project
+ok 83 - deleted organizations and projects do not expose package data
+# Subtest: rejects a report belonging to another project
+ok 84 - rejects a report belonging to another project
+# Subtest: rejects an unsupported template
+ok 85 - rejects an unsupported template
+# Subtest: version mismatch wins over readiness validation for JSON, ZIP and draft saves
+ok 86 - version mismatch wins over readiness validation for JSON, ZIP and draft saves
+# Subtest: download requires an explicit valid version; query options are unambiguous
+ok 87 - download requires an explicit valid version; query options are unambiguous
+# Subtest: draft input rejects unknown fields, unsafe keys, nonstrings and excess sizes without mutation
+ok 88 - draft input rejects unknown fields, unsafe keys, nonstrings and excess sizes without mutation
+# Subtest: EDITOR can atomically save an incomplete draft, preserving other fields and root dataset properties
+ok 89 - EDITOR can atomically save an incomplete draft, preserving other fields and root dataset properties
+# Subtest: concurrent update P2025 returns a conflict without overwriting the stored dataset
+ok 90 - concurrent update P2025 returns a conflict without overwriting the stored dataset
+# Subtest: ambiguous duplicate package values are rejected instead of destructively normalized
+ok 91 - ambiguous duplicate package values are rejected instead of destructively normalized
+# Subtest: incomplete saved package cannot be downloaded and returns actionable issues
+ok 92 - incomplete saved package cannot be downloaded and returns actionable issues
+# Subtest: ready saved package downloads a version-bound ZIP for a read-only accepted member
+ok 93 - ready saved package downloads a version-bound ZIP for a read-only accepted member
+# Subtest: uploads are stored via S3 client when relay is invoked
+ok 94 - uploads are stored via S3 client when relay is invoked
+# Subtest: rejects uploads pointing to unexpected targets
+ok 95 - rejects uploads pointing to unexpected targets
+# Subtest: returns 413 when file size exceeds limit
+ok 96 - returns 413 when file size exceeds limit
+# Subtest: returns 415 when MIME type is unsupported
+ok 97 - returns 415 when MIME type is unsupported
+# Subtest: returns presigned payload and records asset on success
+ok 98 - returns presigned payload and records asset on success
+# Subtest: presigned URL uses custom endpoint when configured
+ok 99 - presigned URL uses custom endpoint when configured
+# Subtest: falls back to local upload target when bucket config is missing
+ok 100 - falls back to local upload target when bucket config is missing
+# Subtest: auth redirect preserves valid internal paths, queries and anchors
+ok 101 - auth redirect preserves valid internal paths, queries and anchors
+# Subtest: auth redirect rejects external URLs, scripts, backslashes and malformed escapes
+ok 102 - auth redirect rejects external URLs, scripts, backslashes and malformed escapes
+# Subtest: auth redirect rejects auth/API destinations including encoded and normalized loops
+ok 103 - auth redirect rejects auth/API destinations including encoded and normalized loops
+# Subtest: server auth requires the signed cookie even when identity headers are forged
+ok 104 - server auth requires the signed cookie even when identity headers are forged
+# Subtest: server auth accepts current signed session and rejects it after password change
+ok 105 - server auth accepts current signed session and rejects it after password change
+# Subtest: server auth rejects missing, malformed and refresh tokens
+ok 106 - server auth rejects missing, malformed and refresh tokens
+# Subtest: server auth rejects deleted users regardless of signed token validity
+ok 107 - server auth rejects deleted users regardless of signed token validity
+# Subtest: access and refresh tokens round-trip with expected claims
+ok 108 - access and refresh tokens round-trip with expected claims
+# Subtest: issued session tokens share a session id but differ by purpose
+ok 109 - issued session tokens share a session id but differ by purpose
+# Subtest: writes a deterministic UTF-8 ZIP with five fixed entries and correct directory, sizes and CRCs
+ok 110 - writes a deterministic UTF-8 ZIP with five fixed entries and correct directory, sizes and CRCs
+# Subtest: exports separate reported components and indicative results with review status, units and provenance
+ok 111 - exports separate reported components and indicative results with review status, units and provenance
+# Subtest: not-applicable indirect treatment omits stale conditional drafts instead of exporting contradictory assertions
+ok 112 - not-applicable indirect treatment omits stale conditional drafts instead of exporting contradictory assertions
+# Subtest: escapes untrusted HTML and neutralizes formula CSV without changing raw JSON values
+ok 113 - escapes untrusted HTML and neutralizes formula CSV without changing raw JSON values
+# Subtest: selects whitelisted values and evidence properties without leaking unrelated snapshot data
+ok 114 - selects whitelisted values and evidence properties without leaking unrelated snapshot data
+# Subtest: nested JSON exports only permitted evidence properties and active default provenance without mutating drafts
+ok 115 - nested JSON exports only permitted evidence properties and active default provenance without mutating drafts
+# Subtest: does not invent a zero lot result when optional mass is blank
+ok 116 - does not invent a zero lot result when optional mass is blank
+# Subtest: refuses incomplete or unsupported profile snapshots and suppresses results without confirmed units
+ok 117 - refuses incomplete or unsupported profile snapshots and suppresses results without confirmed units
+# Subtest: unverified partial actual values can be ready only for review, with separate indicative direct output
+ok 118 - unverified partial actual values can be ready only for review, with separate indicative direct output
+# Subtest: reported indirect values are multiplied separately without any total or additional precursor amount
+ok 119 - reported indirect values are multiplied separately without any total or additional precursor amount
+# Subtest: zero is a valid reported value and lot mass, while omitted lot mass leaves indicative emissions empty
+ok 120 - zero is a valid reported value and lot mass, while omitted lot mass leaves indicative emissions empty
+# Subtest: blank and unknown required values block readiness instead of becoming zero
+ok 121 - blank and unknown required values block readiness instead of becoming zero
+# Subtest: nonfinite, negative and silently coercible numbers are rejected
+ok 122 - nonfinite, negative and silently coercible numbers are rejected
+# Subtest: unsupported units prevent every indicative calculation
+ok 123 - unsupported units prevent every indicative calculation
+# Subtest: production year is definitive and cannot be fractional, transitional or future
+ok 124 - production year is definitive and cannot be fractional, transitional or future
+# Subtest: coverage validates real dates, ordering, year and actual dates rather than accepting planned coverage
+ok 125 - coverage validates real dates, ordering, year and actual dates rather than accepting planned coverage
+# Subtest: CN syntax is checked without asserting scope or losing leading zeroes
+ok 126 - CN syntax is checked without asserting scope or losing leading zeroes
+# Subtest: trader requires its own supplier identity without changing operator identity
+ok 127 - trader requires its own supplier identity without changing operator identity
+# Subtest: indirect treatment must be determined, and each reported component has conditional fields
+ok 128 - indirect treatment must be determined, and each reported component has conditional fields
+# Subtest: inactive conditional drafts are preserved but omitted from validation and calculation
+ok 129 - inactive conditional drafts are preserved but omitted from validation and calculation
+# Subtest: default and mixed inputs require exact version, row, markup context and evidence
+ok 130 - default and mixed inputs require exact version, row, markup context and evidence
+# Subtest: default provenance is required separately for active indirect input; no CN equality is presumed for precursors
+ok 131 - default provenance is required separately for active indirect input; no CN equality is presumed for precursors
+# Subtest: evidence register rejects malformed, missing and duplicate references
+ok 132 - evidence register rejects malformed, missing and duplicate references
+# Subtest: declared verification requires attribution and a valid source, and never becomes app verification
+ok 133 - declared verification requires attribution and a valid source, and never becomes app verification
+# Subtest: merge preserves unrelated root properties, datapoints and scalar metadata without mutating input
+ok 134 - merge preserves unrelated root properties, datapoints and scalar metadata without mutating input
+# Subtest: merge rejects unknown keys, nonstring draft values and malformed roots
+ok 135 - merge rejects unknown keys, nonstring draft values and malformed roots
+# Subtest: duplicate scalar and repeated-item values are never silently selected or overwritten
+ok 136 - duplicate scalar and repeated-item values are never silently selected or overwritten
+# Subtest: extraction returns only the documented fields and never guesses from legacy emissions fields
+ok 137 - extraction returns only the documented fields and never guesses from legacy emissions fields
+# Subtest: bulk data requests keep only one pending record per field and surface the latest contact
+ok 138 - bulk data requests keep only one pending record per field and surface the latest contact
+# Subtest: OWNER: accepted member can list; only admin/owner can manage memberships
+ok 139 - OWNER: accepted member can list; only admin/owner can manage memberships
+# Subtest: ADMIN: accepted member can list; only admin/owner can manage memberships
+ok 140 - ADMIN: accepted member can list; only admin/owner can manage memberships
+# Subtest: EDITOR: accepted member can list; only admin/owner can manage memberships
+ok 141 - EDITOR: accepted member can list; only admin/owner can manage memberships
+# Subtest: VIEWER_VERIFIER: accepted member can list; only admin/owner can manage memberships
+ok 142 - VIEWER_VERIFIER: accepted member can list; only admin/owner can manage memberships
+# Subtest: VIEWER_READONLY: accepted member can list; only admin/owner can manage memberships
+ok 143 - VIEWER_READONLY: accepted member can list; only admin/owner can manage memberships
+# Subtest: PENDING: even an owner role has no organization access
+ok 144 - PENDING: even an owner role has no organization access
+# Subtest: DECLINED: even an owner role has no organization access
+ok 145 - DECLINED: even an owner role has no organization access
+# Subtest: REVOKED: even an owner role has no organization access
+ok 146 - REVOKED: even an owner role has no organization access
+# Subtest: owner protection and tenant scope apply to admin membership writes
+ok 147 - owner protection and tenant scope apply to admin membership writes
+# Subtest: accept: invitation is scoped to organization, invited user and pending status
+ok 148 - accept: invitation is scoped to organization, invited user and pending status
+# Subtest: decline: invitation is scoped to organization, invited user and pending status
+ok 149 - decline: invitation is scoped to organization, invited user and pending status
+# Subtest: a deleted organization blocks member reads and invite acceptance
+ok 150 - a deleted organization blocks member reads and invite acceptance
+# Subtest: current organization returns actual actor role for read-only UI and checks requested tenant
+ok 151 - current organization returns actual actor role for read-only UI and checks requested tenant
+# Subtest: pending invitation list exposes membership ID and excludes processed or deleted invites
+ok 152 - pending invitation list exposes membership ID and excludes processed or deleted invites
+# Subtest: free plan editor limit applies to invitations, role changes and acceptance
+ok 153 - free plan editor limit applies to invitations, role changes and acceptance
+# Subtest: unverified invitee cannot accept but can decline without changing existing access rules
+ok 154 - unverified invitee cannot accept but can decline without changing existing access rules
+# Subtest: accept: concurrent processing cannot overwrite the invitation's final state
+ok 155 - accept: concurrent processing cannot overwrite the invitation's final state
+# Subtest: decline: concurrent processing cannot overwrite the invitation's final state
+ok 156 - decline: concurrent processing cannot overwrite the invitation's final state
+# Subtest: accepted owner can restore own deleted organization within retention
+ok 157 - accepted owner can restore own deleted organization within retention
+# Subtest: ADMIN/ACCEPTED: cannot restore deleted organization
+ok 158 - ADMIN/ACCEPTED: cannot restore deleted organization
+# Subtest: OWNER/PENDING: cannot restore deleted organization
+ok 159 - OWNER/PENDING: cannot restore deleted organization
+# Subtest: OWNER/REVOKED: cannot restore deleted organization
+ok 160 - OWNER/REVOKED: cannot restore deleted organization
+# Subtest: owner cannot restore another organization or an expired deletion
+ok 161 - owner cannot restore another organization or an expired deletion
+# Subtest: prioritizes pending external data requests and names the contact owner
+ok 162 - prioritizes pending external data requests and names the contact owner
+# Subtest: assigns open roadmap work to the project owner
+ok 163 - assigns open roadmap work to the project owner
+# Subtest: surfaces an empty dataset as internal missing work
+ok 164 - surfaces an empty dataset as internal missing work
+# Subtest: links report completion actions to project reports
+ok 165 - links report completion actions to project reports
+# Subtest: does not invent missing work when project state is complete
+ok 166 - does not invent missing work when project state is complete
+# Subtest: an empty supplier package project opens its guided report instead of the generic dataset
+ok 167 - an empty supplier package project opens its guided report instead of the generic dataset
+# Subtest: partially filled supplier package links both next action and report work to the guided form
+ok 168 - partially filled supplier package links both next action and report work to the guided form
+# Subtest: 100% supplier field coverage remains a review action without claiming readiness or download
+ok 169 - 100% supplier field coverage remains a review action without claiming readiness or download
+# Subtest: supplier package selection preserves external-request and roadmap priorities
+ok 170 - supplier package selection preserves external-request and roadmap priorities
+# Subtest: only exact supplier profile changes the action; other selected report links retain their behavior
+ok 171 - only exact supplier profile changes the action; other selected report links retain their behavior
+# Subtest: hasMeaningfulAnswer treats UNKNOWN as empty
+ok 172 - hasMeaningfulAnswer treats UNKNOWN as empty
+# Subtest: computeGroupVisibility hides optional blocks until drivers present
+ok 173 - computeGroupVisibility hides optional blocks until drivers present
+# Subtest: computeGroupVisibility enables regulator trade path for EU companies
+ok 174 - computeGroupVisibility enables regulator trade path for EU companies
+# Subtest: trade answers keep the block visible even without an operations driver
+ok 175 - trade answers keep the block visible even without an operations driver
+# Subtest: non-EU client suppliers can reach CBAM trade questions without implying legal applicability
+ok 176 - non-EU client suppliers can reach CBAM trade questions without implying legal applicability
+# Subtest: manufacturing company can complete its profile without financial-sector assets
+ok 177 - manufacturing company can complete its profile without financial-sector assets
+# Subtest: product client request requires only its own follow-up questions
+ok 178 - product client request requires only its own follow-up questions
+# Subtest: multiple client request types show the union of their follow-up questions
+ok 179 - multiple client request types show the union of their follow-up questions
+# Subtest: switching branches removes stale answers including nested CBAM details
+ok 180 - switching branches removes stale answers including nested CBAM details
+# Subtest: unknown client requirements do not reveal or require unrelated follow-ups
+ok 181 - unknown client requirements do not reveal or require unrelated follow-ups
+# Subtest: sector questions follow the selected sector only
+ok 182 - sector questions follow the selected sector only
+# Subtest: skipping a partly answered block preserves drivers, product details and later groups
+ok 183 - skipping a partly answered block preserves drivers, product details and later groups
+# Subtest: old CSRD employee and revenue shortcuts no longer determine scope
+ok 184 - old CSRD employee and revenue shortcuts no longer determine scope
+# Subtest: explicit CSRD request survives small-private profile and unknown inputs
+ok 185 - explicit CSRD request survives small-private profile and unknown inputs
+# Subtest: CBAM supplier and planned export do not become importer filing or certificate duties
+ok 186 - CBAM supplier and planned export do not become importer filing or certificate duties
+# Subtest: no-export answer does not suppress a CBAM importer or an explicit CBAM request
+ok 187 - no-export answer does not suppress a CBAM importer or an explicit CBAM request
+# Subtest: CBAM period and certificate terms remain explicit when the questionnaire has no reporting year
+ok 188 - CBAM period and certificate terms remain explicit when the questionnaire has no reporting year
+# Subtest: stayed SEC rule remains an optional review, including explicit regulator requests
+ok 189 - stayed SEC rule remains an optional review, including explicit regulator requests
+# Subtest: SFDR review is independent of the arbitrary AUM bands
+ok 190 - SFDR review is independent of the arbitrary AUM bands
+# Subtest: UK unquoted and small listed candidates require scope review instead of a public-only exemption
+ok 191 - UK unquoted and small listed candidates require scope review instead of a public-only exemption
+# Subtest: listing and sector signals retain period-specific checks and never prove mandatory scope
+ok 192 - listing and sector signals retain period-specific checks and never prove mandatory scope
+# Subtest: ambiguous EPD and neutrality requests require output review without promising certification
+ok 193 - ambiguous EPD and neutrality requests require output review without promising certification
+# Subtest: missing or unknown answers do not create a mandatory conclusion or an exemption
+ok 194 - missing or unknown answers do not create a mandatory conclusion or an exemption
+# Subtest: every engine output resolves to selectable registered templates
+ok 195 - every engine output resolves to selectable registered templates
+# Subtest: exact report variants keep their identity instead of collapsing into another report
+ok 196 - exact report variants keep their identity instead of collapsing into another report
+# Subtest: combined recommendations offer distinct alternatives without choosing either for the user
+ok 197 - combined recommendations offer distinct alternatives without choosing either for the user
+# Subtest: optional reports remain available but are not silently preselected
+ok 198 - optional reports remain available but are not silently preselected
+# Subtest: a legacy cached mandatory result cannot bypass current applicability review
+ok 199 - a legacy cached mandatory result cannot bypass current applicability review
+# Subtest: selection and badges exclude templates hidden by project scope
+ok 200 - selection and badges exclude templates hidden by project scope
+# Subtest: repeated reasons for one template do not create duplicate selected codes
+ok 201 - repeated reasons for one template do not create duplicate selected codes
+# Subtest: contact and request reads isolate accepted organization memberships across SSR and APIs
+    # Subtest: project SSR summary and dataset exclude other tenants and invalid memberships
+    ok 1 - project SSR summary and dataset exclude other tenants and invalid memberships
+    # Subtest: page hydration excludes other, pending and deleted organizations
+    ok 2 - page hydration excludes other, pending and deleted organizations
+    # Subtest: API lists and explicit outsider filters cannot bypass scope
+    ok 3 - API lists and explicit outsider filters cannot bypass scope
+    # Subtest: project contact picker checks access before returning or caching contacts
+    ok 4 - project contact picker checks access before returning or caching contacts
+    # Subtest: users without memberships see empty lists and unauthenticated requests return 401
+    ok 5 - users without memberships see empty lists and unauthenticated requests return 401
+ok 202 - contact and request reads isolate accepted organization memberships across SSR and APIs
+# Subtest: concurrent 401 responses share one refresh and retry each original request with its body
+ok 203 - concurrent 401 responses share one refresh and retry each original request with its body
+# Subtest: refresh callers receive independently readable copies of the same response
+ok 204 - refresh callers receive independently readable copies of the same response
+# Subtest: 403, auth routes, foreign origins, non-API URLs and aborted requests never trigger refresh
+ok 205 - 403, auth routes, foreign origins, non-API URLs and aborted requests never trigger refresh
+# Subtest: server-side requests return the original 401 without browser session renewal
+ok 206 - server-side requests return the original 401 without browser session renewal
+# Subtest: rejected refresh returns the original 401 and a second 401 never creates a retry loop
+ok 207 - rejected refresh returns the original 401 and a second 401 never creates a retry loop
+# Subtest: a refresh 500 remains a retryable server failure and does not poison later renewal
+ok 208 - a refresh 500 remains a retryable server failure and does not poison later renewal
+# Subtest: a network failure rejects without retrying the resource and permits a later refresh
+ok 209 - a network failure rejects without retrying the resource and permits a later refresh
+# Subtest: failed logout permits a deliberate retry but old 401 responses cannot restart renewal
+ok 210 - failed logout permits a deliberate retry but old 401 responses cannot restart renewal
+# Subtest: logout waits for pending cookie renewal, clears last, and never retries stale requests
+ok 211 - logout waits for pending cookie renewal, clears last, and never retries stale requests
+# Subtest: a stalled request or session renewal cannot hold saving forever
+ok 212 - a stalled request or session renewal cannot hold saving forever
+# Subtest: an acknowledged result completes without being replaced by a timeout
+ok 213 - an acknowledged result completes without being replaced by a timeout
+# Subtest: mount/repeated hydration never overwrites stored edits with the initial empty state
+ok 214 - mount/repeated hydration never overwrites stored edits with the initial empty state
+# Subtest: an edit is durable before returning and survives immediate reload and server-data overlay
+ok 215 - an edit is durable before returning and survives immediate reload and server-data overlay
+# Subtest: retry exhaustion preserves failed values across reload; missing batch results are failures too
+ok 216 - retry exhaustion preserves failed values across reload; missing batch results are failures too
+# Subtest: interrupted additions retain their stable IDs and original version for idempotent replay
+ok 217 - interrupted additions retain their stable IDs and original version for idempotent replay
+# Subtest: a new edit during an in-flight request survives its success and supersedes its failure
+ok 218 - a new edit during an in-flight request survives its success and supersedes its failure
+# Subtest: only acknowledged operations are removed; unrelated project changes stay queued
+ok 219 - only acknowledged operations are removed; unrelated project changes stay queued
+# Subtest: multiple new repeatable items are retained and deletion is scoped to its project
+ok 220 - multiple new repeatable items are retained and deletion is scoped to its project
+# Subtest: corrupt storage is preserved, and unavailable storage reports a visible recovery warning
+ok 221 - corrupt storage is preserved, and unavailable storage reports a visible recovery warning
+# Subtest: conflicts stop automatic replay and subsequent typing retains the original base and conflict
+ok 222 - conflicts stop automatic replay and subsequent typing retains the original base and conflict
+# Subtest: only an acknowledged own write advances edits typed during flight; an error never rebases them
+ok 223 - only an acknowledged own write advances edits typed during flight; an error never rebases them
+# Subtest: account storage keys and tab storage objects keep draft values independent
+ok 224 - account storage keys and tab storage objects keep draft values independent
+# Subtest: legacy drafts lacking actor/version are preserved but never automatically submitted
+ok 225 - legacy drafts lacking actor/version are preserved but never automatically submitted
+# Subtest: idempotent acknowledgement at another editor version cannot rebase edits typed during flight
+ok 226 - idempotent acknowledgement at another editor version cannot rebase edits typed during flight
+# Subtest: allows public pages without auth
+ok 227 - allows public pages without auth
+# Subtest: redirects protected pages to login when no token is present
+ok 228 - redirects protected pages to login when no token is present
+# Subtest: returns 401 for protected API routes without auth
+ok 229 - returns 401 for protected API routes without auth
+# Subtest: passes authenticated requests through and injects auth headers
+ok 230 - passes authenticated requests through and injects auth headers
+# Subtest: keeps login reachable because the signed session may have been revoked
+ok 231 - keeps login reachable because the signed session may have been revoked
+# Subtest: removes forged identity headers on public auth and page requests
+ok 232 - removes forged identity headers on public auth and page requests
+# Subtest: does not consider auth-prefixed unrelated API routes public
+ok 233 - does not consider auth-prefixed unrelated API routes public
+# Subtest: login redirect preserves target query only inside redirect parameter
+ok 234 - login redirect preserves target query only inside redirect parameter
+# Subtest: missing or expired access recovers protected pages through the refresh screen
+ok 235 - missing or expired access recovers protected pages through the refresh screen
+# tests 242
+# pass 242
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13580.118666
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 10.8s
+ ✓ Generating static pages (49/49)
+ ✓ Starting...
+ ✓ Ready in 360ms
+# Subtest: authentication expiry, password reset and organization role boundaries
+    # Subtest: forgot-password stays private and malformed/expired reset links cannot change the password
+    ok 1 - forgot-password stays private and malformed/expired reset links cannot change the password
+    # Subtest: reset through the browser consumes the link, changes the password and revokes old sessions
+    ok 2 - reset through the browser consumes the link, changes the password and revokes old sessions
+    # Subtest: concurrent reset submissions consume the password-bound link exactly once
+    ok 3 - concurrent reset submissions consume the password-bound link exactly once
+    # Subtest: expired access recovers the protected page and retries a client mutation once; expired refresh returns to login
+    ok 4 - expired access recovers the protected page and retries a client mutation once; expired refresh returns to login
+    # Subtest: five roles enforce member management and supplier report read/write boundaries
+    ok 5 - five roles enforce member management and supplier report read/write boundaries
+    # Subtest: an existing account can accept or decline its in-app invitation; outsiders and replay are rejected
+    ok 6 - an existing account can accept or decline its in-app invitation; outsiders and replay are rejected
+    # Subtest: concurrent invite acceptance and role changes cannot overbook the last editor seat
+    ok 7 - concurrent invite acceptance and role changes cannot overbook the last editor seat
+ok 1 - authentication expiry, password reset and organization role boundaries
+# Subtest: dataset drafts survive conflicting writes, interrupted requests and session changes
+    # Subtest: a stale second session preserves its draft without overwriting another saved edit
+    ok 1 - a stale second session preserves its draft without overwriting another saved edit
+    # Subtest: typing survives an immediate reload before Enter or blur
+    ok 2 - typing survives an immediate reload before Enter or blur
+    # Subtest: a 500 response preserves edits through reload and an explicit retry saves exactly once
+    ok 3 - a 500 response preserves edits through reload and an explicit retry saves exactly once
+    # Subtest: a lost success response can be retried after reload without applying the change twice
+    ok 4 - a lost success response can be retried after reload without applying the change twice
+    # Subtest: drafts survive expired login but stay owned by the original account in a shared workspace
+    ok 5 - drafts survive expired login but stay owned by the original account in a shared workspace
+ok 2 - dataset drafts survive conflicting writes, interrupted requests and session changes
+# Subtest: fresh browser registration → supplier ZIP, persisted data, invalid input and outsider isolation
+    # Subtest: register and create organization, product and supplier report through UI
+    ok 1 - register and create organization, product and supplier report through UI
+    # Subtest: empty download is blocked; incomplete and invalid drafts persist; fixing input restores readiness
+    ok 2 - empty download is blocked; incomplete and invalid drafts persist; fixing input restores readiness
+    # Subtest: a separately registered user cannot list, read, update or export owner data
+    ok 3 - a separately registered user cannot list, read, update or export owner data
+    # Subtest: actual browser ZIP matches saved version, independent arithmetic and CSV evidence
+    ok 4 - actual browser ZIP matches saved version, independent arithmetic and CSV evidence
+    # Subtest: questionnaire Next shows final trade questions before an explicit finish
+    ok 5 - questionnaire Next shows final trade questions before an explicit finish
+ok 3 - fresh browser registration → supplier ZIP, persisted data, invalid input and outsider isolation
+# tests 20
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 138939.099458

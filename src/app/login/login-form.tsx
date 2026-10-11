@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,6 @@ import { PublicPageFrame } from '@/components/layouts/public-page-frame'
 import { safeAuthRedirect } from '@/lib/auth-redirect'
 
 export function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = safeAuthRedirect(searchParams.get('redirect'))
   const [email, setEmail] = useState('')
@@ -65,8 +64,8 @@ export function LoginForm() {
       }
 
       toast.success('Welcome back!')
-      router.push(redirectTo)
-      router.refresh()
+      // Start a fresh user-scoped cache; sessionStorage retains this tab’s draft.
+      window.location.assign(redirectTo)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Unable to sign in')
     } finally {
