@@ -1,0 +1,198 @@
+Fetching deployment "carbonreport-g1pfwid7r-conrad-projects.vercel.app" in conrad-projects
+2026-10-11T10:42:18.808Z  Running build in Washington, D.C., USA (East) – iad1
+2026-10-11T10:42:18.809Z  Build machine configuration: 2 cores, 8 GB
+2026-10-11T10:42:18.944Z  Cloning github.com/condr-at/carbonreport (Branch: main, Commit: 0719b1a)
+2026-10-11T10:42:23.063Z  Cloning completed: 4.118s
+2026-10-11T10:42:23.166Z  Found .vercelignore
+2026-10-11T10:42:23.221Z  Removed 441 ignored files defined in .vercelignore
+2026-10-11T10:42:23.221Z  /.git/config
+2026-10-11T10:42:23.221Z  /.git/description
+2026-10-11T10:42:23.221Z  /.git/FETCH_HEAD
+2026-10-11T10:42:23.221Z  /.git/HEAD
+2026-10-11T10:42:23.221Z  /.git/hooks/applypatch-msg.sample
+2026-10-11T10:42:23.221Z  /.git/hooks/commit-msg.sample
+2026-10-11T10:42:23.221Z  /.git/hooks/fsmonitor-watchman.sample
+2026-10-11T10:42:23.221Z  /.git/hooks/post-update.sample
+2026-10-11T10:42:23.221Z  /.git/hooks/pre-applypatch.sample
+2026-10-11T10:42:23.221Z  /.git/hooks/pre-commit.sample
+2026-10-11T10:42:23.274Z  Restored build cache from previous deployment (C1af8zPQbo1P52rK74LyEqwmzmzx)
+2026-10-11T10:42:24.438Z  Running "vercel build"
+2026-10-11T10:42:24.462Z  Vercel CLI 62.7.0
+2026-10-11T10:42:24.926Z  Installing dependencies...
+2026-10-11T10:42:27.874Z
+2026-10-11T10:42:27.877Z  > carbonreport@0.1.0 postinstall
+2026-10-11T10:42:27.878Z  > prisma generate
+2026-10-11T10:42:27.878Z
+2026-10-11T10:42:28.995Z  Prisma schema loaded from prisma/schema.prisma
+2026-10-11T10:42:29.479Z
+2026-10-11T10:42:29.481Z  ✔ Generated Prisma Client (v6.17.1) to ./node_modules/@prisma/client in 293ms
+2026-10-11T10:42:29.481Z
+2026-10-11T10:42:29.481Z  Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-11T10:42:29.481Z
+2026-10-11T10:42:29.481Z  Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+2026-10-11T10:42:29.481Z
+2026-10-11T10:42:29.508Z
+2026-10-11T10:42:29.508Z  up to date in 4s
+2026-10-11T10:42:29.508Z
+2026-10-11T10:42:29.508Z  174 packages are looking for funding
+2026-10-11T10:42:29.508Z  run `npm fund` for details
+2026-10-11T10:42:29.544Z  Detected Next.js version: 15.5.27
+2026-10-11T10:42:29.553Z  Running "npm run build"
+2026-10-11T10:42:29.697Z
+2026-10-11T10:42:29.697Z  > carbonreport@0.1.0 build
+2026-10-11T10:42:29.697Z  > prisma generate && next build
+2026-10-11T10:42:29.697Z
+2026-10-11T10:42:30.489Z  Prisma schema loaded from prisma/schema.prisma
+2026-10-11T10:42:30.922Z  ┌─────────────────────────────────────────────────────────┐
+2026-10-11T10:42:30.923Z  │  Update available 6.17.1 -> 8.0.0-rc.22                 │
+2026-10-11T10:42:30.923Z  │                                                         │
+2026-10-11T10:42:30.923Z  │  This is a major update - please follow the guide at    │
+2026-10-11T10:42:30.923Z  │  https://pris.ly/d/major-version-upgrade                │
+2026-10-11T10:42:30.926Z  │                                                         │
+2026-10-11T10:42:30.926Z  │  Run the following to update                            │
+2026-10-11T10:42:30.926Z  │    npm i --save-dev prisma@latest                       │
+2026-10-11T10:42:30.926Z  │    npm i @prisma/client@latest                          │
+2026-10-11T10:42:30.926Z  └─────────────────────────────────────────────────────────┘
+2026-10-11T10:42:30.927Z
+2026-10-11T10:42:30.927Z  ✔ Generated Prisma Client (v6.17.1) to ./node_modules/@prisma/client in 274ms
+2026-10-11T10:42:30.927Z
+2026-10-11T10:42:30.927Z  Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+2026-10-11T10:42:30.927Z
+2026-10-11T10:42:30.927Z  Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+2026-10-11T10:42:30.928Z
+2026-10-11T10:42:32.075Z  ▲ Next.js 15.5.27
+2026-10-11T10:42:32.075Z
+2026-10-11T10:42:32.172Z  Creating an optimized production build ...
+2026-10-11T10:42:57.089Z  ✓ Compiled successfully in 21.8s
+2026-10-11T10:42:57.095Z  Linting and checking validity of types ...
+2026-10-11T10:43:08.775Z
+2026-10-11T10:43:08.775Z  ./src/app/api/batch/route.ts
+2026-10-11T10:43:08.776Z  5:5  Warning: 'validateDataset' is defined but never used.  @typescript-eslint/no-unused-vars
+2026-10-11T10:43:08.776Z
+2026-10-11T10:43:08.776Z  ./src/app/api/projects/route.ts
+2026-10-11T10:43:08.776Z  15:29  Warning: 'getAllReportTemplates' is defined but never used.  @typescript-eslint/no-unused-vars
+2026-10-11T10:43:08.776Z
+2026-10-11T10:43:08.776Z  ./src/components/dashboard/dashboard-greeting.tsx
+2026-10-11T10:43:08.776Z  13:10  Warning: 'isMounted' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+2026-10-11T10:43:08.776Z
+2026-10-11T10:43:08.776Z  ./src/components/layouts/project-layout.tsx
+2026-10-11T10:43:08.777Z  65:10  Warning: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+2026-10-11T10:43:08.777Z
+2026-10-11T10:43:08.777Z  ./src/lib/server-data/metrics.ts
+2026-10-11T10:43:08.777Z  1:10  Warning: 'headers' is defined but never used.  @typescript-eslint/no-unused-vars
+2026-10-11T10:43:08.777Z  4:7  Warning: 'HEADER_NAME' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+2026-10-11T10:43:08.777Z
+2026-10-11T10:43:08.777Z  info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+2026-10-11T10:43:16.294Z  Collecting page data ...
+2026-10-11T10:43:20.146Z  Generating static pages (0/48) ...
+2026-10-11T10:43:20.717Z  Generating static pages (12/48)
+2026-10-11T10:43:21.002Z  Generating static pages (24/48)
+2026-10-11T10:43:21.431Z  Generating static pages (36/48)
+2026-10-11T10:43:21.822Z  ✓ Generating static pages (48/48)
+2026-10-11T10:43:22.827Z  Finalizing page optimization ...
+2026-10-11T10:43:22.827Z  Collecting build traces ...
+2026-10-11T10:43:29.800Z
+2026-10-11T10:43:29.809Z  Route (app)                                                                Size  First Load JS
+2026-10-11T10:43:29.809Z  ┌ ƒ /                                                                   5.66 kB         198 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /_not-found                                                           276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/auth/forgot-password                                             276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/auth/login                                                       276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/auth/logout                                                      276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/auth/refresh                                                     276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/auth/register                                                    276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/auth/resend-verification                                         276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/auth/reset-password/[token]                                      276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/auth/verify-email/[token]                                        276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/batch                                                            276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/contacts                                                         276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/contacts/[id]                                                    276 B         103 kB
+2026-10-11T10:43:29.809Z  ├ ƒ /api/data-requests                                                    276 B         103 kB
+2026-10-11T10:43:29.810Z  ├ ƒ /api/data-requests/[id]/complete                                      276 B         103 kB
+2026-10-11T10:43:29.810Z  ├ ƒ /api/data-requests/[id]/revoke                                        276 B         103 kB
+2026-10-11T10:43:29.810Z  ├ ƒ /api/data-requests/bulk                                               276 B         103 kB
+2026-10-11T10:43:29.810Z  ├ ƒ /api/data-requests/complete-bulk                                      276 B         103 kB
+2026-10-11T10:43:29.810Z  ├ ƒ /api/data-requests/reassign                                           276 B         103 kB
+2026-10-11T10:43:29.810Z  ├ ƒ /api/data-requests/remind                                             276 B         103 kB
+2026-10-11T10:43:29.810Z  ├ ƒ /api/data-requests/resend-bulk                                        276 B         103 kB
+2026-10-11T10:43:29.811Z  ├ ƒ /api/data-requests/revoke-bulk                                        276 B         103 kB
+2026-10-11T10:43:29.811Z  ├ ƒ /api/dataset-fields                                                   276 B         103 kB
+2026-10-11T10:43:29.811Z  ├ ƒ /api/organizations                                                    276 B         103 kB
+2026-10-11T10:43:29.811Z  ├ ƒ /api/organizations/[organizationId]                                   276 B         103 kB
+2026-10-11T10:43:29.811Z  ├ ƒ /api/organizations/[organizationId]/invite                            276 B         103 kB
+2026-10-11T10:43:29.811Z  ├ ƒ /api/organizations/[organizationId]/members                           276 B         103 kB
+2026-10-11T10:43:29.811Z  ├ ƒ /api/organizations/[organizationId]/members/[membershipId]            276 B         103 kB
+2026-10-11T10:43:29.811Z  ├ ƒ /api/organizations/[organizationId]/members/[membershipId]/accept     276 B         103 kB
+2026-10-11T10:43:29.812Z  ├ ƒ /api/organizations/[organizationId]/members/[membershipId]/decline    276 B         103 kB
+2026-10-11T10:43:29.812Z  ├ ƒ /api/organizations/[organizationId]/plan/upgrade                      276 B         103 kB
+2026-10-11T10:43:29.812Z  ├ ƒ /api/organizations/[organizationId]/restore                           276 B         103 kB
+2026-10-11T10:43:29.812Z  ├ ƒ /api/organizations/[organizationId]/usage                             276 B         103 kB
+2026-10-11T10:43:29.812Z  ├ ƒ /api/organizations/[organizationId]/usage/recompute                   276 B         103 kB
+2026-10-11T10:43:29.812Z  ├ ƒ /api/organizations/current                                            276 B         103 kB
+2026-10-11T10:43:29.813Z  ├ ƒ /api/plan-definitions                                                 276 B         103 kB
+2026-10-11T10:43:29.813Z  ├ ƒ /api/projects                                                         276 B         103 kB
+2026-10-11T10:43:29.813Z  ├ ƒ /api/projects/[id]                                                    276 B         103 kB
+2026-10-11T10:43:29.813Z  ├ ƒ /api/projects/[id]/contacts                                           276 B         103 kB
+2026-10-11T10:43:29.813Z  ├ ƒ /api/projects/[id]/data-requests                                      276 B         103 kB
+2026-10-11T10:43:29.813Z  ├ ƒ /api/projects/[id]/dataset                                            276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/dataset/items                                      276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/dataset/items/[itemId]                             276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/duplicate                                          276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/mailto-template                                    276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/mailto-template/reset                              276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/mailto-templates                                   276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/reports/[reportId]                                 276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/reports/[reportId]/supplier-package                276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/restore                                            276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/projects/[id]/status                                             276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/uploads/local                                                    276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/uploads/relay                                                    276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/uploads/sign                                                     276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/user/settings                                                    276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /api/user/settings/change-password                                    276 B         103 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /contacts                                                           7.16 kB         232 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /contacts/[id]                                                        421 B         244 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /dashboard                                                          3.46 kB         224 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /forgot-password                                                    4.28 kB         160 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /illustrations-demo                                                 12.2 kB         126 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /login                                                              1.53 kB         161 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /no-organization                                                    3.49 kB         138 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /profile                                                            6.69 kB         163 kB
+2026-10-11T10:43:29.814Z  ├ ƒ /projects                                                           8.91 kB         200 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/[id]                                                       3.6 kB         194 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/[id]/data-requests                                        9.96 kB         188 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/[id]/dataset                                              4.55 kB         196 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/[id]/files                                                  276 B         103 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/[id]/mailto-templates                                     5.65 kB         116 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/[id]/reports                                                167 B         106 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/[id]/reports/[reportId]                                   8.38 kB         207 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/new                                                       29.3 kB         152 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/new/questionnaire                                         11.6 kB         184 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /projects/new/select-reports                                        5.56 kB         197 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /register                                                           2.27 kB         162 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /requests                                                             409 B         244 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /reset-password                                                     4.58 kB         160 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /settings                                                             276 B         103 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /settings/billing                                                   1.61 kB         193 kB
+2026-10-11T10:43:29.815Z  ├ ƒ /settings/danger                                                     7.2 kB         172 kB
+2026-10-11T10:43:29.816Z  ├ ƒ /settings/members                                                   8.17 kB         203 kB
+2026-10-11T10:43:29.816Z  ├ ƒ /settings/profile                                                   8.07 kB         173 kB
+2026-10-11T10:43:29.816Z  ├ ƒ /settings/usage                                                     1.98 kB         193 kB
+2026-10-11T10:43:29.816Z  └ ƒ /verify-email                                                       3.94 kB         159 kB
+2026-10-11T10:43:29.816Z  + First Load JS shared by all                                            102 kB
+2026-10-11T10:43:29.816Z  ├ chunks/1255-8dc91b756d944555.js                                     46.2 kB
+2026-10-11T10:43:29.817Z  ├ chunks/4bd1b696-100b9d70ed4e49c1.js                                 54.2 kB
+2026-10-11T10:43:29.817Z  └ other shared chunks (total)                                         1.96 kB
+2026-10-11T10:43:29.817Z
+2026-10-11T10:43:29.817Z
+2026-10-11T10:43:29.817Z  ƒ Middleware                                                            40.2 kB
+2026-10-11T10:43:29.818Z
+2026-10-11T10:43:29.818Z  ƒ  (Dynamic)  server-rendered on demand
+2026-10-11T10:43:29.818Z
+2026-10-11T10:43:30.045Z  Traced Next.js server files in: 92.009ms
+2026-10-11T10:43:30.870Z  Created all serverless functions in: 824.587ms
+2026-10-11T10:43:30.917Z  Collected static files (public/, static/, .next/static): 17.403ms
+2026-10-11T10:43:31.109Z  Build Completed in /vercel/output [1m]
+2026-10-11T10:43:31.138Z  Deploying outputs...
+2026-10-11T10:43:39.519Z  Deployment completed
+2026-10-11T10:43:39.522Z  Creating build cache...
+status	● Ready

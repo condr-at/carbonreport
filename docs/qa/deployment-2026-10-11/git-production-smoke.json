@@ -1,0 +1,86 @@
+{
+  "base": "https://carbonreport.app",
+  "checkedAt": "2026-10-11T10:44:05.984Z",
+  "checks": [
+    {
+      "method": "GET",
+      "path": "/",
+      "expected": 200,
+      "status": 200,
+      "location": null,
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/login",
+      "expected": 200,
+      "status": 200,
+      "location": null,
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/register",
+      "expected": 200,
+      "status": 200,
+      "location": null,
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/contacts",
+      "expected": 307,
+      "status": 307,
+      "location": "/login?redirect=%2Fcontacts",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/contacts/deployment-smoke",
+      "expected": 307,
+      "status": 307,
+      "location": "/login?redirect=%2Fcontacts%2Fdeployment-smoke",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/requests",
+      "expected": 307,
+      "status": 307,
+      "location": "/login?redirect=%2Frequests",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/dashboard",
+      "expected": 307,
+      "status": 307,
+      "location": "/login?redirect=%2Fdashboard",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/projects",
+      "expected": 401,
+      "status": 401,
+      "location": null,
+      "passed": true,
+      "response": {
+        "error": "User is not authenticated",
+        "code": "UNAUTHORIZED"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "expected": 401,
+      "status": 401,
+      "location": null,
+      "passed": true,
+      "response": {
+        "error": "Invalid email or password",
+        "code": "UNAUTHORIZED"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "dpl_8MADYAKPrSSNvE441yJRVN2bTZYz",
+  "url": "carbonreport-g1pfwid7r-conrad-projects.vercel.app",
+  "readyState": "READY",
+  "target": "production",
+  "source": "git",
+  "alias": [
+    "carbonreport.app",
+    "carbonreport.vercel.app",
+    "carbonreport-conrad-projects.vercel.app",
+    "carbonreport-git-main-conrad-projects.vercel.app"
+  ],
+  "aliasAssigned": true,
+  "errorCode": null,
+  "gitSource": {
+    "ref": "main",
+    "repoId": 1074893955,
+    "sha": "0719b1a7d13c4319f234ada6990fb98632780e48",
+    "type": "github",
+    "prId": null
+  },
+  "createdAt": 1791715337933,
+  "buildingAt": 1791715339138,
+  "ready": 1791715419210,
+  "githubCommitSha": "0719b1a7d13c4319f234ada6990fb98632780e48"
+}

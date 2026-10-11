@@ -1,6 +1,6 @@
 # Проверка публикации 2026-10-11
 
-Проверяемый код: `02ab2103b4a4466babc3b899cc70f8a2250a06a0` в `condr-at/carbonreport`, ветка `main`. Он включает `a019946` с supplier review package и `3d3c767` с исправлением сборки/зависимостей. Все три коммита отправлены в GitHub.
+Код приложения: `02ab2103b4a4466babc3b899cc70f8a2250a06a0` в `condr-at/carbonreport`, ветка `main`. Он включает `a019946` с supplier review package и `3d3c767` с исправлением сборки/зависимостей. Последующий коммит документации `0719b1a7d13c4319f234ada6990fb98632780e48` подтвердил восстановленный автоматический Git-деплой того же кода.
 
 ## Исправления перед публикацией
 
@@ -29,17 +29,21 @@
 
 После пуша новый автоматический deployment, GitHub status или check не появился. Проект Vercel `carbonreport` (`conrad-projects`) по-прежнему связан с правильным repoId `1074893955`, веткой `main`; создание deployment включено.
 
-Попытка публикации через Git-source API с точным SHA создала `dpl_4r4huWnv4GBPLExyYQMM9AsP55SX`, но завершилась `ERROR`, `git_info_fail`, до сборки. [Запрос и безопасная часть ответа](deploy-request.json). Это подтверждает проблему получения исходников через Git-интеграцию; конкретная причина или исправление интеграции пока не доказаны.
+Попытка публикации через Git-source API с точным SHA создала `dpl_4r4huWnv4GBPLExyYQMM9AsP55SX`, но завершилась `ERROR`, `git_info_fail`, до сборки. [Запрос и безопасная часть ответа](deploy-request.json). Старая Git-связь не могла получить исходники, хотя отображала правильный репозиторий. Точная причина непригодности прежнего credential не установлена; подтверждённое восстановление описано ниже.
 
 Для CLI-публикации подготовлен `/tmp/carbonreport-release-3d3c767` из `git archive` указанного коммита: runtime-исходники, public, Prisma, lockfile и конфигурация. Каталог не содержит `.env`, локальных данных или рабочего `node_modules`. Vercel получил 410 файлов (~2.5 MB) с учётом `.vercelignore`. Метаданные `sourceCommit` и `sourceRepository` указывают происхождение; это CLI-деплой, не успешный автоматический Git-деплой.
 
 Первая CLI-публикация `dpl_7wpDEs4ttLpnHSPVA5Tn858sDaCh` достигла READY и получила `carbonreport.app`; [лог](vercel-first-release.log). После smoke исправление middleware отправлено отдельным коммитом `02ab210`; для него тем же способом подготовлен `/tmp/carbonreport-release-02ab210`.
 
-**Итоговая публикация:** `dpl_C1af8zPQbo1P52rK74LyEqwmzmzx`, `READY`, production; домены `carbonreport.app` и `carbonreport.vercel.app` назначены. Код `02ab2103b4a4466babc3b899cc70f8a2250a06a0`; [метаданные](production-deployment.json), [облачная сборка](vercel-final-release.log), [deployment](https://carbonreport-1xmn2efpt-conrad-projects.vercel.app).
+**Проверенная CLI-публикация:** `dpl_C1af8zPQbo1P52rK74LyEqwmzmzx`, `READY`, production; домены `carbonreport.app` и `carbonreport.vercel.app` назначены. Код `02ab2103b4a4466babc3b899cc70f8a2250a06a0`; [метаданные](production-deployment.json), [облачная сборка](vercel-final-release.log), [deployment](https://carbonreport-1xmn2efpt-conrad-projects.vercel.app).
 
 На основном домене **9/9 smoke**: главная/вход/регистрация — 200; Contacts/detail, Requests и Dashboard без cookies — 307 на вход с сохранением целевого пути; защищённый API — 401; неверные данные входа — 401 вместо прежнего 500. [Точные запросы и ответы](production-smoke.json), [повторяемый скрипт](smoke.mjs). В Chrome подтверждены переход Contacts → login и открытие формы регистрации; [снимок исправления](production-contacts-redirect.png).
 
-Автодеплой не восстановлен. Доступ CLI достаточен для публикации; браузерная сессия Vercel принадлежит другому аккаунту и не открывает настройки `conrad-projects`. Владельцу предложено войти под аккаунтом проекта. До проверки следующего Git-triggered deployment успешную ручную публикацию не считать восстановлением автоматики.
+**Автодеплой восстановлен и проверен.** После входа владельца в правильный аккаунт через Project Settings → Git переподключён тот же `condr-at/carbonreport`, production branch `main`; Git credential изменился, конфигурация проекта сохранена. [Состояние подключения](git-reconnected.png).
+
+Обычный `git push origin main` с уточнением инструкции деплоя (`0719b1a`) автоматически создал `dpl_8MADYAKPrSSNvE441yJRVN2bTZYz`, **source=`git`, production, READY**, `aliasAssigned=true`, домен `carbonreport.app`. GitHub status `Vercel` завершился `success` / `Deployment has completed`. Сборка завершилась 2026-10-11 в 12:43:39 Europe/Belgrade. [Точные метаданные и SHA](git-autodeployment.json), [лог сборки](git-autodeploy-build.log), [снимок READY](git-autodeploy-ready.png), [deployment](https://vercel.com/conrad-projects/carbonreport/8MADYAKPrSSNvE441yJRVN2bTZYz).
+
+После назначения основного домена повторные **9/9 production smoke** прошли: [запросы и ответы](git-production-smoke.json). Этот результат подтверждает цепочку push → Git-интеграция → сборка → production-домен, без ручного запуска deployment для проверяемого коммита.
 
 ## База данных
 
@@ -56,7 +60,7 @@
 ## Ограничения и следующие действия
 
 - Это проверка публикации и доступности, не полный production E2E от нового аккаунта до ZIP. Новые аккаунты и клиентские проекты на production в этом проходе не создавались; email, приглашения, платежи и storage не проверялись.
-- Восстановить Git-интеграцию и подтвердить автоматическую публикацию реального следующего коммита. Причину `git_info_fail` не подменять предположением о webhook или правах GitHub App.
+- Git-интеграция проверена реальным пушем; её восстановление не заменяет остальные критерии внешнего пилота.
 - Production сейчас использует проект Supabase с именем `carbonreport-dev`; отдельность окружений и backup/restore для клиентского пилота ещё требуют решения. Resume приостановленного сервиса не является проверкой восстановления из резервной копии.
 - Ленддинг сохраняет неподтверждённые обещания нормативных отчётов, тарифов и функций; сама публикация не подтверждает готовность публичных обещаний или self-service запуска.
 - Рабочая очередь и дальнейшие критерии находятся в [BACKLOG](../../planning/BACKLOG.md), а не в отдельном deployment-плане.
