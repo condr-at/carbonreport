@@ -1,6 +1,6 @@
 # Development Guide
 
-_Last updated: 2025-11-16_
+_Last updated: 2026-10-11_
 
 This guide consolidates day-to-day engineering practices, active technical debt, and validation tooling. It replaces the previous `TECHNICAL_DEBT.md` and `IMPLEMENTATION_CHECKLIST.md` as the primary reference for contributors. Historical detail remains in `docs/archive/`.
 
@@ -38,6 +38,14 @@ Refer to `docs/README.md` for onboarding context and project overview.
 | Template alignment | `npm run templates:check` | Validates field IDs across seed, code, and DB records. |
 | Full demo seed | `npm run db:seed` | Deletes existing records and rebuilds demo data using the configured environment. |
 | Server metrics | `npm run metrics:collect -- <url>` | Captures `x-server-timing` and HAR snapshots. |
+
+## Vercel Git Deployment
+
+The `carbonreport` project in the `conrad-projects` team uses `condr-at/carbonreport`, production branch `main`. After pushing, verify that Vercel creates a deployment with source `git` and the pushed commit SHA, reaches `READY`, and assigns `carbonreport.app`. A successful push or CLI deployment alone does not verify the Git integration.
+
+If no deployment appears, inspect the Git connection in Project Settings → Git. A stale connection can still display the expected repository while Git-source deployment fails with `git_info_fail`. Reconnect the same repository through the owner's current GitHub connection, retaining project settings and the production branch. Confirm recovery with a normal push and the resulting Git-triggered deployment.
+
+Use the read-only [production smoke script](qa/deployment-2026-10-11/smoke.mjs) after publication. Deployment evidence and remaining environment work belong in the existing [report](qa/deployment-2026-10-11/REPORT.md) and [backlog](planning/BACKLOG.md).
 
 ## CBAM Supplier Package Field Definitions
 
