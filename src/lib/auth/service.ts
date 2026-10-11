@@ -21,13 +21,14 @@ export function serializeUser(user: Pick<UserRecord, 'id' | 'email' | 'name' | '
   }
 }
 
-export async function issueSessionTokens(user: Pick<UserRecord, 'id' | 'email' | 'emailVerified'>) {
+export async function issueSessionTokens(user: Pick<UserRecord, 'id' | 'email' | 'emailVerified' | 'passwordHash'>) {
   const sessionId = randomUUID()
   const basePayload = {
     sub: user.id,
     email: user.email,
     emailVerified: user.emailVerified,
     sessionId,
+    sessionContext: buildSessionContext(user),
   }
 
   const [accessToken, refreshToken] = await Promise.all([
@@ -36,6 +37,18 @@ export async function issueSessionTokens(user: Pick<UserRecord, 'id' | 'email' |
   ])
 
   return { accessToken, refreshToken }
+}
+
+export function buildSessionContext(user: Pick<UserRecord, 'id' | 'passwordHash'>) {
+  // Domain separation keeps session and reset contexts from being interchangeable.
+  // Password changes revoke all previously issued access and refresh tokens.
+  return hashContext(`session:${user.id}:${user.passwordHash}`)
+}
+
+export function validateSessionContext(user: Pick<UserRecord, 'id' | 'passwordHash'>, ctx: string | undefined) {
+  if (!ctx || ctx !== buildSessionContext(user)) {
+    throw new ApiError(401, 'UNAUTHORIZED', 'Session is no longer valid')
+  }
 }
 
 export function assertPasswordMeetsPolicy(password: string) {

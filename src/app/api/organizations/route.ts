@@ -20,6 +20,7 @@ import {
 } from '@/lib/organizations/service'
 
 type MembershipWithOrganization = {
+  id: string
   organizationId: string
   inviteStatus: OrganizationMembershipInviteStatus
   role: OrganizationMembershipRole
@@ -66,9 +67,10 @@ export async function GET(request: NextRequest) {
     const memberships = (await prisma.organizationMembership.findMany({
       where: {
         userId: user.id,
-        ...(includePending
-          ? {}
-          : { inviteStatus: OrganizationMembershipInviteStatus.ACCEPTED }),
+        inviteStatus: includePending
+          ? { in: [OrganizationMembershipInviteStatus.ACCEPTED, OrganizationMembershipInviteStatus.PENDING] }
+          : OrganizationMembershipInviteStatus.ACCEPTED,
+        organization: { status: { not: OrganizationStatus.DELETED } },
       },
       include: {
         organization: {
@@ -113,6 +115,7 @@ export async function GET(request: NextRequest) {
         const organizationLogoUrl = organization.logoUrl ?? organization.logoAsset?.url ?? null
         const base = {
           id: organization.id,
+          membership_id: membership.id,
           display_name: organization.displayName,
           plan_label: organization.plan.label,
           plan_valid_until: organization.planValidUntil,

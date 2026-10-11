@@ -38,6 +38,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 type MembersTabProps = {
   organizationId: string;
+  actorRole: string;
   limits: {
     max_editors: number;
     max_verifiers: number;
@@ -93,11 +94,12 @@ function normalizeMembers(members: OrganizationMember[]): OrganizationMember[] {
   });
 }
 
-export function MembersTab({ organizationId, limits, featureFlags }: MembersTabProps) {
+export function MembersTab({ organizationId, actorRole, limits, featureFlags }: MembersTabProps) {
   const { data: members, isLoading, isError, refetch } = useOrganizationMembers(organizationId);
   const { data: usage } = useOrganizationUsage(organizationId);
   const updateRoleMutation = useUpdateMembershipRole(organizationId);
   const removeMutation = useRemoveMembership(organizationId);
+  const canManageMembers = actorRole === 'OWNER' || actorRole === 'ADMIN';
 
   const normalizedMembers = useMemo(() => (members ? normalizeMembers(members) : []), [members]);
   const editorSeats = {
@@ -155,7 +157,11 @@ export function MembersTab({ organizationId, limits, featureFlags }: MembersTabP
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
             <CardTitle>Members</CardTitle>
-            <CardDescription>Manage roles and invitations for your organization.</CardDescription>
+            <CardDescription>
+              {canManageMembers
+                ? 'Manage roles and invitations for your organization.'
+                : 'View your teammates. Only owners and admins can manage members.'}
+            </CardDescription>
             <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
               <span>
                 Editor seats: {editorRemaining === null ? 'unlimited' : `${editorRemaining} remaining`}
@@ -165,12 +171,12 @@ export function MembersTab({ organizationId, limits, featureFlags }: MembersTabP
               </span>
             </div>
           </div>
-          <InviteMemberDialog
+          {canManageMembers && <InviteMemberDialog
             organizationId={organizationId}
             editorSeats={editorSeats}
             verifierSeats={verifierSeats}
             verifierRoleEnabled={featureFlags.verifierRoleEnabled}
-          />
+          />}
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="min-w-full table-fixed border-collapse text-sm">
@@ -222,7 +228,7 @@ export function MembersTab({ organizationId, limits, featureFlags }: MembersTabP
                     </td>
                     <td className="py-3">
                       <div className="flex justify-end">
-                        <DropdownMenu>
+                        {canManageMembers && !isOwner ? <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
                               <MoreHorizontal className="h-4 w-4" aria-hidden />
@@ -311,7 +317,7 @@ export function MembersTab({ organizationId, limits, featureFlags }: MembersTabP
                               </AlertDialogContent>
                             </AlertDialog>
                           </DropdownMenuContent>
-                        </DropdownMenu>
+                        </DropdownMenu> : <span className="text-muted-foreground">—</span>}
                       </div>
                     </td>
                   </tr>

@@ -1,4 +1,4 @@
-name: Supplier package browser E2E
+name: Supplier package and auth browser E2E
 
 on:
   pull_request:
@@ -48,7 +48,7 @@ jobs:
           google-chrome --version
           python3 --version
           npm run test:e2e:guards
-      - name: Fresh registration through verified supplier ZIP and isolation
+      - name: Registration, supplier ZIP, reset, session recovery and roles
         run: npm run test:e2e
       - name: Preserve browser evidence, downloads and server/build logs
         if: always()

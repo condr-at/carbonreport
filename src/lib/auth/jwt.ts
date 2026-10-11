@@ -1,4 +1,4 @@
-import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
+import { SignJWT, jwtVerify, errors, type JWTPayload } from 'jose'
 import { AUTH_CONFIG } from './config'
 
 const encoder = new TextEncoder()
@@ -27,6 +27,7 @@ export type AccessTokenPayload = {
   email: string
   emailVerified: boolean
   sessionId: string
+  sessionContext: string
 }
 
 export type RefreshTokenPayload = AccessTokenPayload
@@ -77,6 +78,7 @@ export async function createAccessToken(payload: AccessTokenPayload) {
       email: payload.email,
       email_verified: payload.emailVerified,
       sid: payload.sessionId,
+      ctx: payload.sessionContext,
     },
     AUTH_CONFIG.accessTokenTtlMs,
   )
@@ -90,6 +92,7 @@ export async function createRefreshToken(payload: RefreshTokenPayload) {
       email: payload.email,
       email_verified: payload.emailVerified,
       sid: payload.sessionId,
+      ctx: payload.sessionContext,
     },
     AUTH_CONFIG.refreshTokenTtlMs,
   )
@@ -118,19 +121,34 @@ export async function createPasswordResetToken(payload: PasswordResetTokenPayloa
   )
 }
 
+export class InvalidAuthTokenError extends Error {
+  constructor() {
+    super('Token is invalid or expired')
+    this.name = 'InvalidAuthTokenError'
+  }
+}
+
 async function verifyToken(token: string, expectedPurpose: TokenPurpose) {
   const secret = getSecretKey()
-  const { payload } = await jwtVerify<BaseClaims>(token, secret, {
-    issuer: AUTH_CONFIG.issuer,
-    audience: 'carbon-report-users',
-    clockTolerance: 15,
-  })
+  try {
+    const { payload } = await jwtVerify<BaseClaims>(token, secret, {
+      issuer: AUTH_CONFIG.issuer,
+      audience: 'carbon-report-users',
+      algorithms: ['HS256'],
+      requiredClaims: ['sub', 'exp', 'iat'],
+      clockTolerance: 15,
+    })
 
-  if (payload.purpose !== expectedPurpose) {
-    throw new Error('Unexpected token purpose')
+    if (payload.purpose !== expectedPurpose || typeof payload.sub !== 'string' || !payload.sub ||
+      typeof payload.ctx !== 'string' || !payload.ctx) {
+      throw new InvalidAuthTokenError()
+    }
+
+    return payload
+  } catch (error) {
+    if (error instanceof errors.JOSEError) throw new InvalidAuthTokenError()
+    throw error
   }
-
-  return payload
 }
 
 export async function verifyAccessToken(token: string) {

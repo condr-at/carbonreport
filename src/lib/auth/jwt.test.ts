@@ -22,6 +22,7 @@ test('access and refresh tokens round-trip with expected claims', async () => {
     email: 'user@example.com',
     emailVerified: true,
     sessionId: 'session-1',
+    sessionContext: 'signed-context',
   }
 
   const accessToken = await createAccessToken(payload)
@@ -46,6 +47,7 @@ test('issued session tokens share a session id but differ by purpose', async () 
     id: 'user-2',
     email: 'owner@example.com',
     emailVerified: false,
+    passwordHash: 'stored-test-hash',
   })
 
   const accessClaims = await verifyAccessToken(tokens.accessToken)

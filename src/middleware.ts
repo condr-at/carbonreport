@@ -9,6 +9,7 @@ const PUBLIC_PATHS = new Set([
   '/forgot-password',
   '/reset-password',
   '/verify-email',
+  '/session',
 ])
 
 const PUBLIC_API_PREFIXES = ['/api/auth']
@@ -40,13 +41,20 @@ function unauthorizedApiResponse() {
 
 function redirectToLogin(request: NextRequest) {
   const url = request.nextUrl.clone()
-  url.pathname = '/login'
+  url.pathname = request.cookies.get(AUTH_CONFIG.refreshTokenCookie)?.value ? '/session' : '/login'
+  url.search = ''
   url.searchParams.set('redirect', request.nextUrl.pathname + request.nextUrl.search)
   return NextResponse.redirect(url)
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  // Never let client-supplied identity headers reach a public auth handler.
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.delete('x-user-id')
+  requestHeaders.delete('x-user-email')
+  requestHeaders.delete('x-email-verified')
+  const next = () => NextResponse.next({ request: { headers: requestHeaders } })
 
   if (
     PUBLIC_FILE.test(pathname) ||
@@ -54,15 +62,15 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/favicon') ||
     pathname.startsWith('/static')
   ) {
-    return NextResponse.next()
+    return next()
   }
 
-  const isPublicApi = PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  const isPublicApi = PUBLIC_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
   const accessToken = request.cookies.get(AUTH_CONFIG.accessTokenCookie)?.value
 
   if (!accessToken) {
     if (isPublicApi || isPublicPage(pathname)) {
-      return NextResponse.next()
+      return next()
     }
 
     if (pathname.startsWith('/api/')) {
@@ -74,27 +82,18 @@ export async function middleware(request: NextRequest) {
 
   try {
     const payload = await verifyAccessToken(accessToken)
-    const requestHeaders = new Headers(request.headers)
     requestHeaders.set('x-user-id', payload.sub)
     if (payload.email) {
       requestHeaders.set('x-user-email', payload.email)
     }
     requestHeaders.set('x-email-verified', payload.email_verified ? 'true' : 'false')
 
-    if (pathname === '/login' || pathname === '/register') {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
-    }
-
-    return NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    })
+    // A signed token can still be revoked by a password change. The login page
+    // must remain reachable; only server auth can validate the database context.
+    return next()
   } catch {
     if (isPublicApi || isPublicPage(pathname)) {
-      return NextResponse.next()
+      return next()
     }
 
     if (pathname.startsWith('/api/')) {

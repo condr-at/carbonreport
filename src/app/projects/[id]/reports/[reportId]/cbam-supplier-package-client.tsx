@@ -1,5 +1,7 @@
 'use client'
 
+import { fetchWithSession } from '@/lib/session-client'
+
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
@@ -112,7 +114,7 @@ export function CbamSupplierPackageClient({ projectId, reportId }: { projectId: 
   const load = useCallback(async (restoreDraft: boolean) => {
     setLoading(true); setError('')
     try {
-      const response = await fetch(endpoint, { cache: 'no-store' })
+      const response = await fetchWithSession(endpoint, { cache: 'no-store' })
       const body = await response.json()
       if (!response.ok) throw new Error(body.error ?? 'Could not load the supplier package.')
       const saved = body as SupplierPackageSnapshot
@@ -153,7 +155,7 @@ export function CbamSupplierPackageClient({ projectId, reportId }: { projectId: 
     if (!dirty) { if (advance) setStep(previous => Math.min(previous + 1, STEPS.length - 1)); return }
     setBusy(true); setError(''); setNotice('')
     try {
-      const response = await fetch(endpoint, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedDatasetVersion: expectedVersion, values }) })
+      const response = await fetchWithSession(endpoint, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ expectedDatasetVersion: expectedVersion, values }) })
       const body = await response.json()
       if (!response.ok) throw new Error(body.code === 'VERSION_CONFLICT' ? 'Saved data changed in another session. Your draft is kept. Copy any edits you need, then reload saved values before continuing.' : body.error ?? 'Saving failed. Your draft is kept; try again.')
       const saved = body as SupplierPackageSnapshot
@@ -169,7 +171,7 @@ export function CbamSupplierPackageClient({ projectId, reportId }: { projectId: 
     if (!snapshot || dirty || busy || loading || queueBlocked) return
     setBusy(true); setError('')
     try {
-      const response = await fetch(`${endpoint}?format=zip&expectedDatasetVersion=${snapshot.datasetVersion}`, { cache: 'no-store' })
+      const response = await fetchWithSession(`${endpoint}?format=zip&expectedDatasetVersion=${snapshot.datasetVersion}`, { cache: 'no-store' })
       if (!response.ok) {
         const body = await response.json()
         throw new Error(body.code === 'VERSION_CONFLICT' ? 'The saved data changed. Reload and review it before downloading.' : body.error ?? 'The saved data could not be exported. Review the checks and try again.')

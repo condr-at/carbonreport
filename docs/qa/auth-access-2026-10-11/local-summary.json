@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-11",
+  "node": "v22.23.2",
+  "next": "15.5.27",
+  "database": "Disposable loopback carbonreport_e2e_test, reset explicitly allowed; no production DB mutation",
+  "command": "E2E_DATABASE_URL=postgresql://user@localhost:5432/carbonreport_e2e_test E2E_RESET_DATABASE=1 E2E_NODE_MODULES=/tmp/carbonreport-deploy-check-a019946/node_modules E2E_CHROME_EXECUTABLE='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' E2E_ARTIFACTS=.artifacts/auth-access-20261011 node scripts/e2e/run.mjs",
+  "guards": {
+    "pass": 2
+  },
+  "sanity": {
+    "pass": 222,
+    "fail": 0
+  },
+  "build": "Passed including TypeScript and lint",
+  "browser": {
+    "pass": 14,
+    "fail": 0,
+    "childScenarios": 12,
+    "parentGroups": 2
+  },
+  "scopedEslint": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "email": "disabled; real delivered reset link still pending",
+  "earlierFailures": [
+    "build-first-failure.txt",
+    "browser-first-failure.txt"
+  ],
+  "concurrencyLimit": "Three parallel request pairs; not exhaustive scheduling proof. Prior deterministic mocked reproduction established overbooking before fix."
+}

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
-import { verifyEmailVerificationToken } from '@/lib/auth/jwt'
+import { InvalidAuthTokenError, verifyEmailVerificationToken } from '@/lib/auth/jwt'
 import { validateVerificationContext } from '@/lib/auth/service'
 
 function wantsJson(request: Request) {
@@ -51,7 +51,9 @@ export async function GET(
   } catch (error) {
     console.warn('[VerifyEmail] Verification failed')
     if (wantsJson(request)) {
-      return errorResponse(ensureApiError(error, 'Failed to verify email'))
+      return errorResponse(error instanceof InvalidAuthTokenError
+        ? new ApiError(400, 'INVALID_TOKEN', 'Verification token is invalid or expired')
+        : ensureApiError(error, 'Failed to verify email'))
     }
 
     const url = new URL('/verify-email', request.url)

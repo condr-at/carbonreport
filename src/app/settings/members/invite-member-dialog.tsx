@@ -80,7 +80,7 @@ export function InviteMemberDialog({ organizationId, editorSeats, verifierSeats,
         <DialogHeader>
           <DialogTitle>Invite teammate</DialogTitle>
           <DialogDescription>
-            Teammates need an existing Carbon Report account. Seat limits enforce editor and verifier roles automatically.
+            Teammates need an existing Carbon Report account. Ask them to sign in and accept the invitation in the app. No invitation email is sent.
           </DialogDescription>
         </DialogHeader>
 
@@ -161,7 +161,7 @@ export function InviteMemberDialog({ organizationId, editorSeats, verifierSeats,
               </DialogClose>
               <Button type="submit" disabled={!canSubmit}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />}
-                Send invite
+                Create invite
               </Button>
             </div>
           </DialogFooter>

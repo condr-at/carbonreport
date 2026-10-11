@@ -1,5 +1,7 @@
 "use client";
 
+import { fetchWithSession } from '@/lib/session-client'
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +46,7 @@ export function MailtoTemplatesClient({ projectId, projectName, projectOwnerName
     setIsSaving(true);
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/mailto-template`, {
+      const response = await fetchWithSession(`/api/projects/${projectId}/mailto-template`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -90,7 +92,7 @@ export function MailtoTemplatesClient({ projectId, projectName, projectOwnerName
     setIsResetting(true);
 
     try {
-      const response = await fetch(`/api/projects/${projectId}/mailto-template/reset`, {
+      const response = await fetchWithSession(`/api/projects/${projectId}/mailto-template/reset`, {
         method: 'POST',
       });
 

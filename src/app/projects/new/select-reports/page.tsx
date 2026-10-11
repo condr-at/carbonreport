@@ -1,5 +1,7 @@
 'use client';
 
+import { fetchWithSession } from '@/lib/session-client'
+
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layouts/page-header';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -177,7 +179,7 @@ export default function SelectReportsPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/projects', {
+      const response = await fetchWithSession('/api/projects', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

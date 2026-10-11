@@ -21,5 +21,5 @@ test('child processes receive the same dedicated database and no inherited email
   assert.equal(env.DATABASE_URL, config.databaseUrl)
   assert.equal(env.DIRECT_URL, config.databaseUrl)
   for (const key of ['RESEND_API_KEY', 'AWS_ACCESS_KEY_ID', 'AUTH_COOKIE_DOMAIN']) assert.equal(env[key], '')
-  assert.equal(env.NEXT_PUBLIC_APP_URL, 'http://127.0.0.1:3108')
+  assert.equal(env.NEXT_PUBLIC_APP_URL, 'http://localhost:3108')
 })

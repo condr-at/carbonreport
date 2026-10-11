@@ -73,8 +73,8 @@ test('returns JSON error when token is invalid', async () => {
   const response = await GET(request, { params: Promise.resolve({ token: 'bad-token' }) })
   const payload = (await response.json()) as { code?: string }
 
-  assert.equal(response.status, 500)
-  assert.equal(payload.code, 'INTERNAL_ERROR')
+  assert.equal(response.status, 400)
+  assert.equal(payload.code, 'INVALID_TOKEN')
 
   const htmlResponse = await GET(new Request('http://localhost/api/auth/verify-email/bad-token?token=bad-token&private=discard'), {
     params: Promise.resolve({ token: 'bad-token' }),

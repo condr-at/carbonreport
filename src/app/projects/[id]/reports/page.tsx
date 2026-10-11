@@ -1,3 +1,4 @@
+import { requirePageUser } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText } from 'lucide-react';
@@ -43,6 +44,7 @@ async function fetchProjectWithReports(id: string) {
 }
 
 export default async function ReportsPage({ params }: PageProps) {
+  await requirePageUser();
   const { id } = await params;
   const payload = await fetchProjectWithReports(id);
   const project = payload?.project ?? null;

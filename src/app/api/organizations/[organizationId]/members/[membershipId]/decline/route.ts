@@ -45,23 +45,28 @@ export async function POST(
       throw new ApiError(409, 'CONFLICT', 'Invitation has already been processed')
     }
 
-    const updated = await prisma.organizationMembership.update({
-      where: { id: membership.id },
+    const updated = await prisma.organizationMembership.updateMany({
+      where: {
+        id: membership.id,
+        organizationId,
+        userId: user.id,
+        inviteStatus: OrganizationMembershipInviteStatus.PENDING,
+      },
       data: {
         inviteStatus: OrganizationMembershipInviteStatus.DECLINED,
       },
-      select: {
-        id: true,
-        inviteStatus: true,
-      },
     })
+
+    if (updated.count !== 1) {
+      throw new ApiError(409, 'CONFLICT', 'Invitation has already been processed')
+    }
 
     await scheduleUsageRecompute(organizationId, { reason: 'membership_decline' })
 
     return NextResponse.json({
       membership: {
-        membership_id: updated.id,
-        invite_status: updated.inviteStatus.toLowerCase(),
+        membership_id: membership.id,
+        invite_status: OrganizationMembershipInviteStatus.DECLINED.toLowerCase(),
       },
     })
   } catch (error) {

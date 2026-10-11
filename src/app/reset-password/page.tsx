@@ -30,6 +30,8 @@ function ResetPasswordContent() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [invalidLink, setInvalidLink] = useState(false)
 
   if (!token) {
     return (
@@ -54,8 +56,11 @@ function ResetPasswordContent() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    setErrorMessage(null)
+    setInvalidLink(false)
 
     if (password !== confirmPassword) {
+      setErrorMessage('Passwords do not match')
       toast.error('Passwords do not match')
       return
     }
@@ -63,7 +68,7 @@ function ResetPasswordContent() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`/api/auth/reset-password/${token}`, {
+      const response = await fetch(`/api/auth/reset-password/${encodeURIComponent(token ?? '')}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
@@ -72,13 +77,17 @@ function ResetPasswordContent() {
       const payload = await response.json().catch(() => ({}))
 
       if (!response.ok) {
+        if (payload.code === 'INVALID_TOKEN') setInvalidLink(true)
         throw new Error(payload.error ?? 'Unable to reset password')
       }
 
-      toast.success('Password updated. You can now sign in.')
-      router.push('/login')
+      toast.success('Password updated. You are now signed in.')
+      router.replace('/dashboard')
+      router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to reset password')
+      const message = error instanceof Error ? error.message : 'Unable to reset password'
+      setErrorMessage(message)
+      toast.error(message)
     } finally {
       setIsLoading(false)
     }
@@ -93,6 +102,8 @@ function ResetPasswordContent() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
+            {errorMessage && <p role="alert" className="text-sm text-destructive">{errorMessage}</p>}
+            {invalidLink && <Link href="/forgot-password" className="block text-sm text-primary hover:underline">Request a new reset link</Link>}
             <div className="space-y-2">
               <Label htmlFor="password">New password</Label>
               <Input

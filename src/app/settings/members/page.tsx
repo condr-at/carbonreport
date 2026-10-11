@@ -10,6 +10,7 @@ export default function SettingsMembersPage() {
       renderContent={({ organizationId, currentOrganization, featureFlags }) => (
         <MembersTab
           organizationId={organizationId}
+          actorRole={currentOrganization.role}
           limits={{
             max_editors: currentOrganization.plan.max_editors,
             max_verifiers: currentOrganization.plan.max_verifiers,

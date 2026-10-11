@@ -1,3 +1,4 @@
+import { requirePageUser } from '@/lib/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -139,6 +140,7 @@ function parseChecklistItems(value: unknown): OverviewChecklistItem[] {
 }
 
 export default async function ProjectOverviewPage({ params }: PageProps) {
+  await requirePageUser();
   const { id } = await params;
   const [{ status, project }, datasetPayload, dataRequests] = await Promise.all([
     getProject(id),

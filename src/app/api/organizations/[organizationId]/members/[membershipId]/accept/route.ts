@@ -4,12 +4,12 @@ import {
   OrganizationMembershipRole,
   OrganizationStatus,
 } from '@prisma/client'
-import prisma from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 import { assertWithinLimit } from '@/lib/server-utils'
 import { featureFlags } from '@/lib/config'
 import { scheduleUsageRecompute } from '@/lib/organizations/usage-scheduler'
+import { withOrganizationMembershipLock } from '@/lib/organizations/membership-lock'
 
 function seatResourceForRole(role: OrganizationMembershipRole | null) {
   if (role === OrganizationMembershipRole.EDITOR) {
@@ -31,63 +31,76 @@ export async function POST(
     const user = await getCurrentUser()
     const { organizationId, membershipId } = await context.params
 
-    const membership = await prisma.organizationMembership.findFirst({
-      where: {
-        id: membershipId,
-        organizationId,
-      },
-      select: {
-        id: true,
-        userId: true,
-        role: true,
-        inviteStatus: true,
-        joinedAt: true,
-        organization: {
-          select: {
-            status: true,
+    const updated = await withOrganizationMembershipLock(organizationId, async (tx) => {
+      const membership = await tx.organizationMembership.findFirst({
+        where: {
+          id: membershipId,
+          organizationId,
+        },
+        select: {
+          id: true,
+          userId: true,
+          role: true,
+          inviteStatus: true,
+          joinedAt: true,
+          organization: {
+            select: {
+              status: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    if (!membership || membership.organization.status === OrganizationStatus.DELETED) {
-      throw new ApiError(404, 'NOT_FOUND', 'Membership not found')
-    }
+      if (!membership || membership.organization.status === OrganizationStatus.DELETED) {
+        throw new ApiError(404, 'NOT_FOUND', 'Membership not found')
+      }
 
-    if (membership.userId !== user.id) {
-      throw new ApiError(403, 'FORBIDDEN', 'Only invited user can accept membership')
-    }
+      if (membership.userId !== user.id) {
+        throw new ApiError(403, 'FORBIDDEN', 'Only invited user can accept membership')
+      }
 
-    if (membership.inviteStatus !== OrganizationMembershipInviteStatus.PENDING) {
-      throw new ApiError(409, 'CONFLICT', 'Invitation has already been processed')
-    }
+      if (membership.inviteStatus !== OrganizationMembershipInviteStatus.PENDING) {
+        throw new ApiError(409, 'CONFLICT', 'Invitation has already been processed')
+      }
 
-    if (
-      membership.role === OrganizationMembershipRole.VIEWER_VERIFIER &&
-      !featureFlags.verifierRoleEnabled
-    ) {
-      throw new ApiError(422, 'VALIDATION_ERROR', 'Verifier role is currently disabled')
-    }
+      if (!user.emailVerified) {
+        throw new ApiError(403, 'EMAIL_NOT_VERIFIED', 'Verify your email before joining this organization')
+      }
 
-    const seatResource = seatResourceForRole(membership.role)
+      if (
+        membership.role === OrganizationMembershipRole.VIEWER_VERIFIER &&
+        !featureFlags.verifierRoleEnabled
+      ) {
+        throw new ApiError(422, 'VALIDATION_ERROR', 'Verifier role is currently disabled')
+      }
 
-    if (seatResource) {
-      await assertWithinLimit(organizationId, seatResource)
-    }
+      const seatResource = seatResourceForRole(membership.role)
 
-    const now = new Date()
+      if (seatResource) {
+        await assertWithinLimit(organizationId, seatResource, {}, tx)
+      }
 
-    const updated = await prisma.organizationMembership.update({
-      where: { id: membership.id },
-      data: {
-        inviteStatus: OrganizationMembershipInviteStatus.ACCEPTED,
-        joinedAt: membership.joinedAt ?? now,
-        lastActiveAt: now,
-      },
-      select: {
-        id: true,
-        inviteStatus: true,
-      },
+      const now = new Date()
+
+      const accepted = await tx.organizationMembership.updateMany({
+        where: {
+          id: membership.id,
+          organizationId,
+          userId: user.id,
+          inviteStatus: OrganizationMembershipInviteStatus.PENDING,
+        },
+        data: {
+          inviteStatus: OrganizationMembershipInviteStatus.ACCEPTED,
+          joinedAt: membership.joinedAt ?? now,
+          lastActiveAt: now,
+        },
+      })
+
+      if (accepted.count !== 1) {
+        throw new ApiError(409, 'CONFLICT', 'Invitation has already been processed')
+      }
+
+      return { id: membership.id, inviteStatus: OrganizationMembershipInviteStatus.ACCEPTED }
     })
 
     await scheduleUsageRecompute(organizationId, { reason: 'membership_accept' })

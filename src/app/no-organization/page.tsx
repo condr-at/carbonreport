@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useOrganizationContext } from '@/lib/organizations/context'
 import { Suspense, useEffect } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { PendingInvitations } from '@/components/organizations/pending-invitations'
 
 function NoOrganizationFallback() {
   return (
@@ -67,6 +68,7 @@ function NoOrganizationContent() {
             This keeps workspaces tidy and avoids duplicate billing accounts.
           </p>
         </div>
+        <PendingInvitations />
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Button variant="outline" asChild>
             <a href="mailto:support@carbonreport.app?subject=Organization%20invite%20help">Contact support</a>

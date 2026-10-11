@@ -1,3 +1,4 @@
+import { requirePageUser } from '@/lib/auth';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
@@ -37,6 +38,7 @@ async function getReport(projectId: string, reportId: string) {
   return res.json();
 }
 export default async function ReportPage({ params }: PageProps) {
+  await requirePageUser();
   const { id: projectId, reportId } = await params;
 
   const tracker = createServerTimingTracker(`report-page:${projectId}:${reportId}`);

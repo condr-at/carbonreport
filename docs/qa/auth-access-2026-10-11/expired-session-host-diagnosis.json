@@ -1,0 +1,44 @@
+{
+  "hypothesis": "expired access and valid refresh reaches profile through session recovery",
+  "url": "http://localhost:3108/login?redirect=%2Fprofile&reason=session_expired",
+  "text": "Toggle theme\nSign in\nAccess your Carbon Report workspace\n\nYour session has expired. Sign in again to continue.\n\nEmail address\nPassword\nForgot password?\nSign in\n\nNeed an account? Create one",
+  "requests": [
+    {
+      "path": "/profile",
+      "method": "GET",
+      "status": 307
+    },
+    {
+      "path": "/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "path": "/session",
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "cookies": [
+    {
+      "name": "cr_access_token",
+      "path": "/",
+      "secure": false
+    },
+    {
+      "name": "cr_refresh_token",
+      "path": "/",
+      "secure": false
+    },
+    {
+      "name": "__next_hmr_refresh_hash__",
+      "path": "/",
+      "secure": false
+    }
+  ]
+}

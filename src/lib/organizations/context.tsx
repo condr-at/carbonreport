@@ -57,7 +57,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     [organizations],
   )
   const pendingInvites = useMemo(
-    () => organizations.filter((org) => org.invite_status && org.invite_status !== 'accepted'),
+    () => organizations.filter((org) => org.invite_status === 'pending'),
     [organizations],
   )
 

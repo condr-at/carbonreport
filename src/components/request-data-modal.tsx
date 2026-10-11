@@ -1,5 +1,7 @@
 'use client';
 
+import { fetchWithSession } from '@/lib/session-client'
+
 /**
  * Request Data Modal
  * 
@@ -295,7 +297,7 @@ export function RequestDataModal({
     };
 
     const logRequestPromise = (async () => {
-      const response = await fetch('/api/data-requests/bulk', {
+      const response = await fetchWithSession('/api/data-requests/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

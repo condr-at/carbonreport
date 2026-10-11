@@ -5,7 +5,7 @@ import { Plus, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { NextStepsWidget } from '@/components/blocks/next-steps-widget';
 import { PageHeader } from '@/components/layouts/page-header';
-import { getCurrentUser } from '@/lib/auth';
+import { requirePageUser } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { MarkDashboardVisited } from '@/components/dashboard/mark-visited';
 import prisma from '@/lib/db';
@@ -14,7 +14,7 @@ import { OrganizationMembershipInviteStatus, OrganizationStatus, ProjectStatus }
 
 export const dynamic = 'force-dynamic';
 
-function getGreetingName(user: Awaited<ReturnType<typeof getCurrentUser>>) {
+function getGreetingName(user: Awaited<ReturnType<typeof requirePageUser>>) {
   const normalized = (value?: string | null) => value?.trim() ?? '';
   const first = normalized(user.firstName);
   if (first) {
@@ -109,7 +109,7 @@ async function getProjects(userId: string) {
 }
 
 export default async function DashboardPage() {
-  const user = await getCurrentUser();
+  const user = await requirePageUser();
   const projects = await getProjects(user.id);
   const cookieStore = await cookies();
   const hasVisited = cookieStore.has('dashboard_visited');

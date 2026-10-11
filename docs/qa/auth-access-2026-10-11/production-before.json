@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-11T14:20:36.906Z",
+  "source": "production HTTP negative cases; malformed tokens cannot target an account",
+  "results": [
+    {
+      "name": "malformed_reset",
+      "path": "/api/auth/reset-password/not-a-valid-token",
+      "status": 500,
+      "body": {
+        "error": "Failed to reset password",
+        "code": "INTERNAL_ERROR"
+      }
+    },
+    {
+      "name": "malformed_refresh",
+      "path": "/api/auth/refresh",
+      "status": 500,
+      "body": {
+        "error": "Failed to refresh session",
+        "code": "INTERNAL_ERROR"
+      }
+    },
+    {
+      "name": "missing_refresh",
+      "path": "/api/auth/refresh",
+      "status": 401,
+      "body": {
+        "error": "Refresh token missing",
+        "code": "UNAUTHORIZED"
+      }
+    }
+  ]
+}

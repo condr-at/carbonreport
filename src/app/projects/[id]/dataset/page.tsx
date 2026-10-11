@@ -1,3 +1,4 @@
+import { requirePageUser } from '@/lib/auth';
 import { notFound } from 'next/navigation';
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import { DatasetPageClient } from './dataset-page-client';
@@ -18,6 +19,7 @@ interface PageProps {
 }
 
 export default async function DatasetPage({ params }: PageProps) {
+  await requirePageUser();
   const { id } = await params;
   const tracker = createServerTimingTracker(`dataset-page:${id}`);
   const project = await getProjectSummaryCached(id, tracker);

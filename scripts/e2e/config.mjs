@@ -16,7 +16,9 @@ export function e2eConfig(env = process.env) {
     databaseUrl: database.href,
     databaseName: database.pathname.slice(1),
     port,
-    baseUrl: `http://127.0.0.1:${port}`,
+    // NextURL canonicalizes loopback IPs to localhost in middleware redirects.
+    // Use that same host for browser cookies, visits and the app URL.
+    baseUrl: `http://localhost:${port}`,
     artifacts: path.resolve(env.E2E_ARTIFACTS ?? '.artifacts/e2e'),
   }
 }

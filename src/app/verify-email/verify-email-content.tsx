@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -45,6 +45,7 @@ function getStatusCopy(status: string | null) {
 
 export function VerifyEmailContent({ hasSession, emailVerified }: { hasSession: boolean; emailVerified: boolean }) {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const queryStatus = searchParams.get('status')
   const [statusOverride, setStatusOverride] = useState<string | null>(null)
   const statusParam = emailVerified ? 'verified' : statusOverride ?? (hasSession && queryStatus === 'verified' ? null : queryStatus)
@@ -52,6 +53,11 @@ export function VerifyEmailContent({ hasSession, emailVerified }: { hasSession: 
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const isVerified = statusParam === 'verified'
+
+  function updateStatus(value: string) {
+    setStatusOverride(value)
+    router.replace(`/verify-email?status=${value}`, { scroll: false })
+  }
 
   async function handleResend() {
     setIsLoading(true)
@@ -71,16 +77,16 @@ export function VerifyEmailContent({ hasSession, emailVerified }: { hasSession: 
       }
 
       if (payload.status === 'already_verified') {
-        setStatusOverride('verified')
+        updateStatus('verified')
         toast.success('Your email is already verified')
       } else if (payload.status === 'sent') {
-        setStatusOverride('sent')
+        updateStatus('sent')
         toast.success('Verification email sent')
       } else {
         throw new Error('We could not confirm that the email was sent. Please try again later.')
       }
     } catch (error) {
-      setStatusOverride('not_sent')
+      updateStatus('not_sent')
       setErrorMessage(error instanceof Error ? error.message : 'We could not send the verification email. Please try again later.')
     } finally {
       setIsLoading(false)

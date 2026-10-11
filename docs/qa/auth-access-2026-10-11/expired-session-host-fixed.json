@@ -1,0 +1,64 @@
+{
+  "hypothesis": "expired access and valid refresh reaches profile through session recovery",
+  "url": "http://localhost:3108/profile",
+  "text": "AE\n\nAuth E2E workspace 1791729361027\n\nSynthetic role test · 1 / 10 projects\nOpen organization menu\nDashboard\nProjects\nRequests\nContacts\nSettings\nAE\n\nAuth E2E OWNER\n\nauth-owner-1791729361027@example.test\n\nOpen user menu\nProfile\n\nUpdate your name, job title, timezone, and avatar.\n\nProfile\nThis information is visible to teammates across organizations you join.\nEmail\n\nEmail is managed by your workspace administrator.\n\nFirst name\nLast name\nJob title\nTimezone\n\nUse an IANA timezone name (e.g., America/Los_Angeles).\n\nSave changes\nReset\nUpload\nRemove\n\nSquare crop · PNG/JPEG/SVG · max 512 KB",
+  "requests": [
+    {
+      "path": "/profile",
+      "method": "GET",
+      "status": 307
+    },
+    {
+      "path": "/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/refresh",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "path": "/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/user/settings",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/organizations/current",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/organizations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/organizations/current",
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "cookies": [
+    {
+      "name": "cr_access_token",
+      "path": "/",
+      "secure": false
+    },
+    {
+      "name": "cr_refresh_token",
+      "path": "/",
+      "secure": false
+    }
+  ]
+}

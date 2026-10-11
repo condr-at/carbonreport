@@ -7,6 +7,7 @@ import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 import { assertOrgMembership, assertWithinLimit } from '@/lib/server-utils'
 import { featureFlags } from '@/lib/config'
 import { scheduleUsageRecompute } from '@/lib/organizations/usage-scheduler'
+import { withOrganizationMembershipLock } from '@/lib/organizations/membership-lock'
 
 const UpdateRoleSchema = z.object({
   role: z.nativeEnum(OrganizationMembershipRole).refine((role) => role !== OrganizationMembershipRole.OWNER, {
@@ -45,60 +46,59 @@ export async function PATCH(
       )
     }
 
-    const membership = await prisma.organizationMembership.findFirst({
-      where: {
-        id: membershipId,
-        organizationId,
-      },
-      select: {
-        id: true,
-        role: true,
-        inviteStatus: true,
-      },
-    })
+    const updated = await withOrganizationMembershipLock(organizationId, async (tx) => {
+      await assertOrgMembership(user.id, organizationId, OrganizationMembershipRole.ADMIN, tx)
 
-    if (!membership) {
-      throw new ApiError(404, 'NOT_FOUND', 'Membership not found')
-    }
-
-    if (membership.role === OrganizationMembershipRole.OWNER) {
-      throw new ApiError(403, 'FORBIDDEN', 'Cannot modify owner role')
-    }
-
-    const nextRole = parsed.data.role
-
-    if (nextRole === OrganizationMembershipRole.VIEWER_VERIFIER && !featureFlags.verifierRoleEnabled) {
-      throw new ApiError(422, 'VALIDATION_ERROR', 'Verifier role is currently disabled')
-    }
-
-    if (membership.role === nextRole) {
-      return NextResponse.json({
-        membership: {
-          membership_id: membership.id,
-          role: nextRole,
+      const membership = await tx.organizationMembership.findFirst({
+        where: {
+          id: membershipId,
+          organizationId,
+        },
+        select: {
+          id: true,
+          role: true,
+          inviteStatus: true,
         },
       })
-    }
 
-    const nextSeatResource = seatResourceForRole(nextRole)
-    const currentSeatResource = seatResourceForRole(membership.role)
+      if (!membership) {
+        throw new ApiError(404, 'NOT_FOUND', 'Membership not found')
+      }
 
-    if (nextSeatResource) {
-      const needed = currentSeatResource === nextSeatResource ? 0 : 1
-      await assertWithinLimit(organizationId, nextSeatResource, { needed })
-    }
+      if (membership.role === OrganizationMembershipRole.OWNER) {
+        throw new ApiError(403, 'FORBIDDEN', 'Cannot modify owner role')
+      }
 
-    const updated = await prisma.organizationMembership.update({
-      where: { id: membership.id },
-      data: {
-        role: nextRole,
-        // When promoting to a seat role ensure invite is still pending or accepted.
-        // We do not automatically accept invites here.
-      },
-      select: {
-        id: true,
-        role: true,
-      },
+      const nextRole = parsed.data.role
+
+      if (nextRole === OrganizationMembershipRole.VIEWER_VERIFIER && !featureFlags.verifierRoleEnabled) {
+        throw new ApiError(422, 'VALIDATION_ERROR', 'Verifier role is currently disabled')
+      }
+
+      if (membership.role === nextRole) {
+        return { id: membership.id, role: nextRole }
+      }
+
+      const nextSeatResource = seatResourceForRole(nextRole)
+      const currentSeatResource = seatResourceForRole(membership.role)
+
+      if (nextSeatResource) {
+        const needed = currentSeatResource === nextSeatResource ? 0 : 1
+        await assertWithinLimit(organizationId, nextSeatResource, { needed }, tx)
+      }
+
+      return tx.organizationMembership.update({
+        where: { id: membership.id },
+        data: {
+          role: nextRole,
+          // When promoting to a seat role ensure invite is still pending or accepted.
+          // We do not automatically accept invites here.
+        },
+        select: {
+          id: true,
+          role: true,
+        },
+      })
     })
 
     await scheduleUsageRecompute(organizationId, { reason: 'membership_role_change' })

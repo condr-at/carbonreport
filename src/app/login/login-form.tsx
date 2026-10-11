@@ -10,11 +10,12 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
 import { PublicPageFrame } from '@/components/layouts/public-page-frame'
+import { safeAuthRedirect } from '@/lib/auth-redirect'
 
 export function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirect') ?? '/dashboard'
+  const redirectTo = safeAuthRedirect(searchParams.get('redirect'))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -81,6 +82,7 @@ export function LoginForm() {
           <CardDescription>Access your Carbon Report workspace</CardDescription>
         </CardHeader>
         <CardContent>
+          {searchParams.get('reason') === 'session_expired' && <p className="mb-5 text-sm text-muted-foreground" role="status">Your session has expired. Sign in again to continue.</p>}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email">Email address</Label>

@@ -1,0 +1,158 @@
+{
+  "scope": "Disposable local DB; locally signed test JWTs; outbound mail disabled",
+  "checks": [
+    {
+      "scenario": "malformed password-reset token",
+      "status": 400,
+      "code": "INVALID_TOKEN"
+    },
+    {
+      "scenario": "expired password-reset token",
+      "status": 400,
+      "code": "INVALID_TOKEN"
+    },
+    {
+      "scenario": "reset then sign in",
+      "resetStatus": 200,
+      "oldAccess": 401,
+      "revokedSsrPath": "/login",
+      "revokedSsrStatuses": [
+        200,
+        200
+      ],
+      "oldRefresh": 401,
+      "consumedToken": 400,
+      "oldPassword": 401,
+      "newPassword": 200
+    },
+    {
+      "scenario": "concurrent reset consumes once",
+      "statuses": [
+        200,
+        400
+      ]
+    },
+    {
+      "scenario": "expired access page recovery and mutation retry",
+      "mutationResponses": [
+        {
+          "pathname": "/api/user/settings",
+          "method": "PATCH",
+          "status": 401
+        },
+        {
+          "pathname": "/api/auth/refresh",
+          "method": "POST",
+          "status": 200
+        },
+        {
+          "pathname": "/api/user/settings",
+          "method": "PATCH",
+          "status": 200
+        }
+      ]
+    },
+    {
+      "scenario": "expired refresh stops at sign in",
+      "refreshStatus": 401,
+      "cookiesCleared": true,
+      "returnPath": "/profile"
+    },
+    {
+      "scenario": "members and report role OWNER",
+      "listStatus": 200,
+      "managementVisible": true,
+      "supplierReadStatus": 200,
+      "supplierPatchStatus": 200,
+      "beforeVersion": 0,
+      "afterVersion": 1
+    },
+    {
+      "scenario": "members and report role ADMIN",
+      "listStatus": 200,
+      "managementVisible": true,
+      "supplierReadStatus": 200,
+      "supplierPatchStatus": 200,
+      "beforeVersion": 1,
+      "afterVersion": 2
+    },
+    {
+      "scenario": "members and report role EDITOR",
+      "listStatus": 200,
+      "managementVisible": false,
+      "supplierReadStatus": 200,
+      "supplierPatchStatus": 200,
+      "beforeVersion": 2,
+      "afterVersion": 3,
+      "inviteStatus": 403,
+      "patchStatus": 403,
+      "removeStatus": 403
+    },
+    {
+      "scenario": "members and report role VIEWER_READONLY",
+      "listStatus": 200,
+      "managementVisible": false,
+      "supplierReadStatus": 200,
+      "supplierPatchStatus": 403,
+      "beforeVersion": 3,
+      "afterVersion": 3,
+      "inviteStatus": 403,
+      "patchStatus": 403,
+      "removeStatus": 403
+    },
+    {
+      "scenario": "members and report role VIEWER_VERIFIER",
+      "listStatus": 200,
+      "managementVisible": false,
+      "supplierReadStatus": 200,
+      "supplierPatchStatus": 403,
+      "beforeVersion": 3,
+      "afterVersion": 3,
+      "inviteStatus": 403,
+      "patchStatus": 403,
+      "removeStatus": 403
+    },
+    {
+      "scenario": "in-app invitations (creation, acceptance and decline UI)",
+      "created": 201,
+      "pendingRead": 403,
+      "outsiderAccept": 403,
+      "outsiderDecline": 403,
+      "wrongOrganization": 404,
+      "accepted": 200,
+      "replay": 409,
+      "unverifiedAccept": 403,
+      "unverifiedCode": "EMAIL_NOT_VERIFIED",
+      "declined": 200,
+      "declinedRead": 403
+    },
+    {
+      "scenario": "accept versus accept",
+      "statuses": [
+        409,
+        200
+      ],
+      "editorLimit": 2,
+      "acceptedEditors": 2
+    },
+    {
+      "scenario": "accept versus role promotion",
+      "statuses": [
+        200,
+        409
+      ],
+      "editorLimit": 2,
+      "acceptedEditors": 2
+    },
+    {
+      "scenario": "duplicate concurrent accept",
+      "statuses": [
+        200,
+        409
+      ],
+      "editorLimit": 2,
+      "acceptedEditors": 2
+    }
+  ],
+  "browserErrors": []
+}

@@ -1,0 +1,23 @@
+Isolated local browser run after 220/220 unit tests and successful production build.
+One failing child plus parent accounted for 11/13 checks passed.
+    # Subtest: expired access recovers the protected page and retries a client mutation once; expired refresh returns to login
+    not ok 4 - expired access recovers the protected page and retries a client mutation once; expired refresh returns to login
+      ---
+      duration_ms: 21109.192833
+      type: 'test'
+      location: '/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-pqn0Zk/scripts/e2e/auth-session.test.mjs:188:13'
+      failureType: 'testCodeFailure'
+      error: 'Waiting for selector `#profile-email` failed'
+      code: 'ERR_TEST_FAILURE'
+      stack: |-
+        Function.waitFor (/private/tmp/carbonreport-deploy-check-a019946/node_modules/puppeteer-core/src/common/QueryHandler.ts:213:36)
+        async CdpFrame.waitForSelector (/private/tmp/carbonreport-deploy-check-a019946/node_modules/puppeteer-core/src/api/Frame.ts:743:13)
+        async CdpPage.waitForSelector (/private/tmp/carbonreport-deploy-check-a019946/node_modules/puppeteer-core/src/api/Page.ts:3052:12)
+        async TestContext.<anonymous> (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-pqn0Zk/scripts/e2e/auth-session.test.mjs:200:7)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-pqn0Zk/scripts/e2e/auth-session.test.mjs:188:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+
+Full disposable run log retained locally in .artifacts/auth-access-20261011 (overwritten on verified retry).

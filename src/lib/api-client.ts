@@ -1,3 +1,5 @@
+import { fetchWithSession } from './session-client';
+
 export class ApiError extends Error {
   status: number;
   code?: string;
@@ -17,7 +19,7 @@ interface RequestOptions extends RequestInit {
 }
 
 export async function request<T>(input: RequestInfo, init?: RequestOptions): Promise<T> {
-  const response = await fetch(input, {
+  const response = await fetchWithSession(input, {
     cache: 'no-store',
     ...init,
     headers: {

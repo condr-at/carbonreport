@@ -37,6 +37,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useUserSettings } from '@/lib/data-client/user-settings'
 import { notifications } from '@/components/ui/notifications'
 import { usePendingAssetPreview } from '@/lib/uploads/pending-previews'
+import { logoutSession } from '@/lib/session-client'
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
@@ -132,13 +133,7 @@ export function MainSidebar() {
 
     setIsLoggingOut(true)
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      })
+      const response = await logoutSession()
 
       if (!response.ok) {
         throw new Error('Failed to logout')
@@ -152,15 +147,14 @@ export function MainSidebar() {
         }
       }
 
-      router.replace('/login')
-      router.refresh()
+      window.location.assign('/login')
     } catch (error) {
       console.error('Logout failed', error)
       notifications.error('Failed to logout. Please try again.')
     } finally {
       setIsLoggingOut(false)
     }
-  }, [isLoggingOut, router])
+  }, [isLoggingOut])
 
   const showLockedNav = !isLoading && !isBootstrapping && !activeOrganization
 
@@ -382,6 +376,7 @@ function OrganizationSwitcher({
   planValidUntil,
   isSwitching,
 }: OrganizationSwitcherProps) {
+  const router = useRouter()
   const pendingActiveLogo = usePendingAssetPreview(activeOrganization ? `org-logo:${activeOrganization.id}` : null)
 
   if (isLoading) {
@@ -532,7 +527,7 @@ function OrganizationSwitcher({
               const logoUrl = invite.logo_url ?? null
 
               return (
-                <DropdownMenuItem key={invite.id} disabled className="gap-3 p-2">
+                <DropdownMenuItem key={invite.id} onSelect={() => router.push('/invitations')} className="gap-3 p-2">
                   <OrganizationAvatarImage
                     organizationId={invite.id}
                     displayName={invite.display_name}
@@ -545,7 +540,7 @@ function OrganizationSwitcher({
                     <span className="truncate text-sm font-medium text-muted-foreground">
                       {invite.display_name}
                     </span>
-                    <span className="truncate text-xs text-muted-foreground">Invite pending</span>
+                    <span className="truncate text-xs text-muted-foreground">Review invitation</span>
                   </div>
                 </DropdownMenuItem>
               )

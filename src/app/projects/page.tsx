@@ -1,5 +1,7 @@
 'use client';
 
+import { fetchWithSession } from '@/lib/session-client'
+
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
@@ -117,7 +119,7 @@ function ProjectsPageContent() {
       return;
     }
     try {
-      const res = await fetch(`/api/projects/${projectId}/duplicate`, {
+      const res = await fetchWithSession(`/api/projects/${projectId}/duplicate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reset_completion: false }),

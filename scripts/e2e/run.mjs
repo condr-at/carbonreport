@@ -58,7 +58,7 @@ try {
     await new Promise(resolve => setTimeout(resolve, 200))
   }
   if (!ready) throw new Error('E2E Next server did not become ready.')
-  await run(['--import', 'tsx', '--test', '--test-concurrency=1', 'scripts/e2e/supplier-package.test.mjs'])
+  await run(['--import', 'tsx', '--test', '--test-concurrency=1', 'scripts/e2e/supplier-package.test.mjs', 'scripts/e2e/auth-session.test.mjs'])
 } finally {
   if (server && server.exitCode === null) {
     const exited = new Promise(resolve => server.once('exit', resolve))

@@ -28,7 +28,21 @@ export async function restoreOrganization({
   organizationId: string
   userId: string
 }) {
-  await assertOrgMembership(userId, organizationId, OrganizationMembershipRole.OWNER)
+  // Ordinary membership checks intentionally hide deleted organizations. Restore
+  // is the exception: the retained, accepted owner membership authorizes it.
+  const ownership = await prisma.organizationMembership.findFirst({
+    where: {
+      organizationId,
+      userId,
+      role: OrganizationMembershipRole.OWNER,
+      inviteStatus: OrganizationMembershipInviteStatus.ACCEPTED,
+    },
+    select: { id: true },
+  })
+
+  if (!ownership) {
+    throw new ApiError(403, 'FORBIDDEN', 'Only the organization owner can restore it')
+  }
 
   const organization = await prisma.organization.findUnique({
     where: { id: organizationId },

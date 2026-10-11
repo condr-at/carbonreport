@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import prisma from '@/lib/db'
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
-import { verifyPasswordResetToken } from '@/lib/auth/jwt'
+import { InvalidAuthTokenError, verifyPasswordResetToken } from '@/lib/auth/jwt'
 import { hashPassword, meetsPasswordPolicy } from '@/lib/auth/password'
-import { validatePasswordResetContext } from '@/lib/auth/service'
+import { issueSessionTokens, validatePasswordResetContext } from '@/lib/auth/service'
+import { setAuthCookies } from '@/lib/auth/cookies'
 
 const ResetSchema = z.object({
   password: z.string().min(8),
@@ -46,15 +47,25 @@ export async function POST(
 
     const passwordHash = await hashPassword(parsed.data.password)
 
-    await prisma.user.update({
-      where: { id: user.id },
+    // Compare-and-swap consumes the password-bound token atomically. Two
+    // concurrent requests may validate the same snapshot, but only one writes.
+    const updated = await prisma.user.updateMany({
+      where: { id: user.id, passwordHash: user.passwordHash, deletedAt: null },
       data: {
         passwordHash,
       },
     })
 
-    return NextResponse.json({ message: 'Password has been reset' })
+    if (updated.count !== 1) {
+      throw new ApiError(400, 'INVALID_TOKEN', 'Reset token is no longer valid')
+    }
+
+    const tokens = await issueSessionTokens({ ...user, passwordHash })
+    return setAuthCookies(NextResponse.json({ message: 'Password has been reset' }), tokens)
   } catch (error) {
+    if (error instanceof InvalidAuthTokenError) {
+      return errorResponse(new ApiError(400, 'INVALID_TOKEN', 'Reset token is invalid or expired'))
+    }
     return errorResponse(ensureApiError(error, 'Failed to reset password'))
   }
 }

@@ -2,11 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { request, ApiError } from '@/lib/api-client'
+import { fetchWithSession } from '@/lib/session-client'
 import { organizationKeys } from './keys'
 import { notifications } from '@/components/ui/notifications'
 
 export type OrganizationSummary = {
   id: string
+  membership_id?: string
   display_name: string
   plan_label: string
   plan_valid_until: string | null
@@ -29,6 +31,7 @@ export type OrganizationListResponse = {
 export type CurrentOrganizationResponse = {
   organization: {
     id: string
+    role: string
     slug: string
     display_name: string
     description: string | null
@@ -247,10 +250,10 @@ export function useInviteOrganizationMember(organizationId: string) {
       queryClient.invalidateQueries({ queryKey: organizationKeys.members(organizationId) })
       queryClient.invalidateQueries({ queryKey: organizationKeys.list() })
       queryClient.invalidateQueries({ queryKey: ['organizations', 'current'], exact: false })
-      notifications.success('Invite sent.')
+      notifications.success('Invite created. Ask your teammate to sign in to accept.')
     },
     onError: (error) => {
-      const message = error instanceof ApiError ? error.message : 'Failed to send invite.'
+      const message = error instanceof ApiError ? error.message : 'Failed to create invite.'
       notifications.error(message)
     },
   })
@@ -273,6 +276,9 @@ export function useUpdateMembershipRole(organizationId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: organizationKeys.members(organizationId) })
       queryClient.invalidateQueries({ queryKey: ['organizations', 'current'], exact: false })
+      queryClient.invalidateQueries({ queryKey: organizationKeys.list() })
+      queryClient.invalidateQueries({ queryKey: organizationKeys.list(true) })
+      queryClient.invalidateQueries({ queryKey: organizationKeys.usage(organizationId) })
       notifications.success('Role updated.')
     },
     onError: (error) => {
@@ -299,11 +305,33 @@ export function useRemoveMembership(organizationId: string) {
       queryClient.invalidateQueries({ queryKey: organizationKeys.members(organizationId) })
       queryClient.invalidateQueries({ queryKey: ['organizations', 'current'], exact: false })
       queryClient.invalidateQueries({ queryKey: organizationKeys.list() })
+      queryClient.invalidateQueries({ queryKey: organizationKeys.list(true) })
+      queryClient.invalidateQueries({ queryKey: organizationKeys.usage(organizationId) })
       notifications.success('Member removed.')
     },
     onError: (error) => {
       const message = error instanceof ApiError ? error.message : 'Failed to remove member.'
       notifications.error(message)
+    },
+  })
+}
+
+export function useRespondToOrganizationInvite() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (payload: { organizationId: string; membershipId: string; response: 'accept' | 'decline' }) => {
+      return request<{ membership: { membership_id: string; invite_status: string } }>(
+        `/api/organizations/${payload.organizationId}/members/${payload.membershipId}/${payload.response}`,
+        { method: 'POST' },
+      )
+    },
+    onSuccess: async (_data, payload) => {
+      await queryClient.invalidateQueries({ queryKey: ['organizations'] })
+      notifications.success(payload.response === 'accept' ? 'Invitation accepted.' : 'Invitation declined.')
+    },
+    onError: (error) => {
+      notifications.error(error instanceof ApiError ? error.message : 'Could not respond to invitation.')
     },
   })
 }
@@ -331,7 +359,7 @@ export function usePlanUpgradeRequest(organizationId: string) {
   return useMutation({
     mutationKey: organizationKeys.planUpgrade(organizationId),
     mutationFn: async (payload: { target_plan_code: string; contact_email?: string; notes?: string }) => {
-      const response = await fetch(`/api/organizations/${organizationId}/plan/upgrade`, {
+      const response = await fetchWithSession(`/api/organizations/${organizationId}/plan/upgrade`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

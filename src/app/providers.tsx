@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = new Set([
   '/forgot-password',
   '/reset-password',
   '/verify-email',
+  '/session',
 ]);
 
 function isPublicRoute(pathname: string | null) {

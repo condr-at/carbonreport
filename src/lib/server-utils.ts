@@ -6,7 +6,10 @@ import {
   OrganizationMembershipRole,
   OrganizationStatus,
   ProjectStatus,
+  type Prisma,
 } from '@prisma/client'
+
+type QueryExecutor = Prisma.TransactionClient
 
 type LimitResource = 'project' | 'editor' | 'verifier'
 
@@ -89,9 +92,9 @@ export async function getDefaultOrganizationMembership(userId: string) {
   }
 }
 
-export async function getPlan(organizationId: string): Promise<OrganizationPlanSummary> {
+export async function getPlan(organizationId: string, executor: QueryExecutor = prisma): Promise<OrganizationPlanSummary> {
   try {
-    const organization = await prisma.organization.findUnique({
+    const organization = await executor.organization.findUnique({
       where: { id: organizationId },
       select: {
         id: true,
@@ -136,9 +139,10 @@ export async function assertOrgMembership(
   userId: string,
   organizationId: string,
   minRole: OrganizationMembershipRole = OrganizationMembershipRole.VIEWER_READONLY,
+  executor: QueryExecutor = prisma,
 ) {
   try {
-    const membership = await prisma.organizationMembership.findFirst({
+    const membership = await executor.organizationMembership.findFirst({
       where: {
         organizationId,
         userId,
@@ -176,6 +180,7 @@ export async function assertWithinLimit(
   organizationId: string,
   resource: LimitResource,
   options: AssertWithinLimitOptions = {},
+  executor: QueryExecutor = prisma,
 ) {
   const needed = options.needed ?? 1
 
@@ -184,7 +189,7 @@ export async function assertWithinLimit(
   }
 
   try {
-    const plan = await getPlan(organizationId)
+    const plan = await getPlan(organizationId, executor)
     const planKey = RESOURCE_TO_PLAN_KEY[resource]
     const limit = plan[planKey as keyof OrganizationPlanSummary] as number
 
@@ -192,7 +197,7 @@ export async function assertWithinLimit(
       return
     }
 
-    const current = await getResourceUsageCount(organizationId, resource)
+    const current = await getResourceUsageCount(organizationId, resource, executor)
 
     if (current + needed > limit) {
       if (resource === 'project') {
@@ -215,17 +220,17 @@ export async function assertWithinLimit(
   }
 }
 
-async function getResourceUsageCount(organizationId: string, resource: LimitResource) {
+async function getResourceUsageCount(organizationId: string, resource: LimitResource, executor: QueryExecutor = prisma) {
   switch (resource) {
     case 'project':
-      return prisma.project.count({
+      return executor.project.count({
         where: {
           organizationId,
           status: ProjectStatus.ACTIVE,
         },
       })
     case 'editor':
-      return prisma.organizationMembership.count({
+      return executor.organizationMembership.count({
         where: {
           organizationId,
           role: OrganizationMembershipRole.EDITOR,
@@ -233,7 +238,7 @@ async function getResourceUsageCount(organizationId: string, resource: LimitReso
         },
       })
     case 'verifier':
-      return prisma.organizationMembership.count({
+      return executor.organizationMembership.count({
         where: {
           organizationId,
           role: OrganizationMembershipRole.VIEWER_VERIFIER,

@@ -1,0 +1,1649 @@
+Resetting disposable carbonreport_e2e_test; isolated app http://localhost:3108; artifacts /Users/user/Documents/github/carbonreport/.artifacts/auth-access-20261011
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "carbonreport_e2e_test", schema "public" at "localhost:5432"
+
+The PostgreSQL database "carbonreport_e2e_test" schema "public" at "localhost:5432" was successfully reset.
+
+🚀  Your database is now in sync with your Prisma schema. Done in 76ms
+
+Prepared field catalogue in carbonreport_e2e_test; no demo users or project fixtures seeded.
+TAP version 13
+# Email request was not accepted for sending
+# Email request could not be completed
+# Email sending is unavailable: missing configuration
+# Subtest: returns generic success when user exists
+ok 1 - returns generic success when user exists
+  ---
+  duration_ms: 293.922875
+  type: 'test'
+  ...
+# Subtest: returns same generic success when user does not exist
+ok 2 - returns same generic success when user does not exist
+  ---
+  duration_ms: 0.756792
+  type: 'test'
+  ...
+# Subtest: returns generic success for invalid payloads
+ok 3 - returns generic success for invalid payloads
+  ---
+  duration_ms: 1.404916
+  type: 'test'
+  ...
+# Subtest: preserves the same anti-enumeration response on provider_error
+ok 4 - preserves the same anti-enumeration response on provider_error
+  ---
+  duration_ms: 2.328333
+  type: 'test'
+  ...
+# Subtest: preserves the same anti-enumeration response on transport_error
+ok 5 - preserves the same anti-enumeration response on transport_error
+  ---
+  duration_ms: 1.086167
+  type: 'test'
+  ...
+# Subtest: preserves the same anti-enumeration response on not_configured
+ok 6 - preserves the same anti-enumeration response on not_configured
+  ---
+  duration_ms: 1.07075
+  type: 'test'
+  ...
+# Subtest: returns auth cookies for valid credentials
+ok 7 - returns auth cookies for valid credentials
+  ---
+  duration_ms: 569.670458
+  type: 'test'
+  ...
+# Subtest: rejects invalid credentials
+ok 8 - rejects invalid credentials
+  ---
+  duration_ms: 552.862042
+  type: 'test'
+  ...
+# Subtest: rejects missing users
+ok 9 - rejects missing users
+  ---
+  duration_ms: 1.244708
+  type: 'test'
+  ...
+# Subtest: clears auth cookies on logout
+ok 10 - clears auth cookies on logout
+  ---
+  duration_ms: 3.358959
+  type: 'test'
+  ...
+# Subtest: refresh uses current database user and renews both signed cookies
+ok 11 - refresh uses current database user and renews both signed cookies
+  ---
+  duration_ms: 11.884916
+  type: 'test'
+  ...
+# Subtest: refresh rejects missing token with 401 and expires both cookies
+ok 12 - refresh rejects missing token with 401 and expires both cookies
+  ---
+  duration_ms: 0.907959
+  type: 'test'
+  ...
+# Subtest: refresh rejects malformed token with 401 and expires both cookies
+ok 13 - refresh rejects malformed token with 401 and expires both cookies
+  ---
+  duration_ms: 0.874958
+  type: 'test'
+  ...
+# Subtest: refresh rejects expired token with 401 and expires both cookies
+ok 14 - refresh rejects expired token with 401 and expires both cookies
+  ---
+  duration_ms: 0.949417
+  type: 'test'
+  ...
+# Subtest: refresh rejects wrong-purpose token with 401 and expires both cookies
+ok 15 - refresh rejects wrong-purpose token with 401 and expires both cookies
+  ---
+  duration_ms: 0.957875
+  type: 'test'
+  ...
+# Subtest: refresh rejects legacy token with 401 and expires both cookies
+ok 16 - refresh rejects legacy token with 401 and expires both cookies
+  ---
+  duration_ms: 0.712334
+  type: 'test'
+  ...
+# Subtest: refresh rejects missing-user against current database state
+ok 17 - refresh rejects missing-user against current database state
+  ---
+  duration_ms: 0.852667
+  type: 'test'
+  ...
+# Subtest: refresh rejects deleted-user against current database state
+ok 18 - refresh rejects deleted-user against current database state
+  ---
+  duration_ms: 0.545208
+  type: 'test'
+  ...
+# Subtest: refresh rejects password-changed against current database state
+ok 19 - refresh rejects password-changed against current database state
+  ---
+  duration_ms: 1.024917
+  type: 'test'
+  ...
+# Subtest: database failure stays 500 without deleting a potentially valid session
+ok 20 - database failure stays 500 without deleting a potentially valid session
+  ---
+  duration_ms: 0.632334
+  type: 'test'
+  ...
+# Subtest: creates user, sends verification flow, and returns auth cookies
+ok 21 - creates user, sends verification flow, and returns auth cookies
+  ---
+  duration_ms: 295.659959
+  type: 'test'
+  ...
+# Email request was not accepted for sending
+# Subtest: keeps the created account and session without claiming sent on provider_error
+ok 22 - keeps the created account and session without claiming sent on provider_error
+  ---
+  duration_ms: 279.305667
+  type: 'test'
+  ...
+# Email request could not be completed
+# Subtest: keeps the created account and session without claiming sent on transport_error
+ok 23 - keeps the created account and session without claiming sent on transport_error
+  ---
+  duration_ms: 278.93
+  type: 'test'
+  ...
+# Email sending is unavailable: missing configuration
+# Subtest: keeps the created account and session without claiming sent on not_configured
+ok 24 - keeps the created account and session without claiming sent on not_configured
+  ---
+  duration_ms: 279.74875
+  type: 'test'
+  ...
+# Email request was not accepted for sending
+# Subtest: keeps the created account and session without claiming sent on missing_acceptance
+ok 25 - keeps the created account and session without claiming sent on missing_acceptance
+  ---
+  duration_ms: 276.872833
+  type: 'test'
+  ...
+# Subtest: rejects duplicate email addresses
+ok 26 - rejects duplicate email addresses
+  ---
+  duration_ms: 0.701208
+  type: 'test'
+  ...
+# Subtest: rejects passwords that fail policy
+ok 27 - rejects passwords that fail policy
+  ---
+  duration_ms: 0.374666
+  type: 'test'
+  ...
+# Email request was not accepted for sending
+# Email request could not be completed
+# Email sending is unavailable: missing configuration
+# Subtest: returns already_verified when user is already verified
+ok 28 - returns already_verified when user is already verified
+  ---
+  duration_ms: 6.596625
+  type: 'test'
+  ...
+# Subtest: returns sent when user is unverified
+ok 29 - returns sent when user is unverified
+  ---
+  duration_ms: 1.597542
+  type: 'test'
+  ...
+# Subtest: does not report sent when resend encounters provider_error
+ok 30 - does not report sent when resend encounters provider_error
+  ---
+  duration_ms: 1.080292
+  type: 'test'
+  ...
+# Subtest: does not report sent when resend encounters transport_error
+ok 31 - does not report sent when resend encounters transport_error
+  ---
+  duration_ms: 0.667708
+  type: 'test'
+  ...
+# Subtest: does not report sent when resend encounters not_configured
+ok 32 - does not report sent when resend encounters not_configured
+  ---
+  duration_ms: 0.620958
+  type: 'test'
+  ...
+# Subtest: reset rejects malformed token as INVALID_TOKEN without database writes
+ok 33 - reset rejects malformed token as INVALID_TOKEN without database writes
+  ---
+  duration_ms: 8.24925
+  type: 'test'
+  ...
+# Subtest: reset rejects expired token as INVALID_TOKEN without database writes
+ok 34 - reset rejects expired token as INVALID_TOKEN without database writes
+  ---
+  duration_ms: 1.80025
+  type: 'test'
+  ...
+# Subtest: reset rejects wrong-purpose token as INVALID_TOKEN without database writes
+ok 35 - reset rejects wrong-purpose token as INVALID_TOKEN without database writes
+  ---
+  duration_ms: 1.310875
+  type: 'test'
+  ...
+# Subtest: reset rejects missing-context token as INVALID_TOKEN without database writes
+ok 36 - reset rejects missing-context token as INVALID_TOKEN without database writes
+  ---
+  duration_ms: 0.8675
+  type: 'test'
+  ...
+# Subtest: reset rejects missing-subject token as INVALID_TOKEN without database writes
+ok 37 - reset rejects missing-subject token as INVALID_TOKEN without database writes
+  ---
+  duration_ms: 1.676167
+  type: 'test'
+  ...
+# Subtest: reset rejects deleted-user without mutation
+ok 38 - reset rejects deleted-user without mutation
+  ---
+  duration_ms: 0.6795
+  type: 'test'
+  ...
+# Subtest: reset rejects missing-user without mutation
+ok 39 - reset rejects missing-user without mutation
+  ---
+  duration_ms: 0.481542
+  type: 'test'
+  ...
+# Subtest: reset rejects reused-token without mutation
+ok 40 - reset rejects reused-token without mutation
+  ---
+  duration_ms: 0.530958
+  type: 'test'
+  ...
+# Subtest: reset enforces password policy before mutation
+ok 41 - reset enforces password policy before mutation
+  ---
+  duration_ms: 1.782625
+  type: 'test'
+  ...
+# Subtest: reset is single-use, rejects old password/session, and starts a new authenticated session
+ok 42 - reset is single-use, rejects old password/session, and starts a new authenticated session
+  ---
+  duration_ms: 1139.13375
+  type: 'test'
+  ...
+# Subtest: concurrent reset requests consume the same token exactly once
+ok 43 - concurrent reset requests consume the same token exactly once
+  ---
+  duration_ms: 554.8955
+  type: 'test'
+  ...
+# [VerifyEmail] Verification failed
+# [VerifyEmail] Verification failed
+# Subtest: verifies user and returns JSON success when token is valid
+ok 44 - verifies user and returns JSON success when token is valid
+  ---
+  duration_ms: 294.606041
+  type: 'test'
+  ...
+# Subtest: returns JSON error when token is invalid
+ok 45 - returns JSON error when token is invalid
+  ---
+  duration_ms: 1.003417
+  type: 'test'
+  ...
+# [VerifyEmail] Context validated
+# [VerifyEmail] User verified
+# Subtest: redirects to verify-email page when HTML flow is used
+ok 46 - redirects to verify-email page when HTML flow is used
+  ---
+  duration_ms: 276.802709
+  type: 'test'
+  ...
+# Subtest: chosen deadline reaches persistence and is returned by creation, list and page hydration
+ok 47 - chosen deadline reaches persistence and is returned by creation, list and page hydration
+  ---
+  duration_ms: 12.511208
+  type: 'test'
+  ...
+# Subtest: reads immediately reflect request mutations even when a stale response survives in a local cache
+ok 48 - reads immediately reflect request mutations even when a stale response survives in a local cache
+  ---
+  duration_ms: 14.794
+  type: 'test'
+  ...
+# Subtest: a scalar dataset edit preserves product context, repeatable data and unrelated fields
+ok 49 - a scalar dataset edit preserves product context, repeatable data and unrelated fields
+  ---
+  duration_ms: 10.320042
+  type: 'test'
+  ...
+# Subtest: report GET rejects an unauthenticated caller before database reads
+ok 50 - report GET rejects an unauthenticated caller before database reads
+  ---
+  duration_ms: 9.668459
+  type: 'test'
+  ...
+# Subtest: report GET rejects an authenticated outsider with known project and report IDs
+ok 51 - report GET rejects an authenticated outsider with known project and report IDs
+  ---
+  duration_ms: 1.283334
+  type: 'test'
+  ...
+# Subtest: report GET rejects a pending organization membership
+ok 52 - report GET rejects a pending organization membership
+  ---
+  duration_ms: 0.564709
+  type: 'test'
+  ...
+# Subtest: report GET rejects a deleted organization even for its owner
+ok 53 - report GET rejects a deleted organization even for its owner
+  ---
+  duration_ms: 0.365625
+  type: 'test'
+  ...
+# Subtest: report GET rejects a deleted project during retention
+ok 54 - report GET rejects a deleted project during retention
+  ---
+  duration_ms: 0.87125
+  type: 'test'
+  ...
+# Subtest: report GET rejects a deleted project after retention expires
+ok 55 - report GET rejects a deleted project after retention expires
+  ---
+  duration_ms: 1.331333
+  type: 'test'
+  ...
+# Subtest: report GET preserves report JSON for an accepted VIEWER_READONLY
+ok 56 - report GET preserves report JSON for an accepted VIEWER_READONLY
+  ---
+  duration_ms: 0.985292
+  type: 'test'
+  ...
+# Subtest: report GET preserves report JSON for an accepted OWNER
+ok 57 - report GET preserves report JSON for an accepted OWNER
+  ---
+  duration_ms: 0.578375
+  type: 'test'
+  ...
+# Subtest: report GET does not return another project report through an authorized project URL
+ok 58 - report GET does not return another project report through an authorized project URL
+  ---
+  duration_ms: 1.432542
+  type: 'test'
+  ...
+# Subtest: unauthenticated GET and PATCH stop before database access
+ok 59 - unauthenticated GET and PATCH stop before database access
+  ---
+  duration_ms: 9.27225
+  type: 'test'
+  ...
+# Subtest: rejects an outsider before reading report or dataset
+ok 60 - rejects an outsider before reading report or dataset
+  ---
+  duration_ms: 1.63675
+  type: 'test'
+  ...
+# Subtest: rejects a pending membership before reading report or dataset
+ok 61 - rejects a pending membership before reading report or dataset
+  ---
+  duration_ms: 1.148959
+  type: 'test'
+  ...
+# Subtest: accepted VIEWER_READONLY can read, with accurate edit capability
+ok 62 - accepted VIEWER_READONLY can read, with accurate edit capability
+  ---
+  duration_ms: 2.090541
+  type: 'test'
+  ...
+# Subtest: accepted VIEWER_VERIFIER can read, with accurate edit capability
+ok 63 - accepted VIEWER_VERIFIER can read, with accurate edit capability
+  ---
+  duration_ms: 0.641125
+  type: 'test'
+  ...
+# Subtest: accepted EDITOR can read, with accurate edit capability
+ok 64 - accepted EDITOR can read, with accurate edit capability
+  ---
+  duration_ms: 1.564875
+  type: 'test'
+  ...
+# Subtest: accepted ADMIN can read, with accurate edit capability
+ok 65 - accepted ADMIN can read, with accurate edit capability
+  ---
+  duration_ms: 0.629209
+  type: 'test'
+  ...
+# Subtest: accepted OWNER can read, with accurate edit capability
+ok 66 - accepted OWNER can read, with accurate edit capability
+  ---
+  duration_ms: 0.4835
+  type: 'test'
+  ...
+# Subtest: VIEWER_READONLY cannot write even with a known project, report and version
+ok 67 - VIEWER_READONLY cannot write even with a known project, report and version
+  ---
+  duration_ms: 0.491125
+  type: 'test'
+  ...
+# Subtest: VIEWER_VERIFIER cannot write even with a known project, report and version
+ok 68 - VIEWER_VERIFIER cannot write even with a known project, report and version
+  ---
+  duration_ms: 0.424042
+  type: 'test'
+  ...
+# Subtest: reported projects are readable without edit capability and reject writes
+ok 69 - reported projects are readable without edit capability and reject writes
+  ---
+  duration_ms: 0.702625
+  type: 'test'
+  ...
+# Subtest: deleted organizations and projects do not expose package data
+    # Subtest: deleted organization
+    ok 1 - deleted organization
+      ---
+      duration_ms: 0.438583
+      type: 'test'
+      ...
+    # Subtest: deleted project
+    ok 2 - deleted project
+      ---
+      duration_ms: 0.334334
+      type: 'test'
+      ...
+    1..2
+ok 70 - deleted organizations and projects do not expose package data
+  ---
+  duration_ms: 0.911041
+  type: 'test'
+  ...
+# Subtest: rejects a report belonging to another project
+ok 71 - rejects a report belonging to another project
+  ---
+  duration_ms: 0.44175
+  type: 'test'
+  ...
+# Subtest: rejects an unsupported template
+ok 72 - rejects an unsupported template
+  ---
+  duration_ms: 0.379375
+  type: 'test'
+  ...
+# Subtest: version mismatch wins over readiness validation for JSON, ZIP and draft saves
+ok 73 - version mismatch wins over readiness validation for JSON, ZIP and draft saves
+  ---
+  duration_ms: 4.036084
+  type: 'test'
+  ...
+# Subtest: download requires an explicit valid version; query options are unambiguous
+ok 74 - download requires an explicit valid version; query options are unambiguous
+  ---
+  duration_ms: 0.928791
+  type: 'test'
+  ...
+# Subtest: draft input rejects unknown fields, unsafe keys, nonstrings and excess sizes without mutation
+ok 75 - draft input rejects unknown fields, unsafe keys, nonstrings and excess sizes without mutation
+  ---
+  duration_ms: 2.522417
+  type: 'test'
+  ...
+# Subtest: EDITOR can atomically save an incomplete draft, preserving other fields and root dataset properties
+ok 76 - EDITOR can atomically save an incomplete draft, preserving other fields and root dataset properties
+  ---
+  duration_ms: 1.273041
+  type: 'test'
+  ...
+# Subtest: concurrent update P2025 returns a conflict without overwriting the stored dataset
+ok 77 - concurrent update P2025 returns a conflict without overwriting the stored dataset
+  ---
+  duration_ms: 0.54875
+  type: 'test'
+  ...
+# Subtest: ambiguous duplicate package values are rejected instead of destructively normalized
+ok 78 - ambiguous duplicate package values are rejected instead of destructively normalized
+  ---
+  duration_ms: 0.32075
+  type: 'test'
+  ...
+# Subtest: incomplete saved package cannot be downloaded and returns actionable issues
+ok 79 - incomplete saved package cannot be downloaded and returns actionable issues
+  ---
+  duration_ms: 0.368958
+  type: 'test'
+  ...
+# Subtest: ready saved package downloads a version-bound ZIP for a read-only accepted member
+ok 80 - ready saved package downloads a version-bound ZIP for a read-only accepted member
+  ---
+  duration_ms: 20.022584
+  type: 'test'
+  ...
+# Subtest: uploads are stored via S3 client when relay is invoked
+ok 81 - uploads are stored via S3 client when relay is invoked
+  ---
+  duration_ms: 7.545792
+  type: 'test'
+  ...
+# Subtest: rejects uploads pointing to unexpected targets
+ok 82 - rejects uploads pointing to unexpected targets
+  ---
+  duration_ms: 1.170875
+  type: 'test'
+  ...
+# Subtest: returns 413 when file size exceeds limit
+ok 83 - returns 413 when file size exceeds limit
+  ---
+  duration_ms: 7.652084
+  type: 'test'
+  ...
+# Subtest: returns 415 when MIME type is unsupported
+ok 84 - returns 415 when MIME type is unsupported
+  ---
+  duration_ms: 0.865833
+  type: 'test'
+  ...
+# Subtest: returns presigned payload and records asset on success
+ok 85 - returns presigned payload and records asset on success
+  ---
+  duration_ms: 9.929125
+  type: 'test'
+  ...
+# Subtest: presigned URL uses custom endpoint when configured
+ok 86 - presigned URL uses custom endpoint when configured
+  ---
+  duration_ms: 3.49675
+  type: 'test'
+  ...
+# Subtest: falls back to local upload target when bucket config is missing
+ok 87 - falls back to local upload target when bucket config is missing
+  ---
+  duration_ms: 1.0465
+  type: 'test'
+  ...
+# Subtest: auth redirect preserves valid internal paths, queries and anchors
+ok 88 - auth redirect preserves valid internal paths, queries and anchors
+  ---
+  duration_ms: 0.5565
+  type: 'test'
+  ...
+# Subtest: auth redirect rejects external URLs, scripts, backslashes and malformed escapes
+ok 89 - auth redirect rejects external URLs, scripts, backslashes and malformed escapes
+  ---
+  duration_ms: 0.151167
+  type: 'test'
+  ...
+# Subtest: auth redirect rejects auth/API destinations including encoded and normalized loops
+ok 90 - auth redirect rejects auth/API destinations including encoded and normalized loops
+  ---
+  duration_ms: 0.084834
+  type: 'test'
+  ...
+# Subtest: server auth requires the signed cookie even when identity headers are forged
+ok 91 - server auth requires the signed cookie even when identity headers are forged
+  ---
+  duration_ms: 5.399334
+  type: 'test'
+  ...
+# Subtest: server auth accepts current signed session and rejects it after password change
+ok 92 - server auth accepts current signed session and rejects it after password change
+  ---
+  duration_ms: 2.817417
+  type: 'test'
+  ...
+# Subtest: server auth rejects missing, malformed and refresh tokens
+ok 93 - server auth rejects missing, malformed and refresh tokens
+  ---
+  duration_ms: 0.929083
+  type: 'test'
+  ...
+# Subtest: server auth rejects deleted users regardless of signed token validity
+ok 94 - server auth rejects deleted users regardless of signed token validity
+  ---
+  duration_ms: 1.38325
+  type: 'test'
+  ...
+# Subtest: access and refresh tokens round-trip with expected claims
+ok 95 - access and refresh tokens round-trip with expected claims
+  ---
+  duration_ms: 1.9815
+  type: 'test'
+  ...
+# Subtest: issued session tokens share a session id but differ by purpose
+ok 96 - issued session tokens share a session id but differ by purpose
+  ---
+  duration_ms: 0.565583
+  type: 'test'
+  ...
+# Subtest: writes a deterministic UTF-8 ZIP with five fixed entries and correct directory, sizes and CRCs
+ok 97 - writes a deterministic UTF-8 ZIP with five fixed entries and correct directory, sizes and CRCs
+  ---
+  duration_ms: 11.371
+  type: 'test'
+  ...
+# Subtest: exports separate reported components and indicative results with review status, units and provenance
+ok 98 - exports separate reported components and indicative results with review status, units and provenance
+  ---
+  duration_ms: 6.38175
+  type: 'test'
+  ...
+# Subtest: not-applicable indirect treatment omits stale conditional drafts instead of exporting contradictory assertions
+ok 99 - not-applicable indirect treatment omits stale conditional drafts instead of exporting contradictory assertions
+  ---
+  duration_ms: 3.361584
+  type: 'test'
+  ...
+# Subtest: escapes untrusted HTML and neutralizes formula CSV without changing raw JSON values
+ok 100 - escapes untrusted HTML and neutralizes formula CSV without changing raw JSON values
+  ---
+  duration_ms: 16.790542
+  type: 'test'
+  ...
+# Subtest: selects whitelisted values and evidence properties without leaking unrelated snapshot data
+ok 101 - selects whitelisted values and evidence properties without leaking unrelated snapshot data
+  ---
+  duration_ms: 1.960375
+  type: 'test'
+  ...
+# Subtest: nested JSON exports only permitted evidence properties and active default provenance without mutating drafts
+ok 102 - nested JSON exports only permitted evidence properties and active default provenance without mutating drafts
+  ---
+  duration_ms: 2.367292
+  type: 'test'
+  ...
+# Subtest: does not invent a zero lot result when optional mass is blank
+ok 103 - does not invent a zero lot result when optional mass is blank
+  ---
+  duration_ms: 2.004833
+  type: 'test'
+  ...
+# Subtest: refuses incomplete or unsupported profile snapshots and suppresses results without confirmed units
+ok 104 - refuses incomplete or unsupported profile snapshots and suppresses results without confirmed units
+  ---
+  duration_ms: 1.982333
+  type: 'test'
+  ...
+# Subtest: unverified partial actual values can be ready only for review, with separate indicative direct output
+ok 105 - unverified partial actual values can be ready only for review, with separate indicative direct output
+  ---
+  duration_ms: 2.534833
+  type: 'test'
+  ...
+# Subtest: reported indirect values are multiplied separately without any total or additional precursor amount
+ok 106 - reported indirect values are multiplied separately without any total or additional precursor amount
+  ---
+  duration_ms: 0.928625
+  type: 'test'
+  ...
+# Subtest: zero is a valid reported value and lot mass, while omitted lot mass leaves indicative emissions empty
+ok 107 - zero is a valid reported value and lot mass, while omitted lot mass leaves indicative emissions empty
+  ---
+  duration_ms: 0.241125
+  type: 'test'
+  ...
+# Subtest: blank and unknown required values block readiness instead of becoming zero
+ok 108 - blank and unknown required values block readiness instead of becoming zero
+  ---
+  duration_ms: 0.549667
+  type: 'test'
+  ...
+# Subtest: nonfinite, negative and silently coercible numbers are rejected
+ok 109 - nonfinite, negative and silently coercible numbers are rejected
+  ---
+  duration_ms: 0.627333
+  type: 'test'
+  ...
+# Subtest: unsupported units prevent every indicative calculation
+ok 110 - unsupported units prevent every indicative calculation
+  ---
+  duration_ms: 0.29575
+  type: 'test'
+  ...
+# Subtest: production year is definitive and cannot be fractional, transitional or future
+ok 111 - production year is definitive and cannot be fractional, transitional or future
+  ---
+  duration_ms: 0.459417
+  type: 'test'
+  ...
+# Subtest: coverage validates real dates, ordering, year and actual dates rather than accepting planned coverage
+ok 112 - coverage validates real dates, ordering, year and actual dates rather than accepting planned coverage
+  ---
+  duration_ms: 0.627
+  type: 'test'
+  ...
+# Subtest: CN syntax is checked without asserting scope or losing leading zeroes
+ok 113 - CN syntax is checked without asserting scope or losing leading zeroes
+  ---
+  duration_ms: 0.49375
+  type: 'test'
+  ...
+# Subtest: trader requires its own supplier identity without changing operator identity
+ok 114 - trader requires its own supplier identity without changing operator identity
+  ---
+  duration_ms: 0.461834
+  type: 'test'
+  ...
+# Subtest: indirect treatment must be determined, and each reported component has conditional fields
+ok 115 - indirect treatment must be determined, and each reported component has conditional fields
+  ---
+  duration_ms: 0.558708
+  type: 'test'
+  ...
+# Subtest: inactive conditional drafts are preserved but omitted from validation and calculation
+ok 116 - inactive conditional drafts are preserved but omitted from validation and calculation
+  ---
+  duration_ms: 0.158208
+  type: 'test'
+  ...
+# Subtest: default and mixed inputs require exact version, row, markup context and evidence
+ok 117 - default and mixed inputs require exact version, row, markup context and evidence
+  ---
+  duration_ms: 1.066083
+  type: 'test'
+  ...
+# Subtest: default provenance is required separately for active indirect input; no CN equality is presumed for precursors
+ok 118 - default provenance is required separately for active indirect input; no CN equality is presumed for precursors
+  ---
+  duration_ms: 0.168917
+  type: 'test'
+  ...
+# Subtest: evidence register rejects malformed, missing and duplicate references
+ok 119 - evidence register rejects malformed, missing and duplicate references
+  ---
+  duration_ms: 0.868584
+  type: 'test'
+  ...
+# Subtest: declared verification requires attribution and a valid source, and never becomes app verification
+ok 120 - declared verification requires attribution and a valid source, and never becomes app verification
+  ---
+  duration_ms: 0.240291
+  type: 'test'
+  ...
+# Subtest: merge preserves unrelated root properties, datapoints and scalar metadata without mutating input
+ok 121 - merge preserves unrelated root properties, datapoints and scalar metadata without mutating input
+  ---
+  duration_ms: 0.257125
+  type: 'test'
+  ...
+# Subtest: merge rejects unknown keys, nonstring draft values and malformed roots
+ok 122 - merge rejects unknown keys, nonstring draft values and malformed roots
+  ---
+  duration_ms: 0.297083
+  type: 'test'
+  ...
+# Subtest: duplicate scalar and repeated-item values are never silently selected or overwritten
+ok 123 - duplicate scalar and repeated-item values are never silently selected or overwritten
+  ---
+  duration_ms: 0.333584
+  type: 'test'
+  ...
+# Subtest: extraction returns only the documented fields and never guesses from legacy emissions fields
+ok 124 - extraction returns only the documented fields and never guesses from legacy emissions fields
+  ---
+  duration_ms: 0.0735
+  type: 'test'
+  ...
+# Subtest: bulk data requests keep only one pending record per field and surface the latest contact
+ok 125 - bulk data requests keep only one pending record per field and surface the latest contact
+  ---
+  duration_ms: 6.011291
+  type: 'test'
+  ...
+# Subtest: OWNER: accepted member can list; only admin/owner can manage memberships
+ok 126 - OWNER: accepted member can list; only admin/owner can manage memberships
+  ---
+  duration_ms: 12.491583
+  type: 'test'
+  ...
+# Subtest: ADMIN: accepted member can list; only admin/owner can manage memberships
+ok 127 - ADMIN: accepted member can list; only admin/owner can manage memberships
+  ---
+  duration_ms: 2.69775
+  type: 'test'
+  ...
+# Subtest: EDITOR: accepted member can list; only admin/owner can manage memberships
+ok 128 - EDITOR: accepted member can list; only admin/owner can manage memberships
+  ---
+  duration_ms: 1.914333
+  type: 'test'
+  ...
+# Subtest: VIEWER_VERIFIER: accepted member can list; only admin/owner can manage memberships
+ok 129 - VIEWER_VERIFIER: accepted member can list; only admin/owner can manage memberships
+  ---
+  duration_ms: 0.992041
+  type: 'test'
+  ...
+# Subtest: VIEWER_READONLY: accepted member can list; only admin/owner can manage memberships
+ok 130 - VIEWER_READONLY: accepted member can list; only admin/owner can manage memberships
+  ---
+  duration_ms: 0.759416
+  type: 'test'
+  ...
+# Subtest: PENDING: even an owner role has no organization access
+ok 131 - PENDING: even an owner role has no organization access
+  ---
+  duration_ms: 0.708917
+  type: 'test'
+  ...
+# Subtest: DECLINED: even an owner role has no organization access
+ok 132 - DECLINED: even an owner role has no organization access
+  ---
+  duration_ms: 0.720208
+  type: 'test'
+  ...
+# Subtest: REVOKED: even an owner role has no organization access
+ok 133 - REVOKED: even an owner role has no organization access
+  ---
+  duration_ms: 0.609542
+  type: 'test'
+  ...
+# Subtest: owner protection and tenant scope apply to admin membership writes
+ok 134 - owner protection and tenant scope apply to admin membership writes
+  ---
+  duration_ms: 2.021708
+  type: 'test'
+  ...
+# Subtest: accept: invitation is scoped to organization, invited user and pending status
+ok 135 - accept: invitation is scoped to organization, invited user and pending status
+  ---
+  duration_ms: 0.949166
+  type: 'test'
+  ...
+# Subtest: decline: invitation is scoped to organization, invited user and pending status
+ok 136 - decline: invitation is scoped to organization, invited user and pending status
+  ---
+  duration_ms: 0.604791
+  type: 'test'
+  ...
+# Subtest: a deleted organization blocks member reads and invite acceptance
+ok 137 - a deleted organization blocks member reads and invite acceptance
+  ---
+  duration_ms: 0.522333
+  type: 'test'
+  ...
+# Subtest: current organization returns actual actor role for read-only UI and checks requested tenant
+ok 138 - current organization returns actual actor role for read-only UI and checks requested tenant
+  ---
+  duration_ms: 2.295709
+  type: 'test'
+  ...
+# Subtest: pending invitation list exposes membership ID and excludes processed or deleted invites
+ok 139 - pending invitation list exposes membership ID and excludes processed or deleted invites
+  ---
+  duration_ms: 1.778083
+  type: 'test'
+  ...
+# Subtest: free plan editor limit applies to invitations, role changes and acceptance
+ok 140 - free plan editor limit applies to invitations, role changes and acceptance
+  ---
+  duration_ms: 1.240042
+  type: 'test'
+  ...
+# Subtest: unverified invitee cannot accept but can decline without changing existing access rules
+ok 141 - unverified invitee cannot accept but can decline without changing existing access rules
+  ---
+  duration_ms: 0.525459
+  type: 'test'
+  ...
+# Subtest: accept: concurrent processing cannot overwrite the invitation's final state
+ok 142 - accept: concurrent processing cannot overwrite the invitation's final state
+  ---
+  duration_ms: 0.46375
+  type: 'test'
+  ...
+# Subtest: decline: concurrent processing cannot overwrite the invitation's final state
+ok 143 - decline: concurrent processing cannot overwrite the invitation's final state
+  ---
+  duration_ms: 0.3915
+  type: 'test'
+  ...
+# Subtest: accepted owner can restore own deleted organization within retention
+ok 144 - accepted owner can restore own deleted organization within retention
+  ---
+  duration_ms: 0.3815
+  type: 'test'
+  ...
+# Subtest: ADMIN/ACCEPTED: cannot restore deleted organization
+ok 145 - ADMIN/ACCEPTED: cannot restore deleted organization
+  ---
+  duration_ms: 0.452959
+  type: 'test'
+  ...
+# Subtest: OWNER/PENDING: cannot restore deleted organization
+ok 146 - OWNER/PENDING: cannot restore deleted organization
+  ---
+  duration_ms: 0.256333
+  type: 'test'
+  ...
+# Subtest: OWNER/REVOKED: cannot restore deleted organization
+ok 147 - OWNER/REVOKED: cannot restore deleted organization
+  ---
+  duration_ms: 0.29125
+  type: 'test'
+  ...
+# Subtest: owner cannot restore another organization or an expired deletion
+ok 148 - owner cannot restore another organization or an expired deletion
+  ---
+  duration_ms: 0.387083
+  type: 'test'
+  ...
+# Subtest: prioritizes pending external data requests and names the contact owner
+ok 149 - prioritizes pending external data requests and names the contact owner
+  ---
+  duration_ms: 0.957709
+  type: 'test'
+  ...
+# Subtest: assigns open roadmap work to the project owner
+ok 150 - assigns open roadmap work to the project owner
+  ---
+  duration_ms: 0.110084
+  type: 'test'
+  ...
+# Subtest: surfaces an empty dataset as internal missing work
+ok 151 - surfaces an empty dataset as internal missing work
+  ---
+  duration_ms: 0.087625
+  type: 'test'
+  ...
+# Subtest: links report completion actions to project reports
+ok 152 - links report completion actions to project reports
+  ---
+  duration_ms: 0.063584
+  type: 'test'
+  ...
+# Subtest: does not invent missing work when project state is complete
+ok 153 - does not invent missing work when project state is complete
+  ---
+  duration_ms: 0.122333
+  type: 'test'
+  ...
+# Subtest: an empty supplier package project opens its guided report instead of the generic dataset
+ok 154 - an empty supplier package project opens its guided report instead of the generic dataset
+  ---
+  duration_ms: 0.069
+  type: 'test'
+  ...
+# Subtest: partially filled supplier package links both next action and report work to the guided form
+ok 155 - partially filled supplier package links both next action and report work to the guided form
+  ---
+  duration_ms: 0.191666
+  type: 'test'
+  ...
+# Subtest: 100% supplier field coverage remains a review action without claiming readiness or download
+ok 156 - 100% supplier field coverage remains a review action without claiming readiness or download
+  ---
+  duration_ms: 0.1735
+  type: 'test'
+  ...
+# Subtest: supplier package selection preserves external-request and roadmap priorities
+ok 157 - supplier package selection preserves external-request and roadmap priorities
+  ---
+  duration_ms: 0.314166
+  type: 'test'
+  ...
+# Subtest: only exact supplier profile changes the action; other selected report links retain their behavior
+ok 158 - only exact supplier profile changes the action; other selected report links retain their behavior
+  ---
+  duration_ms: 0.514792
+  type: 'test'
+  ...
+# Subtest: hasMeaningfulAnswer treats UNKNOWN as empty
+ok 159 - hasMeaningfulAnswer treats UNKNOWN as empty
+  ---
+  duration_ms: 0.729791
+  type: 'test'
+  ...
+# Subtest: computeGroupVisibility hides optional blocks until drivers present
+ok 160 - computeGroupVisibility hides optional blocks until drivers present
+  ---
+  duration_ms: 0.206083
+  type: 'test'
+  ...
+# Subtest: computeGroupVisibility enables regulator trade path for EU companies
+ok 161 - computeGroupVisibility enables regulator trade path for EU companies
+  ---
+  duration_ms: 0.068833
+  type: 'test'
+  ...
+# Subtest: trade answers keep the block visible even without an operations driver
+ok 162 - trade answers keep the block visible even without an operations driver
+  ---
+  duration_ms: 0.068292
+  type: 'test'
+  ...
+# Subtest: non-EU client suppliers can reach CBAM trade questions without implying legal applicability
+ok 163 - non-EU client suppliers can reach CBAM trade questions without implying legal applicability
+  ---
+  duration_ms: 1.641708
+  type: 'test'
+  ...
+# Subtest: manufacturing company can complete its profile without financial-sector assets
+ok 164 - manufacturing company can complete its profile without financial-sector assets
+  ---
+  duration_ms: 0.126
+  type: 'test'
+  ...
+# Subtest: product client request requires only its own follow-up questions
+ok 165 - product client request requires only its own follow-up questions
+  ---
+  duration_ms: 0.161125
+  type: 'test'
+  ...
+# Subtest: multiple client request types show the union of their follow-up questions
+ok 166 - multiple client request types show the union of their follow-up questions
+  ---
+  duration_ms: 0.065125
+  type: 'test'
+  ...
+# Subtest: switching branches removes stale answers including nested CBAM details
+ok 167 - switching branches removes stale answers including nested CBAM details
+  ---
+  duration_ms: 0.364417
+  type: 'test'
+  ...
+# Subtest: unknown client requirements do not reveal or require unrelated follow-ups
+ok 168 - unknown client requirements do not reveal or require unrelated follow-ups
+  ---
+  duration_ms: 0.362125
+  type: 'test'
+  ...
+# Subtest: sector questions follow the selected sector only
+ok 169 - sector questions follow the selected sector only
+  ---
+  duration_ms: 0.099458
+  type: 'test'
+  ...
+# Subtest: skipping a partly answered block preserves drivers, product details and later groups
+ok 170 - skipping a partly answered block preserves drivers, product details and later groups
+  ---
+  duration_ms: 0.148083
+  type: 'test'
+  ...
+# Subtest: old CSRD employee and revenue shortcuts no longer determine scope
+ok 171 - old CSRD employee and revenue shortcuts no longer determine scope
+  ---
+  duration_ms: 0.20575
+  type: 'test'
+  ...
+# Subtest: explicit CSRD request survives small-private profile and unknown inputs
+ok 172 - explicit CSRD request survives small-private profile and unknown inputs
+  ---
+  duration_ms: 0.155417
+  type: 'test'
+  ...
+# Subtest: CBAM supplier and planned export do not become importer filing or certificate duties
+ok 173 - CBAM supplier and planned export do not become importer filing or certificate duties
+  ---
+  duration_ms: 0.252125
+  type: 'test'
+  ...
+# Subtest: no-export answer does not suppress a CBAM importer or an explicit CBAM request
+ok 174 - no-export answer does not suppress a CBAM importer or an explicit CBAM request
+  ---
+  duration_ms: 0.111667
+  type: 'test'
+  ...
+# Subtest: CBAM period and certificate terms remain explicit when the questionnaire has no reporting year
+ok 175 - CBAM period and certificate terms remain explicit when the questionnaire has no reporting year
+  ---
+  duration_ms: 0.154416
+  type: 'test'
+  ...
+# Subtest: stayed SEC rule remains an optional review, including explicit regulator requests
+ok 176 - stayed SEC rule remains an optional review, including explicit regulator requests
+  ---
+  duration_ms: 0.174917
+  type: 'test'
+  ...
+# Subtest: SFDR review is independent of the arbitrary AUM bands
+ok 177 - SFDR review is independent of the arbitrary AUM bands
+  ---
+  duration_ms: 0.187625
+  type: 'test'
+  ...
+# Subtest: UK unquoted and small listed candidates require scope review instead of a public-only exemption
+ok 178 - UK unquoted and small listed candidates require scope review instead of a public-only exemption
+  ---
+  duration_ms: 0.148333
+  type: 'test'
+  ...
+# Subtest: listing and sector signals retain period-specific checks and never prove mandatory scope
+ok 179 - listing and sector signals retain period-specific checks and never prove mandatory scope
+  ---
+  duration_ms: 0.276416
+  type: 'test'
+  ...
+# Subtest: ambiguous EPD and neutrality requests require output review without promising certification
+ok 180 - ambiguous EPD and neutrality requests require output review without promising certification
+  ---
+  duration_ms: 0.231542
+  type: 'test'
+  ...
+# Subtest: missing or unknown answers do not create a mandatory conclusion or an exemption
+ok 181 - missing or unknown answers do not create a mandatory conclusion or an exemption
+  ---
+  duration_ms: 0.129958
+  type: 'test'
+  ...
+# Subtest: every engine output resolves to selectable registered templates
+ok 182 - every engine output resolves to selectable registered templates
+  ---
+  duration_ms: 0.878167
+  type: 'test'
+  ...
+# Subtest: exact report variants keep their identity instead of collapsing into another report
+ok 183 - exact report variants keep their identity instead of collapsing into another report
+  ---
+  duration_ms: 0.148875
+  type: 'test'
+  ...
+# Subtest: combined recommendations offer distinct alternatives without choosing either for the user
+ok 184 - combined recommendations offer distinct alternatives without choosing either for the user
+  ---
+  duration_ms: 0.256917
+  type: 'test'
+  ...
+# Subtest: optional reports remain available but are not silently preselected
+ok 185 - optional reports remain available but are not silently preselected
+  ---
+  duration_ms: 0.214875
+  type: 'test'
+  ...
+# Subtest: a legacy cached mandatory result cannot bypass current applicability review
+ok 186 - a legacy cached mandatory result cannot bypass current applicability review
+  ---
+  duration_ms: 0.072542
+  type: 'test'
+  ...
+# Subtest: selection and badges exclude templates hidden by project scope
+ok 187 - selection and badges exclude templates hidden by project scope
+  ---
+  duration_ms: 0.086958
+  type: 'test'
+  ...
+# Subtest: repeated reasons for one template do not create duplicate selected codes
+ok 188 - repeated reasons for one template do not create duplicate selected codes
+  ---
+  duration_ms: 0.142833
+  type: 'test'
+  ...
+# Dataset validation failed, returning raw dataset ZodError: [
+#   {
+#     "code": "invalid_type",
+#     "expected": "string",
+#     "received": "undefined",
+#     "path": [
+#       "data_points",
+#       0,
+#       "item_id"
+#     ],
+#     "message": "Required"
+#   }
+# ]
+#     at get error (/private/tmp/carbonreport-deploy-check-a019946/node_modules/zod/v3/types.cjs:45:31)
+#     at ZodObject.parse (/private/tmp/carbonreport-deploy-check-a019946/node_modules/zod/v3/types.cjs:120:22)
+#     at validateDataset (/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-UykOHx/src/lib/dataset-validation.ts:74:24)
+#     at getProjectDataset (/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-UykOHx/src/lib/server-data/projects.ts:264:21)
+#     at async TestContext.<anonymous> (/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-UykOHx/src/lib/server-data/access.test.ts:83:19)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async TestContext.<anonymous> (/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-UykOHx/src/lib/server-data/access.test.ts:81:3)
+#     at async Test.run (node:internal/test_runner/test:1054:7)
+#     at async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3) {
+#   issues: [
+#     {
+#       code: 'invalid_type',
+#       expected: 'string',
+#       received: 'undefined',
+#       path: [Array],
+#       message: 'Required'
+#     }
+#   ],
+#   addIssue: [Function (anonymous)],
+#   addIssues: [Function (anonymous)]
+# }
+# Subtest: contact and request reads isolate accepted organization memberships across SSR and APIs
+    # Subtest: project SSR summary and dataset exclude other tenants and invalid memberships
+    ok 1 - project SSR summary and dataset exclude other tenants and invalid memberships
+      ---
+      duration_ms: 9.229708
+      type: 'test'
+      ...
+    # Subtest: page hydration excludes other, pending and deleted organizations
+    ok 2 - page hydration excludes other, pending and deleted organizations
+      ---
+      duration_ms: 1.117042
+      type: 'test'
+      ...
+    # Subtest: API lists and explicit outsider filters cannot bypass scope
+    ok 3 - API lists and explicit outsider filters cannot bypass scope
+      ---
+      duration_ms: 6.103916
+      type: 'test'
+      ...
+    # Subtest: project contact picker checks access before returning or caching contacts
+    ok 4 - project contact picker checks access before returning or caching contacts
+      ---
+      duration_ms: 1.78675
+      type: 'test'
+      ...
+    # Subtest: users without memberships see empty lists and unauthenticated requests return 401
+    ok 5 - users without memberships see empty lists and unauthenticated requests return 401
+      ---
+      duration_ms: 0.495583
+      type: 'test'
+      ...
+    1..5
+ok 189 - contact and request reads isolate accepted organization memberships across SSR and APIs
+  ---
+  duration_ms: 21.364167
+  type: 'test'
+  ...
+# Subtest: concurrent 401 responses share one refresh and retry each original request with its body
+ok 190 - concurrent 401 responses share one refresh and retry each original request with its body
+  ---
+  duration_ms: 13.731958
+  type: 'test'
+  ...
+# Subtest: refresh callers receive independently readable copies of the same response
+ok 191 - refresh callers receive independently readable copies of the same response
+  ---
+  duration_ms: 0.755667
+  type: 'test'
+  ...
+# Subtest: 403, auth routes, foreign origins, non-API URLs and aborted requests never trigger refresh
+ok 192 - 403, auth routes, foreign origins, non-API URLs and aborted requests never trigger refresh
+  ---
+  duration_ms: 0.826542
+  type: 'test'
+  ...
+# Subtest: server-side requests return the original 401 without browser session renewal
+ok 193 - server-side requests return the original 401 without browser session renewal
+  ---
+  duration_ms: 0.317833
+  type: 'test'
+  ...
+# Subtest: rejected refresh returns the original 401 and a second 401 never creates a retry loop
+ok 194 - rejected refresh returns the original 401 and a second 401 never creates a retry loop
+  ---
+  duration_ms: 0.487167
+  type: 'test'
+  ...
+# Subtest: a refresh 500 remains a retryable server failure and does not poison later renewal
+ok 195 - a refresh 500 remains a retryable server failure and does not poison later renewal
+  ---
+  duration_ms: 0.452917
+  type: 'test'
+  ...
+# Subtest: a network failure rejects without retrying the resource and permits a later refresh
+ok 196 - a network failure rejects without retrying the resource and permits a later refresh
+  ---
+  duration_ms: 0.453167
+  type: 'test'
+  ...
+# Subtest: failed logout permits a deliberate retry but old 401 responses cannot restart renewal
+ok 197 - failed logout permits a deliberate retry but old 401 responses cannot restart renewal
+  ---
+  duration_ms: 0.581
+  type: 'test'
+  ...
+# Subtest: logout waits for pending cookie renewal, clears last, and never retries stale requests
+ok 198 - logout waits for pending cookie renewal, clears last, and never retries stale requests
+  ---
+  duration_ms: 0.411208
+  type: 'test'
+  ...
+# Subtest: mount/repeated hydration never overwrites stored edits with the initial empty state
+ok 199 - mount/repeated hydration never overwrites stored edits with the initial empty state
+  ---
+  duration_ms: 0.932834
+  type: 'test'
+  ...
+# Subtest: an edit is durable before returning and survives immediate reload and server-data overlay
+ok 200 - an edit is durable before returning and survives immediate reload and server-data overlay
+  ---
+  duration_ms: 0.506334
+  type: 'test'
+  ...
+# Subtest: retry exhaustion preserves failed values across reload; missing batch results are failures too
+ok 201 - retry exhaustion preserves failed values across reload; missing batch results are failures too
+  ---
+  duration_ms: 0.210125
+  type: 'test'
+  ...
+# Subtest: uncertain non-idempotent additions require review instead of automatic replay
+ok 202 - uncertain non-idempotent additions require review instead of automatic replay
+  ---
+  duration_ms: 0.208708
+  type: 'test'
+  ...
+# Subtest: a new edit during an in-flight request survives its success and supersedes its failure
+ok 203 - a new edit during an in-flight request survives its success and supersedes its failure
+  ---
+  duration_ms: 0.164
+  type: 'test'
+  ...
+# Subtest: only acknowledged operations are removed; unrelated project changes stay queued
+ok 204 - only acknowledged operations are removed; unrelated project changes stay queued
+  ---
+  duration_ms: 0.070625
+  type: 'test'
+  ...
+# Subtest: multiple new repeatable items are retained and deletion is scoped to its project
+ok 205 - multiple new repeatable items are retained and deletion is scoped to its project
+  ---
+  duration_ms: 0.093042
+  type: 'test'
+  ...
+# Subtest: corrupt storage is preserved, and unavailable storage reports a visible recovery warning
+ok 206 - corrupt storage is preserved, and unavailable storage reports a visible recovery warning
+  ---
+  duration_ms: 0.114916
+  type: 'test'
+  ...
+# Subtest: allows public pages without auth
+ok 207 - allows public pages without auth
+  ---
+  duration_ms: 3.037167
+  type: 'test'
+  ...
+# Subtest: redirects protected pages to login when no token is present
+ok 208 - redirects protected pages to login when no token is present
+  ---
+  duration_ms: 0.662833
+  type: 'test'
+  ...
+# Subtest: returns 401 for protected API routes without auth
+ok 209 - returns 401 for protected API routes without auth
+  ---
+  duration_ms: 1.465458
+  type: 'test'
+  ...
+# Subtest: passes authenticated requests through and injects auth headers
+ok 210 - passes authenticated requests through and injects auth headers
+  ---
+  duration_ms: 1.840083
+  type: 'test'
+  ...
+# Subtest: keeps login reachable because the signed session may have been revoked
+ok 211 - keeps login reachable because the signed session may have been revoked
+  ---
+  duration_ms: 1.074833
+  type: 'test'
+  ...
+# Subtest: removes forged identity headers on public auth and page requests
+ok 212 - removes forged identity headers on public auth and page requests
+  ---
+  duration_ms: 1.120875
+  type: 'test'
+  ...
+# Subtest: does not consider auth-prefixed unrelated API routes public
+ok 213 - does not consider auth-prefixed unrelated API routes public
+  ---
+  duration_ms: 0.656833
+  type: 'test'
+  ...
+# Subtest: login redirect preserves target query only inside redirect parameter
+ok 214 - login redirect preserves target query only inside redirect parameter
+  ---
+  duration_ms: 0.293416
+  type: 'test'
+  ...
+# Subtest: missing or expired access recovers protected pages through the refresh screen
+ok 215 - missing or expired access recovers protected pages through the refresh screen
+  ---
+  duration_ms: 2.270542
+  type: 'test'
+  ...
+1..215
+# tests 222
+# suites 0
+# pass 222
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13141.04425
+   ▲ Next.js 15.5.27
+
+   Creating an optimized production build ...
+connect ETIMEDOUT 142.250.130.94:443
+
+Retrying 1/3...
+ ✓ Compiled successfully in 88s
+   Linting and checking validity of types ...
+
+./src/app/api/batch/route.ts
+5:5  Warning: 'validateDataset' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/projects/route.ts
+15:29  Warning: 'getAllReportTemplates' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/dashboard-greeting.tsx
+13:10  Warning: 'isMounted' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/layouts/project-layout.tsx
+65:10  Warning: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/server-data/metrics.ts
+1:10  Warning: 'headers' is defined but never used.  @typescript-eslint/no-unused-vars
+4:7  Warning: 'HEADER_NAME' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/49) ...
+   Generating static pages (12/49)
+   Generating static pages (24/49)
+   Generating static pages (36/49)
+ ✓ Generating static pages (49/49)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                                Size  First Load JS
+┌ ƒ /                                                                   6.03 kB         198 kB
+├ ƒ /_not-found                                                           276 B         103 kB
+├ ƒ /api/auth/forgot-password                                             276 B         103 kB
+├ ƒ /api/auth/login                                                       276 B         103 kB
+├ ƒ /api/auth/logout                                                      276 B         103 kB
+├ ƒ /api/auth/refresh                                                     276 B         103 kB
+├ ƒ /api/auth/register                                                    276 B         103 kB
+├ ƒ /api/auth/resend-verification                                         276 B         103 kB
+├ ƒ /api/auth/reset-password/[token]                                      276 B         103 kB
+├ ƒ /api/auth/verify-email/[token]                                        276 B         103 kB
+├ ƒ /api/batch                                                            276 B         103 kB
+├ ƒ /api/contacts                                                         276 B         103 kB
+├ ƒ /api/contacts/[id]                                                    276 B         103 kB
+├ ƒ /api/data-requests                                                    276 B         103 kB
+├ ƒ /api/data-requests/[id]/complete                                      276 B         103 kB
+├ ƒ /api/data-requests/[id]/revoke                                        276 B         103 kB
+├ ƒ /api/data-requests/bulk                                               276 B         103 kB
+├ ƒ /api/data-requests/complete-bulk                                      276 B         103 kB
+├ ƒ /api/data-requests/reassign                                           276 B         103 kB
+├ ƒ /api/data-requests/remind                                             276 B         103 kB
+├ ƒ /api/data-requests/resend-bulk                                        276 B         103 kB
+├ ƒ /api/data-requests/revoke-bulk                                        276 B         103 kB
+├ ƒ /api/dataset-fields                                                   276 B         103 kB
+├ ƒ /api/organizations                                                    276 B         103 kB
+├ ƒ /api/organizations/[organizationId]                                   276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/invite                            276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members                           276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]            276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]/accept     276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]/decline    276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/plan/upgrade                      276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/restore                           276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/usage                             276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/usage/recompute                   276 B         103 kB
+├ ƒ /api/organizations/current                                            276 B         103 kB
+├ ƒ /api/plan-definitions                                                 276 B         103 kB
+├ ƒ /api/projects                                                         276 B         103 kB
+├ ƒ /api/projects/[id]                                                    276 B         103 kB
+├ ƒ /api/projects/[id]/contacts                                           276 B         103 kB
+├ ƒ /api/projects/[id]/data-requests                                      276 B         103 kB
+├ ƒ /api/projects/[id]/dataset                                            276 B         103 kB
+├ ƒ /api/projects/[id]/dataset/items                                      276 B         103 kB
+├ ƒ /api/projects/[id]/dataset/items/[itemId]                             276 B         103 kB
+├ ƒ /api/projects/[id]/duplicate                                          276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-template                                    276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-template/reset                              276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-templates                                   276 B         103 kB
+├ ƒ /api/projects/[id]/reports/[reportId]                                 276 B         103 kB
+├ ƒ /api/projects/[id]/reports/[reportId]/supplier-package                276 B         103 kB
+├ ƒ /api/projects/[id]/restore                                            276 B         103 kB
+├ ƒ /api/projects/[id]/status                                             276 B         103 kB
+├ ƒ /api/uploads/local                                                    276 B         103 kB
+├ ƒ /api/uploads/relay                                                    276 B         103 kB
+├ ƒ /api/uploads/sign                                                     276 B         103 kB
+├ ƒ /api/user/settings                                                    276 B         103 kB
+├ ƒ /api/user/settings/change-password                                    276 B         103 kB
+├ ƒ /contacts                                                           4.73 kB         233 kB
+├ ƒ /contacts/[id]                                                        421 B         245 kB
+├ ƒ /dashboard                                                            792 B         225 kB
+├ ƒ /forgot-password                                                    4.76 kB         160 kB
+├ ƒ /illustrations-demo                                                 12.2 kB         126 kB
+├ ƒ /invitations                                                          343 B         215 kB
+├ ƒ /login                                                              1.81 kB         162 kB
+├ ƒ /no-organization                                                    1.87 kB         141 kB
+├ ƒ /profile                                                            7.13 kB         164 kB
+├ ƒ /projects                                                            6.9 kB         203 kB
+├ ƒ /projects/[id]                                                      4.02 kB         194 kB
+├ ƒ /projects/[id]/data-requests                                        8.01 kB         189 kB
+├ ƒ /projects/[id]/dataset                                              4.57 kB         197 kB
+├ ƒ /projects/[id]/files                                                  276 B         103 kB
+├ ƒ /projects/[id]/mailto-templates                                      6.1 kB         117 kB
+├ ƒ /projects/[id]/reports                                                166 B         107 kB
+├ ƒ /projects/[id]/reports/[reportId]                                   8.41 kB         209 kB
+├ ƒ /projects/new                                                       29.8 kB         153 kB
+├ ƒ /projects/new/questionnaire                                           12 kB         184 kB
+├ ƒ /projects/new/select-reports                                           6 kB         197 kB
+├ ƒ /register                                                           2.36 kB         162 kB
+├ ƒ /requests                                                             410 B         245 kB
+├ ƒ /reset-password                                                     5.18 kB         161 kB
+├ ƒ /session                                                            4.63 kB         147 kB
+├ ƒ /settings                                                             276 B         103 kB
+├ ƒ /settings/billing                                                    1.6 kB         194 kB
+├ ƒ /settings/danger                                                    7.21 kB         173 kB
+├ ƒ /settings/members                                                   8.28 kB         204 kB
+├ ƒ /settings/profile                                                    8.1 kB         174 kB
+├ ƒ /settings/usage                                                     1.98 kB         194 kB
+└ ƒ /verify-email                                                       4.64 kB         160 kB
++ First Load JS shared by all                                            103 kB
+  ├ chunks/7266-a87ffd3545c85183.js                                     46.8 kB
+  ├ chunks/8f9731b9-3db44645759da43c.js                                 54.2 kB
+  └ other shared chunks (total)                                         1.96 kB
+
+
+ƒ Middleware                                                            39.9 kB
+
+ƒ  (Dynamic)  server-rendered on demand
+
+   ▲ Next.js 15.5.27
+   - Local:        http://127.0.0.1:3108
+   - Network:      http://127.0.0.1:3108
+
+ ✓ Starting...
+ ✓ Ready in 382ms
+TAP version 13
+Email sending is unavailable: missing configuration
+# Subtest: authentication expiry, password reset and organization role boundaries
+    # Subtest: forgot-password stays private and malformed/expired reset links cannot change the password
+    ok 1 - forgot-password stays private and malformed/expired reset links cannot change the password
+      ---
+      duration_ms: 3263.132416
+      type: 'test'
+      ...
+    # Subtest: reset through the browser consumes the link, changes the password and revokes old sessions
+    ok 2 - reset through the browser consumes the link, changes the password and revokes old sessions
+      ---
+      duration_ms: 7362.100125
+      type: 'test'
+      ...
+    # Subtest: concurrent reset submissions consume the password-bound link exactly once
+    ok 3 - concurrent reset submissions consume the password-bound link exactly once
+      ---
+      duration_ms: 1352.009333
+      type: 'test'
+      ...
+    # Subtest: expired access recovers the protected page and retries a client mutation once; expired refresh returns to login
+    ok 4 - expired access recovers the protected page and retries a client mutation once; expired refresh returns to login
+      ---
+      duration_ms: 2922.941459
+      type: 'test'
+      ...
+    # Subtest: five roles enforce member management and supplier report read/write boundaries
+    ok 5 - five roles enforce member management and supplier report read/write boundaries
+      ---
+      duration_ms: 10603.27525
+      type: 'test'
+      ...
+[project-layout] timings [ { metric: 'cache-project-summary', durationMs: 5.31 } ]
+    # Subtest: an existing account can accept or decline its in-app invitation; outsiders and replay are rejected
+    ok 6 - an existing account can accept or decline its in-app invitation; outsiders and replay are rejected
+      ---
+      duration_ms: 6917.477458
+      type: 'test'
+      ...
+    # Subtest: concurrent invite acceptance and role changes cannot overbook the last editor seat
+    ok 7 - concurrent invite acceptance and role changes cannot overbook the last editor seat
+      ---
+      duration_ms: 2034.57425
+      type: 'test'
+      ...
+    1..7
+ok 1 - authentication expiry, password reset and organization role boundaries
+  ---
+  duration_ms: 36098.861875
+  type: 'test'
+  ...
+Email sending is unavailable: missing configuration
+[project-layout] timings [ { metric: 'cache-project-summary', durationMs: 14.94 } ]
+# Subtest: fresh browser registration → supplier ZIP, persisted data, invalid input and outsider isolation
+    # Subtest: register and create organization, product and supplier report through UI
+    ok 1 - register and create organization, product and supplier report through UI
+      ---
+      duration_ms: 4671.47375
+      type: 'test'
+      ...
+[project-layout] timings [ { metric: 'cache-project-summary', durationMs: 4.8 } ]
+[project-layout] timings [ { metric: 'cache-project-summary', durationMs: 4.87 } ]
+    # Subtest: empty download is blocked; incomplete and invalid drafts persist; fixing input restores readiness
+    ok 2 - empty download is blocked; incomplete and invalid drafts persist; fixing input restores readiness
+      ---
+      duration_ms: 5439.002875
+      type: 'test'
+      ...
+Email sending is unavailable: missing configuration
+Failed to fetch project 0da20c33-7714-4db7-9215-851a5af8dcd0: 403 Forbidden
+ ⨯ Error: Failed to fetch project 0da20c33-7714-4db7-9215-851a5af8dcd0
+    at E (.next/server/app/projects/[id]/page.js:1:7458) {
+  digest: '1682284582'
+}
+    # Subtest: a separately registered user cannot list, read, update or export owner data
+    ok 3 - a separately registered user cannot list, read, update or export owner data
+      ---
+      duration_ms: 5039.617584
+      type: 'test'
+      ...
+# {"result": "pass", "datasetVersion": 7, "directLotEmissions": 30, "indirectLotEmissions": 6, "zipSha256": "c5d629a7bc09fd740b3a2b411af1556cd3abc4a1824e7916c634d383efb04a7d"}
+    # Subtest: actual browser ZIP matches saved version, independent arithmetic and CSV evidence
+    ok 4 - actual browser ZIP matches saved version, independent arithmetic and CSV evidence
+      ---
+      duration_ms: 400.628042
+      type: 'test'
+      ...
+    # Subtest: questionnaire Next shows final trade questions before an explicit finish
+    ok 5 - questionnaire Next shows final trade questions before an explicit finish
+      ---
+      duration_ms: 2786.4925
+      type: 'test'
+      ...
+    1..5
+ok 2 - fresh browser registration → supplier ZIP, persisted data, invalid input and outsider isolation
+  ---
+  duration_ms: 19176.534833
+  type: 'test'
+  ...
+1..2
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 66213.574375

@@ -1,0 +1,81 @@
+{
+  "finalPath": "/login",
+  "visibleText": "Toggle theme\nSign in\nAccess your Carbon Report workspace\n\nYour session has expired. Sign in again to continue.\n\nEmail address\nPassword\nForgot password?\nSign in\n\nNeed an account? Create one",
+  "responses": [
+    {
+      "pathname": "/profile",
+      "method": "GET",
+      "status": 307
+    },
+    {
+      "pathname": "/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "pathname": "/api/auth/refresh",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "pathname": "/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "pathname": "/profile",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "pathname": "/api/user/settings",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "pathname": "/api/organizations",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "pathname": "/api/organizations/current",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "pathname": "/api/organizations/current",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "pathname": "/api/user/settings",
+      "method": "PATCH",
+      "status": 401
+    },
+    {
+      "pathname": "/api/auth/refresh",
+      "method": "POST",
+      "status": 200
+    },
+    {
+      "pathname": "/api/user/settings",
+      "method": "PATCH",
+      "status": 200
+    },
+    {
+      "pathname": "/profile",
+      "method": "GET",
+      "status": 307
+    },
+    {
+      "pathname": "/session",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "pathname": "/api/auth/refresh",
+      "method": "POST",
+      "status": 401
+    }
+  ]
+}

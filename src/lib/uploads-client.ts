@@ -1,5 +1,6 @@
 'use client';
 
+import { fetchWithSession } from '@/lib/session-client';
 import { request, ApiError } from '@/lib/api-client';
 import { MAX_UPLOAD_SIZE_BYTES, listSupportedMimeTypes } from '@/lib/uploads';
 import type { UploadResourceType } from '@/lib/uploads/resource-types';
@@ -109,7 +110,7 @@ async function relayUpload(upload: SignedUploadResponse['upload'], file: File) {
   formData.append('file', file);
 
   try {
-    const response = await fetch('/api/uploads/relay', {
+    const response = await fetchWithSession('/api/uploads/relay', {
       method: 'POST',
       body: formData,
     });

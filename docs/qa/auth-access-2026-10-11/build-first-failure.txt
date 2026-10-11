@@ -1,0 +1,33 @@
+Initial isolated build, before fixing imports above the use-client directive.
+Failed to compile.
+
+./src/lib/uploads-client.ts
+Error:   x The "use client" directive must be placed before other expressions. Move it to the top of the file to resolve this issue.
+   ,-[/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-hvcQ4W/src/lib/uploads-client.ts:2:1]
+ 1 | import { fetchWithSession } from '@/lib/session-client';
+ 2 | 'use client';
+   : ^^^^^^^^^^^^^
+ 3 |
+ 4 | import { request, ApiError } from '@/lib/api-client';
+ 5 | import { MAX_UPLOAD_SIZE_BYTES, listSupportedMimeTypes } from '@/lib/uploads';
+   `----
+
+Import trace for requested module:
+./src/lib/uploads-client.ts
+./src/components/uploads/square-image-uploader.tsx
+./src/app/profile/user-profile-settings.tsx
+./src/app/profile/page.tsx
+
+
+> Build failed because of webpack errors
+file:///Users/user/Documents/github/carbonreport/scripts/e2e/run.mjs:36
+    child.once('exit', code => code === 0 ? resolve() : reject(new Error(`${args[0]} exited ${code}; see e2e run.log`)))
+                                                               ^
+
+Error: node_modules/next/dist/bin/next exited 1; see e2e run.log
+    at ChildProcess.<anonymous> (file:///Users/user/Documents/github/carbonreport/scripts/e2e/run.mjs:36:64)
+    at Object.onceWrapper (node:events:634:26)
+    at ChildProcess.emit (node:events:519:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+
+Node.js v22.23.2

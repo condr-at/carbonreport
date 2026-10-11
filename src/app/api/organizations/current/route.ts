@@ -63,6 +63,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       organization: {
         id: membership.organization.id,
+        role: membership.role,
         slug: membership.organization.slug,
         display_name: membership.organization.displayName,
         description: membership.organization.description,
