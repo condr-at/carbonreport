@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-10-11T12:19:21.103Z",
+  "keyConfigured": true,
+  "keyHasExpectedPrefix": true,
+  "senderConfigured": true,
+  "providerHttpStatus": 400,
+  "providerErrorCode": "validation_error",
+  "providerMessage": "API key is invalid"
+}

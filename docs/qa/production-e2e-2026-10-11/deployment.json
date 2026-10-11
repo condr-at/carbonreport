@@ -1,0 +1,13 @@
+{
+  "id": "dpl_EAFiawLa5sTjYnPDFBtwCZ71gYEY",
+  "state": "READY",
+  "source": "git",
+  "commit": "f1a8af0e872cc33b7b1adce61a08addace53fd1a",
+  "alias": [
+    "carbonreport.app",
+    "carbonreport.vercel.app",
+    "carbonreport-conrad-projects.vercel.app",
+    "carbonreport-git-main-conrad-projects.vercel.app"
+  ],
+  "aliasAssigned": true
+}
