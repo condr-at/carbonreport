@@ -7,6 +7,9 @@ import { contactsKeys } from '@/lib/data-client/keys';
 import { getContactsOverview } from '@/lib/server-data/contacts';
 import { ContactsPageClient } from './contacts-client';
 
+// Contact visibility depends on the authenticated user's current memberships.
+export const dynamic = 'force-dynamic';
+
 export default async function ContactsPage() {
   const contacts = await getContactsOverview();
   const queryClient = new QueryClient(queryClientOptions);

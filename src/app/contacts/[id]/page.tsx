@@ -11,6 +11,9 @@ import { queryClientOptions } from '@/lib/data-client/queryClient'
 import { globalRequestsKeys } from '@/lib/data-client/keys'
 import type { GlobalRequestFilters } from '@/lib/data-requests/filters'
 
+// Contact visibility depends on the authenticated user's current memberships.
+export const dynamic = 'force-dynamic'
+
 export default async function ContactPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const contact = await getContactDetail(id)
