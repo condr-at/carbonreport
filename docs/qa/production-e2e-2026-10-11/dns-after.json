@@ -1,0 +1,138 @@
+{
+  "checkedAt": "2026-10-11T14:11:02.400875+00:00",
+  "records": [
+    {
+      "resolver": "dns1.registrar-servers.com",
+      "name": "resend._domainkey.carbonreport.app",
+      "type": "TXT",
+      "answer": [
+        "\"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJd6TDiXvAB1Pr6e/kI8lJycmHnl+HBiRLGhaY3tg9NjYVJXGmUwxLARhwQBT9JJ0liNGA4nX3a2qSMKKjzwt85NKGMWOodbw7f8B2aDe9hm86AL7sJlt5gUTKWMrGnKq0zJzEHIMjODANhsC1TAJ5skcMLrC4k4O1yBH0VX58qwIDAQAB\""
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns1.registrar-servers.com",
+      "name": "send.carbonreport.app",
+      "type": "CNAME",
+      "answer": [
+        "send.forge.rmta.net."
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns1.registrar-servers.com",
+      "name": "rsend.carbonreport.app",
+      "type": "CNAME",
+      "answer": [
+        "rsend-euw1.forge.rmta.net."
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns1.registrar-servers.com",
+      "name": "carbonreport.app",
+      "type": "A",
+      "answer": [
+        "216.198.79.1"
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns1.registrar-servers.com",
+      "name": "carbonreport.app",
+      "type": "MX",
+      "answer": [
+        "10 mx.yandex.net."
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns2.registrar-servers.com",
+      "name": "resend._domainkey.carbonreport.app",
+      "type": "TXT",
+      "answer": [
+        "\"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJd6TDiXvAB1Pr6e/kI8lJycmHnl+HBiRLGhaY3tg9NjYVJXGmUwxLARhwQBT9JJ0liNGA4nX3a2qSMKKjzwt85NKGMWOodbw7f8B2aDe9hm86AL7sJlt5gUTKWMrGnKq0zJzEHIMjODANhsC1TAJ5skcMLrC4k4O1yBH0VX58qwIDAQAB\""
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns2.registrar-servers.com",
+      "name": "send.carbonreport.app",
+      "type": "CNAME",
+      "answer": [
+        "send.forge.rmta.net."
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns2.registrar-servers.com",
+      "name": "rsend.carbonreport.app",
+      "type": "CNAME",
+      "answer": [
+        "rsend-euw1.forge.rmta.net."
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns2.registrar-servers.com",
+      "name": "carbonreport.app",
+      "type": "A",
+      "answer": [
+        "216.198.79.1"
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "dns2.registrar-servers.com",
+      "name": "carbonreport.app",
+      "type": "MX",
+      "answer": [
+        "10 mx.yandex.net."
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "1.1.1.1",
+      "name": "resend._domainkey.carbonreport.app",
+      "type": "TXT",
+      "answer": [
+        "\"p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJd6TDiXvAB1Pr6e/kI8lJycmHnl+HBiRLGhaY3tg9NjYVJXGmUwxLARhwQBT9JJ0liNGA4nX3a2qSMKKjzwt85NKGMWOodbw7f8B2aDe9hm86AL7sJlt5gUTKWMrGnKq0zJzEHIMjODANhsC1TAJ5skcMLrC4k4O1yBH0VX58qwIDAQAB\""
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "1.1.1.1",
+      "name": "send.carbonreport.app",
+      "type": "CNAME",
+      "answer": [
+        "send.forge.rmta.net."
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "1.1.1.1",
+      "name": "rsend.carbonreport.app",
+      "type": "CNAME",
+      "answer": [],
+      "exitCode": 0
+    },
+    {
+      "resolver": "1.1.1.1",
+      "name": "carbonreport.app",
+      "type": "A",
+      "answer": [
+        "216.198.79.1"
+      ],
+      "exitCode": 0
+    },
+    {
+      "resolver": "1.1.1.1",
+      "name": "carbonreport.app",
+      "type": "MX",
+      "answer": [
+        "10 mx.yandex.net."
+      ],
+      "exitCode": 0
+    }
+  ]
+}

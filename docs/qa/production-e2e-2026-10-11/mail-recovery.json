@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-11",
+  "domain": "carbonreport.app",
+  "productionEnvironment": {
+    "variable": "RESEND_API_KEY",
+    "type": "sensitive",
+    "target": [
+      "production"
+    ],
+    "developmentAndPreviewUnchanged": true,
+    "secretIncludedInEvidence": false
+  },
+  "deployment": {
+    "id": "dpl_4Z1pdiaMvUrytkCb5yqwUr8gb33M",
+    "sourceCommit": "2d92d20388ce256a00a1a996f3d2776f859769a7",
+    "source": "cli",
+    "readyState": "READY",
+    "url": "carbonreport-jots105lw-conrad-projects.vercel.app",
+    "productionAliasAssigned": true
+  },
+  "providerCheckBeforeDnsRepair": {
+    "operation": "GET /domains and GET /domains/:id",
+    "httpStatus": 200,
+    "domainStatus": "not_started",
+    "browserResend": "Verification email not sent",
+    "productionLog": "Email request was not accepted for sending"
+  },
+  "authoritativeNameservers": [
+    "dns1.registrar-servers.com",
+    "dns2.registrar-servers.com"
+  ],
+  "requiredPublicRecords": [
+    {
+      "type": "TXT",
+      "host": "resend._domainkey",
+      "value": "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJd6TDiXvAB1Pr6e/kI8lJycmHnl+HBiRLGhaY3tg9NjYVJXGmUwxLARhwQBT9JJ0liNGA4nX3a2qSMKKjzwt85NKGMWOodbw7f8B2aDe9hm86AL7sJlt5gUTKWMrGnKq0zJzEHIMjODANhsC1TAJ5skcMLrC4k4O1yBH0VX58qwIDAQAB"
+    },
+    {
+      "type": "CNAME",
+      "host": "rsend",
+      "value": "rsend-euw1.forge.rmta.net"
+    },
+    {
+      "type": "CNAME",
+      "host": "send",
+      "value": "send.forge.rmta.net"
+    }
+  ],
+  "dnsBefore": "dns-before.txt",
+  "completion": "Verification email flow passed: provider accepted, user confirmed receipt/link, authenticated query-free page confirmed DB-backed email verification",
+  "providerVerificationRequest": {
+    "checkedAt": "2026-10-11T14:05:03.589Z",
+    "httpStatus": 200,
+    "object": "domain",
+    "id": "d6e8eae2-3252-4190-8c5b-21431b8c8e5e"
+  },
+  "providerStatusAfterDnsRepair": {
+    "checkedAt": "2026-10-11T14:09:13.202Z",
+    "httpStatus": 200,
+    "name": "carbonreport.app",
+    "status": "verified",
+    "records": [
+      {
+        "record": "DKIM",
+        "name": "resend._domainkey",
+        "type": "TXT",
+        "status": "verified"
+      },
+      {
+        "record": "SPF",
+        "name": "rsend",
+        "type": "CNAME",
+        "status": "verified"
+      },
+      {
+        "record": "SPF",
+        "name": "send",
+        "type": "CNAME",
+        "status": "verified"
+      }
+    ]
+  },
+  "dnsRepair": {
+    "status": "saved_and_authoritative_dns_verified",
+    "unchanged": [
+      "apex A",
+      "Yandex verification TXT",
+      "apex SPF",
+      "mail._domainkey TXT",
+      "apex MX",
+      "unrelated TTL values"
+    ],
+    "providerUiEvent": "DNS verified",
+    "screenshots": [
+      "11-email-dns-blocked.png",
+      "12-dns-updated.png"
+    ]
+  },
+  "applicationResend": {
+    "result": "Check your inbox",
+    "providerAcceptanceConfirmed": true,
+    "source": "production browser: Try sending again after domain verified"
+  },
+  "accountVerification": {
+    "checkedAt": "2026-10-11T14:11:01.318731+00:00",
+    "userConfirmedReceiptAndLink": true,
+    "authenticatedPageUrl": "https://carbonreport.app/verify-email",
+    "statusQueryPresent": false,
+    "serverRenderedText": "Email verified",
+    "stateSource": "getCurrentUser().emailVerified from database",
+    "screenshot": "14-account-email-verified.png"
+  }
+}

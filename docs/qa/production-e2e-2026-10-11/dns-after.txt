@@ -1,0 +1,95 @@
+Type↓
+Host↓
+Value↓
+TTL↓
+No Records Found
+Type
+A Record
+Host
+@
+IP Address
+216.198.79.1
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+@
+Value
+yandex-verification: 2086c8d8e86940a8
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+@
+Value
+v=spf1 redirect=_spf.yandex.net
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+mail._domainkey
+Value
+v=DKIM1; k=rsa; t=s; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCup2+Gi4ZyKmG4RrgnkTdRje3N5iRNUV4IbrqvtIbJr+PPbx9cYKh0jxGyJo9MLxSm93P/+ROKqS+wgmpZbDIP65IjaUMOSvMOGSYGGd+Ahqy9EG56wdJMUIldUrDoc6j2pvZ5UZqs+vObD6vCai2ot3UAaBu8gKVRbImCcocRkwIDAQAB
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+resend._domainkey
+Value
+p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJd6TDiXvAB1Pr6e/kI8lJycmHnl+HBiRLGhaY3tg9NjYVJXGmUwxLARhwQBT9JJ0liNGA4nX3a2qSMKKjzwt85NKGMWOodbw7f8B2aDe9hm86AL7sJlt5gUTKWMrGnKq0zJzEHIMjODANhsC1TAJ5skcMLrC4k4O1yBH0VX58qwIDAQAB
+TTL
+Automatic
+Remove
+Edit
+Type
+CNAME Record
+Host
+send
+Target
+send.forge.rmta.net.
+TTL
+Automatic
+Remove
+Edit
+Type
+CNAME Record
+Host
+rsend
+Target
+rsend-euw1.forge.rmta.net.
+TTL
+Automatic
+Remove
+Edit
+Add New Record
+Save All Changes
+Show Less
+Type↓
+Host↓
+Value↓
+TTL↓
+No Records Found
+Type
+MX Record
+Host
+@
+Mail Server
+mx.yandex.net.
+Priority
+10
+TTL
+Automatic
+Edit
+Add New Record

@@ -1,0 +1,98 @@
+Type↓
+Host↓
+Value↓
+TTL↓
+No Records Found
+Type
+A Record
+Host
+@
+IP Address
+216.198.79.1
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+@
+Value
+yandex-verification: 2086c8d8e86940a8
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+@
+Value
+v=spf1 redirect=_spf.yandex.net
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+mail._domainkey
+Value
+v=DKIM1; k=rsa; t=s; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCup2+Gi4ZyKmG4RrgnkTdRje3N5iRNUV4IbrqvtIbJr+PPbx9cYKh0jxGyJo9MLxSm93P/+ROKqS+wgmpZbDIP65IjaUMOSvMOGSYGGd+Ahqy9EG56wdJMUIldUrDoc6j2pvZ5UZqs+vObD6vCai2ot3UAaBu8gKVRbImCcocRkwIDAQAB
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+resend._domainkey
+Value
+p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDA7XzwYBqJoKRDV3QlTDZBtRRuGpoNpbDqFAuZ/FUG8gJ6dQRzo0dpPqVxiCwBj1Uk0D/yEEwmC5qxjATxCyO894ORP1sWCqq0d5FR6Le7j0TH9vAc1PPOmmfHu9ASgG8g8VhsBa/F8WX+nLIl0+LqSNtGEola0YJvXQHoId+GhwIDAQAB
+TTL
+Automatic
+Remove
+Edit
+Type
+TXT Record
+Host
+send
+Value
+v=spf1 include:amazonses.com ~all
+TTL
+Automatic
+Remove
+Edit
+Add New Record
+Save All Changes
+Show Less
+Type↓
+Host↓
+Value↓
+TTL↓
+No Records Found
+Type
+MX Record
+Host
+@
+Mail Server
+mx.yandex.net.
+Priority
+10
+TTL
+Automatic
+Remove
+Edit
+Type
+MX Record
+Host
+send
+Mail Server
+feedback-smtp.us-east-1.amazonses.com.
+Priority
+10
+TTL
+Automatic
+Remove
+Edit
+Add New Record
