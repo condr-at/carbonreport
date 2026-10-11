@@ -14,6 +14,11 @@ import { PublicPageFrame } from '@/components/layouts/public-page-frame'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+type RegistrationResponse = {
+  error?: string
+  verification_email?: { status: 'sent' | 'not_sent' }
+}
+
 const passwordRequirements = [
   { id: 'length', label: 'At least 8 characters', test: (value: string) => value.length >= 8 },
   { id: 'upper', label: 'An uppercase letter', test: (value: string) => /[A-Z]/.test(value) },
@@ -93,14 +98,15 @@ export function RegisterForm() {
         }),
       })
 
-      const payload = await response.json().catch(() => ({}))
+      const payload: RegistrationResponse = await response.json().catch(() => ({}))
 
       if (!response.ok) {
         throw new Error(payload.error ?? 'Registration failed')
       }
 
-      toast.success('Check your inbox to verify your email')
-      router.push('/verify-email?status=sent')
+      const emailSent = payload.verification_email?.status === 'sent'
+      toast.success(emailSent ? 'Account created. Check your inbox to verify your email.' : 'Account created. You can continue to your workspace.')
+      router.push(`/verify-email?status=${emailSent ? 'sent' : 'not_sent'}`)
       router.refresh()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Registration failed')

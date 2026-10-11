@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-11T12:10:27.197Z",
+  "base": "https://carbonreport.app",
+  "projectId": "c56321c8-4d0b-4eb0-bbc7-819fc29054aa",
+  "reportId": "d59b54f9-dfb4-454b-9101-ac47ddb3ac3c",
+  "checks": [
+    {
+      "label": "owner reads saved package",
+      "status": 200,
+      "expectedStatus": 200,
+      "pass": true
+    },
+    {
+      "label": "anonymous package denied",
+      "status": 401,
+      "expectedStatus": 401,
+      "pass": true
+    },
+    {
+      "label": "ZIP requires saved version",
+      "status": 400,
+      "expectedStatus": 400,
+      "pass": true
+    },
+    {
+      "label": "stale ZIP version denied",
+      "status": 409,
+      "expectedStatus": 409,
+      "pass": true
+    }
+  ]
+}

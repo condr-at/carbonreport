@@ -1,0 +1,108 @@
+{
+  "projectId": "c56321c8-4d0b-4eb0-bbc7-819fc29054aa",
+  "projectName": "QA Synthetic Steel 20261011-115452",
+  "reportId": "d59b54f9-dfb4-454b-9101-ac47ddb3ac3c",
+  "templateCode": "CBAM_DATA_PACKAGE",
+  "datasetVersion": 7,
+  "generatedAt": "2026-10-11T12:10:26.551Z",
+  "profileVersion": "cbam-supplier-review/1.0",
+  "validation": {
+    "values": {
+      "cbam_pkg_recipient": "Example EU customer reviewer",
+      "cbam_pkg_prepared_by": "Alex QA Preparer — revision 2",
+      "cbam_pkg_supplier_role": "operator",
+      "cbam_pkg_supplier_name": "",
+      "cbam_pkg_production_year": "2026",
+      "cbam_pkg_coverage_start": "2026-01-01",
+      "cbam_pkg_coverage_end": "2026-09-30",
+      "cbam_operator_name": "Example Steel Ltd",
+      "cbam_operator_contact": "Operator reporting team",
+      "cbam_installation_id": "",
+      "cbam_installation_country": "Serbia",
+      "cbam_pkg_installation_name": "Example works",
+      "cbam_pkg_installation_address": "Example industrial road 1",
+      "product_name": "Example steel goods",
+      "product_description": "Synthetic engineering fixture, not a verified emissions declaration.",
+      "cbam_pkg_cn8": "72081000",
+      "cbam_pkg_cn_review": "not_reviewed",
+      "cbam_pkg_boundary": "Operator-reported process attribution and total saleable output; see OPS-2026-Q3.",
+      "cbam_pkg_precursor_statement": "Reported direct value already includes the relevant precursor contribution; see operator paper.",
+      "cbam_pkg_unit": "tCO2e/t_goods",
+      "cbam_pkg_direct_see": "2.5",
+      "cbam_pkg_direct_basis": "actual",
+      "cbam_pkg_direct_source": "operator-1",
+      "cbam_pkg_indirect_status": "reported",
+      "cbam_pkg_indirect_see": "0.5",
+      "cbam_pkg_indirect_basis": "actual",
+      "cbam_pkg_indirect_source": "operator-1",
+      "cbam_pkg_indirect_rationale": "",
+      "cbam_pkg_default_context": "",
+      "cbam_pkg_lot_mass_tonnes": "12",
+      "cbam_pkg_verification_status": "not_verified",
+      "cbam_pkg_verifier": "",
+      "cbam_pkg_verification_source": "",
+      "cbam_pkg_evidence_json": "[{\"id\":\"operator-1\",\"title\":\"Operator production and emissions working paper\",\"reference\":\"Operator document OPS-2026-Q3, pages 1-5\",\"version\":\"2026-10-01 revision 1\",\"period\":\"2026-01-01 through 2026-09-30\",\"owner\":\"Example Steel Ltd\",\"disclosure\":\"shareable\"}]"
+    },
+    "evidence": [
+      {
+        "id": "operator-1",
+        "title": "Operator production and emissions working paper",
+        "reference": "Operator document OPS-2026-Q3, pages 1-5",
+        "version": "2026-10-01 revision 1",
+        "period": "2026-01-01 through 2026-09-30",
+        "owner": "Example Steel Ltd",
+        "disclosure": "shareable"
+      }
+    ],
+    "issues": [
+      {
+        "fieldId": "cbam_pkg_coverage_end",
+        "ruleId": "PARTIAL_YEAR",
+        "severity": "warning",
+        "message": "Partial-year / YTD data are provisional. Do not represent these values as a completed annual operator report.",
+        "sourceRefs": [
+          "TR25",
+          "TR26"
+        ]
+      },
+      {
+        "fieldId": "cbam_pkg_cn_review",
+        "ruleId": "CN_REVIEW",
+        "severity": "warning",
+        "message": "A reviewer must confirm classification and goods-specific CBAM scope. Eight digits alone do not establish applicability.",
+        "sourceRefs": [
+          "TR01",
+          "TR25"
+        ]
+      },
+      {
+        "fieldId": "cbam_pkg_verification_status",
+        "ruleId": "UNVERIFIED_DATA",
+        "severity": "warning",
+        "message": "Data have not been declared verified. Actual values require appropriate accredited verification for regulatory use; this package can be ready for review only.",
+        "sourceRefs": [
+          "TR25",
+          "TR26"
+        ]
+      },
+      {
+        "fieldId": "_package",
+        "ruleId": "REVIEW_ONLY",
+        "severity": "warning",
+        "message": "This is a preparation/review package, not the mandatory operator emissions report, a CBAM declaration, a verification statement or confirmation of legal readiness.",
+        "sourceRefs": [
+          "TR25",
+          "TR26"
+        ]
+      }
+    ],
+    "isReady": true,
+    "coverage": "partial",
+    "calculations": {
+      "massTonnes": 12,
+      "directLotEmissions": 30,
+      "indirectLotEmissions": 6
+    }
+  },
+  "canEdit": true
+}

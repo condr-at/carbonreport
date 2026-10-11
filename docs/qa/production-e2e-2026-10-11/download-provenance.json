@@ -1,0 +1,7 @@
+{
+  "source": "Production browser click: Download review package (.zip)",
+  "page": "https://carbonreport.app/projects/c56321c8-4d0b-4eb0-bbc7-819fc29054aa/reports/d59b54f9-dfb4-454b-9101-ac47ddb3ac3c",
+  "downloadedFilename": "cbam-supplier-review-v7 (1).zip",
+  "sizeBytes": 36470,
+  "note": "Download event waiter timed out; page confirmed Package downloaded, actual browser Downloads file matched new project/report/version."
+}

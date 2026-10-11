@@ -1,20 +1,31 @@
 import { Resend } from 'resend'
 
-const resendClient = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
-const fromEmail = process.env.FROM_EMAIL ?? 'Carbon Report <noreply@carbonreport.app>'
+/** `sent` means accepted for sending, not confirmed inbox delivery. */
+export type EmailDeliveryResult = { status: 'sent' | 'not_sent' }
 
-async function sendEmail(to: string, subject: string, html: string) {
-  if (!resendClient) {
-    console.warn('Resend not configured. Skipping email send for %s', subject)
-    return
+async function sendEmail(to: string, subject: string, html: string): Promise<EmailDeliveryResult> {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    console.warn('Email sending is unavailable: missing configuration')
+    return { status: 'not_sent' }
   }
 
-  await resendClient.emails.send({
-    from: fromEmail,
-    to,
-    subject,
-    html,
-  })
+  try {
+    const result = await new Resend(apiKey).emails.send({
+      from: process.env.FROM_EMAIL ?? 'Carbon Report <noreply@carbonreport.app>',
+      to,
+      subject,
+      html,
+    })
+    if (result.error || !result.data?.id) {
+      console.warn('Email request was not accepted for sending')
+      return { status: 'not_sent' }
+    }
+    return { status: 'sent' }
+  } catch {
+    console.warn('Email request could not be completed')
+    return { status: 'not_sent' }
+  }
 }
 
 export async function sendVerificationEmail(params: { to: string; name?: string | null; link: string }) {
@@ -35,7 +46,7 @@ export async function sendVerificationEmail(params: { to: string; name?: string 
     </div>
   `
 
-  await sendEmail(to, subject, html)
+  return sendEmail(to, subject, html)
 }
 
 export async function sendPasswordResetEmail(params: { to: string; link: string }) {
@@ -55,5 +66,5 @@ export async function sendPasswordResetEmail(params: { to: string; link: string 
     </div>
   `
 
-  await sendEmail(to, subject, html)
+  return sendEmail(to, subject, html)
 }

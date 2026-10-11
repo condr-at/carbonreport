@@ -56,19 +56,23 @@ export async function POST(request: Request) {
     })
 
     const tokens = await issueSessionTokens(user)
-    const verificationToken = await buildEmailVerificationToken(user)
-    const baseUrl = await getBaseUrl()
-    const verifyLink = `${baseUrl.replace(/\/$/, '')}/api/auth/verify-email/${verificationToken}`
-
-    await sendVerificationEmail({
-      to: user.email,
-      name: user.name,
-      link: verifyLink,
-    })
+    let verificationEmailStatus: 'sent' | 'not_sent' = 'not_sent'
+    try {
+      const verificationToken = await buildEmailVerificationToken(user)
+      const baseUrl = await getBaseUrl()
+      const verifyLink = `${baseUrl.replace(/\/$/, '')}/api/auth/verify-email/${verificationToken}`
+      const delivery = await sendVerificationEmail({ to: user.email, name: user.name, link: verifyLink })
+      verificationEmailStatus = delivery.status
+    } catch {
+      // Account creation succeeded. A mail-preparation failure must not turn it
+      // into a failed registration that traps the user behind a duplicate email.
+      console.warn('Verification email could not be prepared after registration')
+    }
 
     const response = NextResponse.json(
       {
         user: serializeUser(user),
+        verification_email: { status: verificationEmailStatus },
       },
       { status: 201 },
     )

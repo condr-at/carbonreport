@@ -1,0 +1,234 @@
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "carbonreport_e2e_test", schema "public" at "127.0.0.1:5432"
+
+The PostgreSQL database "carbonreport_e2e_test" schema "public" at "127.0.0.1:5432" was successfully reset.
+
+🚀  Your database is now in sync with your Prisma schema. Done in 83ms
+
+Prepared field catalogue in carbonreport_e2e_test; no demo users or project fixtures seeded.
+   ▲ Next.js 15.5.27
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 12.6s
+   Linting and checking validity of types ...
+
+./src/app/api/batch/route.ts
+5:5  Warning: 'validateDataset' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/projects/route.ts
+15:29  Warning: 'getAllReportTemplates' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/dashboard-greeting.tsx
+13:10  Warning: 'isMounted' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/layouts/project-layout.tsx
+65:10  Warning: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/server-data/metrics.ts
+1:10  Warning: 'headers' is defined but never used.  @typescript-eslint/no-unused-vars
+4:7  Warning: 'HEADER_NAME' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/48) ...
+   Generating static pages (12/48)
+   Generating static pages (24/48)
+   Generating static pages (36/48)
+ ✓ Generating static pages (48/48)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                                Size  First Load JS
+┌ ƒ /                                                                   5.65 kB         199 kB
+├ ƒ /_not-found                                                           276 B         103 kB
+├ ƒ /api/auth/forgot-password                                             276 B         103 kB
+├ ƒ /api/auth/login                                                       276 B         103 kB
+├ ƒ /api/auth/logout                                                      276 B         103 kB
+├ ƒ /api/auth/refresh                                                     276 B         103 kB
+├ ƒ /api/auth/register                                                    276 B         103 kB
+├ ƒ /api/auth/resend-verification                                         276 B         103 kB
+├ ƒ /api/auth/reset-password/[token]                                      276 B         103 kB
+├ ƒ /api/auth/verify-email/[token]                                        276 B         103 kB
+├ ƒ /api/batch                                                            276 B         103 kB
+├ ƒ /api/contacts                                                         276 B         103 kB
+├ ƒ /api/contacts/[id]                                                    276 B         103 kB
+├ ƒ /api/data-requests                                                    276 B         103 kB
+├ ƒ /api/data-requests/[id]/complete                                      276 B         103 kB
+├ ƒ /api/data-requests/[id]/revoke                                        276 B         103 kB
+├ ƒ /api/data-requests/bulk                                               276 B         103 kB
+├ ƒ /api/data-requests/complete-bulk                                      276 B         103 kB
+├ ƒ /api/data-requests/reassign                                           276 B         103 kB
+├ ƒ /api/data-requests/remind                                             276 B         103 kB
+├ ƒ /api/data-requests/resend-bulk                                        276 B         103 kB
+├ ƒ /api/data-requests/revoke-bulk                                        276 B         103 kB
+├ ƒ /api/dataset-fields                                                   276 B         103 kB
+├ ƒ /api/organizations                                                    276 B         103 kB
+├ ƒ /api/organizations/[organizationId]                                   276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/invite                            276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members                           276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]            276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]/accept     276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]/decline    276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/plan/upgrade                      276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/restore                           276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/usage                             276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/usage/recompute                   276 B         103 kB
+├ ƒ /api/organizations/current                                            276 B         103 kB
+├ ƒ /api/plan-definitions                                                 276 B         103 kB
+├ ƒ /api/projects                                                         276 B         103 kB
+├ ƒ /api/projects/[id]                                                    276 B         103 kB
+├ ƒ /api/projects/[id]/contacts                                           276 B         103 kB
+├ ƒ /api/projects/[id]/data-requests                                      276 B         103 kB
+├ ƒ /api/projects/[id]/dataset                                            276 B         103 kB
+├ ƒ /api/projects/[id]/dataset/items                                      276 B         103 kB
+├ ƒ /api/projects/[id]/dataset/items/[itemId]                             276 B         103 kB
+├ ƒ /api/projects/[id]/duplicate                                          276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-template                                    276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-template/reset                              276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-templates                                   276 B         103 kB
+├ ƒ /api/projects/[id]/reports/[reportId]                                 276 B         103 kB
+├ ƒ /api/projects/[id]/reports/[reportId]/supplier-package                276 B         103 kB
+├ ƒ /api/projects/[id]/restore                                            276 B         103 kB
+├ ƒ /api/projects/[id]/status                                             276 B         103 kB
+├ ƒ /api/uploads/local                                                    276 B         103 kB
+├ ƒ /api/uploads/relay                                                    276 B         103 kB
+├ ƒ /api/uploads/sign                                                     276 B         103 kB
+├ ƒ /api/user/settings                                                    276 B         103 kB
+├ ƒ /api/user/settings/change-password                                    276 B         103 kB
+├ ƒ /contacts                                                           7.18 kB         232 kB
+├ ƒ /contacts/[id]                                                        419 B         244 kB
+├ ƒ /dashboard                                                          3.47 kB         225 kB
+├ ƒ /forgot-password                                                    4.28 kB         160 kB
+├ ƒ /illustrations-demo                                                 12.2 kB         126 kB
+├ ƒ /login                                                              1.52 kB         162 kB
+├ ƒ /no-organization                                                    3.49 kB         139 kB
+├ ƒ /profile                                                            6.71 kB         164 kB
+├ ƒ /projects                                                           8.91 kB         201 kB
+├ ƒ /projects/[id]                                                      3.59 kB         194 kB
+├ ƒ /projects/[id]/data-requests                                          10 kB         188 kB
+├ ƒ /projects/[id]/dataset                                              4.57 kB         197 kB
+├ ƒ /projects/[id]/files                                                  276 B         103 kB
+├ ƒ /projects/[id]/mailto-templates                                     5.64 kB         116 kB
+├ ƒ /projects/[id]/reports                                                166 B         107 kB
+├ ƒ /projects/[id]/reports/[reportId]                                   8.37 kB         208 kB
+├ ƒ /projects/new                                                       29.4 kB         153 kB
+├ ƒ /projects/new/questionnaire                                         11.6 kB         184 kB
+├ ƒ /projects/new/select-reports                                        5.57 kB         196 kB
+├ ƒ /register                                                           2.35 kB         162 kB
+├ ƒ /requests                                                             407 B         244 kB
+├ ƒ /reset-password                                                     4.57 kB         161 kB
+├ ƒ /settings                                                             276 B         103 kB
+├ ƒ /settings/billing                                                    1.6 kB         193 kB
+├ ƒ /settings/danger                                                     7.2 kB         173 kB
+├ ƒ /settings/members                                                   8.17 kB         204 kB
+├ ƒ /settings/profile                                                   8.09 kB         174 kB
+├ ƒ /settings/usage                                                     1.98 kB         194 kB
+└ ƒ /verify-email                                                       3.94 kB         160 kB
++ First Load JS shared by all                                            103 kB
+  ├ chunks/7266-a87ffd3545c85183.js                                     46.8 kB
+  ├ chunks/8f9731b9-3db44645759da43c.js                                 54.2 kB
+  └ other shared chunks (total)                                         1.96 kB
+
+
+ƒ Middleware                                                            40.1 kB
+
+ƒ  (Dynamic)  server-rendered on demand
+
+   ▲ Next.js 15.5.27
+   - Local:        http://127.0.0.1:3108
+   - Network:      http://127.0.0.1:3108
+
+ ✓ Starting...
+ ✓ Ready in 406ms
+TAP version 13
+Email sending is unavailable: missing configuration
+[project-layout] timings [ { metric: 'cache-project-summary', durationMs: 10.9 } ]
+# Subtest: fresh browser registration → supplier ZIP, persisted data, invalid input and outsider isolation
+    # Subtest: register and create organization, product and supplier report through UI
+    ok 1 - register and create organization, product and supplier report through UI
+      ---
+      duration_ms: 5356.280792
+      type: 'test'
+      ...
+    # Subtest: empty download is blocked; incomplete and invalid drafts persist; fixing input restores readiness
+    not ok 2 - empty download is blocked; incomplete and invalid drafts persist; fixing input restores readiness
+      ---
+      duration_ms: 313.207542
+      type: 'test'
+      location: '/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:115:13'
+      failureType: 'testCodeFailure'
+      error: |-
+        cbam_pkg_coverage_start
+
+        '' !== '2026-01-01'
+
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: '2026-01-01'
+      actual: ''
+      operator: 'strictEqual'
+      stack: |-
+        field (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:37:10)
+        async TestContext.<anonymous> (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:120:60)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:115:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+Email sending is unavailable: missing configuration
+    # Subtest: a separately registered user cannot list, read, update or export owner data
+    not ok 3 - a separately registered user cannot list, read, update or export owner data
+      ---
+      duration_ms: 1671.347875
+      type: 'test'
+      location: '/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:168:13'
+      failureType: 'testCodeFailure'
+      error: "Cannot read properties of undefined (reading 'datasetVersion')"
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:174:214)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async TestContext.<anonymous> (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:168:5)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    # Subtest: actual browser ZIP matches saved version, independent arithmetic and CSV evidence
+    not ok 4 - actual browser ZIP matches saved version, independent arithmetic and CSV evidence
+      ---
+      duration_ms: 0.579042
+      type: 'test'
+      location: '/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:192:13'
+      failureType: 'testCodeFailure'
+      error: "Cannot read properties of undefined (reading 'datasetVersion')"
+      code: 'ERR_TEST_FAILURE'
+      name: 'TypeError'
+      stack: |-
+        TestContext.<anonymous> (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:193:69)
+        Test.runInAsyncScope (node:async_hooks:214:14)
+        Test.run (node:internal/test_runner/test:1047:25)
+        Test.start (node:internal/test_runner/test:944:17)
+        TestContext.test (node:internal/test_runner/test:373:20)
+        TestContext.<anonymous> (file:///private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:192:13)
+        async Test.run (node:internal/test_runner/test:1054:7)
+        async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+      ...
+    1..4
+not ok 1 - fresh browser registration → supplier ZIP, persisted data, invalid input and outsider isolation
+  ---
+  duration_ms: 9916.378833
+  type: 'test'
+  location: '/private/var/folders/l2/132s0fq91ml60fgmp4dpz7j00000gp/T/carbonreport-browser-e2e-2cYrUx/scripts/e2e/supplier-package.test.mjs:62:1'
+  failureType: 'subtestsFailed'
+  error: '3 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..1
+# tests 5
+# suites 0
+# pass 1
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10388.968334

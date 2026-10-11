@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth'
 import { buildEmailVerificationToken } from '@/lib/auth/service'
 import { getBaseUrl } from '@/lib/server-utils'
 import { sendVerificationEmail } from '@/lib/auth/email'
-import { ensureApiError, errorResponse } from '@/lib/api-error'
+import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 
 export async function POST() {
   try {
@@ -16,7 +16,10 @@ export async function POST() {
     const token = await buildEmailVerificationToken(user)
     const baseUrl = await getBaseUrl()
     const link = `${baseUrl.replace(/\/$/, '')}/api/auth/verify-email/${token}`
-    await sendVerificationEmail({ to: user.email, name: user.name, link })
+    const delivery = await sendVerificationEmail({ to: user.email, name: user.name, link })
+    if (delivery.status !== 'sent') {
+      throw new ApiError(503, 'SERVICE_UNAVAILABLE', 'We could not send the verification email. Please try again later.')
+    }
 
     return NextResponse.json({ status: 'sent' })
   } catch (error) {

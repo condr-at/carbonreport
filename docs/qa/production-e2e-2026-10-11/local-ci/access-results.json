@@ -1,0 +1,26 @@
+{
+  "denied": [
+    {
+      "pathname": "/api/projects/857173a7-e67b-402b-aa0a-a0b7f70368d2",
+      "status": 403
+    },
+    {
+      "pathname": "/api/projects/857173a7-e67b-402b-aa0a-a0b7f70368d2/dataset",
+      "status": 403
+    },
+    {
+      "pathname": "/api/projects/857173a7-e67b-402b-aa0a-a0b7f70368d2/reports/d107ab70-e073-4b93-9119-902dde6bc0b6",
+      "status": 403
+    },
+    {
+      "pathname": "/api/projects/857173a7-e67b-402b-aa0a-a0b7f70368d2/reports/d107ab70-e073-4b93-9119-902dde6bc0b6/supplier-package",
+      "status": 403
+    },
+    {
+      "pathname": "/api/projects/857173a7-e67b-402b-aa0a-a0b7f70368d2/reports/d107ab70-e073-4b93-9119-902dde6bc0b6/supplier-package?format=zip&expectedDatasetVersion=7",
+      "status": 403
+    }
+  ],
+  "patchStatus": 403,
+  "unchangedVersion": 7
+}

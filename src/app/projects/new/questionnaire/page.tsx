@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, MouseEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PageHeader } from '@/components/layouts/page-header'
 import { TitleStatusStepper } from '@/components/stepper/title-status'
@@ -238,19 +238,23 @@ function QuestionnaireContent() {
     setActiveStepIndex((prev) => Math.max(prev - 1, 0))
   }, [])
 
-  const handleSkipCurrentStep = () => {
+  const handleSkipCurrentStep = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
     if (!currentStep) return
     persistAnswers(skipQuestionGroups(answers, currentStep.visibleGroups))
     goToNextStep()
   }
 
-  const handleNextStep = () => {
+  const handleNextStep = (event: MouseEvent<HTMLButtonElement>) => {
+    // Cancel this click before React can render the final submit control.
+    event.preventDefault()
     if (!isLastStep) {
       goToNextStep()
     }
   }
 
-  const handlePreviousStep = () => {
+  const handlePreviousStep = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
     if (hasPreviousStep) {
       goToPreviousStep()
     }
@@ -455,7 +459,7 @@ function QuestionnaireContent() {
                   </Button>
                 )}
                 {isLastStep ? (
-                  <Button type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
+                  <Button key="submit-questionnaire" type="submit" className="flex-1 sm:flex-none" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -470,6 +474,7 @@ function QuestionnaireContent() {
                   </Button>
                 ) : (
                   <Button
+                    key="next-questionnaire-step"
                     type="button"
                     className="flex-1 sm:flex-none"
                     onClick={handleNextStep}

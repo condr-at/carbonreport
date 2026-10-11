@@ -1,0 +1,82 @@
+{
+  "environment": "isolated local production Next build; no production/dev DB access",
+  "database": "127.0.0.1:5432/carbonreport_e2e_test",
+  "app": "http://127.0.0.1:3108",
+  "node": "22.23.2",
+  "chrome": "154.0.8037.99",
+  "baseCommit": "41382f13aa6b57b2eadb84f9e8f2ccbec4b0205e",
+  "workingTreeEditsIncluded": true,
+  "command": "E2E_DATABASE_URL=postgresql://user@127.0.0.1:5432/carbonreport_e2e_test E2E_RESET_DATABASE=1 E2E_NODE_MODULES=/tmp/carbonreport-deploy-check-a019946/node_modules E2E_CHROME_EXECUTABLE=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome node scripts/e2e/run.mjs",
+  "results": {
+    "guards": {
+      "pass": 2
+    },
+    "sanity": {
+      "pass": 120,
+      "topLevel": 115,
+      "packageScriptUnchangedFromHEAD": true
+    },
+    "build": "pass (existing unused-variable warnings retained in run.log)",
+    "browser": {
+      "pass": 6,
+      "subtests": 5
+    },
+    "outsiderHtmlStatuses": [
+      404,
+      404,
+      404
+    ],
+    "zipDirect": 30,
+    "zipIndirect": 6,
+    "browserErrors": []
+  },
+  "priorFailures": [
+    {
+      "file": "initial-date-helper-failure.log",
+      "classification": "harness date input failed to update React state; corrected by real keyboard nudge after fill"
+    },
+    {
+      "file": "before-ssr-fix.log",
+      "classification": "real app leak: outsider report shell contained owner project name despite API403; fixed scoped SSR reads and retested actual HTTP HTML + visible UI on all3 pages"
+    }
+  ],
+  "notes": [
+    "Five browser subtests plus their parent are counted by node:test as six tests.",
+    "Full test:sanity script is unchanged from HEAD; separate integration suite not rerun here.",
+    "Verifier HTML text comparison normalized HTML entities after final browser run; independently rerun against the saved ZIP, same pass and SHA.",
+    "CI workflow written but hosted GitHub Actions run awaits commit/push.",
+    "No new dependencies; copied temporary build and local server removed after run.",
+    "Local synthetic test DB remains for review and is reset only by an explicitly acknowledged next run."
+  ],
+  "credentialPatternRedactions": {
+    "run.log": 0,
+    "expected-package.json": 0,
+    "zip-verification.json": 0,
+    "access-results.json": 0,
+    "outsider-ssr-results.json": 0,
+    "questionnaire-navigation.json": 0,
+    "browser-errors.json": 0,
+    "outsider-overview.html": 0,
+    "outsider-dataset.html": 0,
+    "outsider-report.html": 0,
+    "before-ssr-fix.log": 0,
+    "initial-date-helper-failure.log": 0
+  },
+  "sourceSha256": {
+    "package.json": "82fd846f996634899c323499aa115a1ddd1ab0dff26fcd37c0b71f8d316c1c53",
+    "src/lib/server-data/projects.ts": "4851d53d03fe211763490cea7a84df08cc5247e049961f923ceea527970e6ee2",
+    "src/app/projects/new/questionnaire/page.tsx": "1f97e5b2891150a3cab09fc7e58ebe2d6281b683660e8f9cee50e417868f0445",
+    "src/app/verify-email/page.tsx": "6b0878561108c4feb260d05b75dba81d126e8074a233a29bd81c194808efa4e3",
+    "src/app/verify-email/verify-email-content.tsx": "602f768f68dc0e4bbacbb488aa03d124b4e7cd62079500f5ec59a40c52f49132",
+    "src/app/api/auth/register/route.ts": "30b7e60e776dc74238ca16956ae249b9b98bbcc8c770e759622417c53fb212cc",
+    "src/app/api/auth/verify-email/[token]/route.ts": "9ec6aa6c9e00889dd2e21c3bbab8ef08aff0ab5bd51afdf81968f30092cdb475",
+    "scripts/e2e/run.mjs": "ae841fc3f2b6b1ee1c939ebbce05629dfadcf16b1530617c08bf5e00a5cf1343",
+    "scripts/e2e/fixture.mjs": "2f6de44d5265d96d5a9aa1541494d0a855386182050d04fc5e8d16a9c8c5f716",
+    "scripts/e2e/seed.ts": "ed2348c85062300c71bc2f49d96bb1524ed12baaff3e90829838c994dfb58030",
+    "scripts/e2e/README.md": "dcee901abed9ef3b53e899972883874793e7a7168edbd537c9aab8b1ef5d8eab",
+    "scripts/e2e/config.test.mjs": "90e3b9957593b3e6282a9c7275a6090f15fde24b16f0303cb3da13ef1c30a968",
+    "scripts/e2e/verify-zip.py": "42c439491565f9c73c20d9032a6f4ac24269670557e2b07fa2a70a904062a178",
+    "scripts/e2e/supplier-package.test.mjs": "1886410858271c7baffcb772043c734ac4c44272a5351e86f16f235333c8ef6d",
+    "scripts/e2e/config.mjs": "a75c1600c98d572f397f80a7b6518c3de28d319adf59ae8a9bd4d3427be7f36e"
+  }
+}

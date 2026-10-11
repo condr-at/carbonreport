@@ -15,15 +15,13 @@ export async function GET(
 ) {
   try {
     const { token } = await params
-    console.log('[VerifyEmail] Token received:', token)
 
     const claims = await verifyEmailVerificationToken(token)
-    console.log('[VerifyEmail] Claims:', claims)
 
     const user = await prisma.user.findUnique({ where: { id: claims.sub } })
 
     if (!user || user.deletedAt) {
-      console.error('[VerifyEmail] User not found or deleted:', claims.sub)
+      console.warn('[VerifyEmail] User not available')
       throw new ApiError(400, 'INVALID_TOKEN', 'Verification token is invalid')
     }
 
@@ -47,18 +45,16 @@ export async function GET(
       return NextResponse.json({ status: 'verified' })
     }
 
-    const url = new URL(request.url)
-    url.pathname = '/verify-email'
+    const url = new URL('/verify-email', request.url)
     url.searchParams.set('status', 'verified')
     return NextResponse.redirect(url)
   } catch (error) {
-    console.error('[VerifyEmail] Error:', error)
+    console.warn('[VerifyEmail] Verification failed')
     if (wantsJson(request)) {
       return errorResponse(ensureApiError(error, 'Failed to verify email'))
     }
 
-    const url = new URL(request.url)
-    url.pathname = '/verify-email'
+    const url = new URL('/verify-email', request.url)
     url.searchParams.set('status', 'error')
     return NextResponse.redirect(url)
   }

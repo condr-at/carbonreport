@@ -1,0 +1,60 @@
+name: Supplier package browser E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  supplier-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: carbonreport_e2e_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d carbonreport_e2e_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      E2E_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/carbonreport_e2e_test
+      E2E_RESET_DATABASE: '1'
+      E2E_PORT: '3108'
+      E2E_CHROME_EXECUTABLE: /usr/bin/google-chrome
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Verify runner tools and destructive-operation guards
+        run: |
+          google-chrome --version
+          python3 --version
+          npm run test:e2e:guards
+      - name: Fresh registration through verified supplier ZIP and isolation
+        run: npm run test:e2e
+      - name: Preserve browser evidence, downloads and server/build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supplier-package-e2e-${{ github.run_attempt }}
+          path: .artifacts/e2e
+          if-no-files-found: warn
+          retention-days: 7

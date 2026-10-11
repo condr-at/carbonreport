@@ -24,6 +24,10 @@ test('verifies user and returns JSON success when token is valid', async (t) => 
   }
 
   const token = await buildEmailVerificationToken(user)
+  const logs: unknown[][] = []
+  for (const method of ['log', 'warn', 'error'] as const) {
+    t.mock.method(console, method, (...args: unknown[]) => { logs.push(args) })
+  }
 
   const originalFindUnique = prisma.user.findUnique
   const originalUpdate = prisma.user.update
@@ -52,6 +56,11 @@ test('verifies user and returns JSON success when token is valid', async (t) => 
   assert.equal(response.status, 200)
   assert.equal(payload.status, 'verified')
   assert.equal(updateCalled, true)
+  const logged = JSON.stringify(logs)
+  assert.equal(logged.includes(token), false)
+  assert.equal(logged.includes(user.email), false)
+  assert.equal(logged.includes(user.id), false)
+  assert.doesNotMatch(logged, /"ctx"|"claims"/i)
 })
 
 test('returns JSON error when token is invalid', async () => {
@@ -66,6 +75,11 @@ test('returns JSON error when token is invalid', async () => {
 
   assert.equal(response.status, 500)
   assert.equal(payload.code, 'INTERNAL_ERROR')
+
+  const htmlResponse = await GET(new Request('http://localhost/api/auth/verify-email/bad-token?token=bad-token&private=discard'), {
+    params: Promise.resolve({ token: 'bad-token' }),
+  })
+  assert.equal(htmlResponse.headers.get('location'), 'http://localhost/verify-email?status=error')
 })
 
 test('redirects to verify-email page when HTML flow is used', async (t) => {
@@ -91,7 +105,7 @@ test('redirects to verify-email page when HTML flow is used', async (t) => {
     ;(prisma.user as any).update = originalUpdate
   })
 
-  const request = new Request(`http://localhost/api/auth/verify-email/${token}`)
+  const request = new Request(`http://localhost/api/auth/verify-email/${token}?token=${token}&private=discard`)
   const response = await GET(request, { params: Promise.resolve({ token }) })
 
   assert.equal(response.status, 307)

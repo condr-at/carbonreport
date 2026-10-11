@@ -1,125 +1,35 @@
-'use client'
-
-import { Suspense, useState } from 'react'
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { toast } from 'sonner'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { Suspense } from 'react'
+import { getCurrentUser } from '@/lib/auth'
+import { isApiError } from '@/lib/api-error'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PublicPageFrame } from '@/components/layouts/public-page-frame'
+import { VerifyEmailContent } from './verify-email-content'
 
-function getStatusCopy(status: string | null, message?: string | null) {
-  switch (status) {
-    case 'verified':
-      return {
-        title: 'Email verified',
-        description: 'You can continue to your dashboard.',
-        variant: 'success' as const,
-      }
-    case 'error':
-      return {
-        title: 'Link expired or invalid',
-        description: message ? `Error: ${message}` : 'Request a new verification email below.',
-        variant: 'error' as const,
-      }
-    case 'sent':
-      return {
-        title: 'Check your inbox',
-        description: 'We sent you a link to verify your email address.',
-        variant: 'info' as const,
-      }
-    default:
-      return {
-        title: 'Verify your email',
-        description: 'We use email verification to keep your account secure.',
-        variant: 'info' as const,
-      }
-  }
-}
+export const dynamic = 'force-dynamic'
 
-function VerifyEmailFallback() {
-  return (
-    <PublicPageFrame>
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle>Checking verification status…</CardTitle>
-          <CardDescription>This will just take a second.</CardDescription>
-        </CardHeader>
-      </Card>
-    </PublicPageFrame>
-  )
-}
-
-function VerifyEmailContent() {
-  const searchParams = useSearchParams()
-  const statusParam = searchParams.get('status')
-  const messageParam = searchParams.get('message')
-  const status = getStatusCopy(statusParam, messageParam)
-  const [isLoading, setIsLoading] = useState(false)
-  const isVerified = statusParam === 'verified'
-
-  async function handleResend() {
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/auth/resend-verification', {
-        method: 'POST',
-        credentials: 'include',
-      })
-
-      const payload = await response.json().catch(() => ({}))
-
-      if (!response.ok) {
-        throw new Error(payload.error ?? 'Unable to resend verification email')
-      }
-
-      toast.success('Verification email sent')
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to resend verification email')
-    } finally {
-      setIsLoading(false)
-    }
+export default async function VerifyEmailPage() {
+  let hasSession = false
+  let emailVerified = false
+  try {
+    const user = await getCurrentUser()
+    hasSession = true
+    emailVerified = user.emailVerified
+  } catch (error) {
+    if (!isApiError(error) || error.status !== 401) throw error
   }
 
   return (
-    <PublicPageFrame>
-      <Card className="w-full max-w-lg">
-        <CardHeader>
-          <CardTitle>{status.title}</CardTitle>
-          <CardDescription>{status.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5 text-sm text-muted-foreground">
-          {!isVerified && (
-            <p>
-              Open the email from <span className="text-foreground font-medium">Carbon Report</span> and click the
-              verification link. This confirms you own the address you used to register.
-            </p>
-          )}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            {isVerified ? (
-              <Button asChild className="w-full">
-                <Link href="/login">Sign in</Link>
-              </Button>
-            ) : (
-              <>
-                <Button onClick={handleResend} disabled={isLoading}>
-                  {isLoading ? 'Sending…' : 'Resend email'}
-                </Button>
-                <Link href="/login" className="text-primary hover:underline">
-                  Back to sign in
-                </Link>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </PublicPageFrame>
-  )
-}
-
-export default function VerifyEmailPage() {
-  return (
-    <Suspense fallback={<VerifyEmailFallback />}>
-      <VerifyEmailContent />
+    <Suspense fallback={
+      <PublicPageFrame>
+        <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle>Checking verification status…</CardTitle>
+            <CardDescription>This will just take a second.</CardDescription>
+          </CardHeader>
+        </Card>
+      </PublicPageFrame>
+    }>
+      <VerifyEmailContent hasSession={hasSession} emailVerified={emailVerified} />
     </Suspense>
   )
 }

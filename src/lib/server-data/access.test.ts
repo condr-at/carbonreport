@@ -7,7 +7,7 @@ import { ApiError } from '@/lib/api-error'
 import { clearCache } from '@/lib/cache'
 import { getContactsOverview, getContactDetail } from './contacts'
 import { getGlobalDataRequests, getProjectsForRequests } from './requests'
-import { getProjectContacts, getProjectDataRequests } from './projects'
+import { getProjectContacts, getProjectDataRequests, getProjectSummary, getProjectSummaryCached, getProjectDataset } from './projects'
 import { GET as listContacts } from '@/app/api/contacts/route'
 import { GET as contactDetail } from '@/app/api/contacts/[id]/route'
 import { GET as listRequests } from '@/app/api/data-requests/route'
@@ -47,6 +47,8 @@ test('contact and request reads isolate accepted organization memberships across
     organizationId: membership.organizationId,
     name: membership.organizationId,
     deletedAt: null,
+    status: 'ACTIVE', projectType: 'PRODUCT', createdAt: date, datasetVersion: 1,
+    dataset: { data_points: [{ field_id: 'product_name', value: membership.organizationId }] },
     createdBy: { name: membership.userId },
   }))
   const requests = projects.map((project, index) => ({
@@ -75,6 +77,24 @@ test('contact and request reads isolate accepted organization memberships across
   t.after(__resetCurrentUserResolver)
   clearCache()
   t.after(clearCache)
+
+  await t.test('project SSR summary and dataset exclude other tenants and invalid memberships', async () => {
+    assert.equal((await getProjectSummary('project-org-a'))?.name, 'org-a')
+    assert.equal((await getProjectDataset('project-org-a'))?.dataset?.data_points[0].value, 'org-a')
+    for (const id of ['project-org-b', 'project-org-pending', 'project-org-deleted', 'missing']) {
+      assert.equal(await getProjectSummaryCached(id), null, id)
+      assert.equal(await getProjectDataset(id), null, id)
+    }
+    projects[0].deletedAt = date as any
+    assert.equal(await getProjectSummary('project-org-a'), null)
+    assert.equal(await getProjectDataset('project-org-a'), null)
+    projects[0].deletedAt = null
+    __setCurrentUserResolver(async () => ({ id: 'user-b' } as any))
+    assert.equal(await getProjectSummaryCached('project-org-a'), null)
+    assert.equal(await getProjectDataset('project-org-a'), null)
+    assert.equal((await getProjectSummaryCached('project-org-b'))?.name, 'org-b')
+    __setCurrentUserResolver(async () => ({ id: 'user-a' } as any))
+  })
 
   await t.test('page hydration excludes other, pending and deleted organizations', async () => {
     assert.deepEqual((await getContactsOverview()).map((row) => row.id), ['contact-org-a'])
@@ -127,6 +147,8 @@ test('contact and request reads isolate accepted organization memberships across
     assert.deepEqual(await getContactsOverview(), [])
     assert.deepEqual(await getGlobalDataRequests({}), [])
     assert.deepEqual(await getProjectsForRequests(), [])
+    assert.equal(await getProjectSummary('project-org-a'), null)
+    assert.equal(await getProjectDataset('project-org-a'), null)
     __setCurrentUserResolver(async () => { throw new ApiError(401, 'UNAUTHORIZED', 'Not authenticated') })
     assert.equal((await listContacts()).status, 401)
     assert.equal((await listRequests(new NextRequest('http://localhost/api/data-requests'))).status, 401)

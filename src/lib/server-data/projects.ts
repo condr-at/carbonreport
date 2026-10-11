@@ -29,9 +29,11 @@ export async function getProjectSummary(
   projectId: string,
   tracker?: ServerTimingTracker
 ): Promise<ProjectSummary | null> {
+  const organizationIds = await getAccessibleOrganizationIds();
+  if (!organizationIds.length) return null;
   const stopQuery = tracker?.start('db:project-summary');
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, organizationId: { in: organizationIds }, deletedAt: null },
     select: {
       id: true,
       name: true,
@@ -234,9 +236,11 @@ export async function getProjectDataset(
   projectId: string,
   tracker?: ServerTimingTracker
 ): Promise<ProjectDatasetPayload | null> {
+  const organizationIds = await getAccessibleOrganizationIds();
+  if (!organizationIds.length) return null;
   const stopDatasetQuery = tracker?.start('db:project-dataset');
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, organizationId: { in: organizationIds }, deletedAt: null },
     select: {
       dataset: true,
       datasetVersion: true,
