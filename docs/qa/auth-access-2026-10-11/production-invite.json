@@ -1,8 +1,18 @@
 {
-  "checkedAt": "2026-10-11T14:51:22.488Z",
+  "checkedAt": "2026-10-11T14:57:44.123Z",
   "scope": "Existing synthetic QA E2E organization and owner-authorized test recipient; no customer data or outbound invite email",
   "created": 201,
   "role": "VIEWER_READONLY",
-  "inviteStatus": "pending",
-  "pendingProjectRead": 403
+  "pendingProjectRead": 403,
+  "serverConfirmedStatus": "accepted",
+  "serverConfirmedRole": "VIEWER_READONLY",
+  "inviteStatusAtCreation": "pending",
+  "recipientUi": {
+    "page": "/settings/members",
+    "roleLabel": "Viewer",
+    "statusLabel": "Active",
+    "managementControlsVisible": false,
+    "description": "View your teammates. Only owners and admins can manage members.",
+    "screenshot": "production-viewer-members.png"
+  }
 }

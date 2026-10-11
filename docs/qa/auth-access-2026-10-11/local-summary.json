@@ -22,7 +22,7 @@
     "errors": 0,
     "warnings": 0
   },
-  "email": "disabled; real delivered reset link still pending",
+  "email": "Local suite disables outbound mail; separate production delivery evidence is recorded in release.json",
   "earlierFailures": [
     "build-first-failure.txt",
     "browser-first-failure.txt"

@@ -9,9 +9,11 @@
   "ciStatus": "completed",
   "realReset": {
     "requestUi": "If an account exists, you will receive an email with instructions",
-    "delivery": "Waiting for user confirmation",
-    "completion": "User must set new password and confirm sign-out/sign-in",
-    "requestSubmittedDate": "2026-10-11"
+    "delivery": "User confirmed receiving the reset email and opening its link",
+    "completion": "User confirmed changing the password, signing out and signing in with the new password",
+    "requestSubmittedDate": "2026-10-11",
+    "confirmedDate": "2026-10-11",
+    "oldCredentials": "Production independently returned 401 for the previously valid access token, refresh token and password; refresh cleared both cookies"
   },
   "ciConclusion": "success"
 }
