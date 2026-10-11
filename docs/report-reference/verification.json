@@ -1,0 +1,240 @@
+{
+  "checked_on": "2026-10-11",
+  "status": "passed",
+  "coverage": {
+    "catalog_captured_on": "2026-10-11",
+    "research_checked_on": [
+      "2026-10-11"
+    ],
+    "active_codes": 48,
+    "requirements_cards": 48,
+    "example_cards": 48,
+    "source_records": 143,
+    "downloaded_materials": 47,
+    "downloaded_bytes": 54246273,
+    "type_only_codes": 12,
+    "coverage": "all active code templates; first-pass source review, not normative approval"
+  },
+  "generated_files_checked_for_repeatability": 102,
+  "markdown_files_checked": 106,
+  "local_links_checked": 746,
+  "broken_local_links": 0,
+  "code_source_hashes_checked": 48,
+  "unmapped_assets": 0,
+  "asset_integrity_checks": [
+    {
+      "path": "docs/report-reference/assets/client-energy/epa-green-power-contracting-2018.pdf",
+      "pdf_pages": 12
+    },
+    {
+      "path": "docs/report-reference/assets/client-energy/esos-phase4-notification-fields.odt",
+      "zip_members": 6
+    },
+    {
+      "path": "docs/report-reference/assets/client-energy/esos-phase4-recommendations-template.odt",
+      "zip_members": 7
+    },
+    {
+      "path": "docs/report-reference/assets/client-energy/pact-v3.0.3-data-model.xlsx",
+      "zip_members": 13
+    },
+    {
+      "path": "docs/report-reference/assets/client-energy/pact-v3.0.3-openapi.yaml",
+      "pact_model_version": "3.0.3"
+    },
+    {
+      "path": "docs/report-reference/assets/client-energy/pcaf-disclosure-checklist-may-2025.pdf",
+      "pdf_pages": 8
+    },
+    {
+      "path": "docs/report-reference/assets/client-energy/pcaf-part-a-third-edition-2025.pdf",
+      "pdf_pages": 209
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/cdp-corporate-overview-2026.pdf",
+      "pdf_pages": 40
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/cdp-questionnaire-setup-preview-2026.pdf",
+      "pdf_pages": 13
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/gresb-public-asset-spreadsheet-2026.xlsx",
+      "zip_members": 44
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/hkex-issb-esg-code-comparison.pdf",
+      "pdf_pages": 20
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/ifrs-s2-transition-plan-guidance-2025.pdf",
+      "pdf_pages": 66
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/re100-reporting-guidance-2026.pdf",
+      "pdf_pages": 21
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/re100-technical-criteria-2025.pdf",
+      "pdf_pages": 45
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/sbti-v2-preliminary-submission.xlsx",
+      "zip_members": 23
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/secr-guidance-2019.pdf",
+      "pdf_pages": 152
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/sfdr-annex-i-pai-template.docx",
+      "zip_members": 47
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/tcfd-governance-workshop-2022.pdf",
+      "pdf_pages": 20
+    },
+    {
+      "path": "docs/report-reference/assets/disclosures-schemes/valmet-sustainability-statement-2024.pdf",
+      "pdf_pages": 81
+    },
+    {
+      "path": "docs/report-reference/assets/product-ghg/apple-iphone16-product-environmental-report-june2025.pdf",
+      "pdf_pages": 12
+    },
+    {
+      "path": "docs/report-reference/assets/product-ghg/ghg-corporate-reporting-template.docx",
+      "zip_members": 21
+    },
+    {
+      "path": "docs/report-reference/assets/product-ghg/ghg-inventory-reporting-template-2023.docx",
+      "zip_members": 23
+    },
+    {
+      "path": "docs/report-reference/assets/product-ghg/ghg-product-reporting-template.pdf",
+      "pdf_pages": 7
+    },
+    {
+      "path": "docs/report-reference/assets/product-ghg/rics-wlca-buildings-template.xlsx",
+      "zip_members": 36
+    },
+    {
+      "path": "docs/report-reference/assets/product-ghg/schueco-low-carbon-aluminium-epd-2025.pdf",
+      "pdf_pages": 9
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-benchmarks-20260206.xlsx",
+      "zip_members": 19
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-communication-template-20241213.xlsx",
+      "zip_members": 79
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-default-values-20260810.xlsx",
+      "zip_members": 385
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-faq-20260528.pdf",
+      "pdf_pages": 63
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-guidance-2-operators-20260814.pdf",
+      "pdf_pages": 15
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-guidance-3-methods-20260814.pdf",
+      "pdf_pages": 147
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-quarterly-importer-sample-v1.3.0.0.zip",
+      "zip_members": 5
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-quarterly-structure-v18.30.xlsx",
+      "zip_members": 106
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/cbam-quarterly-xsd-v18.30.zip",
+      "zip_members": 4
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/corsia-deadlines-newsletter-202602.pdf",
+      "pdf_pages": 6
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/corsia-emissions-report-etm4.xlsx",
+      "zip_members": 53
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/corsia-faq-202404.pdf",
+      "pdf_pages": 83
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/corsia-monitoring-plan-etm4.xlsx",
+      "zip_members": 72
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/corsia-resolution-a42-22.pdf",
+      "pdf_pages": 7
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/corsia-state-pairs-2026-ed6.pdf",
+      "pdf_pages": 4
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/corsia-verification-report-etm4.xlsx",
+      "zip_members": 48
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/ets-aer-installations-20260209.xlsx",
+      "zip_members": 76
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/ets-corsia-aircraft-aer-20260123.xlsx",
+      "zip_members": 83
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/ets-installation-verification-exemplar.pdf",
+      "pdf_pages": 13
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/mrv-ets-general-guidance.pdf",
+      "pdf_pages": 125
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/mrv-monitoring-plan-legal-template-crosswalk.pdf",
+      "pdf_pages": 3
+    },
+    {
+      "path": "docs/report-reference/assets/trade-transport/mrv-thetis-monitoring-plan-training-20240305.pdf",
+      "pdf_pages": 10
+    }
+  ],
+  "limits_bytes": {
+    "per_file": 10000000,
+    "collection": 120000000
+  },
+  "scope_notes": [
+    "No network calls in this validation; primary-source research and access failures are in research JSON and download manifests.",
+    "PDF page trees, ZIP member integrity and YAML model version checked; selected PDF pages visually reviewed during research. No comprehensive legal or numerical verification is implied.",
+    "CATALOG-01 refresh: current UI names/source hashes, historical findings separation, generated-file repeatability and local links rechecked; application evidence is in docs/qa/catalog-2026-10-11/REPORT.md. Original downloaded-asset integrity observations are retained; this refresh does not revalidate their legal content."
+  ],
+  "commands": [
+    "tsx scripts/collect-report-reference-catalog.ts 2026-10-11",
+    "python3 scripts/build-report-reference-library.py"
+  ],
+  "script_sha256": {
+    "scripts/collect-report-reference-catalog.ts": "2d71fc6e3b0620340b2460084aa5ff0b9629b592b8ad9fd89ebb0ce4a57ebc20",
+    "scripts/build-report-reference-library.py": "bf7dc4de4a20ce215a3968b4ad12834bf7795a330117756eb9ba49774e206473"
+  },
+  "catalog_refresh": {
+    "checked_on": "2026-10-11",
+    "active_codes": 48,
+    "unique_ui_titles": 48,
+    "extra_markdown_files_checked": 3,
+    "extra_local_links_checked": 57,
+    "historical_findings_separated": true,
+    "report": "docs/qa/catalog-2026-10-11/REPORT.md"
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CheckedState } from '@radix-ui/react-checkbox';
-import { Loader2, Mail, RefreshCw, CheckCircle2, XCircle, Inbox } from 'lucide-react';
+import { Loader2, Mail, RefreshCw, CheckCircle2, XCircle, Inbox, UserRound } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { RequestDataModal } from '@/components/request-data-modal';
 import { notifications } from '@/components/ui/notifications';
 import {
@@ -21,6 +29,7 @@ import {
   useCompleteDataRequests,
   useRevokeDataRequests,
   useResendDataRequests,
+  useReassignDataRequests,
 } from '@/lib/data-client/data-requests';
 import { useProjectContacts } from '@/lib/data-client/contacts';
 import type { DataRequestSummary } from '@/lib/data-requests/types';
@@ -58,6 +67,10 @@ type ModalConfig = {
     email?: string;
     name?: string | null;
   };
+};
+
+type ReassignConfig = {
+  requests: DataRequestSummary[];
 };
 
 const STATUS_OPTIONS: Array<{ value: StatusFilter; label: string }> = [
@@ -120,6 +133,8 @@ export function DataRequestsPageClient({
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [contactFilter, setContactFilter] = useState<string>('all');
   const [modalConfig, setModalConfig] = useState<ModalConfig | null>(null);
+  const [reassignConfig, setReassignConfig] = useState<ReassignConfig | null>(null);
+  const [reassignContactId, setReassignContactId] = useState<string>('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const {
@@ -158,6 +173,7 @@ export function DataRequestsPageClient({
   const completeMutation = useCompleteDataRequests(projectId);
   const revokeMutation = useRevokeDataRequests(projectId);
   const resendMutation = useResendDataRequests(projectId);
+  const reassignMutation = useReassignDataRequests(projectId);
 
   const resolvedMailtoTemplate = useMemo(() => {
     if (!mailtoTemplate) {
@@ -274,6 +290,7 @@ export function DataRequestsPageClient({
   const isBulkCompleting = completeMutation.isPending;
   const isBulkRevoking = revokeMutation.isPending;
   const isBulkResending = resendMutation.isPending;
+  const isBulkReassigning = reassignMutation.isPending;
   const visibleSelectedCount = filteredRequests.filter((request) => selectedIds.has(request.id)).length;
   const headerCheckboxState: CheckedState =
     filteredRequests.length === 0
@@ -320,7 +337,7 @@ export function DataRequestsPageClient({
 
   const handleBulkResend = useCallback(() => {
     if (selectedRequests.length === 0) {
-      notifications.error('Select at least one request to resend.');
+      notifications.error('Select at least one request to log a reminder or reopen.');
       return;
     }
 
@@ -336,6 +353,21 @@ export function DataRequestsPageClient({
       }
     );
   }, [resendMutation, selectedRequests]);
+
+  const openReassignDialog = useCallback((requestsToReassign: DataRequestSummary[]) => {
+    const pendingRequests = requestsToReassign.filter((request) => request.status === 'pending');
+    if (pendingRequests.length === 0) {
+      notifications.error('Select at least one pending request to change contact.');
+      return;
+    }
+
+    setReassignConfig({ requests: pendingRequests });
+    setReassignContactId('');
+  }, []);
+
+  const handleBulkReassign = useCallback(() => {
+    openReassignDialog(pendingSelected);
+  }, [openReassignDialog, pendingSelected]);
 
   const handleRowComplete = useCallback(
     (request: DataRequestSummary) => {
@@ -365,6 +397,17 @@ export function DataRequestsPageClient({
       resendMutation.mutate({ ids: [request.id], requestedAt });
     },
     [resendMutation]
+  );
+
+  const handleRowReassign = useCallback(
+    (request: DataRequestSummary) => {
+      if (request.status !== 'pending') {
+        return;
+      }
+
+      openReassignDialog([request]);
+    },
+    [openReassignDialog]
   );
 
   const openModalForRequest = useCallback((request: DataRequestSummary) => {
@@ -422,6 +465,55 @@ export function DataRequestsPageClient({
     setModalConfig(null);
   }, []);
 
+  const closeReassignDialog = useCallback(() => {
+    if (reassignMutation.isPending) {
+      return;
+    }
+
+    setReassignConfig(null);
+    setReassignContactId('');
+  }, [reassignMutation.isPending]);
+
+  const handleConfirmReassign = useCallback(() => {
+    if (!reassignConfig) {
+      return;
+    }
+
+    const targetContact = contacts.find((contact) => contact.id === reassignContactId);
+    if (!targetContact) {
+      notifications.error('Choose a contact.');
+      return;
+    }
+
+    const sameContactOnly = reassignConfig.requests.every(
+      (request) => request.contact?.id === targetContact.id
+    );
+
+    if (sameContactOnly) {
+      notifications.error('Choose a different contact.');
+      return;
+    }
+
+    reassignMutation.mutate(
+      {
+        ids: reassignConfig.requests.map((request) => request.id),
+        contact: {
+          id: targetContact.id,
+          email: targetContact.email,
+          name: targetContact.name,
+        },
+        reassignedAt: new Date().toISOString(),
+      },
+      {
+        onSuccess: () => {
+          setSelectedIds(new Set());
+          setReassignConfig(null);
+          setReassignContactId('');
+        },
+      }
+    );
+  }, [contacts, reassignConfig, reassignContactId, reassignMutation]);
+
   const handleRefreshAfterLog = useCallback(async () => {
     const [contactsOutcome, requestsOutcome] = await Promise.allSettled([
       refetchContacts({ throwOnError: false }),
@@ -451,7 +543,11 @@ export function DataRequestsPageClient({
     setSelectedIds(new Set());
   }, [refetchContacts, refetchRequests, setSelectedIds]);
 
-  const bulkBusy = isBulkCompleting || isBulkRevoking || isBulkResending;
+  const bulkBusy = isBulkCompleting || isBulkRevoking || isBulkResending || isBulkReassigning;
+  const reassignRequestCount = reassignConfig?.requests.length ?? 0;
+  const reassignSourceContacts = reassignConfig
+    ? Array.from(new Set(reassignConfig.requests.map((request) => request.contact?.id).filter(Boolean)))
+    : [];
 
   return (
     <div className="space-y-6">
@@ -459,7 +555,7 @@ export function DataRequestsPageClient({
         <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-[150px]" aria-label="Filter requests by status">
                 <SelectValue placeholder="Filter status" />
               </SelectTrigger>
               <SelectContent>
@@ -471,7 +567,7 @@ export function DataRequestsPageClient({
               </SelectContent>
             </Select>
             <Select value={contactFilter} onValueChange={setContactFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px]" aria-label="Filter requests by contact">
                 <SelectValue placeholder="Filter contact" />
               </SelectTrigger>
               <SelectContent>
@@ -532,15 +628,33 @@ export function DataRequestsPageClient({
               <Button
                 size="sm"
                 variant="outline"
+                onClick={handleBulkReassign}
+                disabled={!pendingCount || bulkBusy || contacts.length === 0}
+              >
+                {isBulkReassigning ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <UserRound className="mr-2 h-4 w-4" />
+                )}
+                Change contact
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={handleBulkResend}
                 disabled={!hasSelection || bulkBusy}
+                title="Record a reminder for pending requests or reopen closed requests. No email is sent."
               >
                 {isBulkResending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <RefreshCw className="mr-2 h-4 w-4" />
                 )}
-                Resend
+                {pendingCount === selectedCount
+                  ? 'Log reminder'
+                  : pendingCount === 0
+                  ? 'Reopen requests'
+                  : 'Log reminders / reopen'}
               </Button>
             </div>
           </div>
@@ -551,6 +665,7 @@ export function DataRequestsPageClient({
                 <tr className="text-left">
                   <th className="py-3 pr-3">
                     <Checkbox
+                      aria-label="Select all visible requests"
                       className="translate-y-[1px]"
                       checked={headerCheckboxState}
                       onCheckedChange={handleHeaderCheckboxChange}
@@ -590,6 +705,7 @@ export function DataRequestsPageClient({
                       <tr key={request.id} className="border-b last:border-b-0">
                         <td className="py-3 pr-3 align-top">
                           <Checkbox
+                            aria-label={`Select request for ${request.dataPoint?.label ?? request.dataPoint?.id ?? 'data field'} from ${contactLabel}`}
                             checked={isSelected}
                             onCheckedChange={(checked) => toggleSelection(request.id, checked === true)}
                           />
@@ -663,15 +779,31 @@ export function DataRequestsPageClient({
                             <Button
                               size="sm"
                               variant="ghost"
+                              onClick={() => handleRowReassign(request)}
+                              disabled={request.status !== 'pending' || reassignMutation.isPending || contacts.length === 0}
+                            >
+                              {reassignMutation.isPending ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <UserRound className="mr-2 h-4 w-4" />
+                              )}
+                              Change contact
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
                               onClick={() => handleRowResend(request)}
                               disabled={resendMutation.isPending}
+                              title={request.status === 'pending'
+                                ? 'Record a reminder already sent. No email is sent.'
+                                : 'Return this request to pending. No email is sent.'}
                             >
                               {resendMutation.isPending ? (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                               ) : (
                                 <RefreshCw className="mr-2 h-4 w-4" />
                               )}
-                              Resend
+                              {request.status === 'pending' ? 'Log reminder' : 'Reopen request'}
                             </Button>
                           </div>
                         </td>
@@ -698,6 +830,63 @@ export function DataRequestsPageClient({
           onLogged={handleRefreshAfterLog}
         />
       )}
+
+      <Dialog open={Boolean(reassignConfig)} onOpenChange={(open) => {
+        if (!open) {
+          closeReassignDialog();
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change contact</DialogTitle>
+            <DialogDescription>
+              Reassign {reassignRequestCount} pending request{reassignRequestCount === 1 ? '' : 's'} to another contact.
+              The current pending request{reassignRequestCount === 1 ? '' : 's'} will be revoked and new pending request{reassignRequestCount === 1 ? '' : 's'} will be created.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <Select value={reassignContactId} onValueChange={setReassignContactId}>
+              <SelectTrigger aria-label="Choose replacement contact">
+                <SelectValue placeholder="Choose contact" />
+              </SelectTrigger>
+              <SelectContent>
+                {contacts.map((contact) => {
+                  const isOnlyCurrentContact = reassignSourceContacts.length === 1 && reassignSourceContacts[0] === contact.id;
+                  return (
+                    <SelectItem key={contact.id} value={contact.id} disabled={isOnlyCurrentContact}>
+                      {contact.name} · {contact.email}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+            {contacts.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                No contacts are available yet. Use Email to create the first contact.
+              </p>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={closeReassignDialog} disabled={reassignMutation.isPending}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmReassign}
+              disabled={!reassignContactId || reassignMutation.isPending}
+            >
+              {reassignMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <UserRound className="mr-2 h-4 w-4" />
+              )}
+              Change contact
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

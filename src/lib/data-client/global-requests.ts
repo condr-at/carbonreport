@@ -245,7 +245,7 @@ export function useGlobalResendRequests(filters: GlobalRequestFilters) {
         queryClient.setQueryData(queryKey, context.snapshot);
       }
 
-      const message = error instanceof ApiError ? error.message : 'Failed to resend requests.';
+      const message = error instanceof ApiError ? error.message : 'Failed to update requests.';
       notifications.error(message);
     },
     onSuccess: (data, variables, context) => {
@@ -279,7 +279,7 @@ export function useGlobalResendRequests(filters: GlobalRequestFilters) {
       }
 
       const updatedCount = typeof data?.updated === 'number' ? data.updated : variables.ids.length;
-      notifications.success(`Resent ${updatedCount} request${updatedCount === 1 ? '' : 's'}.`);
+      notifications.success(`Updated ${updatedCount} request${updatedCount === 1 ? '' : 's'}. No email was sent.`);
       invalidateProjectCaches(queryClient, data?.requests);
     },
     onSettled: () => {

@@ -2,11 +2,10 @@ import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import { ReportPageClient } from './report-page-client';
+import { CbamSupplierPackageClient } from './cbam-supplier-package-client';
 import {
-  type DataPoint,
   type FieldDefinition,
 } from '@/lib/dataset-utils-v2';
-import { initializeFullDataset } from '@/lib/dataset-init';
 import type { Dataset } from '@/lib/dataset-validation';
 import { getBaseUrl } from '@/lib/server-utils';
 import { dataRequestKeys, projectKeys } from '@/lib/data-client/keys';
@@ -59,6 +58,11 @@ export default async function ReportPage({ params }: PageProps) {
     notFound();
   }
 
+  if (reportResponse.template.code === 'CBAM_DATA_PACKAGE') {
+    await tracker.commit();
+    return <CbamSupplierPackageClient projectId={projectId} reportId={reportId} />;
+  }
+
   const templateFieldIds = new Set<string>();
   for (const section of reportResponse.template.sections ?? []) {
     for (const field of section.fields ?? []) {
@@ -70,21 +74,6 @@ export default async function ReportPage({ params }: PageProps) {
   const filteredFieldDefinitions = fieldDefinitions.filter((definition: FieldDefinition) =>
     templateFieldIds.has(definition.field_id)
   );
-
-  const existingDataPoints = (resolvedDataset.data_points ?? []) as DataPoint[];
-  const completeDataPoints = initializeFullDataset(filteredFieldDefinitions, existingDataPoints);
-
-  const requiredFields = reportResponse.template.sections
-    .flatMap((section: any) => section.fields)
-    .filter((field: any) => field.isRequired)
-    .map((field: any) => field.fieldId);
-
-  const filledCount = completeDataPoints.filter((dataPoint) =>
-    requiredFields.includes(dataPoint.field_id) && dataPoint.value.trim() !== ''
-  ).length;
-  const requiredCount = requiredFields.length;
-  const completionPercentage =
-    requiredCount === 0 ? 100 : Math.round((filledCount / requiredCount) * 100);
 
   const datasetVersion = datasetPayload?.datasetVersion ?? project.datasetVersion;
   const datasetHydration = {
@@ -133,11 +122,6 @@ export default async function ReportPage({ params }: PageProps) {
         fieldDefinitions={filteredFieldDefinitions}
         initialDataset={resolvedDataset as Dataset}
         initialDatasetVersion={datasetVersion}
-        completion={{
-          filled: filledCount,
-          required: requiredCount,
-          percentage: completionPercentage,
-        }}
         mailtoTemplate={(project.mailtoTemplate as { subject?: string; body?: string } | null) ?? null}
         initialRequests={initialRequests}
         initialContacts={initialContacts}

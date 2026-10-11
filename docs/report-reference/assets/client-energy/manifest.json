@@ -1,0 +1,72 @@
+[
+  {
+    "file": "docs/report-reference/assets/client-energy/pact-v3.0.3-data-model.xlsx",
+    "url": "https://docs.carbon-transparency.org/tr/data-exchange-protocol/latest/pact-simplified.xlsx",
+    "resolved_url": "https://docs.carbon-transparency.org/tr/data-exchange-protocol/latest/pact-simplified.xlsx",
+    "mime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "bytes": 44411,
+    "sha256": "0774a164dc38f5f8966d9a116ec1f829f68eb1512cdb2e6c84359c642bc88dc6",
+    "retrieved_on": "2026-10-11",
+    "validation": "signature and document container checked"
+  },
+  {
+    "file": "docs/report-reference/assets/client-energy/pact-v3.0.3-openapi.yaml",
+    "url": "https://docs.carbon-transparency.org/tr/data-exchange-protocol/latest/openapi.yaml",
+    "resolved_url": "https://docs.carbon-transparency.org/tr/data-exchange-protocol/latest/openapi.yaml",
+    "mime": "text/yaml",
+    "bytes": 88411,
+    "sha256": "e5e48ab32d3d87fd634c8a4df27d81256991819196a4cdb1ef0d655bd8fb9d43",
+    "retrieved_on": "2026-10-11",
+    "validation": "signature and document container checked"
+  },
+  {
+    "file": "docs/report-reference/assets/client-energy/pcaf-part-a-third-edition-2025.pdf",
+    "url": "https://carbonaccountingfinancials.com/files/standard-launch-2025/PCAF-PartA-2025-V3-December.pdf",
+    "resolved_url": "https://carbonaccountingfinancials.com/files/standard-launch-2025/PCAF-PartA-2025-V3-December.pdf",
+    "mime": "application/pdf",
+    "bytes": 6963577,
+    "sha256": "d45cac4eade84d55fbb5060279786a52539042eaedd488822df0657f1036694d",
+    "retrieved_on": "2026-10-11",
+    "validation": "signature and document container checked"
+  },
+  {
+    "file": "docs/report-reference/assets/client-energy/pcaf-disclosure-checklist-may-2025.pdf",
+    "url": "https://carbonaccountingfinancials.com/files/disclosure_checklist/PCAF-Disclosure-Checklist-Part-A-Financed-Emissions-May-2025.pdf",
+    "resolved_url": "https://carbonaccountingfinancials.com/files/disclosure_checklist/PCAF-Disclosure-Checklist-Part-A-Financed-Emissions-May-2025.pdf",
+    "mime": "application/pdf",
+    "bytes": 3036690,
+    "sha256": "79ba80969640c99d3c45111e6cf7113754fce96e27790fd3cc3523712cfe8d3d",
+    "retrieved_on": "2026-10-11",
+    "validation": "signature and document container checked"
+  },
+  {
+    "file": "docs/report-reference/assets/client-energy/epa-green-power-contracting-2018.pdf",
+    "url": "https://www.epa.gov/sites/default/files/2018-08/documents/guide-purchasing-green-power-6.pdf",
+    "resolved_url": "https://www.epa.gov/sites/default/files/2018-08/documents/guide-purchasing-green-power-6.pdf",
+    "mime": "application/pdf",
+    "bytes": 420937,
+    "sha256": "97bd60c90cb877cf3dd919a4e98df0e2b362ea45e200ffcfae16dbafbae634ce",
+    "retrieved_on": "2026-10-11",
+    "validation": "signature and document container checked"
+  },
+  {
+    "file": "docs/report-reference/assets/client-energy/esos-phase4-recommendations-template.odt",
+    "url": "https://assets.publishing.service.gov.uk/media/6a6b5e088319ab05f7caa248/ESOS_Appendix_A3_template.odt",
+    "resolved_url": "https://assets.publishing.service.gov.uk/media/6a6b5e088319ab05f7caa248/ESOS_Appendix_A3_template.odt",
+    "mime": "application/vnd.oasis.opendocument.text",
+    "bytes": 202540,
+    "sha256": "ee2c0d21b42b5301326970f81e9eb33b99d4f753121d447e6e06dba11982b705",
+    "retrieved_on": "2026-10-11",
+    "validation": "signature and document container checked"
+  },
+  {
+    "file": "docs/report-reference/assets/client-energy/esos-phase4-notification-fields.odt",
+    "url": "https://assets.publishing.service.gov.uk/media/6a69f658701b2d693e5b9422/ESOS_Appendix_B_phase_4.odt",
+    "resolved_url": "https://assets.publishing.service.gov.uk/media/6a69f658701b2d693e5b9422/ESOS_Appendix_B_phase_4.odt",
+    "mime": "application/vnd.oasis.opendocument.text",
+    "bytes": 36676,
+    "sha256": "805aa2073834b314d6704491f1efec32ed5efbcac2fc1bc65e65008d1196e3bf",
+    "retrieved_on": "2026-10-11",
+    "validation": "signature and document container checked"
+  }
+]

@@ -125,6 +125,7 @@ const EditableCell = React.memo(({
       <div className="flex items-center gap-2">
         <Input
           type={row.type === 'number' ? 'number' : 'text'}
+          aria-label={`${row.fieldLabel} value`}
           value={value}
           disabled={isUpdating}
           onChange={(e) => setValue(e.target.value)}
@@ -152,6 +153,7 @@ const EditableCell = React.memo(({
   return (
     <button
       type="button"
+      aria-label={`Edit ${row.fieldLabel}${row.value ? `: ${row.value}` : ''}`}
       disabled={isUpdating}
       className={cn(
         'flex min-h-[32px] w-full items-center gap-2 rounded px-2 py-1 text-left transition hover:bg-muted/50 focus:outline-none focus:ring-1 focus:ring-ring',
@@ -176,6 +178,7 @@ const EditableCell = React.memo(({
     prev.isEditing === next.isEditing &&
     prev.isUpdating === next.isUpdating &&
     prev.row.value === next.row.value &&
+    prev.row.fieldLabel === next.row.fieldLabel &&
     prev.row.type === next.row.type
   );
 });

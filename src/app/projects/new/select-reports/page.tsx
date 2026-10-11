@@ -3,14 +3,13 @@
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/layouts/page-header';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Loader2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { getReportTemplate, type ReportTemplate } from '@/lib/report-templates';
-import type { EvaluationResult } from '@/lib/questionnaires/decision-engine';
-import type { ReportTemplateCode } from '@/lib/report-templates/types';
+import { evaluateQuestionnaire, removeHiddenAnswers, type AnswerMap, type EvaluationResult } from '@/lib/questionnaires/decision-engine';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,15 +27,15 @@ import { notifications } from '@/components/ui/notifications';
 import {
   USER_FACING_REPORT_TEMPLATE_ORDER,
   getUserFacingReportMeta,
-  isUserFacingReportTemplate,
 } from '@/lib/report-templates/user-facing';
-import { mapEngineReportIdToTemplateCode } from '@/lib/questionnaires/report-template-mapping';
+import { deriveTemplateSelection, isSelectableReportTemplate, type TemplateSelection } from '@/lib/questionnaires/report-template-mapping';
+import { organizationKeys, projectKeys } from '@/lib/data-client/keys';
 
 export default function SelectReportsPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
-  const [mandatoryTemplates, setMandatoryTemplates] = useState<Set<string>>(new Set());
-  const [recommendedTemplates, setRecommendedTemplates] = useState<Set<string>>(new Set());
+  const [recommendations, setRecommendations] = useState<TemplateSelection['recommendations']>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [projectType, setProjectType] = useState<'corporate' | 'product' | null>(null);
@@ -46,6 +45,9 @@ export default function SelectReportsPage() {
   const { activeOrganizationId, currentOrganization, isLoading: organizationsLoading, isBootstrapping } = useOrganizationContext();
   const organizationId = activeOrganizationId ?? currentOrganization?.id ?? null;
   const isOrgContextLoading = organizationsLoading || isBootstrapping;
+  const mandatoryTemplates = useMemo(() => new Set(
+    Object.entries(recommendations).filter(([, item]) => item?.level === 'mandatory').map(([code]) => code),
+  ), [recommendations]);
 
   useEffect(() => {
     // Load project data from sessionStorage
@@ -58,64 +60,46 @@ export default function SelectReportsPage() {
 
     const projectData = JSON.parse(projectDataStr);
     setProjectName(projectData.name || '');
-    setProjectType(projectData.type || null);
+    const scope = projectData.type === 'product' || projectData.type === 'corporate' ? projectData.type : null;
+    setProjectType(scope);
 
-    const recommendedStr = sessionStorage.getItem('recommendedTemplates');
     const decisionStr = sessionStorage.getItem('decisionEngineResult');
 
-    const initialSelected = new Set<string>();
-    const mandatory = new Set<string>();
-    const recommended = new Set<string>();
-
-    if (recommendedStr) {
+    let evaluation: EvaluationResult | null = null;
+    const answersStr = sessionStorage.getItem('wizardAnswers');
+    if (answersStr) {
       try {
-        const parsed = JSON.parse(recommendedStr) as string[];
-        parsed.forEach((code) => {
-          if (isUserFacingReportTemplate(code)) {
-            initialSelected.add(code);
-          }
-        });
+        const answers = JSON.parse(answersStr);
+        const validAnswers = answers && typeof answers === 'object' && !Array.isArray(answers) &&
+          Object.values(answers).every((value) => value === null || typeof value === 'string' ||
+            (Array.isArray(value) && value.every((item) => typeof item === 'string')));
+        if (validAnswers) {
+          evaluation = evaluateQuestionnaire(removeHiddenAnswers(answers as AnswerMap));
+          sessionStorage.setItem('decisionEngineResult', JSON.stringify(evaluation));
+        }
       } catch (error) {
-        console.warn('Failed to parse recommendedTemplates from sessionStorage', error);
+        console.warn('Failed to refresh questionnaire recommendations', error);
       }
     }
-
-    if (decisionStr) {
+    if (!evaluation && decisionStr) {
       try {
-        const parsed = JSON.parse(decisionStr) as EvaluationResult;
-        const extractTemplateCodes = (reports: { id: string; definition?: { category?: string } }[]) => {
-          return reports
-            .map((report) => mapEngineReportIdToTemplateCode(report.id))
-            .filter((code): code is ReportTemplateCode => typeof code === 'string' && code.length > 0);
-        };
-
-        // Mark all mapped templates from mandatory reports as mandatory
-        extractTemplateCodes(parsed.mandatoryReports).forEach((code) => {
-          if (!isUserFacingReportTemplate(code)) {
-            return;
-          }
-          mandatory.add(code);
-          initialSelected.add(code);
-        });
-
-        // Mark templates from recommended reports as recommended (but not mandatory)
-        extractTemplateCodes(parsed.recommendedReports).forEach((code) => {
-          if (!isUserFacingReportTemplate(code) || mandatory.has(code)) {
-            return;
-          }
-          recommended.add(code);
-          initialSelected.add(code);
-        });
-
-        // Optional reports do not affect mandatory/recommended flags here
+        evaluation = JSON.parse(decisionStr) as EvaluationResult;
       } catch (error) {
         console.warn('Failed to parse decisionEngineResult from sessionStorage', error);
       }
     }
-
-    setSelectedTemplates(Array.from(initialSelected));
-    setMandatoryTemplates(mandatory);
-    setRecommendedTemplates(recommended);
+    if (evaluation) {
+      const selection = deriveTemplateSelection(evaluation, scope);
+      setSelectedTemplates(selection.initiallySelected);
+      setRecommendations(selection.recommendations);
+      sessionStorage.setItem('recommendedTemplates', JSON.stringify(selection.initiallySelected));
+    } else {
+      // Legacy code-only caches cannot distinguish optional suggestions, format
+      // alternatives or unresolved applicability. Let the user choose afresh.
+      sessionStorage.removeItem('recommendedTemplates');
+      setSelectedTemplates([]);
+      setRecommendations({});
+    }
   }, [router]);
 
   useEffect(() => {
@@ -130,12 +114,9 @@ export default function SelectReportsPage() {
 
   const userFacingTemplates = useMemo(() => {
     return USER_FACING_REPORT_TEMPLATE_ORDER
+      .filter((code) => isSelectableReportTemplate(code, projectType))
       .map((code) => getReportTemplate(code))
-      .filter((template): template is ReportTemplate => Boolean(template))
-      .filter((template) => {
-        if (!projectType) return true;
-        return template.scope === 'both' || template.scope === projectType;
-      });
+      .filter((template): template is ReportTemplate => Boolean(template));
   }, [projectType]);
   
   const hasSelection = selectedTemplates.length > 0;
@@ -165,12 +146,12 @@ export default function SelectReportsPage() {
     router.push(target);
   };
 
-  const handleToggleTemplate = (code: string) => {
-    if (isSubmitting) return;
+  const handleTemplateSelection = (code: string, checked: boolean) => {
+    if (isSubmitting || mandatoryTemplates.has(code) || !isSelectableReportTemplate(code, projectType)) return;
     setSelectedTemplates((prev) =>
-      prev.includes(code)
-        ? prev.filter((c) => c !== code)
-        : [...prev, code]
+      checked
+        ? prev.includes(code) ? prev : [...prev, code]
+        : prev.filter((c) => c !== code)
     );
   };
 
@@ -237,6 +218,12 @@ export default function SelectReportsPage() {
         source: 'project-create',
       });
 
+      void queryClient.invalidateQueries({ queryKey: projectKeys.list(organizationId) });
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.current(organizationId) });
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.usage(organizationId) });
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.list(false) });
+      void queryClient.invalidateQueries({ queryKey: organizationKeys.list(true) });
+
       clearWizardProgress();
       router.replace(`/projects/${createdProject.id}`);
     } catch (error) {
@@ -257,11 +244,12 @@ export default function SelectReportsPage() {
       <div className="mx-auto max-w-2xl space-y-6">
         <PageHeader
           title="Create New Project"
-          description="Choose which reporting standards you want to include."
+          description="Choose data templates for your reporting needs."
           actions={
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Close project wizard"
               onClick={() => requestExit('/dashboard')}
               disabled={isSubmitting}
               className={isSubmitting ? 'pointer-events-none opacity-60' : undefined}
@@ -276,51 +264,56 @@ export default function SelectReportsPage() {
           <CardHeader>
             <CardTitle>Select Report Types</CardTitle>
             <CardDescription>
-              Choose which reporting standards you need for {projectName || 'this project'}
+              Choose data templates for {projectName || 'this project'}. CBAM Supplier Review Package includes a guided form and ZIP download. Other templates support data collection; official submissions are not available.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
               {userFacingTemplates.map((template) => {
                 const isMandatory = mandatoryTemplates.has(template.code);
-                const isRecommended = !isMandatory && recommendedTemplates.has(template.code);
+                const recommendation = recommendations[template.code];
                 const checked = selectedTemplates.includes(template.code);
                 const meta = getUserFacingReportMeta(template.code);
 
                 return (
-                <div
+                <label
                   key={template.code}
+                  htmlFor={template.code}
                   className={`flex items-start space-x-4 p-4 rounded-lg border transition-colors ${
-                    isSubmitting ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-accent'
+                    isSubmitting || isMandatory ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-accent'
                   }`}
-                  onClick={() => !isMandatory && handleToggleTemplate(template.code)}
                 >
                   <Checkbox
                     id={template.code}
+                    aria-labelledby={`report-title-${template.code}`}
+                    aria-describedby={`report-description-${template.code}${recommendation ? ` report-recommendation-${template.code}` : ''}`}
                     checked={checked}
-                    onCheckedChange={() => !isMandatory && handleToggleTemplate(template.code)}
+                    onCheckedChange={(nextChecked) => handleTemplateSelection(template.code, nextChecked === true)}
                     disabled={isSubmitting || isMandatory}
                   />
-                  <div className="flex-1 space-y-1">
-                    <Label
-                      htmlFor={template.code}
-                      className="font-medium cursor-pointer"
-                    >
+                  <span className="flex-1 space-y-1">
+                    <span id={`report-title-${template.code}`} className="block text-sm font-medium">
                       {meta?.title ?? template.name}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
+                    </span>
+                    <span id={`report-description-${template.code}`} className="block text-sm text-muted-foreground">
                       {meta?.subtitle ?? template.description ?? `Version ${template.version ?? '1.0'}`}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
+                    </span>
+                    <span className="block text-xs text-muted-foreground">
                       Use when: {meta?.useWhen ?? template.description ?? 'Choose this template to include it in the project.'}
-                    </p>
-                    {(isMandatory || isRecommended) && (
-                      <p className="text-xs font-medium text-primary">
-                        {isMandatory ? 'Обязательно по требованиям' : 'Рекомендовано движком'}
-                      </p>
+                    </span>
+                    {recommendation && (
+                      <span id={`report-recommendation-${template.code}`} className="block space-y-1 text-xs">
+                        <span className="block font-medium text-primary">
+                          {{ mandatory: 'Required by confirmed requirements', review: 'Check applicability', recommended: 'Recommended', choice: 'Choose the required format', optional: 'Optional suggestion' }[recommendation.level]}
+                        </span>
+                        {recommendation.reasons.map((reason) => <span key={reason} className="block text-muted-foreground">{reason}</span>)}
+                        {recommendation.checks.length > 0 && (
+                          <span className="block text-muted-foreground">Check: {recommendation.checks.join(' · ')}</span>
+                        )}
+                      </span>
                     )}
-                  </div>
-                </div>
+                  </span>
+                </label>
               );})}
             </div>
 
@@ -362,7 +355,7 @@ export default function SelectReportsPage() {
         {/* Helper text */}
         <div className="text-sm text-muted-foreground text-center">
           <p>
-            You can add or remove report types anytime after creating the project.
+            Selected report types determine which fields your project collects.
           </p>
         </div>
       </div>

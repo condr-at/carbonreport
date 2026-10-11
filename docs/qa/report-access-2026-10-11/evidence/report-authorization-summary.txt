@@ -1,0 +1,24 @@
+Report GET authorization regression — 2026-10-11 (Europe/Belgrade)
+Node20.20.0; execution runtime /tmp/carbonreport-qa-runtime.
+Changed source files: src/app/api/projects/[id]/reports/[reportId]/route.ts; same directory route.test.ts; package.json.
+Only these3files copied into runtime. package-lock.json untouched.
+
+Before fix: node --import tsx --test --test-name-pattern=outsider src/app/api/projects/[id]/reports/[reportId]/route.test.ts
+Exit1, 1expected failure,8skipped. ActualHTTP200 versus expected403 for authenticated outsider.
+Exact before-fix route retained in report-route-before-authorization.ts.
+After fix: node --import tsx --test src/app/api/projects/[id]/reports/[reportId]/route.test.ts
+Exit0,9tests passed,0failed,0skipped.
+Coverage: unauthenticated beforeDBread; authenticated outsider; pendingmember; deletedorganization; deletedproject during/afterretention; acceptedreadonly/owner JSON; cross-project report mismatch.
+Database boundary mocked; no real DB or TRUNCATE harness invoked.
+
+Full npm run test:sanity: exit0,70tests passed,0failed,0cancelled,0skipped;6348.7ms.
+ScopedESLint route.ts/route.test.ts: exit0,no diagnostics.
+npx tsc --noEmit --incremental false: exit0,no diagnostics.
+git diff --check on3changedfiles passes. Report test occurs exactlyonce in test:sanity andtest:unit.
+
+Logs:
+/tmp/carbonreport-audit-checks/report-authorization-red.log
+/tmp/carbonreport-audit-checks/report-authorization-green.log
+/tmp/carbonreport-audit-checks/report-authorization-sanity.log
+/tmp/carbonreport-audit-checks/report-authorization-tsc.log
+/tmp/carbonreport-audit-checks/report-authorization-lint.log

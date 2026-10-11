@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: report GET rejects an unauthenticated caller before database reads
+ok 1 - report GET rejects an unauthenticated caller before database reads
+  ---
+  duration_ms: 8.516
+  ...
+# Subtest: report GET rejects an authenticated outsider with known project and report IDs
+ok 2 - report GET rejects an authenticated outsider with known project and report IDs
+  ---
+  duration_ms: 1.524917
+  ...
+# Subtest: report GET rejects a pending organization membership
+ok 3 - report GET rejects a pending organization membership
+  ---
+  duration_ms: 0.841042
+  ...
+# Subtest: report GET rejects a deleted organization even for its owner
+ok 4 - report GET rejects a deleted organization even for its owner
+  ---
+  duration_ms: 0.679375
+  ...
+# Subtest: report GET rejects a deleted project during retention
+ok 5 - report GET rejects a deleted project during retention
+  ---
+  duration_ms: 0.777
+  ...
+# Subtest: report GET rejects a deleted project after retention expires
+ok 6 - report GET rejects a deleted project after retention expires
+  ---
+  duration_ms: 6.290542
+  ...
+# Subtest: report GET preserves report JSON for an accepted VIEWER_READONLY
+ok 7 - report GET preserves report JSON for an accepted VIEWER_READONLY
+  ---
+  duration_ms: 1.23975
+  ...
+# Subtest: report GET preserves report JSON for an accepted OWNER
+ok 8 - report GET preserves report JSON for an accepted OWNER
+  ---
+  duration_ms: 0.642208
+  ...
+# Subtest: report GET does not return another project report through an authorized project URL
+ok 9 - report GET does not return another project report through an authorized project URL
+  ---
+  duration_ms: 0.753417
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 491.653334

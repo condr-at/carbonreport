@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const IFRSS2CLIMATETemplate: ReportTemplate = {
   code: 'IFRS_S2_CLIMATE' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'IFRS S2 Climate-related Disclosures',
+  name: 'IFRS S2 Climate Data',
+  description: 'Climate-risk, strategy and emissions inputs for reporting.',
   scope: 'corporate',
   sections: [
     {

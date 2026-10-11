@@ -1,10 +1,15 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Database, TrendingUp, MailQuestion } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { FileText, Database, TrendingUp, MailQuestion, CheckCircle2, Circle, Activity, ArrowRight, UserRound, ExternalLink } from 'lucide-react';
 import { ProjectRoadmap } from '@/components/project-roadmap';
 import { ProjectPrefillHydrator } from '@/components/project-prefill-hydrator';
 import { getBaseUrl } from '@/lib/server-utils';
+import { getProjectDataRequests, getProjectDataset } from '@/lib/server-data/projects';
+import { buildProjectOverviewState, type OverviewChecklistItem } from '@/lib/projects/overview-state';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
+import Link from 'next/link';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -31,10 +36,8 @@ interface ProjectDetails {
   updatedAt: string | null;
   datasetVersion: number;
   reports: ProjectReport[];
-  dataset?: {
-    data_points?: unknown[];
-  } | null;
   checklist?: unknown;
+  ownerName?: string | null;
 }
 
 async function getProject(id: string): Promise<ProjectFetchResult<ProjectDetails>> {
@@ -76,8 +79,8 @@ async function getProject(id: string): Promise<ProjectFetchResult<ProjectDetails
         updatedAt: rawProject.updated_at ?? rawProject.updatedAt ?? rawProject.created_at ?? rawProject.createdAt ?? null,
         datasetVersion: rawProject.dataset_version ?? rawProject.datasetVersion ?? 0,
         reports: normalizedReports,
-        dataset: rawProject.dataset ?? null,
         checklist: rawProject.checklist ?? null,
+        ownerName: rawProject.owner_name ?? rawProject.ownerName ?? null,
       };
 
       return { status: 'ok', project: normalized };
@@ -95,9 +98,53 @@ async function getProject(id: string): Promise<ProjectFetchResult<ProjectDetails
   }
 }
 
+function parseChecklistItems(value: unknown): OverviewChecklistItem[] {
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+
+  const items = (value as { items?: unknown }).items;
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  const parsed: OverviewChecklistItem[] = [];
+
+  for (const item of items) {
+    if (!item || typeof item !== 'object') {
+      continue;
+    }
+
+    const raw = item as Record<string, unknown>;
+    const id = typeof raw.id === 'string' ? raw.id : null;
+    const title = typeof raw.title === 'string' ? raw.title : null;
+    const completed = typeof raw.completed === 'boolean' ? raw.completed : false;
+
+    if (!id || !title) {
+      continue;
+    }
+
+    parsed.push({
+      id,
+      title,
+      description: typeof raw.description === 'string' ? raw.description : undefined,
+      completed,
+      dataPointIds: Array.isArray(raw.dataPointIds)
+        ? raw.dataPointIds.filter((entry): entry is string => typeof entry === 'string')
+        : undefined,
+    });
+  }
+
+  return parsed;
+}
+
 export default async function ProjectOverviewPage({ params }: PageProps) {
   const { id } = await params;
-  const { status, project } = await getProject(id);
+  const [{ status, project }, datasetPayload, dataRequests] = await Promise.all([
+    getProject(id),
+    getProjectDataset(id),
+    getProjectDataRequests(id),
+  ]);
 
   if (status === 'not-found') {
     notFound();
@@ -111,51 +158,17 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
     throw new Error(`Project ${id} data is unavailable`);
   }
 
-  // Calculate completion from reports
-  const totalReports = project.reports?.length || 0;
-  const avgCompletion = totalReports > 0
-    ? project.reports.reduce((sum: number, r: ProjectReport) => sum + (r.completion || 0), 0) / totalReports
-    : 0;
-
-  // Get incomplete roadmap items
-  // Mock roadmap data (replace with real data from project.checklist when ready)
-  const mockRoadmapItems = [
-    { id: '1', title: 'Product Name', completed: true },
-    { id: '2', title: 'Product Description', completed: true },
-    { id: '3', title: 'Product Weight', completed: true },
-    { id: '4', title: 'Material Name (Item 1)', completed: false },
-    { id: '5', title: 'Material Amount (Item 1)', completed: false },
-    { id: '6', title: 'Energy Consumption Total', completed: false },
-    { id: '7', title: 'Transport Distance (Air)', completed: false },
-    { id: '8', title: 'Transport Distance (Sea)', completed: false },
-    { id: '9', title: 'Transport Distance (Road)', completed: false },
-    { id: '10', title: 'Electricity Consumption', completed: false },
-    { id: '11', title: 'Fuel Consumption', completed: false },
-    { id: '12', title: 'Waste Generated', completed: false },
-    { id: '13', title: 'Packaging Material', completed: false },
-    { id: '14', title: 'End-of-Life Treatment', completed: false },
-    { id: '15', title: 'Total Carbon Emissions', completed: false },
-    { id: '16', title: 'Emission Factor (Scope 1)', completed: false },
-    { id: '17', title: 'Emission Factor (Scope 2)', completed: false },
-    { id: '18', title: 'Emission Factor (Scope 3)', completed: false },
-    { id: '19', title: 'Water Consumption', completed: false },
-    { id: '20', title: 'Company Name', completed: false },
-    { id: '21', title: 'Company Address', completed: false },
-    { id: '22', title: 'Production Volume', completed: false },
-    { id: '23', title: 'Reporting Period Start', completed: false },
-    { id: '24', title: 'Reporting Period End', completed: false },
-    { id: '25', title: 'Recycled Content Percentage', completed: false },
-    { id: '26', title: 'Renewable Energy Percentage', completed: false },
-    { id: '27', title: 'Carbon Offset Credits', completed: false },
-    { id: '28', title: 'Third-Party Verification', completed: false },
-    { id: '29', title: 'Functional Unit', completed: false },
-    { id: '30', title: 'Reference Flow', completed: false },
-  ];
-
-  const mockIncompleteCount = mockRoadmapItems.filter(item => !item.completed).length;
-
-  // Count pending data requests (placeholder - will be real API later)
-  const pendingDataRequests = 0; // TODO: Get from API when data_requests table implemented
+  const checklistItems = parseChecklistItems(project.checklist);
+  const overviewState = buildProjectOverviewState({
+    projectId: project.id,
+    status: project.status,
+    datasetVersion: project.datasetVersion,
+    ownerName: project.ownerName,
+    reports: project.reports,
+    checklistItems,
+    dataset: datasetPayload?.dataset ?? null,
+    dataRequests,
+  });
 
   return (
     <>
@@ -168,311 +181,202 @@ export default async function ProjectOverviewPage({ params }: PageProps) {
           updatedAt: project.updatedAt ?? project.createdAt,
           datasetVersion: project.datasetVersion,
         }}
-        reports={project.reports?.map((report) => ({
+        reports={project.reports.map((report) => ({
           id: report.id,
           templateCode: report.templateCode,
           completion: report.completion,
         }))}
       />
       <div className="space-y-6">
-        {/* Three Columns Layout */}
         <div className="grid gap-6 md:grid-cols-3">
-          {/* Left Column: Stats Cards (stacked vertically) */}
           <div className="space-y-4">
-            {/* Overall Completion Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Overall Completion</CardTitle>
+                <CardTitle className="text-sm font-medium">{overviewState.hasSupplierPackage ? 'Report field coverage' : 'Overall Completion'}</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold mb-2">{Math.round(avgCompletion)}%</div>
-                <div className="h-3 bg-muted rounded-full overflow-hidden">
+                <div className="mb-2 text-2xl font-bold">{Math.round(overviewState.avgCompletion)}%</div>
+                <div className="h-3 overflow-hidden rounded-full bg-muted">
                   <div
                     className="h-full bg-primary transition-all"
-                    style={{ width: `${avgCompletion}%` }}
+                    style={{ width: `${overviewState.avgCompletion}%` }}
                   />
                 </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {overviewState.completedReports} of {overviewState.totalReports} report{overviewState.totalReports === 1 ? '' : 's'} {overviewState.hasSupplierPackage ? 'with all required fields filled' : 'complete'}
+                </p>
+                {overviewState.hasSupplierPackage && <p className="mt-1 text-xs text-muted-foreground">Field coverage does not confirm package validation or download.</p>}
               </CardContent>
             </Card>
 
-            {/* Reports Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Reports</CardTitle>
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalReports}</div>
-                <p className="text-xs text-muted-foreground mt-1">
+                <div className="text-2xl font-bold">{overviewState.totalReports}</div>
+                <p className="mt-1 text-xs text-muted-foreground">
                   {project.reports.length > 0
                     ? project.reports.map((report) => report.templateCode).join(', ')
-                    : 'None'}
+                    : 'No reports selected yet'}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Dataset Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Dataset</CardTitle>
                 <Database className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {project.dataset?.data_points?.length || 0}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">Data points</p>
+                <div className="text-2xl font-bold">{overviewState.totalDataPoints}</div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Data points tracked in version {project.datasetVersion}
+                </p>
               </CardContent>
             </Card>
 
-            {/* Pending Data Requests Card */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Pending Requests</CardTitle>
+                <CardTitle className="text-sm font-medium">Data Requests</CardTitle>
                 <MailQuestion className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{pendingDataRequests}</div>
-                <p className="text-xs text-muted-foreground mt-1">Awaiting response</p>
+              <CardContent className="space-y-2">
+                <div className="text-2xl font-bold">{overviewState.pendingRequests}</div>
+                <p className="text-xs text-muted-foreground">Pending responses</p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <Badge variant="outline">{overviewState.completedRequests} completed</Badge>
+                  <Badge variant="outline">{overviewState.revokedRequests} revoked</Badge>
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Middle Column: Recent Activity (full height) */}
           <Card className="flex flex-col">
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest changes to this project</CardDescription>
+              <CardTitle>Current Signals</CardTitle>
+              <CardDescription>Real project state derived from reports, requests, dataset version, and roadmap progress.</CardDescription>
             </CardHeader>
-                        <CardContent className="flex-1 overflow-y-auto max-h-[546px]">
+            <CardContent className="flex-1 space-y-5 overflow-y-auto max-h-[546px]">
+              <div className="rounded-lg border bg-muted/30 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">Next action</p>
+                    <p className="mt-1 text-sm font-semibold">{overviewState.primaryAction.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{overviewState.primaryAction.detail}</p>
+                  </div>
+                  <ArrowRight className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                </div>
+                <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                  <UserRound className="h-3.5 w-3.5" />
+                  <span>{overviewState.primaryAction.ownerLabel}</span>
+                  <Badge variant="outline" className="ml-auto capitalize">{overviewState.primaryAction.ownerType}</Badge>
+                </div>
+                {overviewState.primaryAction.href ? (
+                  <Button asChild variant="outline" size="sm" className="mt-4 w-full justify-between">
+                    <Link href={overviewState.primaryAction.href}>
+                      Open next action
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </Button>
+                ) : null}
+              </div>
+
               <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium">Report updated</p>
-                  <p className="text-xs text-muted-foreground">ISO 14067 PCF - 2 hours ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">
-                    3 data points updated - Yesterday
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Data requested</p>
-                  <p className="text-xs text-muted-foreground">
-                    Electricity consumption data from John Smith - 2 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report completion increased</p>
-                  <p className="text-xs text-muted-foreground">CBAM Report now at 75% - 3 days ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Checklist updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    Marked &quot;Gather raw data&quot; as complete - 4 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report created</p>
-                  <p className="text-xs text-muted-foreground">Added CBAM Report - 5 days ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">5 data points added - 5 days ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Contact added</p>
-                  <p className="text-xs text-muted-foreground">John Smith - 6 days ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Data requested</p>
-                  <p className="text-xs text-muted-foreground">
-                    Transportation emissions from Sarah Johnson - 1 week ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    ISO 14067 PCF - Field &quot;Product weight&quot; filled - 1 week ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">
-                    Updated &quot;Raw materials&quot; section - 1 week ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Data request revoked</p>
-                  <p className="text-xs text-muted-foreground">
-                    Cancelled request to Mike Brown - 1 week ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report completion increased</p>
-                  <p className="text-xs text-muted-foreground">
-                    ISO 14067 PCF now at 45% - 8 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Contact added</p>
-                  <p className="text-xs text-muted-foreground">Sarah Johnson - 9 days ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Checklist updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    Marked &quot;Select report templates&quot; as complete - 9 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">
-                    Added &quot;Energy consumption&quot; data points - 10 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report created</p>
-                  <p className="text-xs text-muted-foreground">Added ISO 14067 PCF - 10 days ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Project status changed</p>
-                  <p className="text-xs text-muted-foreground">
-                    Changed from Draft to Active - 11 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Checklist updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    Marked &quot;Define project scope&quot; as complete - 11 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">
-                    Updated &quot;Transport distance&quot; fields - 12 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Data requested</p>
-                  <p className="text-xs text-muted-foreground">
-                    Fuel consumption data from Mike Brown - 12 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    CBAM Report - Field &quot;Company name&quot; filled - 13 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Contact added</p>
-                  <p className="text-xs text-muted-foreground">Mike Brown - 13 days ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">
-                    Added &quot;Waste generated&quot; data point - 14 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report completion increased</p>
-                  <p className="text-xs text-muted-foreground">
-                    ISO 14067 PCF now at 30% - 14 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Checklist updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    Marked &quot;Collect material data&quot; as in-progress - 15 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Data requested</p>
-                  <p className="text-xs text-muted-foreground">
-                    Packaging material info from supplier - 15 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">
-                    Added &quot;End-of-life treatment&quot; data - 16 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    ISO 14067 PCF - Multiple fields updated - 16 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Data request completed</p>
-                  <p className="text-xs text-muted-foreground">
-                    Received transport data from Sarah Johnson - 17 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">
-                    Updated &quot;Material amounts&quot; - 18 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report completion increased</p>
-                  <p className="text-xs text-muted-foreground">
-                    CBAM Report now at 25% - 18 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Checklist updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    Marked &quot;Set up project structure&quot; as complete - 19 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset edited</p>
-                  <p className="text-xs text-muted-foreground">
-                    Initial dataset structure created - 19 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Report template selected</p>
-                  <p className="text-xs text-muted-foreground">
-                    Added ISO 14067 and CBAM templates - 20 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Project name updated</p>
-                  <p className="text-xs text-muted-foreground">
-                    Renamed to current name - 20 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Mailto template customized</p>
-                  <p className="text-xs text-muted-foreground">
-                    Updated template for energy data requests - 21 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Data requested</p>
-                  <p className="text-xs text-muted-foreground">
-                    Emission factors from John Smith - 21 days ago
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Dataset version updated</p>
-                  <p className="text-xs text-muted-foreground">Version 5 saved - 22 days ago</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Project created</p>
-                  <p className="text-xs text-muted-foreground">3 weeks ago</p>
-                </div>
+                {overviewState.signals.map((signal) => (
+                  <div key={signal.title} className="flex items-start gap-3">
+                    {signal.tone === 'success' ? (
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
+                    ) : signal.tone === 'warning' ? (
+                      <Activity className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-600" />
+                    ) : (
+                      <Circle className="mt-0.5 h-4 w-4 flex-shrink-0 text-muted-foreground" />
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{signal.title}</p>
+                      <p className="text-xs text-muted-foreground">{signal.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-3 border-t pt-4">
+                <p className="text-sm font-medium">Reports needing attention</p>
+                {overviewState.reportsNeedingAttention.length > 0 ? (
+                  <div className="space-y-3">
+                    {overviewState.reportsNeedingAttention.map((report) => (
+                      <div key={report.id} className="rounded-lg border p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-medium">{report.templateCode}</p>
+                          <Badge variant="outline">{Math.round(report.completion)}%{report.templateCode === 'CBAM_DATA_PACKAGE' ? ' field coverage' : ''}</Badge>
+                        </div>
+                        <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full bg-primary transition-all"
+                            style={{ width: `${report.completion}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{overviewState.hasSupplierPackage ? 'All selected reports have their required fields filled. Open the supplier package to review validation.' : 'All selected reports are fully complete.'}</p>
+                )}
+              </div>
+
+              <div className="space-y-3 border-t pt-4">
+                <p className="text-sm font-medium">Open roadmap focus</p>
+                {overviewState.topIncompleteItems.length > 0 ? (
+                  <div className="space-y-2">
+                    {overviewState.topIncompleteItems.map((item) => (
+                      <div key={item.id} className="rounded-lg border p-3">
+                        <p className="text-sm font-medium">{item.title}</p>
+                        {item.description ? (
+                          <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No open roadmap items yet.</p>
+                )}
+              </div>
+
+              <div className="space-y-3 border-t pt-4">
+                <p className="text-sm font-medium">Missing work and owners</p>
+                {overviewState.missingWork.length > 0 ? (
+                  <div className="space-y-2">
+                    {overviewState.missingWork.map((item) => (
+                      <div key={item.id} className="rounded-lg border p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium">{item.label}</p>
+                            <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p>
+                          </div>
+                          <Badge variant="outline" className="capitalize">{item.ownerType}</Badge>
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">Owner: {item.ownerLabel}</p>
+                        {item.href ? (
+                          <Button asChild variant="ghost" size="sm" className="mt-3 h-auto p-0 text-xs">
+                            <Link href={item.href}>
+                              Open related work
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">{overviewState.hasSupplierPackage ? 'No field coverage gaps detected. Review the supplier package for validation checks.' : 'No missing work detected from the current project state.'}</p>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Right Column: Project Roadmap (full height) */}
-          <ProjectRoadmap items={mockRoadmapItems} incompleteCount={mockIncompleteCount} />
+          <ProjectRoadmap items={checklistItems} incompleteCount={overviewState.incompleteCount} />
         </div>
       </div>
     </>

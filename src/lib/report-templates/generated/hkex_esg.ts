@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const HKEXESGTemplate: ReportTemplate = {
   code: 'HKEX_ESG' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'HKEX ESG Reporting Guide',
+  name: 'HKEX ESG Data Preparation',
+  description: 'Company data for Appendix C2 ESG Reporting Code disclosures.',
   scope: 'corporate',
   sections: [
     {

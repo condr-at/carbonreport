@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { saveProjectPrefill } from '@/lib/project-prefill';
 import { useCallback, useMemo } from 'react';
+import { getProjectRetentionCountdown } from '@/lib/projects/retention';
 
 interface Report {
   id: string;
@@ -28,6 +29,7 @@ interface Project {
   reportsCount: number;
   reports: Report[];
   createdAt: string;
+  deletedAt?: string | null;
 }
 
 interface ProjectCardProps {
@@ -48,9 +50,11 @@ export function ProjectCard({ project, onDuplicate, onArchive, onDelete, canDupl
 
   const normalizedStatus = project.status?.toUpperCase?.() ?? 'ACTIVE';
   const isArchived = normalizedStatus === 'ARCHIVED';
-  const statusColor = normalizedStatus === 'ACTIVE' ? 'default' : 'secondary';
-  const ArchiveToggleIcon = isArchived ? ArchiveRestore : Archive;
-  const archiveLabel = isArchived ? 'Restore' : 'Archive';
+  const isDeleted = normalizedStatus === 'DELETED';
+  const retention = useMemo(() => getProjectRetentionCountdown(project.deletedAt ?? null), [project.deletedAt]);
+  const statusColor = normalizedStatus === 'ACTIVE' ? 'default' : isDeleted ? 'destructive' : 'secondary';
+  const ArchiveToggleIcon = isArchived || isDeleted ? ArchiveRestore : Archive;
+  const archiveLabel = isDeleted ? 'Restore to archived' : isArchived ? 'Restore' : 'Archive';
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -82,7 +86,7 @@ export function ProjectCard({ project, onDuplicate, onArchive, onDelete, canDupl
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="ml-2">
+              <Button variant="ghost" size="sm" className="ml-2" aria-label={`Project actions for ${project.name}`}>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -102,19 +106,19 @@ export function ProjectCard({ project, onDuplicate, onArchive, onDelete, canDupl
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => onArchive?.(project.id)}
-              >
+              <DropdownMenuItem onClick={() => onArchive?.(project.id)}>
                 <ArchiveToggleIcon className="mr-2 h-4 w-4" />
                 {archiveLabel}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onDelete?.(project.id)}
-                className="text-destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              {!isDeleted ? (
+                <DropdownMenuItem
+                  onClick={() => onDelete?.(project.id)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -126,6 +130,15 @@ export function ProjectCard({ project, onDuplicate, onArchive, onDelete, canDupl
             {project.reportsCount} {project.reportsCount === 1 ? 'Report' : 'Reports'}
           </Badge>
         </div>
+
+        {isDeleted && retention ? (
+          <div className="rounded-md border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+            {retention.days_since_deletion === 0
+              ? 'Deleted today'
+              : `Deleted ${retention.days_since_deletion} day${retention.days_since_deletion === 1 ? '' : 's'} ago`} · Expires in{' '}
+            {retention.days_remaining} day{retention.days_remaining === 1 ? '' : 's'}
+          </div>
+        ) : null}
 
         {/* Progress Bar */}
         <div>
@@ -142,11 +155,17 @@ export function ProjectCard({ project, onDuplicate, onArchive, onDelete, canDupl
         </div>
       </CardContent>
       <CardFooter>
-        <Button asChild className="w-full" variant="outline">
-          <Link href={`/projects/${project.id}`} onClick={rememberProject}>
-            View Details
-          </Link>
-        </Button>
+        {isDeleted ? (
+          <Button className="w-full" variant="outline" onClick={() => onArchive?.(project.id)}>
+            Restore project
+          </Button>
+        ) : (
+          <Button asChild className="w-full" variant="outline">
+            <Link href={`/projects/${project.id}`} onClick={rememberProject}>
+              View Details
+            </Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

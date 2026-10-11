@@ -1,15 +1,15 @@
 import { ReportTemplate } from './types'
 
 /**
- * ISO 14067 Carbon Footprint Report Template
+ * ISO 14067 Product Carbon Footprint — Compact Data Collection Template
  * 
  * International standard for quantifying and reporting the carbon footprint of products.
  * 
  * User Story:
  * - User fills out general information about their product
  * - Defines system boundaries (cradle-to-gate, cradle-to-grave)
- * - Calculates GHG emissions across lifecycle stages
- * - Optionally gets third-party verification
+ * - Collects emissions inputs and available calculation results
+ * - Prepares information for a separate third-party review
  * 
  * Page Layout:
  * 1. General Information - Company and product details
@@ -17,13 +17,13 @@ import { ReportTemplate } from './types'
  * 3. GHG Calculation - Emissions data
  * 4. Verification - Third-party validation
  * 
- * Output: HTML report with all sections, exportable to PDF
+ * Current use: compact editable data collection; calculation, verification and export are separate work.
  */
 export const ISO14067Template: ReportTemplate = {
   code: 'ISO14067',
-  name: 'ISO 14067 Carbon Footprint Report',
+  name: 'ISO 14067 PCF — Compact',
   version: '1.0',
-  description: 'International standard for quantifying the carbon footprint of products',
+  description: 'Core product and emissions fields for starting a footprint study.',
   scope: 'product',
   layoutMeta: {
     layout: 'stacked-sections',

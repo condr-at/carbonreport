@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notifications } from '@/components/ui/notifications';
@@ -8,6 +8,8 @@ import { request, ApiError } from '@/lib/api-client';
 import type { Dataset, DataPoint, Facility, EnergyEntry, BOMItem } from '@/lib/dataset-validation';
 import { projectKeys } from './keys';
 import { logOptimistic } from './logging';
+import { useBatchSync } from '@/lib/sync/sync-manager';
+import { overlayDatasetQueue } from '@/lib/sync/dataset-overlay';
 
 type DatasetQueryKey = ReturnType<typeof projectKeys.dataset>;
 
@@ -120,12 +122,18 @@ export function useProjectDataset(
   projectId: string,
   options?: { initialData?: ProjectDataset; staleTime?: number }
 ) {
-  return useQuery<ProjectDataset>({
+  const { queue } = useBatchSync();
+  const query = useQuery<ProjectDataset>({
     queryKey: projectKeys.dataset(projectId),
     queryFn: () => fetchProjectDataset(projectId),
     initialData: options?.initialData,
     staleTime: options?.staleTime,
   });
+  const data = useMemo(() => query.data ? {
+    ...query.data,
+    dataset: overlayDatasetQueue(query.data.dataset, queue, projectId),
+  } : undefined, [query.data, queue, projectId]);
+  return { ...query, data };
 }
 
 function getLatestDataset(queryClient: ReturnType<typeof useQueryClient>, key: DatasetQueryKey) {
@@ -422,23 +430,11 @@ export function useDeleteDatasetItem(projectId: string) {
   });
 }
 
-import { useBatchSync } from '@/lib/sync/sync-manager';
-
 export function useBatchedUpdateDatasetField(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  // Listen for batch failures
-  useEffect(() => {
-    if (!lastBatchResult) return;
-
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) {
-      // Invalidate cache to refetch fresh data
-      void queryClient.invalidateQueries({ queryKey });
-    }
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: UpdateFieldVariables) => {
@@ -474,18 +470,9 @@ export function useBatchedUpdateDatasetField(projectId: string) {
 
 export function useBatchedAddDatasetItem(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  // Listen for batch failures
-  useEffect(() => {
-    if (!lastBatchResult) return;
-
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) {
-      void queryClient.invalidateQueries({ queryKey });
-    }
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: AddItemVariables & { fieldIds?: string[] }) => {
@@ -496,6 +483,7 @@ export function useBatchedAddDatasetItem(projectId: string) {
         projectId,
         repeatableKey: variables.repeatableKey,
         itemId: newItemId,
+        fieldIds: variables.fieldIds,
       });
 
       // 2. Optimistic Update
@@ -535,18 +523,9 @@ export function useBatchedAddDatasetItem(projectId: string) {
 
 export function useBatchedDeleteDatasetItem(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  // Listen for batch failures
-  useEffect(() => {
-    if (!lastBatchResult) return;
-
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) {
-      void queryClient.invalidateQueries({ queryKey });
-    }
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: DeleteItemVariables) => {
@@ -580,14 +559,9 @@ export function useBatchedDeleteDatasetItem(projectId: string) {
 
 export function useBatchedUpdateFacility(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { facilityId: string; field: keyof Facility; value: string }) => {
@@ -616,14 +590,9 @@ export function useBatchedUpdateFacility(projectId: string) {
 
 export function useBatchedAddFacility(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { facility: Facility }) => {
@@ -646,14 +615,9 @@ export function useBatchedAddFacility(projectId: string) {
 
 export function useBatchedDeleteFacility(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { facilityId: string }) => {
@@ -676,14 +640,9 @@ export function useBatchedDeleteFacility(projectId: string) {
 
 export function useBatchedUpdateEnergy(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { energyId: string; field: keyof EnergyEntry; value: string | number }) => {
@@ -713,14 +672,9 @@ export function useBatchedUpdateEnergy(projectId: string) {
 
 export function useBatchedAddEnergy(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { entry: EnergyEntry }) => {
@@ -743,14 +697,9 @@ export function useBatchedAddEnergy(projectId: string) {
 
 export function useBatchedDeleteEnergy(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { energyId: string }) => {
@@ -773,14 +722,9 @@ export function useBatchedDeleteEnergy(projectId: string) {
 
 export function useBatchedUpdateBOM(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { bomId: string; field: keyof BOMItem; value: string | number }) => {
@@ -810,14 +754,9 @@ export function useBatchedUpdateBOM(projectId: string) {
 
 export function useBatchedAddBOM(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { item: BOMItem }) => {
@@ -840,14 +779,9 @@ export function useBatchedAddBOM(projectId: string) {
 
 export function useBatchedDeleteBOM(projectId: string) {
   const queryClient = useQueryClient();
-  const { addToQueue, lastBatchResult } = useBatchSync();
+  const { addToQueue } = useBatchSync();
   const queryKey = projectKeys.dataset(projectId);
 
-  useEffect(() => {
-    if (!lastBatchResult) return;
-    const failures = lastBatchResult.results.filter(r => !r.success);
-    if (failures.length > 0) void queryClient.invalidateQueries({ queryKey });
-  }, [lastBatchResult, queryClient, queryKey]);
 
   return {
     mutate: (variables: { bomId: string }) => {

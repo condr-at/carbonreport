@@ -43,7 +43,7 @@ The upload pipeline currently supports organization logos and user avatars only:
 ### Prerequisites
 
 - Node.js 20+ and npm
-- Supabase account (free tier works fine)
+- PostgreSQL 15+ locally for the recommended dev/test workflow, or Supabase if you prefer a managed remote database
 - (Optional) Resend account for emails
 
 ### Installation
@@ -59,40 +59,46 @@ cd carbonreport
 npm install
 ```
 
-3. Set up Supabase database:
+3. Choose a database workflow:
 
-**Option A: Use existing Supabase project**
-- Go to [supabase.com](https://supabase.com) and create/open your project
-- Navigate to **Settings → Database**
-- Copy **Connection string** from **Session Pooler** (port 5432)
-
-**Option B: Use provided connection string**
-- Already configured in `.env.example`
-
-4. Set up environment variables:
+**Option A: Local Postgres for day-to-day development and integration tests**
 ```bash
-cp .env.example .env
+cp .env.local.example .env.local
+cp .env.test.local.example .env.test.local
 ```
 
-Edit `.env` with your Supabase connection string:
-- `DATABASE_URL` - Supabase Session Pooler URL (port 5432) for local development
-- `JWT_SECRET` - Default is fine for dev (change in production!)
-- `RESEND_API_KEY` - Optional, leave empty for now
+Edit both files if your local credentials differ from `postgres:postgres@localhost:5432`.
 
-5. Initialize database:
+Initialize the local dev database:
 ```bash
-npm run db:push      # Create tables in Supabase
+npm run db:push:local
+npm run db:seed:local
+```
+
+Run DB-backed integration tests against the dedicated local test DB:
+```bash
+npm run test:integration:local
+```
+
+**Option B: Supabase for staging/production-aligned work**
+- Copy `.env` from your secure template or local secrets store.
+- Set both `DIRECT_URL` and `DATABASE_URL`.
+- Keep Supabase as the shared/staging target, not the only place where integration tests can run.
+
+4. App runtime env:
+- `.env.local` is the recommended local app/runtime profile.
+- `.env.test.local` is reserved for integration tests only.
+- `.env` can remain your Supabase-oriented profile if you want a separate remote target.
+
+5. Start development server:
+```bash
+npm run dev
 ```
 
 6. Configure uploads (optional):
    - For S3-compatible storage, set `ASSETS_BUCKET_NAME`, `ASSETS_BUCKET_REGION`, `ASSETS_PUBLIC_BASE_URL`, `ASSETS_UPLOADS_PREFIX`, `ASSETS_UPLOAD_TTL_SECONDS`, `ASSETS_S3_ENDPOINT` (when using a custom endpoint like Cloudflare R2), plus `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`.
    - If these variables are omitted in local development, the app automatically falls back to disk-backed uploads under `public/dev-uploads`. You can force-enable or tune this mode with `ENABLE_LOCAL_UPLOADS`, `LOCAL_UPLOADS_DIR`, `LOCAL_UPLOADS_PUBLIC_PATH`, and `LOCAL_UPLOADS_PUBLIC_URL`.
    - Cloudflare R2 example: `ASSETS_S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com` (S3 API) and `ASSETS_PUBLIC_BASE_URL=https://pub-<account-id>.r2.dev/<bucket>` (public CDN). Repo defaults already point to `carbonreport-assets` in region `eeur`—replace these credentials if you provision a different storage backend.
-
-7. Run development server:
-```bash
-npm run dev
-```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
@@ -101,8 +107,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```bash
 # Prisma
 npm run db:generate  # Generate Prisma Client
-npm run db:push      # Push schema to Supabase
-npm run db:studio    # Open Prisma Studio (GUI for Supabase)
+npm run db:push      # Push schema using current shell env
+npm run db:push:local
+npm run db:seed:local
+npm run db:studio    # Open Prisma Studio using current shell env
+npm run db:studio:local
+
+# Tests
+npm test
+npm run test:integration:local
 ```
 
 ## Project Structure
@@ -208,4 +221,3 @@ See [Requirements v0.0.1 § 2](docs/Requirements%20v0.0.1.md#2-functional-requir
 ## License
 
 Private project - not licensed for public use.
-

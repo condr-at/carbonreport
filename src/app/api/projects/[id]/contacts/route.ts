@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import db from '@/lib/db';
-import { getCacheValue, setCacheValue } from '@/lib/cache';
+import { getAccessibleOrganizationIds } from '@/lib/server-data/access';
+import { ensureApiError, errorResponse } from '@/lib/api-error';
 
 const ENABLE_TIMING = process.env.NODE_ENV !== 'production';
 
@@ -23,9 +24,10 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     const startedAt = ENABLE_TIMING ? process.hrtime.bigint() : BigInt(0);
     const rawParams = await context.params;
     const { id } = paramsSchema.parse(rawParams);
+    const organizationIds = await getAccessibleOrganizationIds();
 
-    const project = await db.project.findUnique({
-      where: { id },
+    const project = await db.project.findFirst({
+      where: { id, organizationId: { in: organizationIds } },
       select: {
         id: true,
         organizationId: true,
@@ -36,14 +38,8 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    const cacheKey = `project:contacts:${project.id}`;
-    const cached = getCacheValue<{ contacts: unknown[] }>(cacheKey);
-
-    if (cached) {
-      logTiming(`GET /projects/${project.id}/contacts (cache hit)`, startedAt);
-      return NextResponse.json(cached);
-    }
-
+    // Contact creation/reassignment can run in another route worker; a local
+    // response cache cannot guarantee that the next read sees the mutation.
     const contacts = await db.contact.findMany({
       where: {
         organizationId: project.organizationId,
@@ -59,9 +55,9 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     });
 
     const payload = { contacts } as const;
-    setCacheValue(cacheKey, payload);
-
-    const response = NextResponse.json(payload);
+    const response = NextResponse.json(payload, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
     logTiming(`GET /projects/${project.id}/contacts`, startedAt);
     return response;
   } catch (error) {
@@ -77,11 +73,6 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
       );
     }
 
-    return NextResponse.json(
-      {
-        error: 'Unexpected error while fetching contacts',
-      },
-      { status: 500 }
-    );
+    return errorResponse(ensureApiError(error, 'Unexpected error while fetching contacts'));
   }
 }

@@ -1,0 +1,90 @@
+Browser tab: 600622345, Title: "Carbon Report", URL: "http://localhost:3000/projects/new/select-reports".
+1 AXWebArea Carbon Report, URL: localhost:3000/projects/new/select-reports
+	2 container Notifications alt+T
+	3 container
+		29 pop up button (collapsed) QC QA Carbon Metals Free · 1 / 1 projects Open organization menu, ID: radix-_r_0_, Secondary Actions: Expand
+			30 text QC
+			31 text QA Carbon Metals
+			32 text Free
+			33 text  · 1 / 1 projects
+			34 text Open organization menu
+		35 container
+			36 link Description: Dashboard, Value: localhost:3000/dashboard
+			37 link Description: Projects, Value: localhost:3000/projects
+			38 link Description: Requests, Value: localhost:3000/requests
+			39 link Description: Contacts, Value: localhost:3000/contacts
+			40 link Description: Settings, Value: localhost:3000/settings
+		4 pop up button (collapsed) QC QA Carbon Auditor qa.browser.20261010@example.test Open user menu, ID: radix-_R_1pknebn6lb_, Secondary Actions: Expand
+			5 text QC
+			6 text QA Carbon Auditor
+			7 text qa.browser.20261010@example.test
+			8 text Open user menu
+		9 container
+			56 heading Create New Project, Value: 1
+				57 text Create New Project
+			58 text Choose which reporting standards you want to include.
+			59 button Close project wizard
+				60 image
+			61 text Select Report Types Choose data templates for  QA Catalog Product 20261011 . You can collect and review data here; finished report exports and submissions are not available yet.
+			62 checkbox Description: CBAM Declaration Preparation, Value: 0, ID: CBAM_REPORT
+			63 text CBAM Declaration Preparation
+			64 text Import and emissions data for the selected CBAM reporting period.
+			65 text Use when:  Prepare inputs for annual declarations from 2026 or historical transitional reports.
+			66 checkbox Description: CBAM Importer Data, Value: 0, ID: CBAM
+			67 text CBAM Importer Data
+			68 text Product, shipment and embedded-emissions inputs.
+			69 text Use when:  Gather an importer summary for review with suppliers and advisers.
+			70 container report-recommendation-CBAM
+				71 text Check applicability Confirm the goods, customs role and import year before treating CBAM as a filing obligation. Check:  CN codes, origin, customs procedure and importer or supplier role · Annual net mass by importer; the 50-tonne exemption does not cover electricity or hydrogen · Import year: quarterly transitional reports through 2025; annual declarations from 2026 · Actual or default emissions, verification requirements and authorised declarant status
+			72 checkbox Description: CBAM Supplier Data, Value: 0, ID: CBAM_DATA_PACKAGE
+			73 text CBAM Supplier Data
+			74 text Supplier and installation inputs with supporting evidence references.
+			75 text Use when:  Collect the information needed to review embedded-emissions calculations.
+			76 checkbox Description: CBAM Preparation Checklist, Value: 0, ID: CBAM_PREP_METHOD
+			77 text CBAM Preparation Checklist
+			78 text Sourcing and methodology inputs for an internal review.
+			79 text Use when:  Organize data collection and review before a CBAM declaration.
+			80 checkbox Description: CBAM Certificate Planning, Value: 0, ID: CBAM_ALLOWANCES
+			81 text CBAM Certificate Planning
+			82 text Certificate quantities and cost assumptions for the reporting year.
+			83 text Use when:  Collect inputs for a certificate purchase and surrender plan.
+			84 checkbox Description: CBAM Monitoring Data, Value: 0, ID: CBAM_MONITORING_ALERT
+			85 text CBAM Monitoring Data
+			86 text Supplier data and monitoring-method inputs for review.
+			87 text Use when:  Record the inputs and methods to check before the reporting deadline.
+			88 checkbox Description: Product Carbon Footprint Data, Value: 0, ID: PRODUCT_PCF
+			89 text Product Carbon Footprint Data
+			90 text Product life-cycle inputs for a GHG Protocol study.
+			91 text Use when:  Collect activity data, boundaries and methodology notes for footprint calculation and review.
+			92 checkbox Description: ISO 14067 PCF — Compact, Value: 0, ID: ISO14067
+			93 text ISO 14067 PCF — Compact
+			94 text Core product and emissions fields for starting a footprint study.
+			95 text Use when:  Start with a shorter collection form before calculation or verification.
+			96 container report-recommendation-ISO14067
+				97 text Check applicability Confirm whether the recipient needs a product carbon footprint or a programme-specific EPD. Confirm whether your recipient needs an EPD or an ISO 14067 product footprint. They are different deliverables. Check:  Requested output, product, declared or functional unit and system boundary · Applicable standard edition, EPD programme and PCR if relevant · Required independent review, verification and publication process
+			98 checkbox Description: ISO 14067 PCF — Detailed, Value: 0, ID: ISO_14067
+			99 text ISO 14067 PCF — Detailed
+			100 text Expanded fields for product, life-cycle and methodology data.
+			101 text Use when:  Collect more detailed inputs for a footprint study and independent review.
+			102 checkbox Description: EPD Data Preparation, Value: 0, ID: EPD
+			103 text EPD Data Preparation
+			104 text Product LCA inputs for the chosen programme and product category rules.
+			105 text Use when:  Collect data for an EPD study, programme review and external verification.
+			106 container report-recommendation-EPD
+				107 text Check applicability Confirm whether the recipient needs a product carbon footprint or a programme-specific EPD. Confirm whether your recipient needs an EPD or an ISO 14067 product footprint. They are different deliverables. Check:  Requested output, product, declared or functional unit and system boundary · Applicable standard edition, EPD programme and PCR if relevant · Required independent review, verification and publication process
+			108 checkbox Description: Building Carbon Data, Value: 0, ID: BUILDING_CARBON_FOOTPRINT
+			109 text Building Carbon Data
+			110 text Material, life-cycle module and operational-energy inputs.
+			111 text Use when:  Prepare data for a building assessment using the agreed method and study period. ℹ️ Please select at least one report type to continue
+			112 button Back
+				113 image
+				114 text Back
+			115 button (disabled) Create Project (0 reports)
+				116 text Create Project ( 0 reports )
+			117 text You can add or remove report types anytime after creating the project.
+	52 button Open Tanstack query devtools
+		53 image
+	54 pop up button (collapsed) Description: Open Next.js Dev Tools, ID: next-logo, Secondary Actions: Expand
+		55 image
+
+The focused UI element is 1 AXWebArea Carbon Report, URL: localhost:3000/projects/new/select-reports

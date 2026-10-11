@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const EPDORISO14067Template: ReportTemplate = {
   code: 'EPD_OR_ISO_14067' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'EPD_OR_ISO_14067', // We don't have a long name in CSV, using code
+  name: 'EPD / ISO 14067 Data Preparation',
+  description: 'Product life-cycle inputs for planning an EPD or footprint study.',
   scope: 'product',
   sections: [
     {

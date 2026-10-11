@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CLIENTTEMPLATEFILLTemplate: ReportTemplate = {
   code: 'CLIENT_TEMPLATE_FILL' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Client Template Fill',
+  name: 'Client Questionnaire Preparation',
+  description: 'Source data for a customer-provided form or portal.',
   scope: 'corporate',
   sections: [
     {

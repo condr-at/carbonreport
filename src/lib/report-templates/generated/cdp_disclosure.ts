@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CDPDISCLOSURETemplate: ReportTemplate = {
   code: 'CDP_DISCLOSURE' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'CDP Climate Change Disclosure',
+  name: 'CDP Disclosure Preparation',
+  description: 'Company and environmental data for a CDP response.',
   scope: 'corporate',
   sections: [
     {

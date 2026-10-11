@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
 import { DataRequestServiceError, resendRequestsBulk } from '@/lib/data-requests/service';
+import { getCurrentUser } from '@/lib/auth';
+import { assertCanMutateDataRequests } from '@/lib/data-requests/authorization';
+import { isApiError } from '@/lib/api-error';
 
 const bodySchema = z.object({
   ids: z.array(z.string().uuid()).min(1, 'ids must include at least one request id'),
@@ -31,7 +34,9 @@ export async function POST(request: Request) {
     const rawBody = await request.json();
     const { ids, requestedAt } = bodySchema.parse(rawBody);
     const requestedDate = parseRequestedAt(requestedAt);
+    const user = await getCurrentUser();
 
+    await assertCanMutateDataRequests(ids, user.id, prisma);
     const result = await resendRequestsBulk(ids, requestedDate, prisma);
 
     return NextResponse.json(
@@ -62,6 +67,17 @@ export async function POST(request: Request) {
           code: error.code,
         },
         { status: error.status }
+      );
+    }
+
+    if (isApiError(error)) {
+      return NextResponse.json(
+        {
+          error: error.message,
+          code: error.code,
+          details: error.details,
+        },
+        { status: error.status },
       );
     }
 

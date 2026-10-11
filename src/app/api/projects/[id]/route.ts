@@ -10,6 +10,8 @@ import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 import { assertOrgMembership } from '@/lib/server-utils'
 import { computeProjectRetention } from '@/lib/projects/service'
 import { scheduleUsageRecompute } from '@/lib/organizations/usage-scheduler'
+import { getReportTemplate, type ReportTemplateCode } from '@/lib/report-templates'
+import { getReportCompletion } from '@/lib/report-completion'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -28,6 +30,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         name: true,
         status: true,
         datasetVersion: true,
+        dataset: true,
         createdAt: true,
         deletedAt: true,
         checklist: true,
@@ -36,6 +39,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             id: true,
             templateCode: true,
             completion: true,
+          },
+        },
+        createdBy: {
+          select: {
+            name: true,
           },
         },
         organization: {
@@ -61,11 +69,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         dataset_version: project.datasetVersion,
         created_at: project.createdAt,
         deleted_at: project.deletedAt,
+        owner_name: project.createdBy?.name ?? null,
         checklist: project.checklist,
         reports: project.reports.map((report) => ({
           id: report.id,
           template_code: report.templateCode,
-          completion: report.completion,
+          completion: getReportCompletion(project.dataset, getReportTemplate(report.templateCode as ReportTemplateCode)).percentage,
         })),
         retention: computeProjectRetention(project.deletedAt),
       },

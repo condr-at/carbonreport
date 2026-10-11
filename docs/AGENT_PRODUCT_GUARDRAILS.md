@@ -101,13 +101,37 @@ Corporate capability may exist, but:
 
 ## UX Guardrails
 
+### 0. Landing freeze
+
+Until explicitly reopened by the user, landing is a frozen surface.
+
+Agent must treat:
+- `/`
+- `src/app/page.tsx`
+- `src/components/sections/*`
+- landing-specific copy/spec files
+
+as out of scope for active iteration.
+
+#### Allowed during freeze
+
+- reading landing files for context
+- documenting that landing is deferred
+- touching landing only if a change is strictly required to unblock another critical path and the user has approved it
+
+#### Not allowed during freeze
+
+- routine messaging rewrites
+- visual iteration on landing sections
+- CTA, pricing, navbar, hero, FAQ, or section-level landing optimization
+- using landing work as a substitute for fixing in-product UX
+
 ### 1. Product-first onboarding
 
 When editing:
 - `/projects/new`
 - `/projects/new/questionnaire`
 - `/projects/new/select-reports`
-- landing page sections that describe the primary workflow
 
 the agent must preserve or improve:
 - fast comprehension;

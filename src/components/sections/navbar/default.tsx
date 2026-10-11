@@ -53,10 +53,10 @@ export default function Navbar({
     { text: "FAQ", href: "#faq" },
   ],
   actions = [
-    { text: "Sign in", href: "/auth/login", isButton: false },
+    { text: "Sign in", href: "/login", isButton: false },
     {
       text: "Get Started",
-      href: "/auth/register",
+      href: siteConfig.getStartedUrl,
       isButton: true,
       variant: "primary",
     },

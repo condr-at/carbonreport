@@ -1,0 +1,24 @@
+
+> carbonreport@0.1.0 templates:check
+> tsx scripts/check-templates.ts
+
+/private/tmp/carbonreport-qa-runtime/node_modules/@prisma/client/src/runtime/utils/validatePrismaClientOptions.ts:75
+            throw new PrismaClientConstructorValidationError(
+                  ^
+
+
+PrismaClientConstructorValidationError: Invalid value undefined for datasource "db" provided to PrismaClient constructor.
+It should have this form: { url: "CONNECTION_STRING" }
+Read more at https://pris.ly/d/client-constructor
+    at Object.datasources (/private/tmp/carbonreport-qa-runtime/node_modules/@prisma/client/src/runtime/utils/validatePrismaClientOptions.ts:75:19)
+    at validatePrismaClientOptions (/private/tmp/carbonreport-qa-runtime/node_modules/@prisma/client/src/runtime/utils/validatePrismaClientOptions.ts:269:19)
+    at new r (/private/tmp/carbonreport-qa-runtime/node_modules/@prisma/client/src/runtime/getPrismaClient.ts:269:9)
+    at loadEnv (/private/tmp/carbonreport-qa-runtime/scripts/check-templates.ts:11:16)
+    at Object.<anonymous> (/private/tmp/carbonreport-qa-runtime/scripts/check-templates.ts:178:4)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Object.transformer (/private/tmp/carbonreport-qa-runtime/node_modules/tsx/dist/register-D46fvsV_.cjs:3:1104)
+    at Module.load (node:internal/modules/cjs/loader:1266:32)
+    at Module._load (node:internal/modules/cjs/loader:1091:12)
+    at cjsLoader (node:internal/modules/esm/translators:298:15)
+
+Node.js v20.20.0

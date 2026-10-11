@@ -4,6 +4,7 @@ import type { ServerTimingTracker } from '@/lib/server-data/metrics';
 import type { GlobalRequestFilters } from '@/lib/data-requests/filters';
 import type { DataRequestSummary } from '@/lib/data-requests/types';
 import type { Prisma } from '@prisma/client';
+import { getAccessibleOrganizationIds } from './access';
 
 function iso(value: Date | null): string | null {
   return value ? value.toISOString() : null;
@@ -74,7 +75,11 @@ export async function getGlobalDataRequests(
   filters: GlobalRequestFilters,
   tracker?: ServerTimingTracker
 ): Promise<DataRequestSummary[]> {
+  const organizationIds = await getAccessibleOrganizationIds();
+  if (!organizationIds.length) return [];
   const where: Prisma.DataRequestWhereInput = {
+    project: { organizationId: { in: organizationIds }, deletedAt: null },
+    contact: { organizationId: { in: organizationIds } },
     ...(filters.projectId ? { projectId: filters.projectId } : {}),
     ...(filters.contactId ? { contactId: filters.contactId } : {}),
   };
@@ -174,10 +179,13 @@ export async function getGlobalDataRequests(
 }
 
 export async function getProjectsForRequests(tracker?: ServerTimingTracker): Promise<Array<{ id: string; name: string }>> {
+  const organizationIds = await getAccessibleOrganizationIds();
+  if (!organizationIds.length) return [];
   const stopProjectsQuery = tracker?.start('db:request-projects');
   const projects = await prisma.project.findMany({
     where: {
       deletedAt: null,
+      organizationId: { in: organizationIds },
     },
     orderBy: [{ name: 'asc' }],
     select: {

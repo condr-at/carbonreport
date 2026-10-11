@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const EUETSTemplate: ReportTemplate = {
   code: 'EU_ETS' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'EU ETS (Emissions Trading System)',
+  name: 'EU ETS Installation Data',
+  description: 'Installation emissions and monitoring inputs for annual reporting.',
   scope: 'corporate',
   sections: [
     {

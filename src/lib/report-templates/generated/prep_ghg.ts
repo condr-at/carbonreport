@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const PREPGHGTemplate: ReportTemplate = {
   code: 'PREP_GHG' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Preparation for GHG Inventory',
+  name: 'GHG Preparation Checklist',
+  description: 'Boundary, methodology and data-source inputs.',
   scope: 'corporate',
   sections: [
     {

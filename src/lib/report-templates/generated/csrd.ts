@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CSRDTemplate: ReportTemplate = {
   code: 'CSRD' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'CSRD (Corporate Sustainability Reporting Directive)',
+  name: 'CSRD / ESRS Data Preparation',
+  description: 'Sustainability inputs for an ESRS statement.',
   scope: 'corporate',
   sections: [
     {

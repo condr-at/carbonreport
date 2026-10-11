@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CORPGHGANNUALTemplate: ReportTemplate = {
   code: 'CORP_GHG_ANNUAL' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Annual Corporate GHG Report',
+  name: 'Corporate GHG Annual Data',
+  description: 'Reporting-year emissions and comparison inputs.',
   scope: 'corporate',
   sections: [
     {

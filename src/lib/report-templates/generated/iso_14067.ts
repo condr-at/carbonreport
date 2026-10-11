@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const ISO14067Template: ReportTemplate = {
   code: 'ISO_14067' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Product Carbon Footprint (ISO 14067 Compliant)',
+  name: 'ISO 14067 PCF — Detailed',
+  description: 'Expanded fields for product, life-cycle and methodology data.',
   scope: 'product',
   sections: [
     {

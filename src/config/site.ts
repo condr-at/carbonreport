@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: "Carbon Report",
   url: "https://carbonreport.com", // Placeholder
-  getStartedUrl: "/auth/register",
+  getStartedUrl: "/register",
   ogImage: "https://carbonreport.com/og.jpg", // Placeholder
   description:
     "Product Carbon Footprint & Compliance Workspace. Prepare ISO 14067 & EU CBAM reports in days, not months.",

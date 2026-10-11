@@ -141,7 +141,7 @@ function ProjectsPageContent() {
       return;
     }
 
-    const type = target.status === 'ARCHIVED' ? 'restore' : 'archive';
+    const type = target.status === 'ARCHIVED' || target.status === 'DELETED' ? 'restore' : 'archive';
     setPendingAction({ type, projectId });
   };
 
@@ -190,6 +190,9 @@ function ProjectsPageContent() {
       return 'The project will be marked as deleted and can be restored during the retention window.';
     }
     if (pendingAction.type === 'restore') {
+      if (pendingProject?.status === 'DELETED') {
+        return 'The project will be restored to your archived list with its data intact. You can activate it afterward if your plan has capacity.';
+      }
       return 'The project will return to your active list.';
     }
     return 'Archiving removes the project from the active list without deleting any data. You can restore it later.';
@@ -199,7 +202,7 @@ function ProjectsPageContent() {
     ? pendingAction.type === 'delete'
       ? 'Delete'
       : pendingAction.type === 'restore'
-        ? 'Restore'
+        ? pendingProject?.status === 'DELETED' ? 'Restore to archived' : 'Restore'
         : 'Archive'
     : 'Confirm';
 
@@ -280,6 +283,7 @@ function ProjectsPageContent() {
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="archived">Archived</SelectItem>
+              <SelectItem value="deleted">Deleted</SelectItem>
             </SelectContent>
           </Select>
 

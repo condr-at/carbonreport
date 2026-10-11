@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CBAMPREPMETHODTemplate: ReportTemplate = {
   code: 'CBAM_PREP_METHOD' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'CBAM Preparation Method',
+  name: 'CBAM Preparation Checklist',
+  description: 'Sourcing and methodology inputs for an internal review.',
   scope: 'product',
   sections: [
     {

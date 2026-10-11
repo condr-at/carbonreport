@@ -55,6 +55,14 @@ export interface BulkStatusResult {
   version: number;
 }
 
+export interface BulkReassignResult {
+  revoked: number;
+  created: number;
+  requests: SerializedRequest[];
+  updatedAt: string;
+  version: number;
+}
+
 export interface SerializedRequest {
   id: string;
   status: DataRequestStatus;
@@ -692,6 +700,129 @@ export async function resendRequestsBulk(
 
     return {
       updated: count,
+      requests: serialized,
+      ...metadata,
+    };
+  } finally {
+    endTimer(timer);
+  }
+}
+
+export async function reassignRequestsBulk(
+  ids: string[],
+  contactInput: BulkContactInput,
+  requestedByUserId: string,
+  reassignedAt: Date,
+  client?: PrismaClient
+): Promise<BulkReassignResult> {
+  if (ids.length === 0) {
+    const metadata = buildMutationMetadata(reassignedAt);
+    return { revoked: 0, created: 0, requests: [], ...metadata };
+  }
+
+  const timer = startTimer(`reassignRequestsBulk count=${ids.length}`);
+  const prisma = getClient(client);
+
+  try {
+    const existing = await prisma.dataRequest.findMany({
+      where: { id: { in: ids } },
+      include: {
+        project: {
+          select: {
+            id: true,
+            organizationId: true,
+          },
+        },
+      },
+    });
+
+    if (existing.length !== ids.length) {
+      const foundIds = new Set(existing.map((request) => request.id));
+      const missing = ids.filter((id) => !foundIds.has(id));
+      throw new DataRequestServiceError(
+        `Data request(s) not found: ${missing.join(', ')}`,
+        404,
+        'NOT_FOUND'
+      );
+    }
+
+    const completedOrRevoked = existing.filter((request) => request.completedAt || request.revokedAt);
+    if (completedOrRevoked.length > 0) {
+      throw new DataRequestServiceError(
+        'Only pending request(s) can be reassigned',
+        409,
+        'CONFLICT'
+      );
+    }
+
+    const projectIds = new Set(existing.map((request) => request.projectId));
+    if (projectIds.size !== 1) {
+      throw new DataRequestServiceError(
+        'Data request(s) must belong to the same project',
+        400,
+        'VALIDATION_FAILED'
+      );
+    }
+
+    const organizationIds = new Set(existing.map((request) => request.project.organizationId));
+    if (organizationIds.size !== 1) {
+      throw new DataRequestServiceError(
+        'Data request(s) must belong to the same organization',
+        400,
+        'VALIDATION_FAILED'
+      );
+    }
+
+    const organizationId = existing[0]!.project.organizationId;
+    const contact = await resolveContact(prisma, organizationId, requestedByUserId, contactInput);
+
+    const insertRows: Array<Prisma.DataRequestCreateManyInput & { id: string }> = existing.map((request) => ({
+      id: randomUUID(),
+      userId: requestedByUserId,
+      projectId: request.projectId,
+      contactId: contact.id,
+      dataPointId: request.dataPointId,
+      itemId: request.itemId,
+      fieldLabel: request.fieldLabel,
+      requestedAt: reassignedAt,
+      deadline: request.deadline,
+      completedAt: null,
+      revokedAt: null,
+      externalAccess: request.externalAccess,
+    }));
+
+    const result = await prisma.$transaction(async (tx) => {
+      const revoked = await tx.dataRequest.updateMany({
+        where: {
+          id: { in: ids },
+          completedAt: null,
+          revokedAt: null,
+        },
+        data: {
+          revokedAt: reassignedAt,
+        },
+      });
+
+      if (insertRows.length > 0) {
+        await tx.dataRequest.createMany({ data: insertRows });
+      }
+
+      return {
+        revoked: revoked.count,
+        created: insertRows.length,
+      };
+    });
+
+    projectIds.forEach((projectId) => {
+      invalidateByPrefix(`${DATA_REQUEST_CACHE_PREFIX}${projectId}`);
+    });
+    invalidateByPrefix(`${CONTACT_CACHE_PREFIX}${Array.from(projectIds)[0]}`);
+
+    const serialized = await serializeRequests(insertRows.map((row) => row.id), prisma);
+    const metadata = buildMutationMetadata(reassignedAt);
+
+    return {
+      ...result,
       requests: serialized,
       ...metadata,
     };

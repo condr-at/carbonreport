@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CLIMATEACTIONPLANTemplate: ReportTemplate = {
   code: 'CLIMATE_ACTION_PLAN' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Climate Action Plan',
+  name: 'Climate Action Planning Data',
+  description: 'Emissions, targets and transition-planning inputs.',
   scope: 'corporate',
   sections: [
     {

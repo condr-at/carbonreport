@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const UKTCFDTemplate: ReportTemplate = {
   code: 'UK_TCFD' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'UK TCFD',
+  name: 'UK Climate Disclosure Preparation',
+  description: 'Climate governance, risk and metrics inputs for UK reporting.',
   scope: 'corporate',
   sections: [
     {

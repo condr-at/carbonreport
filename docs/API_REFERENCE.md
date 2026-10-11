@@ -1208,6 +1208,104 @@ GET /api/projects/:projectId/reports/:reportId
 completion = (filled_required_fields / total_required_fields) * 100
 ```
 
+### CBAM Supplier Review Package
+
+Contract checked against the implementation on **2026-10-11**. This endpoint applies only to a report with `templateCode: "CBAM_DATA_PACKAGE"` belonging to the requested project. It prepares our supplier review package, not a CBAM declaration, statutory operator emissions report, Registry import or verification statement.
+
+```http
+GET /api/projects/:id/reports/:reportId/supplier-package
+GET /api/projects/:id/reports/:reportId/supplier-package?format=zip&expectedDatasetVersion=7
+PATCH /api/projects/:id/reports/:reportId/supplier-package
+```
+
+**Access and source of data**:
+
+- Authentication and an accepted membership in the project's organization are required. `GET`, including ZIP download, allows `VIEWER_READONLY` and higher roles. `PATCH` requires `EDITOR`, `ADMIN` or `OWNER`.
+- Authorization precedes reading the report and dataset. The report must belong to this project and have the required template code; a different report/template returns `404`.
+- `REPORTED` projects allow reads/downloads but reject changes. Deleted projects are unavailable; deleted organizations are treated as not found.
+- Data comes from the saved `Project.dataset`, with its `datasetVersion`. It does not come from `Report.data` or an unsaved browser draft. `generatedAt` is the server timestamp for this response, also used for date validation; it is not the dataset's last-edit time.
+- All responses produced by this handler, including errors, use `Cache-Control: private, no-store`.
+
+**GET JSON — 200 OK**:
+
+`format` defaults to `json`; only `json` and `zip` are accepted. `expectedDatasetVersion` is optional for JSON and required for ZIP. When supplied, it must be a non-negative safe integer encoded as decimal digits and must equal the saved version. Duplicate `format` or `expectedDatasetVersion` parameters are rejected.
+
+The JSON response has this shape:
+
+```ts
+{
+  projectId: string
+  projectName: string
+  reportId: string
+  templateCode: 'CBAM_DATA_PACKAGE'
+  datasetVersion: number
+  generatedAt: string // ISO timestamp in UTC
+  profileVersion: 'cbam-supplier-review/1.0'
+  canEdit: boolean
+  validation: {
+    values: Record<string, string> // 34 whitelisted package fields, including inactive drafts
+    evidence: Array<{
+      id: string; title: string; reference: string; version: string
+      period: string; owner: string; disclosure: 'shareable' | 'restricted' | 'unknown'
+    }>
+    issues: Array<{
+      fieldId: string; ruleId: string; severity: 'error' | 'warning'
+      message: string; sourceRefs: string[]
+    }>
+    isReady: boolean
+    coverage: 'partial' | 'full' | 'unknown'
+    calculations: {
+      massTonnes: number | null
+      directLotEmissions: number | null
+      indirectLotEmissions: number | null
+    }
+  }
+}
+```
+
+JSON reads return the snapshot even when it is incomplete. `isReady` means no errors under this application profile; warnings remain visible and do not block download. It does not establish legal validity, verification, correct CN classification or recipient acceptance. Validation covers required/conditional fields, dates and production year, CN syntax, supported units, finite non-negative numbers, evidence IDs and default provenance. `restricted` or `unknown` evidence disclosure produces a review warning; no referenced file is fetched or included. Partial-year coverage remains provisional.
+
+The only calculated emissions are optional lot mass × the corresponding reported SEE, in the confirmed unit `tCO2e/t_goods`. Direct and indirect results remain separate. No total, precursor addition, certificate requirement or financial liability is calculated. Missing values are not zero, and indirect `not_applicable` requires a rationale.
+
+**PATCH draft — 200 OK**:
+
+```json
+{
+  "expectedDatasetVersion": 7,
+  "values": {
+    "cbam_pkg_recipient": "Customer review team",
+    "cbam_pkg_direct_see": "2.5"
+  }
+}
+```
+
+Only these two top-level properties are accepted. `expectedDatasetVersion` must be a non-negative safe integer JSON number. `values` must contain at least one and at most 34 known package field IDs, with string values of at most 32,768 JavaScript UTF-16 code units each. The complete request body is limited to **256 KiB**, checked while reading the stream as well as against a supplied `Content-Length`.
+
+Partial updates merge into the shared dataset; unrelated fields and existing datapoint metadata are preserved. Empty and invalid draft strings can be saved and are returned with validation issues. Inactive conditional drafts are retained. Ambiguous duplicate/repeatable package datapoints or an unsafe dataset structure reject the update. The atomic write matches `expectedDatasetVersion` and a writable project/organization state, then increments `datasetVersion` by one. The response is the JSON snapshot above with the incremented version. On conflict, reload and reconcile the saved values before retrying; do not silently overwrite them.
+
+**GET ZIP — 200 OK**:
+
+Requires both a matching `expectedDatasetVersion` and `validation.isReady === true`. The response is `application/zip`, with `Content-Disposition: attachment; filename="cbam-supplier-review-package-v1.zip"` and `X-Content-Type-Options: nosniff`.
+
+The archive contains exactly `summary.html`, `data.json`, `values.csv`, `evidence.csv` and `README.txt`. JSON uses `schemaVersion: "cbam-supplier-review-package/1.0"`. Export includes active whitelisted fields, explicit snapshot metadata, evidence references, issues and separate calculation results. Structured evidence/default JSON is normalized to permitted properties and active components; unrelated nested properties and inactive draft rows are omitted without changing the saved dataset. HTML is escaped, and dangerous CSV formula prefixes are neutralized. Referenced attachments are not downloaded or packaged.
+
+**Errors** use `{ "error": string, "code": string, "details"?: object }`:
+
+| HTTP | Code | Condition |
+| --- | --- | --- |
+| `400` | `VALIDATION_ERROR` | Invalid/duplicate query parameters; missing ZIP version; invalid JSON/body shape/version/field/value; unsafe dataset merge. |
+| `401` | `UNAUTHORIZED` | Missing/invalid authentication or unavailable user. |
+| `403` | `FORBIDDEN` | No accepted organization membership or insufficient role. |
+| `404` | `NOT_FOUND` | Project/organization unavailable, or report is not this project's `CBAM_DATA_PACKAGE`. |
+| `409` | `VERSION_CONFLICT` | Stale expected version or atomic update no longer matches; `details.currentVersion` is present when known. |
+| `409` | `CONFLICT` | Deleted project within retention, or attempt to edit a reported project. |
+| `410` | `RETENTION_EXPIRED` | Deleted project's retention window has expired. |
+| `413` | `VALIDATION_ERROR` | Draft request exceeds 256 KiB. |
+| `422` | `VALIDATION_ERROR` | ZIP requested for an incomplete/invalid package; `details.issues` contains the validation issues. |
+| `500` | `INTERNAL_ERROR` | Unexpected server failure. |
+
+Implementation: `src/app/api/projects/[id]/reports/[reportId]/supplier-package/route.ts`; profile/validation: `src/lib/cbam/supplier-package.ts`; export: `src/lib/cbam/supplier-package-export.ts`. See [the profile contract](regulatory-requirements/CBAM_SUPPLIER_PACKAGE_CONTRACT.md) for scope and sources and [development setup](DEVELOPMENT.md#cbam-supplier-package-field-definitions) for the additive field sync.
+
 ---
 
 ## Mailto Templates
@@ -1382,10 +1480,74 @@ Logs outgoing email requests and manages active assignments per field.
 - `mailtoPreview` payload is required but currently ignored server-side (reserved for future logging).
 
 **Validation**:
-- `projectId`: Required UUID belonging to the authenticated user (dev-mode auto user).
-- `contact`: Email required; `id` optional and must belong to project owner if supplied.
+- `projectId`: Required UUID. The authenticated user must have project organization access.
+- `contact`: Email required; `id` optional and must belong to the project organization if supplied.
 - `fields`: Non-empty array. Each entry needs `dataPointId`; `fieldLabel`, `itemId`, `group` optional.
 - `deadline`: Optional ISO-8601 date or date-time string.
+
+---
+
+### Reassign Data Requests
+
+```http
+POST /api/data-requests/reassign
+```
+
+Changes the responsible contact for one or more pending requests. The operation preserves request history by revoking the selected pending request rows and creating new pending rows for the target contact.
+
+**Auth**: Required. The authenticated user must have `EDITOR` or higher membership in every affected request's project organization.
+
+**Request Body**:
+```json
+{
+  "ids": ["uuid"],
+  "contact": {
+    "id": "uuid",
+    "email": "new-contact@example.com",
+    "name": "New Contact"
+  },
+  "reassignedAt": "2026-06-18T10:00:00.000Z"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "revoked": 1,
+  "created": 1,
+  "requests": [
+    {
+      "id": "new-request-uuid",
+      "status": "pending",
+      "requestedAt": "2026-06-18T10:00:00.000Z",
+      "completedAt": null,
+      "revokedAt": null,
+      "deadline": "2026-06-30T00:00:00.000Z",
+      "contact": {
+        "id": "uuid",
+        "name": "New Contact",
+        "email": "new-contact@example.com",
+        "position": null
+      }
+    }
+  ],
+  "version": 1781796000000,
+  "updatedAt": "2026-06-18T10:00:00.000Z"
+}
+```
+
+**Behavior**:
+- Only pending requests can be reassigned.
+- All selected requests must belong to the same project.
+- The new rows preserve `dataPointId`, `itemId`, `fieldLabel`, `deadline`, and `externalAccess`.
+- Contact is resolved by ID or looked up/created by email in the project organization.
+
+**Errors**:
+- `400`: invalid payload, invalid `reassignedAt`, or ids spanning multiple projects.
+- `403 FORBIDDEN`: authenticated user is not an editor/admin/owner of at least one affected organization.
+- `404 NOT_FOUND`: at least one request id or contact id does not exist.
+- `409 CONFLICT`: at least one selected request is already completed or revoked.
 
 ---
 
@@ -1433,6 +1595,70 @@ GET /api/projects/:id/data-requests?status=active&contact=uuid
 - `completed`: `completed_at` present.
 - `revoked`: `revoked_at` present.
 - `overdue` filter overlays `pending` requests whose deadline has passed.
+
+---
+
+### Remind Data Requests
+
+```http
+POST /api/data-requests/remind
+```
+
+Refreshes `requested_at` for one or more existing data requests and keeps them in `pending` state. This is the product-facing reminder action used by the data requests UI.
+
+**Auth**: Required. The authenticated user must have `EDITOR` or higher membership in every affected request's project organization.
+
+**Request Body**:
+```json
+{
+  "ids": ["uuid"],
+  "requestedAt": "2026-06-16T10:00:00.000Z"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "updated": 1,
+  "requests": [
+    {
+      "id": "uuid",
+      "status": "pending",
+      "requestedAt": "2026-06-16T10:00:00.000Z",
+      "completedAt": null,
+      "revokedAt": null,
+      "deadline": null,
+      "project": {
+        "id": "uuid",
+        "name": "Project name",
+        "ownerName": "Owner name"
+      },
+      "contact": {
+        "id": "uuid",
+        "name": "Alex Johnson",
+        "email": "alex@example.com",
+        "position": null
+      },
+      "dataPoint": {
+        "id": "material_input_name",
+        "itemId": "1",
+        "label": "Material name",
+        "hint": null
+      }
+    }
+  ],
+  "version": 1781623416000,
+  "updatedAt": "2026-06-16T10:00:00.000Z"
+}
+```
+
+**Errors**:
+- `400`: invalid payload or invalid `requestedAt`.
+- `403 FORBIDDEN`: authenticated user is not an editor/admin/owner of at least one affected organization.
+- `404 NOT_FOUND`: at least one request id does not exist.
+
+`POST /api/data-requests/resend-bulk` remains as a compatibility alias with the same mutation semantics.
 
 ---
 
@@ -1768,6 +1994,8 @@ const template = getReportTemplate('ISO14067')
 | `GET /api/projects/:id/dataset` | ✅ Complete | With optional validation |
 | `PUT /api/projects/:id/dataset` | ✅ Complete | Optimistic locking implemented |
 | `GET /api/projects/:projectId/reports/:reportId` | ✅ Complete | Filters by template field_ids |
+| `GET /api/projects/:id/reports/:reportId/supplier-package` | ✅ Complete | Saved review snapshot; version-checked, readiness-gated ZIP export. |
+| `PATCH /api/projects/:id/reports/:reportId/supplier-package` | ✅ Complete | Whitelisted draft merge with optimistic locking. |
 | `GET /api/projects/:id/mailto-templates` | ✅ Complete | Returns JSONB |
 | `PUT /api/projects/:id/mailto-templates/:fieldId` | ✅ Complete | Zod validation |
 | `POST /api/projects/:id/mailto-templates` | ✅ Complete | Resets to defaults |
@@ -1775,6 +2003,8 @@ const template = getReportTemplate('ISO14067')
 | `POST /api/data-requests/bulk` | ✅ Complete | Creates/reassigns data requests |
 | `POST /api/data-requests/:id/complete` | ✅ Complete | Idempotent completion handler |
 | `POST /api/data-requests/:id/revoke` | ✅ Complete | Idempotent revoke handler |
+| `POST /api/data-requests/remind` | ✅ Complete | Reminder action with editor-or-higher authorization |
+| `POST /api/data-requests/reassign` | ✅ Complete | Reassigns pending requests with editor-or-higher authorization |
 
 **Not Implemented (Optional)**:
 - `POST /api/projects/:id/duplicate` — Clone project

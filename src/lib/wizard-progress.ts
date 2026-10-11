@@ -2,6 +2,7 @@ export function clearWizardProgress() {
   if (typeof window === 'undefined') return;
   sessionStorage.removeItem('projectData');
   sessionStorage.removeItem('wizardAnswers');
+  sessionStorage.removeItem('wizardActiveStepIndex');
   sessionStorage.removeItem('recommendedTemplates');
   sessionStorage.removeItem('decisionEngineResult');
 }

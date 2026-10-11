@@ -3,40 +3,38 @@ import { ValidationRule } from './types'
 export const VALIDATION_RULES: ValidationRule[] = [
 	{
 		id: 'V1_NO_CSRD_FOR_SMALL_PRIVATE',
-		description: 'CSRD неприменима к малым частным компаниям',
+		description: 'Размер отдельной компании не подтверждает освобождение от всех CSRD group/period obligations',
 		conditions: [
+			{ type: 'reportSelected', reportId: 'CSRD' },
 			{ type: 'equals', questionId: 'Q0.1', value: 'EU' },
 			{ type: 'equals', questionId: 'Q0.5', value: 'PRIVATE' },
 			{ type: 'anyOf', questionId: 'Q0.3', values: ['EMP_<50', 'EMP_50_249'] },
 			{ type: 'anyOf', questionId: 'Q0.4', values: ['REV_<10M', 'REV_10_40M'] },
 		],
 		effects: [
-			{ type: 'forbid-report', reportId: 'CSRD' },
+			{ type: 'add-warning', warningCode: 'CSRD_SCOPE_REVIEW', message: 'Company size alone does not establish an exemption. Confirm the group, reporting year and local CSRD rules.' },
 		],
 	},
 	{
 		id: 'V2_NO_CBAM_WITHOUT_EXPORT',
-		description: 'CBAM не предлагаем, если экспорта в ЕС нет',
+		description: 'Отсутствие экспорта не исключает роль импортёра CBAM или прямо заявленный запрос',
 		conditions: [
+			{ type: 'anyReportSelected', reportIds: ['CBAM', 'CBAM_REPORT', 'CBAM_DATA_PACKAGE', 'CBAM_ALLOWANCES'] },
 			{ type: 'equals', questionId: 'Q9.1', value: 'NO' },
 		],
 		effects: [
-			{ type: 'forbid-report', reportId: 'CBAM' },
-			{ type: 'forbid-report', reportId: 'CBAM_REPORT' },
-			{ type: 'forbid-report', reportId: 'CBAM_ALLOWANCES' },
-			{ type: 'forbid-report', reportId: 'CBAM_DATA_PACKAGE' },
-			{ type: 'forbid-report', reportId: 'CBAM_PREP_METHOD' },
+			{ type: 'add-warning', warningCode: 'CBAM_TRADE_ROLE_REVIEW', message: 'No exports does not establish a CBAM exemption. Confirm the import, customs role and goods covered by the request.' },
 		],
 	},
 	{
 		id: 'V3_NO_CORSIA_IF_NOT_AVIATION',
-		description: 'CORSIA только для авиации',
+		description: 'Проверить фактическую операторскую роль при несовпадении отрасли',
 		conditions: [
 			{ type: 'notEquals', questionId: 'Q0.2', value: 'AVIATION' },
 			{ type: 'reportSelected', reportId: 'CORSIA' },
 		],
 		effects: [
-			{ type: 'forbid-report', reportId: 'CORSIA' },
+			{ type: 'add-warning', warningCode: 'CORSIA_OPERATOR_REVIEW', message: 'Confirm the aeroplane operator and State attribution; an industry label is not an applicability determination.' },
 		],
 	},
 	{
@@ -59,7 +57,7 @@ export const VALIDATION_RULES: ValidationRule[] = [
 	},
 	{
 		id: 'V5_LOW_BUDGET_VS_EXPENSIVE_CERTS',
-		description: 'Низкий бюджет не покрывает дорогие сертификации',
+		description: 'Нужно согласовать бюджет независимой проверки или публикации',
 		conditions: [
 			{ type: 'equals', questionId: 'Q10.3', value: 'LOW' },
 			{
@@ -71,7 +69,7 @@ export const VALIDATION_RULES: ValidationRule[] = [
 			{
 				type: 'add-warning',
 				warningCode: 'BUDGET_TOO_LOW_FOR_CERTIFICATION',
-				message: 'Выбранные сертификации потребуют большего бюджета.',
+				message: 'Согласуйте объём и стоимость внешней проверки, assurance или публикации с выбранным исполнителем.',
 			},
 		],
 	},
@@ -89,7 +87,7 @@ export const VALIDATION_RULES: ValidationRule[] = [
 	},
 	{
 		id: 'V7_SCOPE3_REQUIRED_FOR_SBTI',
-		description: 'SBTi требует полного Scope 3',
+		description: 'Границы SBTi зависят от версии стандарта и выбранного маршрута',
 		conditions: [
 			{ type: 'reportSelected', reportId: 'SBTI_COMMITMENT' },
 			{ type: 'notEquals', questionId: 'Q8.3', value: 'SCOPE3_FULL' },
@@ -98,7 +96,7 @@ export const VALIDATION_RULES: ValidationRule[] = [
 			{
 				type: 'add-warning',
 				warningCode: 'SCOPE3_REQUIRED_FOR_SBTI',
-				message: 'Для SBTi нужен полный Scope 3 — обновите границы учёта.',
+				message: 'Проверьте границы и требования Scope 3 для выбранной версии SBTi и sector/SME route; общий ответ анкеты их не подтверждает.',
 			},
 		],
 	},
@@ -116,7 +114,7 @@ export const VALIDATION_RULES: ValidationRule[] = [
 			{
 				type: 'add-warning',
 				warningCode: 'SCOPE3_DATA_NEEDED',
-				message: 'Выбранные отчёты потребуют данных Scope 3.',
+				message: 'Проверьте данные цепочки стоимости, границы и категории, необходимые для выбранного результата; корпоративный Scope 3 и PCF не взаимозаменяемы.',
 			},
 		],
 	},
@@ -137,7 +135,7 @@ export const VALIDATION_RULES: ValidationRule[] = [
 	},
 	{
 		id: 'V12_VERIFICATION_REQUIRED_BUT_REFUSED',
-		description: 'Когда отчёты требуют верификации, но ответили что она не нужна',
+		description: 'Проверить внешнюю верификацию по выбранной схеме и применимости',
 		conditions: [
 			{ type: 'equals', questionId: 'Q7.2a', value: 'VERIFICATION_NOT_REQUIRED' },
 			{
@@ -149,7 +147,7 @@ export const VALIDATION_RULES: ValidationRule[] = [
 			{
 				type: 'add-warning',
 				warningCode: 'VERIFICATION_MANDATORY',
-				message: 'Некоторые выбранные отчёты требуют обязательной верификации.',
+				message: 'Проверьте требования к независимой верификации или assurance для выбранного режима, данных и получателя; генерация отчёта не выполняет эту проверку.',
 			},
 		],
 	},

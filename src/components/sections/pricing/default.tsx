@@ -1,5 +1,6 @@
 import { User } from "lucide-react";
 
+import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 import { PricingColumn, PricingColumnProps } from "@/components/ui/pricing-column";
@@ -24,7 +25,7 @@ export default function Pricing({
       cta: {
         variant: "primary",
         label: "Get Started",
-        href: "/auth/register",
+        href: siteConfig.getStartedUrl,
       },
       features: [
         "Up to 5 Active Projects",
@@ -44,7 +45,7 @@ export default function Pricing({
       cta: {
         variant: "primary",
         label: "Start Free Trial",
-        href: "/auth/register",
+        href: siteConfig.getStartedUrl,
       },
       features: [
         "Unlimited Active Projects",

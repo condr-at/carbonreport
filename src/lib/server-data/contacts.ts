@@ -1,6 +1,7 @@
 import prisma from '@/lib/db';
 import type { ServerTimingTracker } from '@/lib/server-data/metrics';
 import type { ContactOverview, ContactDetail } from '@/lib/contacts/types';
+import { getAccessibleOrganizationIds } from './access';
 
 interface ContactRequestStat {
   total: number;
@@ -17,9 +18,11 @@ function mergeRequestStat(current?: ContactRequestStat): ContactRequestStat {
 }
 
 export async function getContactsOverview(tracker?: ServerTimingTracker): Promise<ContactOverview[]> {
+  const organizationIds = await getAccessibleOrganizationIds();
+  if (!organizationIds.length) return [];
   const stopContactsQuery = tracker?.start('db:contacts');
   const contacts = await prisma.contact.findMany({
-    where: { archived: false },
+    where: { archived: false, organizationId: { in: organizationIds } },
     orderBy: [{ name: 'asc' }],
     select: {
       id: true,
@@ -42,6 +45,7 @@ export async function getContactsOverview(tracker?: ServerTimingTracker): Promis
   const requests = await prisma.dataRequest.findMany({
     where: {
       contactId: { in: contactIds },
+      project: { organizationId: { in: organizationIds }, deletedAt: null },
     },
     select: {
       contactId: true,
@@ -92,9 +96,11 @@ export async function getContactDetail(
   contactId: string,
   tracker?: ServerTimingTracker
 ): Promise<ContactDetail | null> {
+  const organizationIds = await getAccessibleOrganizationIds();
+  if (!organizationIds.length) return null;
   const stopContactQuery = tracker?.start('db:contact-detail');
-  const contact = await prisma.contact.findUnique({
-    where: { id: contactId },
+  const contact = await prisma.contact.findFirst({
+    where: { id: contactId, organizationId: { in: organizationIds } },
     select: {
       id: true,
       name: true,
@@ -113,7 +119,7 @@ export async function getContactDetail(
 
   const stopRequestsQuery = tracker?.start('db:contact-detail-stats');
   const requests = await prisma.dataRequest.findMany({
-    where: { contactId },
+    where: { contactId, project: { organizationId: { in: organizationIds }, deletedAt: null } },
     select: {
       requestedAt: true,
       completedAt: true,

@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const SBTICOMMITMENTTemplate: ReportTemplate = {
   code: 'SBTI_COMMITMENT' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'SBTi Commitment Letter',
+  name: 'SBTi Target Preparation',
+  description: 'Inventory and target inputs for the next SBTi step.',
   scope: 'corporate',
   sections: [
     {

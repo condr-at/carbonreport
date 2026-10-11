@@ -19,6 +19,8 @@ import { useProjectDataset, type ProjectDataset } from '@/lib/data-client/datase
 import { useDataRequests } from '@/lib/data-client/data-requests';
 import { useProjectContacts } from '@/lib/data-client/contacts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { useBatchSync } from '@/lib/sync/sync-manager';
 
 import { SYSTEM_FIELD_DEFINITIONS } from '@/lib/system-definitions';
 
@@ -82,6 +84,19 @@ export function DatasetPageClient({
     staleTime: Infinity, // Prevent refetching on navigation to preserve optimistic updates
   });
   const datasetVersion = datasetQuery.data?.datasetVersion ?? initialDatasetVersion ?? 0;
+  const { queue, isReady, isSyncing, storageError, retryFailed, syncNow } = useBatchSync();
+  const projectChanges = queue.filter((operation) => operation.payload.projectId === projectId);
+  const failedChanges = projectChanges.filter((operation) => operation.status === 'failed');
+  const isSavingProject = projectChanges.some((operation) => operation.status === 'processing');
+  const saveStatus = !isReady
+    ? 'Restoring unsaved changes…'
+    : failedChanges.length
+      ? `${failedChanges.length} change${failedChanges.length === 1 ? '' : 's'} not saved. ${storageError ? 'Keep this page open.' : 'Your edits are kept in this browser.'}`
+      : isSavingProject
+        ? 'Saving changes…'
+        : projectChanges.length
+          ? `${projectChanges.length} change${projectChanges.length === 1 ? '' : 's'} waiting to save…`
+          : 'All changes saved';
 
   // Handle lazy loading state
   const [hasLoadedInitialDataset, setHasLoadedInitialDataset] = useState(!isInitialLazyLoad);
@@ -234,6 +249,22 @@ export function DatasetPageClient({
               <Database className="h-5 w-5" />
               Dataset Version: {datasetVersion}
             </CardTitle>
+            <div className="flex flex-wrap items-center gap-3">
+              <p role="status" aria-live="polite" className={failedChanges.length ? 'text-sm text-destructive' : 'text-sm text-muted-foreground'}>
+                {saveStatus}
+              </p>
+              {failedChanges.length > 0 ? (
+                <Button variant="outline" size="sm" disabled={isSyncing} onClick={() => retryFailed(projectId)}>
+                  Retry saving
+                </Button>
+              ) : projectChanges.length > 0 && !isSavingProject ? (
+                <Button variant="outline" size="sm" disabled={isSyncing} onClick={() => void syncNow()}>
+                  Save now
+                </Button>
+              ) : null}
+            </div>
+            {failedChanges[0]?.error && <p className="text-sm text-destructive">{failedChanges[0].error}</p>}
+            {storageError && <p role="alert" className="text-sm text-destructive">{storageError}</p>}
           </CardHeader>
           <CardContent>
             {rows.length === 0 ? (

@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CARBONNEUTRALCERTTemplate: ReportTemplate = {
   code: 'CARBON_NEUTRAL_CERT' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Carbon Neutral Certification (PAS 2060)',
+  name: 'Carbon Neutrality Claim Preparation',
+  description: 'Emissions, reductions and compensation evidence for review.',
   scope: 'corporate',
   sections: [
     {

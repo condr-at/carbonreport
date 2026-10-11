@@ -1,0 +1,391 @@
+{
+  "group": "client-energy",
+  "checked_on": "2026-10-11",
+  "sources": [
+    {
+      "id": "CE01",
+      "title": "PACT Technical Specifications for PCF Data Exchange",
+      "publisher": "WBCSD PACT",
+      "url": "https://docs.carbon-transparency.org/tr/data-exchange-protocol/latest/",
+      "kind": "standard",
+      "version_or_date": "3.0.3; checked 2026-10-11",
+      "access": "public",
+      "notes": "Technical exchange specification, not a universal client questionnaire or independent verification.",
+      "local_file": null
+    },
+    {
+      "id": "CE02",
+      "title": "PACT Simplified Data Model",
+      "publisher": "WBCSD PACT",
+      "url": "https://docs.carbon-transparency.org/tr/data-exchange-protocol/latest/pact-simplified.xlsx",
+      "kind": "official_template",
+      "version_or_date": "3.0.3 snapshot 2026-10-11",
+      "access": "public",
+      "notes": "Dictionary/workbook, not a filled client report; latest URL is mutable.",
+      "local_file": "docs/report-reference/assets/client-energy/pact-v3.0.3-data-model.xlsx"
+    },
+    {
+      "id": "CE03",
+      "title": "PACT OpenAPI including examples",
+      "publisher": "WBCSD PACT",
+      "url": "https://docs.carbon-transparency.org/tr/data-exchange-protocol/latest/openapi.yaml",
+      "kind": "official_template",
+      "version_or_date": "3.0.3 (verified info.version)",
+      "access": "public",
+      "notes": "Source schemas and example values for an agreed PACT exchange. Does not implement PCF calculation.",
+      "local_file": "docs/report-reference/assets/client-energy/pact-v3.0.3-openapi.yaml"
+    },
+    {
+      "id": "CE04",
+      "title": "Financed Emissions, Part A, Third Edition",
+      "publisher": "PCAF",
+      "url": "https://carbonaccountingfinancials.com/files/standard-launch-2025/PCAF-PartA-2025-V3-December.pdf",
+      "kind": "standard",
+      "version_or_date": "December 2025",
+      "access": "public",
+      "notes": "Contains reporting examples in section 10.2. For financial institutions; not every borrower questionnaire is PCAF. Verified sample-table section starts on PDF page 199 in downloaded copy; TOC page references differ.",
+      "local_file": "docs/report-reference/assets/client-energy/pcaf-part-a-third-edition-2025.pdf"
+    },
+    {
+      "id": "CE05",
+      "title": "Disclosure Checklist, Part A Financed Emissions",
+      "publisher": "PCAF",
+      "url": "https://carbonaccountingfinancials.com/files/disclosure_checklist/PCAF-Disclosure-Checklist-Part-A-Financed-Emissions-May-2025.pdf",
+      "kind": "official_template",
+      "version_or_date": "May 2025",
+      "access": "public",
+      "notes": "Predates third edition December 2025; compare against CE04 before use.",
+      "local_file": "docs/report-reference/assets/client-energy/pcaf-disclosure-checklist-may-2025.pdf"
+    },
+    {
+      "id": "CE06",
+      "title": "Renewable Energy Certificates (RECs)",
+      "publisher": "US EPA",
+      "url": "https://www.epa.gov/green-power-markets/renewable-energy-certificates-recs",
+      "kind": "guidance",
+      "version_or_date": "Live page checked 2026-10-11",
+      "access": "public",
+      "notes": "US market guidance, not automatically a rule for EU guarantees of origin or another national EAC system.",
+      "local_file": null
+    },
+    {
+      "id": "CE07",
+      "title": "Green Power Supply Options",
+      "publisher": "US EPA",
+      "url": "https://www.epa.gov/green-power-markets/green-power-supply-options",
+      "kind": "guidance",
+      "version_or_date": "Live page checked 2026-10-11",
+      "access": "public",
+      "notes": "Describes different procurement options; not a universal PPA contract.",
+      "local_file": null
+    },
+    {
+      "id": "CE08",
+      "title": "Guide to Purchasing Green Power, chapter 6: Contracting",
+      "publisher": "EPA / DOE / WRI / CRS / NREL",
+      "url": "https://www.epa.gov/sites/default/files/2018-08/documents/guide-purchasing-green-power-6.pdf",
+      "kind": "guidance",
+      "version_or_date": "2018; linked by EPA page updated 2026-09-21",
+      "access": "public",
+      "notes": "Procurement reference and contract considerations; not a signed contract or official strategy form.",
+      "local_file": "docs/report-reference/assets/client-energy/epa-green-power-contracting-2018.pdf"
+    },
+    {
+      "id": "CE09",
+      "title": "Energy Efficiency Directive, Article 11 and Annex VI",
+      "publisher": "European Union",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02023L1791-20260805",
+      "kind": "law",
+      "version_or_date": "Consolidation 2026-08-05",
+      "access": "public",
+      "notes": "EUR-Lex original act links to this consolidation; Article 11 thresholds/dates confirmed in indexed official Romanian text. Direct full text retrieval hit bot challenge, no local HTML saved. National transposition and current full clauses still require review.",
+      "local_file": null
+    },
+    {
+      "id": "CE10",
+      "title": "How to comply with ESOS phase 4",
+      "publisher": "UK Environment Agency",
+      "url": "https://www.gov.uk/government/publications/comply-with-the-energy-savings-opportunity-scheme-esos-phase-4/how-to-comply-with-the-energy-savings-opportunity-scheme-esos-phase-4",
+      "kind": "guidance",
+      "version_or_date": "Published 2026-07-30",
+      "access": "public",
+      "notes": "Current phase-4 guidance; sections 1.1, 7 and 10 distinguish qualification from compliance route and ISO 50001 exemptions. Do not apply phase-3 forms uncritically.",
+      "local_file": null
+    },
+    {
+      "id": "CE11",
+      "title": "ESOS phase 4 report checklists A1/A2",
+      "publisher": "UK Environment Agency",
+      "url": "https://www.gov.uk/government/publications/comply-with-the-energy-savings-opportunity-scheme-esos-phase-4/appendices-a1-and-a2-report-checklists-for-participants",
+      "kind": "official_template",
+      "version_or_date": "Published 2026-07-30",
+      "access": "public",
+      "notes": "",
+      "local_file": null
+    },
+    {
+      "id": "CE12",
+      "title": "ESOS phase 4 recommendations template A3",
+      "publisher": "UK Environment Agency",
+      "url": "https://assets.publishing.service.gov.uk/media/6a6b5e088319ab05f7caa248/ESOS_Appendix_A3_template.odt",
+      "kind": "official_template",
+      "version_or_date": "Phase 4; landing page 2026-07-30",
+      "access": "public",
+      "notes": "Suggested presentation of recommendations, not the entire mandatory report.",
+      "local_file": "docs/report-reference/assets/client-energy/esos-phase4-recommendations-template.odt"
+    },
+    {
+      "id": "CE13",
+      "title": "ESOS phase 4 notification fields, Appendix B",
+      "publisher": "UK Environment Agency",
+      "url": "https://assets.publishing.service.gov.uk/media/6a69f658701b2d693e5b9422/ESOS_Appendix_B_phase_4.odt",
+      "kind": "official_template",
+      "version_or_date": "Phase 4; landing page 2026-07-30",
+      "access": "public",
+      "notes": "Fields for MESOS notification; portal submission is separate from report generation.",
+      "local_file": "docs/report-reference/assets/client-energy/esos-phase4-notification-fields.odt"
+    }
+  ],
+  "reports": [
+    {
+      "code": "CLIENT_SCOPE3_PACKAGE",
+      "family": "Client / supplier data exchange",
+      "classification": "client_defined",
+      "normative_status": "Договорный пакет данных; формат и границы определяет получатель. PACT — возможный согласованный профиль обмена, а не обязательная форма для всех клиентов.",
+      "applicability": "Поставщик передаёт заказчику данные для определённой категории Scope 3; сначала выяснить, нужен PCF продукта, активность, расходы или корпоративная инвентаризация.",
+      "deliverable": "Согласованный dataset + методика, период, границы, единицы и evidence; JSON PACT только при договорённости.",
+      "source_ids": [
+        "CE01",
+        "CE02",
+        "CE03"
+      ],
+      "required_inputs": [
+        "Запрос получателя и категория Scope 3",
+        "Идентификаторы компании/продукта и период",
+        "Значение PCF либо activity/spend; единица и объём поставки",
+        "Методика, границы, источники/качество и разрешение передачи"
+      ],
+      "validation_rules": [
+        "Уточнить ожидаемый формат до ввода: отсутствие формы не выбирать за клиента [CE01].",
+        "При PACT сопоставить выбранную версию schema, declared unit, system boundary и metadata [CE01, CE03].",
+        "Не выдавать корпоративные Scope 1–3 за PCF поставляемого продукта; это разные объекты [CE01].",
+        "Валидация/подпись поставщика и PCF verification имеют отдельные статусы [CE01]."
+      ],
+      "human_review": [
+        "Получатель подтверждает структуру и границы; специалист проверяет методику PCF, если она входит в результат."
+      ],
+      "example_source_ids": [
+        "CE02",
+        "CE03"
+      ],
+      "example_status": "official_schema_conditional",
+      "example_notes": "Официальные модель/схема PACT сохранены; не образец любого клиентского запроса.",
+      "ui_warnings": [
+        "Совместимость с PACT API не реализована и не следует из набора полей."
+      ],
+      "implementation_gaps": [
+        "Нужны профиль получателя, версия формы, сопоставление полей/единиц и реальная выгрузка."
+      ]
+    },
+    {
+      "code": "CLIENT_TEMPLATE_FILL",
+      "family": "Client-defined forms",
+      "classification": "client_defined",
+      "normative_status": "Универсальной нормативной формы нет: источником требований будет версия файла/портала конкретного заказчика.",
+      "applicability": "Только после получения формы, инструкции и условий передачи данных клиента.",
+      "deliverable": "Заполненный исходный шаблон без потери структуры; список незаполненных/неприменимых полей и evidence.",
+      "source_ids": [
+        "CE01",
+        "CE02"
+      ],
+      "required_inputs": [
+        "Файл или схема заказчика, версия, язык, срок",
+        "Словарь полей и разрешённые значения",
+        "Границы, единицы, периоды, источники",
+        "Согласованные правила для неизвестных значений"
+      ],
+      "validation_rules": [
+        "Блокировать финальный выпуск без закреплённой клиентской формы; это наша рекомендация по контролю качества.",
+        "Не менять идентификаторы/типы полей и не заполнять неизвестное нулём; проверить импорт получателем (наш контроль).",
+        "Не предполагать, что PACT нужен всем клиентам [CE01]."
+      ],
+      "human_review": [
+        "Заказчик подтверждает mapping и полученный файл; неоднозначные вопросы возвращаются ему."
+      ],
+      "example_source_ids": [],
+      "example_status": "client_template_required",
+      "example_notes": "Публичного универсального эталона не существует; CE02 — лишь возможная согласованная структура для PCF, не подмена реального шаблона.",
+      "ui_warnings": [
+        "Нельзя обещать автоматическое заполнение любой формы без её образца."
+      ],
+      "implementation_gaps": [
+        "В коде статический общий dataset; нет пользовательского контракта формы и round-trip теста."
+      ]
+    },
+    {
+      "code": "BANK_TEMPLATE_FILL",
+      "family": "Bank-defined forms / financed emissions",
+      "classification": "client_defined",
+      "normative_status": "Банковская анкета определяется банком. PCAF Part A относится к финансовой организации и не делает каждую анкету заёмщика нормативным PCAF-отчётом.",
+      "applicability": "Сначала роль: заёмщик отвечает банку или финансовая организация рассчитывает financed emissions.",
+      "deliverable": "Ответ в форме банка; при отдельном PCAF-заказе — раскрытие по выбранным классам активов с attribution и качеством данных.",
+      "source_ids": [
+        "CE04",
+        "CE05"
+      ],
+      "required_inputs": [
+        "Версия анкеты банка, роль респондента, период",
+        "При PCAF: класс актива, объём финансирования и нужный знаменатель",
+        "Эмиссии контрагента/объекта, метод и качество данных"
+      ],
+      "validation_rules": [
+        "Не применять одну формулу ко всем классам активов [CE04].",
+        "Разделять собственные выбросы компании и attributed financed emissions [CE04].",
+        "Указать качество исходных данных; не изображать proxy как verified value [CE04].",
+        "Checklist мая 2025 сверить с редакцией декабря 2025 перед выпуском [CE04, CE05]."
+      ],
+      "human_review": [
+        "Банк принимает анкету; профильный специалист проверяет attribution и применимый класс активов."
+      ],
+      "example_source_ids": [
+        "CE04",
+        "CE05"
+      ],
+      "example_status": "official_reporting_tables_conditional",
+      "example_notes": "CE04 содержит sample tables, CE05 — более ранний checklist. Настоящая анкета конкретного банка остаётся обязательным входом.",
+      "ui_warnings": [
+        "Шаблон не является универсальной банковской формой."
+      ],
+      "implementation_gaps": [
+        "Не реализованы банковский mapping, классы активов/attribution и согласованный формат передачи."
+      ]
+    },
+    {
+      "code": "RECS_STRATEGY",
+      "family": "Renewable electricity procurement",
+      "classification": "internal_workpaper",
+      "normative_status": "План закупки EAC/REC — внутренний документ. Правила заявления о возобновляемой энергии зависят от рынка и применяемого стандарта учёта.",
+      "applicability": "Организация выбирает закупку сертификатов; юрисдикция и система реестра обязательны для интерпретации.",
+      "deliverable": "Матрица потребления/сертификатов/бюджета, доказательства владения и погашения, ограничения заявлений.",
+      "source_ids": [
+        "CE06",
+        "CE08"
+      ],
+      "required_inputs": [
+        "Страна/рынок и реестр",
+        "Потребление MWh, год/период и площадки",
+        "Технология, vintage, номера EAC, бенефициар погашения",
+        "Цена, объём, права и ограничения"
+      ],
+      "validation_rules": [
+        "Не смешивать MWh сертификатов с tCO2e offsets [CE06].",
+        "Исключить двойной учёт одного сертификата и проверить цепочку владения/retirement [CE06, CE08].",
+        "US REC guidance не применять автоматически к Guarantees of Origin другой страны [CE06].",
+        "Планируемая покупка не подтверждает состоявшееся погашение (наш контроль)."
+      ],
+      "human_review": [
+        "Специалист по выбранному рынку и учётной методике проверяет пригодность инструмента."
+      ],
+      "example_source_ids": [
+        "CE08"
+      ],
+      "example_status": "guidance_only_no_universal_form",
+      "example_notes": "Сохранён официальный procurement guide; единого нормативного отчёта RECs Strategy нет.",
+      "ui_warnings": [
+        "Документ не выдаёт сертификаты и не гарантирует нулевые выбросы."
+      ],
+      "implementation_gaps": [
+        "Нужны реестр инструментов, проверка retirement и связь с потреблением."
+      ]
+    },
+    {
+      "code": "PPA_STRATEGY",
+      "family": "Renewable electricity procurement",
+      "classification": "internal_workpaper",
+      "normative_status": "Стратегия PPA — коммерческий анализ; отчёт и договор требуют выбранного рынка и условий контрагентов.",
+      "applicability": "Выбирающий физический или финансовый PPA покупатель электроэнергии.",
+      "deliverable": "Сравнение вариантов и сценариев, распределение рисков, права на EAC и согласуемый term sheet.",
+      "source_ids": [
+        "CE07",
+        "CE08"
+      ],
+      "required_inputs": [
+        "Юрисдикция; physical/virtual PPA",
+        "Профиль потребления/генерации, срок, объём, валюта и цены",
+        "Права на атрибуты; settlement и ответственность за отклонения",
+        "Кредитный риск, прекращение, изменения законодательства"
+      ],
+      "validation_rules": [
+        "Не трактовать virtual PPA как физическую поставку электричества [CE07].",
+        "Проверить передачу экологических атрибутов отдельно от оплаты электричества [CE08].",
+        "Не обещать фиксированную экономию: показывать сценарии цены/генерации (наш контроль)."
+      ],
+      "human_review": [
+        "Профильный юрист и финансовая команда проверяют реальный договор и риски; сервис не подписывает контракт."
+      ],
+      "example_source_ids": [
+        "CE08"
+      ],
+      "example_status": "guidance_only_no_universal_form",
+      "example_notes": "Официальные contract considerations — ориентир структуры; универсального PPA Strategy filing/template нет.",
+      "ui_warnings": [
+        "Подписанный PPA сам по себе не доказывает право на все заявленные green attributes."
+      ],
+      "implementation_gaps": [
+        "Текущие поля не образуют финансовую модель или договор; нужен отдельный scope."
+      ]
+    },
+    {
+      "code": "ENERGY_AUDIT_SCOPE12",
+      "family": "Energy audit / energy management",
+      "classification": "internal_workpaper",
+      "normative_status": "Энергоаудит не равен инвентаризации Scope 1/2. Обязательный аудит определяется страной и схемой; ниже EU EED и UK ESOS как отдельные ветки.",
+      "applicability": "EU: Article 11 связывает обязанности со средним потреблением за три года, включая все энергоносители; требуется национальная имплементация. UK: отдельные критерии ESOS и выбранная phase.",
+      "deliverable": "Выдаваемый пакет зависит от схемы и способа выполнения требований. ESOS phase 4: при подходящем покрытии total/significant energy consumption сертификацией ISO 50001 отдельный ESOS report и lead assessor не требуются; evidence pack и MESOS notification сохраняются [CE10, §§7, 10–12]. В аудиторской ветке — отчёт, рекомендации и необходимые подписи.",
+      "source_ids": [
+        "CE09",
+        "CE10",
+        "CE11",
+        "CE12",
+        "CE13"
+      ],
+      "required_inputs": [
+        "Страна/схема/период и границы предприятия",
+        "Для ESOS: данные qualification/group и исключений, покрытие ISO 50001; состав аудиторских полей зависит от выбранной ветки",
+        "Энергопотребление по носителям/площадкам, счета, измерения",
+        "Мероприятия, стоимость, экономия в энергии и деньгах",
+        "Метод, аудитор/assessor, site visits и sign-off"
+      ],
+      "validation_rules": [
+        "Не выводить обязанность из наличия Scope 1/2. Для ESOS проверить участие по §1.1: ≥250 работников — самостоятельный критерий, также есть финансовая ветка, правила групп и исключения; затем отдельно определить способ выполнения требований [CE10].",
+        "При EU проверить >10 TJ / >85 TJ, трёхлетний период и национальные правила; точное положение проверить перед автоматизацией [CE09].",
+        "Не использовать phase-3 форму для phase-4 без сверки [CE10].",
+        "Для ESOS проверить условия ISO 50001 и нулевого энергопотребления до требования аудита/отчёта/lead assessor; не отменять оставшиеся notification/evidence обязанности [CE10, §§4.7, 7, 10–12].",
+        "Для ESOS проверить требуемые сведения/подписи по A1/A2; A3 — предложенная форма рекомендаций, не весь отчёт [CE11, CE12].",
+        "Не считать скачанный файл подтверждением подачи MESOS [CE13]."
+      ],
+      "human_review": [
+        "Квалифицированный аудитор/lead assessor, когда требуется схемой; ответственное руководство подписывает результат."
+      ],
+      "example_source_ids": [
+        "CE11",
+        "CE12",
+        "CE13"
+      ],
+      "example_status": "official_checklist_and_templates",
+      "example_notes": "Сохранены phase-4 A3 и B, официальный A1/A2 доступен по ссылке; это UK-примеры, не универсальный EU-аудит.",
+      "ui_warnings": [
+        "Нужен выбор страны и схемы; текущий заголовок Scope1&2 скрывает различие инвентаризации и аудита."
+      ],
+      "implementation_gaps": [
+        "Нет ветвления применимости, плана измерений/site visits, sign-off и схемы подачи; полная правовая проверка EU Annex VI/национального акта ещё нужна."
+      ]
+    }
+  ],
+  "findings": [
+    "Шесть кодов этой группы не имеют единого универсального нормативного бланка; банк/клиент либо страна/схема задают контракт.",
+    "PACT3.0.3 schema/data-model сохранены как возможный профиль обмена; его совместимость продуктом не реализована.",
+    "PCAF checklist May2025 предшествует thirdedition Dec2025 — сохранить даты и не называть их одной версией.",
+    "Полная EU EED консолидация не скачана из-за bot challenge; ссылки и подтверждённые сведения о редакции сохранены, национальные правила остаются пробелом."
+  ]
+}

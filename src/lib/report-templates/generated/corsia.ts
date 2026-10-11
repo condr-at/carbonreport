@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CORSIATemplate: ReportTemplate = {
   code: 'CORSIA' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'CORSIA (Aviation)',
+  name: 'CORSIA Emissions Data',
+  description: 'Aircraft-operator emissions and monitoring inputs.',
   scope: 'corporate',
   sections: [
     {

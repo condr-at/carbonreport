@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const BCORPIMPACTASSESSMENTTemplate: ReportTemplate = {
   code: 'BCORP_IMPACT_ASSESSMENT' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'B Corp Impact Assessment',
+  name: 'B Corp Assessment Preparation',
+  description: 'Company data and evidence for a B Lab assessment.',
   scope: 'corporate',
   sections: [
     {

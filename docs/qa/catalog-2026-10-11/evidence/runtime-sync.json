@@ -1,0 +1,302 @@
+[
+  {
+    "path": "src/lib/report-templates/cbam.ts",
+    "sha256": "6cd72e1071cd557fa8d883b3425d2136aab27c4c6bfd1dc7ca03f6f2d58c3bcc"
+  },
+  {
+    "path": "src/lib/report-templates/types.ts",
+    "sha256": "a9ceb8548772e049db0fba584723741b2a1129d8e7043c9bd07ad203b39686ab"
+  },
+  {
+    "path": "src/lib/report-templates/iso14067.ts",
+    "sha256": "84d53af81bd92b15793c775223f1486ffb14bd517c0b00f70e64e1623e19e7ed"
+  },
+  {
+    "path": "src/lib/report-templates/index.ts",
+    "sha256": "fe880a715369ba8bb308415c2fa8fa283b81981f16311871cd49f3ff57989108"
+  },
+  {
+    "path": "src/lib/report-templates/user-facing.ts",
+    "sha256": "b5dda9b1c1bf4c4d770fb0c1ea1143e56355e8eec88bcee05717b0bf0a81f711"
+  },
+  {
+    "path": "src/lib/report-templates/generated/scope3_category1_suppliers.ts",
+    "sha256": "88faff6689f0c26e5c3569bb040b4e7d9c3814b11c06fb1e33e4bd359466f76c"
+  },
+  {
+    "path": "src/lib/report-templates/generated/corp_ghg_simplified.ts",
+    "sha256": "a9d44b87687dcf185da16f117d8efa81250973c3ba29284f3aed483d170ada3e"
+  },
+  {
+    "path": "src/lib/report-templates/generated/cbam_report.ts",
+    "sha256": "6209c0d9d8de1ea8f5bca36464b4aaab317bba2d79661628ee0295c35fdd90b1"
+  },
+  {
+    "path": "src/lib/report-templates/generated/corp_ghg_verified.ts",
+    "sha256": "f22e2f021692d4ccedffc1f7fd7e63c61807a83f8f9f9ea20fef22811a768092"
+  },
+  {
+    "path": "src/lib/report-templates/generated/cbam.ts",
+    "sha256": "8091c622e132259969485dc95574d6a500abddf10ff8c1a649c5f965f4ae8b54"
+  },
+  {
+    "path": "src/lib/report-templates/generated/corp_ghg.ts",
+    "sha256": "7146d6a36e87ee186ded0bf0d0655921e7b6acb9cfba23759c48841349e5adb5"
+  },
+  {
+    "path": "src/lib/report-templates/generated/csrd.ts",
+    "sha256": "d8888fa666e48a43d71f26e92746c5d712d8413cb5d1d547d15f9f086fc617e7"
+  },
+  {
+    "path": "src/lib/report-templates/generated/eu_ets.ts",
+    "sha256": "bd0dc35f6018ef9977ddfd980dddca913a3038080bd5a57aaebfb759d5354c95"
+  },
+  {
+    "path": "src/lib/report-templates/generated/scope3_detailed.ts",
+    "sha256": "1aed301fb81a1d8fed15692e9e16b5bdc3addcdffb64466562d4d7c7964eaf1f"
+  },
+  {
+    "path": "src/lib/report-templates/generated/bank_template_fill.ts",
+    "sha256": "6d135d35b2b5a21c62bb6de3c99620497a0bbe2f64c575e1d426bb70b652b2d1"
+  },
+  {
+    "path": "src/lib/report-templates/generated/gresb_assessment.ts",
+    "sha256": "f488cbb846f5fffe5f712f83c4ef2e64209181484b8af21c5c5971da209a5e5a"
+  },
+  {
+    "path": "src/lib/report-templates/generated/sbti_commitment.ts",
+    "sha256": "0ae32c420ae8ba72ac7cd102d3bf98ac8299adde39b7a1f954f061de801b6b96"
+  },
+  {
+    "path": "src/lib/report-templates/generated/sec_climate.ts",
+    "sha256": "70a3422b7b00f7ec23ebca18f638e98a5da6d5690e652dabb33eebd6433b57b0"
+  },
+  {
+    "path": "src/lib/report-templates/generated/cbam_data_package.ts",
+    "sha256": "1ff5482017ffee04ce53c6f49eaa42f5b237184a207072716df2a89b83b730aa"
+  },
+  {
+    "path": "src/lib/report-templates/generated/carbon_neutral_cert.ts",
+    "sha256": "e2c39f91e50894a883b32b78aefaef6f1f21da570f0f3ad55b80cad0584fce45"
+  },
+  {
+    "path": "src/lib/report-templates/generated/ecovadis_score.ts",
+    "sha256": "902d199432a87b006950864c9676c772d95e13eb97ead78fffded61bb735a798"
+  },
+  {
+    "path": "src/lib/report-templates/generated/building_carbon_footprint.ts",
+    "sha256": "1b3ba32fee0043e32b131d3d766cc0a6a20cd63c8313223909fa69907ea6c28c"
+  },
+  {
+    "path": "src/lib/report-templates/generated/epd.ts",
+    "sha256": "81711c879617ac9cf92a67ddb2d496fb750f87644ac05d815d2379da28a94ec7"
+  },
+  {
+    "path": "src/lib/report-templates/generated/cbam_monitoring_alert.ts",
+    "sha256": "126c50abad073753b759baa5778d2a73f48251e282465da998ab7ac8d0ea2125"
+  },
+  {
+    "path": "src/lib/report-templates/generated/ifrs_s2_climate.ts",
+    "sha256": "059a1dcc83d1476737f01d463957a7025326645d3ed7c44825014fc39336fc0f"
+  },
+  {
+    "path": "src/lib/report-templates/generated/corsia.ts",
+    "sha256": "6692273d5a26bed577d782855108fda31266bae5698f9f917b8fea300cf36aed"
+  },
+  {
+    "path": "src/lib/report-templates/generated/scope123_dataset.ts",
+    "sha256": "cd7c05b98214b793e5f45c0280fd5eaf66d2c2af6a90ec49dfdf7a13c3ce6cf6"
+  },
+  {
+    "path": "src/lib/report-templates/generated/epd_or_iso_14067.ts",
+    "sha256": "0c47f433b3db719220b0114644fc232a1977532dcb4dddbd82b1812df6a0d6fa"
+  },
+  {
+    "path": "src/lib/report-templates/generated/cdp_disclosure.ts",
+    "sha256": "f0e5867a65ff640d1003c9f0cdd75db3fb03ea32f82ce9b21ad5a4e026148d8c"
+  },
+  {
+    "path": "src/lib/report-templates/generated/climate_action_plan.ts",
+    "sha256": "7d12d80b6c68dffc62af9f0383b1f74477785a0ccf070aeb31c09a9a2cda48cf"
+  },
+  {
+    "path": "src/lib/report-templates/generated/scope2_detailed.ts",
+    "sha256": "cbd4ffa4538f8f51bfdb6e39016c81ea45c9095901ed20b7c39b46a664b35936"
+  },
+  {
+    "path": "src/lib/report-templates/generated/recs_strategy.ts",
+    "sha256": "bcdc1ad3fcd3b4b7db2b85821233e282474ce1920da31a5abecf7d685ffe0e14"
+  },
+  {
+    "path": "src/lib/report-templates/generated/bcorp_impact_assessment.ts",
+    "sha256": "9918345a9fef972622a2c0bd8408dc61c6a53821580693dd32bcf8effe25d4ef"
+  },
+  {
+    "path": "src/lib/report-templates/generated/recs_or_ppa_strategy.ts",
+    "sha256": "129311eb0497e75b6b64266d917ec415b2b3fa22106fc91f8c4686fda7a5ac8b"
+  },
+  {
+    "path": "src/lib/report-templates/generated/client_template_fill.ts",
+    "sha256": "3d8b185c871112da1f4e4b20614baa832e174fa5be5d41c379dbe8624b432ffb"
+  },
+  {
+    "path": "src/lib/report-templates/generated/eu_mrv.ts",
+    "sha256": "cddd218caf8faca090675ef1b7a4ddf839dbfb632fc83bf0ba82a4fad4008850"
+  },
+  {
+    "path": "src/lib/report-templates/generated/energy_audit_scope12.ts",
+    "sha256": "9e7d43a1745f13e96eadb3a1f0d2db70964121ecb6d32c4cf57f8e8059645426"
+  },
+  {
+    "path": "src/lib/report-templates/generated/client_scope3_package.ts",
+    "sha256": "a14e25293c96bd665c18f441909647ebca4f0ccb608c2c04371ddda4497ec811"
+  },
+  {
+    "path": "src/lib/report-templates/generated/product_pcf.ts",
+    "sha256": "2bc7f09005b4d23b678807d5431382fb5986b2e3f58a5802533d408da439a575"
+  },
+  {
+    "path": "src/lib/report-templates/generated/corp_ghg_internal.ts",
+    "sha256": "637d6fc3cd890b0d4422230bb9ad0e0af1e78b28736f374a74ed587f51c47f9b"
+  },
+  {
+    "path": "src/lib/report-templates/generated/uk_tcfd.ts",
+    "sha256": "82a8d3778be79c05492d0a7981663933165f23496c081c8918c118c48760093c"
+  },
+  {
+    "path": "src/lib/report-templates/generated/hkex_esg.ts",
+    "sha256": "6e1c899051a74a37c3c0bfc41357e92a69804d33b063594d404380c57dcdab37"
+  },
+  {
+    "path": "src/lib/report-templates/generated/iso_14067.ts",
+    "sha256": "66f5072334203d3e410e36c28d56f43f96818c01ca0da8ef8d49c7a78131e51d"
+  },
+  {
+    "path": "src/lib/report-templates/generated/ppa_strategy.ts",
+    "sha256": "724e34c9722345c4948cb3ceb320a0bf5f0ddb11a8f20a29b109c2b166235b25"
+  },
+  {
+    "path": "src/lib/report-templates/generated/index.ts",
+    "sha256": "e594f1a4ec298f7b4cd9f3a8220529941584d4aac1e783f88430648698c82cc5"
+  },
+  {
+    "path": "src/lib/report-templates/generated/sfdr.ts",
+    "sha256": "429a92cc5d764717e686f06134d6c9bde6d5b3e9f1b3beea75184ae8f65853c3"
+  },
+  {
+    "path": "src/lib/report-templates/generated/cbam_allowances.ts",
+    "sha256": "b0dc737ec248d06d84980e28c556ca03b60cb0783ac4a1fdd2d382d0c5787dbe"
+  },
+  {
+    "path": "src/lib/report-templates/generated/re100_reporting.ts",
+    "sha256": "722ccd6341176002e325d024b143015fdc6e698b15e86b0d6a7bab2be31d8647"
+  },
+  {
+    "path": "src/lib/report-templates/generated/prep_ghg.ts",
+    "sha256": "6b20af45d16ef16f39f4aea0167557b90777126e6c6df1e489c54a92dee3d6bd"
+  },
+  {
+    "path": "src/lib/report-templates/generated/corp_ghg_annual.ts",
+    "sha256": "02273c5246e16d86fe9ba5a173a33ce95e94d0696bb3398da4d471acc1be6d74"
+  },
+  {
+    "path": "src/lib/report-templates/generated/cbam_prep_method.ts",
+    "sha256": "17c6d4d6c58e7f94ad0ec452dddc93c5de5471dfef3b316afadfcdfaf06e8a08"
+  },
+  {
+    "path": "src/lib/report-templates/generated/iso_14064_cert.ts",
+    "sha256": "bc65f8627a79dbe27cfddee6a9722f69199f7cc6f36ce042323e6c38d3936098"
+  },
+  {
+    "path": "src/lib/report-templates/generated/uk_secr.ts",
+    "sha256": "8a694910014a33c35686706d594175638fae9d9c3a3a2bd85745b2e44ceaaf8b"
+  },
+  {
+    "path": "src/lib/report-templates/generated/tcfd_report.ts",
+    "sha256": "1cbc20677984b798d209383f6339c9c5f511db632121d09356a14838715a8b35"
+  },
+  {
+    "path": "src/lib/report-templates/generated/corp_ghg_public.ts",
+    "sha256": "d45d4677e6d50b5635ca868f333ded4306d7c753ab40e55139fab7dc3b0f40bc"
+  },
+  {
+    "path": "src/lib/questionnaires/wizard-config.ts",
+    "sha256": "346c66f9617600585b8a433580cbbaeb53bbdaf1f17b42fabfb801b25ea1289c"
+  },
+  {
+    "path": "src/lib/questionnaires/types.ts",
+    "sha256": "ebd4aa48aa73906f9e2e76aa0c103c07fb14fc882ad5c3f6f0c2e97dd2f0608a"
+  },
+  {
+    "path": "src/lib/questionnaires/report-template-mapping.test.ts",
+    "sha256": "6a14c452564d8abd1f906da9899fce244f7fdf9d132a232f6cc87b8f44fba94e"
+  },
+  {
+    "path": "src/lib/questionnaires/report-template-mapping.ts",
+    "sha256": "ecff0ee820e846db8a7b5706283c941f478776ae057895e6062160f9ea84196a"
+  },
+  {
+    "path": "src/lib/questionnaires/v1.ts",
+    "sha256": "ec7eec6cae5b173ee57eb12d304f062b3b7b5d10c087e24db4c60c452511dc10"
+  },
+  {
+    "path": "src/lib/questionnaires/index.ts",
+    "sha256": "0c453c9407c003b4fc2869ea3dc0b4920f72fb6c98f00fb6f06d20b62de51058"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/validation-rules.ts",
+    "sha256": "53e40e87c017385262a9f21962ad2824818590897c6c59f86038b65f56a845af"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/question-visibility.ts",
+    "sha256": "2ab527119af05909e2b98d123a20e74d7dbe988ba1add1b7f6fc8de282a8577a"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/reports.ts",
+    "sha256": "e7e145513b67ec0b732b47f8580221d1ebeacadb354896229fcc9e2c8ccd0813"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/engine.ts",
+    "sha256": "9d32720f7d6523faab4e5c8a42dfd5cd9953de40724e21932465a25c10740fb5"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/types.ts",
+    "sha256": "85f677a938a2f6b850d64e8bc4eb3bab30285d2d853f1d7936f5b39935d3e9dd"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/rules.ts",
+    "sha256": "6d86294e182806d5df11629290b8d6a95a50ae4f1e4d54becdfc21eb732fe460"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/answer-utils.ts",
+    "sha256": "300918260f6096cf77b4e7aa905d799da59774b5be15ed9bedd3d4fcde6f09d7"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/logic.test.ts",
+    "sha256": "5808f629882da283dfe8ce364a4e01a5ba742d0705efe693fc2d4615362f4a8f"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/questions.ts",
+    "sha256": "76f1f4f39d3c12f6f392a9921e20d8c47c5f02927b6e0a86371a9a0dd84e6e48"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/constants.ts",
+    "sha256": "d83524d805d5aef814370781ab8dbe69dbca0f106939716a312e110998b6445b"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/index.ts",
+    "sha256": "301509eced71b19e0465c6ee37e5ec54a86c80310101de3297e31851993db977"
+  },
+  {
+    "path": "src/lib/questionnaires/decision-engine/block-visibility.ts",
+    "sha256": "74f2560976679dd39a24e03e109cd645218217f1fe627c4075d4b6e754f9fdff"
+  },
+  {
+    "path": "src/app/projects/new/select-reports/page.tsx",
+    "sha256": "73c653ac08905dd845fd737c3850fc6c866505de111284c32543959a8a4a7e88"
+  },
+  {
+    "path": "package.json",
+    "sha256": "09206edce77a28470a638ff986deba3c9ddb591f8515a064af45a7bac24138c0"
+  }
+]

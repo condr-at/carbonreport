@@ -122,6 +122,16 @@ export function evaluateQuestionnaire(rawAnswers: AnswerMap): EvaluationResult {
       priorityLevel = target === 'AUTO' ? downgradePriorityLevel(priorityLevel) : target ?? priorityLevel
     }
 
+    // The questionnaire does not establish legal scope or validate an external
+    // certification. Keep the existing recommendation buckets, but never label
+    // an unresolved review as mandatory (including rules merged from sectors).
+    const applicabilityReview = definition.applicabilityReview
+    if (applicabilityReview) {
+      meta.tags.delete('REGULATORY_MANDATORY')
+      meta.tags.add('APPLICABILITY_REVIEW')
+      if (priorityLevel === 'CRITICAL') priorityLevel = 'HIGH'
+    }
+
     const priorityScore = computePriorityScore({
       reportId,
       definition,
@@ -139,6 +149,7 @@ export function evaluateQuestionnaire(rawAnswers: AnswerMap): EvaluationResult {
       notes: meta.notes.size ? Array.from(meta.notes) : undefined,
       tags: meta.tags.size ? Array.from(meta.tags) : undefined,
       priorityScore,
+      applicabilityReview,
     })
   }
 
@@ -157,7 +168,11 @@ export function evaluateQuestionnaire(rawAnswers: AnswerMap): EvaluationResult {
   })
 
   const mandatoryReports = resolved.filter(
-    (report) => report.priorityLevel === 'CRITICAL' && report.definition.category === 'REGULATORY',
+    (report) =>
+      !report.applicabilityReview &&
+      report.tags?.includes('REGULATORY_MANDATORY') &&
+      report.priorityLevel === 'CRITICAL' &&
+      report.definition.category === 'REGULATORY',
   )
   const recommendedReports = resolved.filter(
     (report) =>

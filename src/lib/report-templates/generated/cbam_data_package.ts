@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CBAMDATAPACKAGETemplate: ReportTemplate = {
   code: 'CBAM_DATA_PACKAGE' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'CBAM Data Package',
+  name: 'CBAM Supplier Data',
+  description: 'Supplier and installation inputs with supporting evidence references.',
   scope: 'product',
   sections: [
     {

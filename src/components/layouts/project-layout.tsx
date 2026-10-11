@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreVertical, Copy, Archive, ArchiveRestore, Trash2, Loader2 } from 'lucide-react';
+import { MoreVertical, Archive, ArchiveRestore, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -166,15 +166,11 @@ export function ProjectLayout({ children, project }: ProjectLayoutProps) {
             {/* Actions Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label={`Project actions for ${project.name}`}>
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Copy className="mr-2 h-4 w-4" />
-                  Duplicate Project
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
                     if (isMutationPending) return;

@@ -393,7 +393,10 @@ The platform uses **4 distinct layout templates**:
 ---
 
 #### 4. `PrintLayout` (report export)
-**Used by**: `/projects/:id/reports/:reportId/print`
+
+**Уточнение 2026-10-11:** ниже описан предполагаемый каркас читаемого PDF; это не утверждённый макет и не подтверждение реализации `/print`. Его применение зависит от [формата конкретного результата](../regulatory-requirements/RULE_MODEL.md#формат-результата-и-допустимая-свобода-оформления). Официальные бланки и схемы получателя имеют собственные ограничения; этот каркас не задаёт свободную форму для всех отчётов.
+
+**Planned route**: `/projects/:id/reports/:reportId/print`
 
 **Structure**:
 ```

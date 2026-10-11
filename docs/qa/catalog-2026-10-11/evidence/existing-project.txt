@@ -1,0 +1,42 @@
+Browser tab: 600622345, Title: "Carbon Report", URL: "http://localhost:3000/projects/a4bdc395-6cb2-48fd-a9e5-8a16cf1e7a6d/reports".
+1 AXWebArea Carbon Report, URL: localhost:3000/projects/a4bdc395-6cb2-48fd-a9e5-8a16cf1e7a6d/reports
+	2 container Notifications alt+T
+	3 container
+		31 pop up button (collapsed) QS QA Switching Workspace Free · 1 / 1 projects Open organization menu, ID: radix-_r_0_, Secondary Actions: Expand
+			32 text QS
+			33 text QA Switching Workspace
+			34 text Free
+			35 text  · 1 / 1 projects
+			36 text Open organization menu
+		37 container
+			38 link Description: Dashboard, Value: localhost:3000/dashboard
+			39 link Description: Projects, Value: localhost:3000/projects
+			40 link Description: Requests, Value: localhost:3000/requests
+			41 link Description: Contacts, Value: localhost:3000/contacts
+			42 link Description: Settings, Value: localhost:3000/settings
+		4 pop up button (collapsed) QC QA Carbon Auditor qa.browser.20261010@example.test Open user menu, ID: radix-_R_1pknebn6lb_, Secondary Actions: Expand
+			5 text QC
+			6 text QA Carbon Auditor
+			7 text qa.browser.20261010@example.test
+			8 text Open user menu
+		9 container
+			10 heading QA Aluminium Profile, Value: 1
+				11 text QA Aluminium Profile
+			12 text ACTIVE Last updated  10/10/2026
+			13 pop up button (collapsed) Description: Project actions for QA Aluminium Profile, ID: radix-_R_9b6knebn6lb_, Secondary Actions: Expand
+				14 image
+			15 tab group Project tabs
+				16 tab (selectable, settable, boolean) Overview, Value: 0, ID: radix-_R_2b6knebn6lb_-trigger-overview
+				17 tab (selectable, settable, boolean) Dataset, Value: 0, ID: radix-_R_2b6knebn6lb_-trigger-dataset
+				18 tab (selectable, settable, boolean) Data Requests, Value: 0, ID: radix-_R_2b6knebn6lb_-trigger-requests
+				19 tab (selected, settable, boolean) Reports, Value: 1, ID: radix-_R_2b6knebn6lb_-trigger-reports
+				20 tab (selectable, settable, boolean) Email Templates, Value: 0, ID: radix-_R_2b6knebn6lb_-trigger-emails
+				21 tab (selectable, settable, boolean) Files, Value: 0, ID: radix-_R_2b6knebn6lb_-trigger-files
+			22 text Product Carbon Footprint Data Product life-cycle inputs for a GHG Protocol study. Code:  PRODUCT_PCF 4 % Use when:  Collect activity data, boundaries and methodology notes for footprint calculation and review.
+			23 link Description: Open, Value: localhost:3000/projects/a4bdc395-6cb2-48fd-a9e5-8a16cf1e7a6d/reports/640e24f4-5cae-4eb7-8362-95861978ff6f
+	27 button Open Tanstack query devtools
+		28 image
+	29 pop up button (collapsed) Description: Open Next.js Dev Tools, ID: next-logo, Secondary Actions: Expand
+		30 image
+
+The focused UI element is 1 AXWebArea Carbon Report, URL: localhost:3000/projects/a4bdc395-6cb2-48fd-a9e5-8a16cf1e7a6d/reports

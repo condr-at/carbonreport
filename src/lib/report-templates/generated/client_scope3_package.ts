@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CLIENTSCOPE3PACKAGETemplate: ReportTemplate = {
   code: 'CLIENT_SCOPE3_PACKAGE' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Client Scope 3 Data Package',
+  name: 'Client Scope 3 Data Preparation',
+  description: 'Emissions inputs for an agreed customer reporting request.',
   scope: 'corporate',
   sections: [
     {

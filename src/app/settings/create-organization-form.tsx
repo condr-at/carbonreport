@@ -107,9 +107,9 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
     <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[2fr_1fr]">
       <div className="space-y-6">
         <div className="grid gap-2">
-          <Label htmlFor="org-name">Display name</Label>
+          <Label htmlFor="new-org-name">Display name</Label>
           <Input
-            id="org-name"
+            id="new-org-name"
             value={displayName}
             onChange={(event) => setDisplayName(event.target.value)}
             placeholder="Acme Sustainability"
@@ -120,9 +120,9 @@ export function CreateOrganizationForm({ onCreated, onCancel, variant = 'card' }
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="org-description">Description</Label>
+          <Label htmlFor="new-org-description">Description</Label>
           <textarea
-            id="org-description"
+            id="new-org-description"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder="Tell teammates what this organization manages."

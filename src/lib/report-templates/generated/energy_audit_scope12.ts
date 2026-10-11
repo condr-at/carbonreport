@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const ENERGYAUDITSCOPE12Template: ReportTemplate = {
   code: 'ENERGY_AUDIT_SCOPE12' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Energy Audit (Scope 1 & 2)',
+  name: 'Energy Audit Preparation',
+  description: 'Energy consumption and site information for an audit.',
   scope: 'corporate',
   sections: [
     {

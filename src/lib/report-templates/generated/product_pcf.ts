@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const PRODUCTPCFTemplate: ReportTemplate = {
   code: 'PRODUCT_PCF' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Product Carbon Footprint (GHG Protocol)',
+  name: 'Product Carbon Footprint Data',
+  description: 'Product life-cycle inputs for a GHG Protocol study.',
   scope: 'product',
   sections: [
     {

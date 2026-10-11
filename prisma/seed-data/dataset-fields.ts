@@ -1,3 +1,5 @@
+import { CBAM_PACKAGE_FIELD_SEED } from './cbam-package-fields'
+
 export type DatasetFieldSeed = {
   fieldId: string
   label: string
@@ -16,6 +18,7 @@ export type DatasetFieldSeed = {
 }
 
 export const DATASET_FIELD_SEED: DatasetFieldSeed[] = [
+  ...CBAM_PACKAGE_FIELD_SEED,
   // ================================
   // Organization & Report Meta (scope: 'both')
   // ================================

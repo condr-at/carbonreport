@@ -6,6 +6,7 @@ import type { ContactSummary } from '@/lib/contacts/types';
 import type { FieldDefinition } from '@/lib/dataset-utils-v2';
 import { validateDataset, type Dataset } from '@/lib/dataset-validation';
 import type { ServerTimingTracker } from '@/lib/server-data/metrics';
+import { getAccessibleOrganizationIds } from './access';
 
 export interface ProjectSummary {
   id: string;
@@ -89,9 +90,11 @@ export async function getProjectContacts(
   projectId: string,
   tracker?: ServerTimingTracker
 ): Promise<ContactSummary[]> {
+  const organizationIds = await getAccessibleOrganizationIds();
+  if (!organizationIds.length) return [];
   const stopProjectQuery = tracker?.start('db:project-for-contacts');
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, organizationId: { in: organizationIds } },
     select: {
       organizationId: true,
     },
@@ -134,9 +137,11 @@ export async function getProjectDataRequests(
   projectId: string,
   tracker?: ServerTimingTracker
 ): Promise<DataRequestSummary[]> {
+  const organizationIds = await getAccessibleOrganizationIds();
+  if (!organizationIds.length) return [];
   const stopRequestsQuery = tracker?.start('db:data-requests');
   const requests = await prisma.dataRequest.findMany({
-    where: { projectId },
+    where: { projectId, project: { organizationId: { in: organizationIds } } },
     include: {
       contact: true,
     },

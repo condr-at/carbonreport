@@ -1,0 +1,378 @@
+[
+  {
+    "path": "docs/report-reference/assets/client-energy/epa-green-power-contracting-2018.pdf",
+    "bytes": 420937,
+    "sha256": "97bd60c90cb877cf3dd919a4e98df0e2b362ea45e200ffcfae16dbafbae634ce",
+    "source_ids": [
+      "CE08"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/client-energy/esos-phase4-notification-fields.odt",
+    "bytes": 36676,
+    "sha256": "805aa2073834b314d6704491f1efec32ed5efbcac2fc1bc65e65008d1196e3bf",
+    "source_ids": [
+      "CE13"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/client-energy/esos-phase4-recommendations-template.odt",
+    "bytes": 202540,
+    "sha256": "ee2c0d21b42b5301326970f81e9eb33b99d4f753121d447e6e06dba11982b705",
+    "source_ids": [
+      "CE12"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/client-energy/pact-v3.0.3-data-model.xlsx",
+    "bytes": 44411,
+    "sha256": "0774a164dc38f5f8966d9a116ec1f829f68eb1512cdb2e6c84359c642bc88dc6",
+    "source_ids": [
+      "CE02"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/client-energy/pact-v3.0.3-openapi.yaml",
+    "bytes": 88411,
+    "sha256": "e5e48ab32d3d87fd634c8a4df27d81256991819196a4cdb1ef0d655bd8fb9d43",
+    "source_ids": [
+      "CE03"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/client-energy/pcaf-disclosure-checklist-may-2025.pdf",
+    "bytes": 3036690,
+    "sha256": "79ba80969640c99d3c45111e6cf7113754fce96e27790fd3cc3523712cfe8d3d",
+    "source_ids": [
+      "CE05"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/client-energy/pcaf-part-a-third-edition-2025.pdf",
+    "bytes": 6963577,
+    "sha256": "d45cac4eade84d55fbb5060279786a52539042eaedd488822df0657f1036694d",
+    "source_ids": [
+      "CE04"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/cdp-corporate-overview-2026.pdf",
+    "bytes": 947553,
+    "sha256": "65bf50ac64d1fe06ab8fd0ef193143e9cbc5000669d0a67c4f2ba2368c3e4939",
+    "source_ids": [
+      "DS31"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/cdp-questionnaire-setup-preview-2026.pdf",
+    "bytes": 553113,
+    "sha256": "3bebcd66b263ff829ed3a5e838d683aec57a2e4739baf50a4c02a7f24830399e",
+    "source_ids": [
+      "DS32"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/gresb-public-asset-spreadsheet-2026.xlsx",
+    "bytes": 3098263,
+    "sha256": "9f7ce8180948a595eefc2d7a7cf59c3e3acea582db5728775752b860f6e344b7",
+    "source_ids": [
+      "DS45"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/hkex-issb-esg-code-comparison.pdf",
+    "bytes": 364657,
+    "sha256": "60899ec71fc6bb1bb8552dbe929f7ee3563f724cdfb4b02f306c955b223b70bb",
+    "source_ids": [
+      "DS22"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/ifrs-s2-transition-plan-guidance-2025.pdf",
+    "bytes": 1370695,
+    "sha256": "c90027041817e2e9bbaa7510843c29649e5e454cfce891718512e03bc2a39e8c",
+    "source_ids": [
+      "DS26"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/re100-reporting-guidance-2026.pdf",
+    "bytes": 603274,
+    "sha256": "ca61628af00db9c2ca370ea0aece98cb2972e30b28e2b1132ce3076186380e4d",
+    "source_ids": [
+      "DS41"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/re100-technical-criteria-2025.pdf",
+    "bytes": 1014729,
+    "sha256": "f3ee632e66ce10d42c2231bf50d03bb7f6f2fb8394afa02fbc3369059b8f257c",
+    "source_ids": [
+      "DS40"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/sbti-v2-preliminary-submission.xlsx",
+    "bytes": 433072,
+    "sha256": "7d700812845b0db6d6e843d5ccc86ddf1b1c70a360f4a2cb2dfef46aec3b8e1e",
+    "source_ids": [
+      "DS38"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/secr-guidance-2019.pdf",
+    "bytes": 1538540,
+    "sha256": "3ea42e20da70551094edd42a3cbde2188f3c25b38d33be184b6c4643d667c66f",
+    "source_ids": [
+      "DS08"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/sfdr-annex-i-pai-template.docx",
+    "bytes": 154284,
+    "sha256": "d171c1bf9ac20397b5e833ee463d84c98d6ea65a52cb3531e39e24496097fe3f",
+    "source_ids": [
+      "DS15"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/tcfd-governance-workshop-2022.pdf",
+    "bytes": 1367610,
+    "sha256": "822842fe37e7b019f83e718128facd0aa2d4bc7ad44fc25a206353c5b8012d3c",
+    "source_ids": [
+      "DS29"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/disclosures-schemes/valmet-sustainability-statement-2024.pdf",
+    "bytes": 778781,
+    "sha256": "4e7a1ea10522768d92dffc03ca60832382b16c6cb9d47be846536f4e53f768de",
+    "source_ids": [
+      "DS51"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/product-ghg/apple-iphone16-product-environmental-report-june2025.pdf",
+    "bytes": 7798358,
+    "sha256": "57c98d2338452d7ca6703ba8143459c2ae3a3492e4f23e55b9e97a6c5587b4fd",
+    "source_ids": [
+      "PG22"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/product-ghg/ghg-corporate-reporting-template.docx",
+    "bytes": 34433,
+    "sha256": "ec630126dae21a81d7f3d2cf90e9478438227fe3af9ffde261a4c7feb478b336",
+    "source_ids": [
+      "PG18"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/product-ghg/ghg-inventory-reporting-template-2023.docx",
+    "bytes": 546017,
+    "sha256": "a4371e5a2facb0ff81c925926caf90701d67dc539a1462203500b57009dadf02",
+    "source_ids": [
+      "PG19"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/product-ghg/ghg-product-reporting-template.pdf",
+    "bytes": 51857,
+    "sha256": "ece9c373c0d22e1bbf36d4a1f9fb3d98b14b8dd2fe0d73f2a2a123acc3433fb8",
+    "source_ids": [
+      "PG20"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/product-ghg/rics-wlca-buildings-template.xlsx",
+    "bytes": 205477,
+    "sha256": "1e1ad0458b28126b94c2928876a3a3be940828a02d13b54ae63d5ef1b3fd8198",
+    "source_ids": [
+      "PG21"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/product-ghg/schueco-low-carbon-aluminium-epd-2025.pdf",
+    "bytes": 971046,
+    "sha256": "1a374e40217028857e20de27ca1066b8f0b3b825dbd94042109c9beae4d59dc6",
+    "source_ids": [
+      "PG23"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-benchmarks-20260206.xlsx",
+    "bytes": 95624,
+    "sha256": "b79108b025e697822f0f59de477fa68066c1c05c228fae2270cd230af84e8a7b",
+    "source_ids": [
+      "TR28"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-communication-template-20241213.xlsx",
+    "bytes": 1333557,
+    "sha256": "5a4e28fdbccfdca45a2c0520184b551a20c0c7bba3db79f87d78c9e58a6c0917",
+    "source_ids": [
+      "TR23"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-default-values-20260810.xlsx",
+    "bytes": 642541,
+    "sha256": "900583811c7e1194799eb9bdbad2d6d7e1100f5a7d80a664c1584a8fce6f9f35",
+    "source_ids": [
+      "TR27"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-faq-20260528.pdf",
+    "bytes": 621689,
+    "sha256": "4fc50b483625af175499231ebedd1bb0e8d88ae37196dbc1d3d18dc7f39c2f41",
+    "source_ids": [
+      "TR29"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-guidance-2-operators-20260814.pdf",
+    "bytes": 424877,
+    "sha256": "496ba80cd548732892eaadd924ba4082dbb5314d555eb43d9410c4ea4684970b",
+    "source_ids": [
+      "TR25"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-guidance-3-methods-20260814.pdf",
+    "bytes": 1948313,
+    "sha256": "162ed275717671f05b88355a9b161726e7a1396f6ce1fc8f72a2f287d204a0d6",
+    "source_ids": [
+      "TR26"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-quarterly-importer-sample-v1.3.0.0.zip",
+    "bytes": 57338,
+    "sha256": "6be5c5060abc10fa346ecc36fd36d8e76f0cf2fab403188ab6c07f292c17ec46",
+    "source_ids": [
+      "TR21"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-quarterly-structure-v18.30.xlsx",
+    "bytes": 274115,
+    "sha256": "3fbce8d792adfcf43a635fee25c89f7f1a48b8364dbedb6daf7094b816ea7890",
+    "source_ids": [
+      "TR22"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/cbam-quarterly-xsd-v18.30.zip",
+    "bytes": 27724,
+    "sha256": "d86c5f71caddbd49c59c82bc5fddd10ed2715bf7dc9d633d825bbc2a01bcffd3",
+    "source_ids": [
+      "TR20"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/corsia-deadlines-newsletter-202602.pdf",
+    "bytes": 4794573,
+    "sha256": "0ec4118e2fec1c18a11fc4fa3222097a5f4a7037e76181ff44b67d6c162b3a6e",
+    "source_ids": [
+      "TR41"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/corsia-emissions-report-etm4.xlsx",
+    "bytes": 217882,
+    "sha256": "29bd805a31e01109a22b50fe055a48001965988512258538ace3b773a73a84c7",
+    "source_ids": [
+      "TR33"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/corsia-faq-202404.pdf",
+    "bytes": 2004467,
+    "sha256": "91a67edff23f7371926e8e5902fca7ef439116a60cbbee8e6150eea3d70c0e90",
+    "source_ids": [
+      "TR37"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/corsia-monitoring-plan-etm4.xlsx",
+    "bytes": 133710,
+    "sha256": "45de89c8e7d4a89d1171c3215211b460ec683b0a966866a1c08f4148860e70bc",
+    "source_ids": [
+      "TR34"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/corsia-resolution-a42-22.pdf",
+    "bytes": 183396,
+    "sha256": "d4ef7f1a0f3126e4f212f00162fb101e5581007f3deedff56de1618daf8f919e",
+    "source_ids": [
+      "TR40"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/corsia-state-pairs-2026-ed6.pdf",
+    "bytes": 485276,
+    "sha256": "9e2a579911afc3a751d79cd8382f1f7fbd697ba3edee70f51b21a55d969a7c78",
+    "source_ids": [
+      "TR36"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/corsia-verification-report-etm4.xlsx",
+    "bytes": 79748,
+    "sha256": "28ff3d19dc133f007b909cb5481a1340c5debd328b3eda9a9ee397536880aa28",
+    "source_ids": [
+      "TR35"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/ets-aer-installations-20260209.xlsx",
+    "bytes": 4059421,
+    "sha256": "e8495d9ae19598c60464df214c06348e08aafafdd3191ea784978f8a03994bac",
+    "source_ids": [
+      "TR30"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/ets-corsia-aircraft-aer-20260123.xlsx",
+    "bytes": 452921,
+    "sha256": "2b9da33cdef4e71b3fdb1e4d564c367f74310b1fe6cccf1fa81d445f51bfa035",
+    "source_ids": [
+      "TR31"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/ets-installation-verification-exemplar.pdf",
+    "bytes": 116881,
+    "sha256": "0513ec62bf9faa0e45d456b1fba8be064b5949a0cf2654a96aaf98f31d2febe1",
+    "source_ids": [
+      "TR32"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/mrv-ets-general-guidance.pdf",
+    "bytes": 1764376,
+    "sha256": "dc4d0545f04329e718e1d722d0a7701f0f1cf7879afe36ccc76369578b912693",
+    "source_ids": [
+      "TR39"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/mrv-monitoring-plan-legal-template-crosswalk.pdf",
+    "bytes": 140574,
+    "sha256": "6fe37524a2582106684a7e3bbdc40cb1e4eb96ba55856bbe3bd1b6dbb82dcecc",
+    "source_ids": [
+      "TR42"
+    ]
+  },
+  {
+    "path": "docs/report-reference/assets/trade-transport/mrv-thetis-monitoring-plan-training-20240305.pdf",
+    "bytes": 1762269,
+    "sha256": "e80fa4e85ba453f835e1ca8377b797064cbfec594dc682f5b5dbcfbe4c02a65e",
+    "source_ids": [
+      "TR38"
+    ]
+  }
+]

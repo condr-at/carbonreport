@@ -1,0 +1,6 @@
+
+/private/tmp/carbonreport-qa-runtime/src/app/api/projects/route.ts
+  15:29  warning  'getAllReportTemplates' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+

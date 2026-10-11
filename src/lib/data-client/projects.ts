@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { request, ApiError } from '@/lib/api-client'
-import { projectKeys, organizationKeys } from './keys'
+import { projectKeys } from './keys'
 import { notifications } from '@/components/ui/notifications'
 
 export type ProjectStatusSlug = 'active' | 'archived' | 'reported' | 'deleted'
@@ -61,6 +61,7 @@ export interface ProjectListViewItem {
     completion: number
   }>
   createdAt: string
+  deletedAt: string | null
   checklist?: unknown
 }
 
@@ -79,6 +80,7 @@ function normalizeProject(project: ProjectListItemResponse): ProjectListViewItem
         }))
       : [],
     createdAt: project.created_at,
+    deletedAt: project.deleted_at,
     checklist: project.checklist,
   }
 }
@@ -95,7 +97,7 @@ export function useProjectsList(organizationId: string | null | undefined) {
     queryKey: projectKeys.list(organizationId ?? undefined),
     enabled: Boolean(organizationId),
     queryFn: async () => {
-      const search = organizationId ? `?organization_id=${organizationId}` : ''
+      const search = organizationId ? `?organization_id=${organizationId}&includeDeleted=true` : '?includeDeleted=true'
       const data = await request<ProjectsListResponse>(`/api/projects${search}`)
       return data.projects.map(normalizeProject)
     },
@@ -109,6 +111,18 @@ export function useUpdateProjectStatus() {
   return useMutation<ProjectStatusPayload, unknown, UpdateProjectStatusVariables>({
     mutationKey: ['projects', 'update-status'],
     mutationFn: async (variables) => {
+      if (variables.status === 'deleted') {
+        return request<ProjectStatusPayload>(`/api/projects/${variables.projectId}`, {
+          method: 'DELETE',
+        })
+      }
+
+      if (variables.status === 'active') {
+        return request<ProjectStatusPayload>(`/api/projects/${variables.projectId}/restore`, {
+          method: 'POST',
+        })
+      }
+
       return request<ProjectStatusPayload>(`/api/projects/${variables.projectId}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ status: variables.status }),
@@ -122,28 +136,24 @@ export function useUpdateProjectStatus() {
           return
         }
 
-        if (variables.status === 'deleted') {
-          const filtered = cached.filter((project) => project.id !== variables.projectId)
-          queryClient.setQueryData(queryKey, filtered)
-        } else {
-          const nextStatus = data?.project?.status ?? variables.status.toUpperCase()
-          const updated = cached.map((project) =>
-            project.id === variables.projectId
-              ? {
-                  ...project,
-                  status: nextStatus,
-                }
-              : project,
-          )
-          queryClient.setQueryData(queryKey, updated)
-        }
+        const nextStatus = data?.project?.status ?? variables.status.toUpperCase()
+        const updated = cached.map((project) =>
+          project.id === variables.projectId
+            ? {
+                ...project,
+                status: nextStatus,
+                deletedAt: data?.project?.deleted_at ?? null,
+              }
+            : project,
+        )
+        queryClient.setQueryData(queryKey, updated)
       })
 
       queryClient.invalidateQueries({ queryKey: projectKeys.all })
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(variables.projectId), exact: false })
       queryClient.invalidateQueries({ queryKey: projectKeys.dataset(variables.projectId), exact: false })
       queryClient.invalidateQueries({ queryKey: projectKeys.contacts(variables.projectId), exact: false })
-      queryClient.invalidateQueries({ queryKey: organizationKeys.current(), exact: false })
+      queryClient.invalidateQueries({ queryKey: ['organizations'] })
 
       const message = SUCCESS_MESSAGES[variables.status] ?? 'Project status updated.'
       notifications.success(message)
@@ -153,9 +163,17 @@ export function useUpdateProjectStatus() {
         notifications.info(`Retention window ends ${expires}.`)
       }
     },
-    onError: (error) => {
+    onError: (error, variables) => {
       const message = error instanceof ApiError ? error.message : 'Failed to update project status.'
       notifications.error(message ?? 'Failed to update project status.')
+
+      if (error instanceof ApiError && variables.status === 'active' && error.code === 'PLAN_LIMIT_EXCEEDED') {
+        const details = error.details as { current?: unknown; limit?: unknown } | undefined
+        const current = typeof details?.current === 'number' ? details.current : null
+        const limit = typeof details?.limit === 'number' ? details.limit : null
+        const usage = current !== null && limit !== null ? ` Current usage is ${current}/${limit}.` : ''
+        notifications.info(`To restore this project, archive another active project or upgrade your plan.${usage}`)
+      }
     },
   })
 }

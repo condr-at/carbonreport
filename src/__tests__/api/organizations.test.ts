@@ -22,6 +22,10 @@ import { cleanupTestData } from '@/__tests__/setup'
 import prisma from '@/lib/db'
 import * as auth from '@/lib/auth'
 import type { ApiError } from '@/lib/api-error'
+import { POST as createOrganization } from '@/app/api/organizations/route'
+import { POST as inviteMember } from '@/app/api/organizations/[organizationId]/invite/route'
+import { POST as acceptMembership } from '@/app/api/organizations/[organizationId]/members/[membershipId]/accept/route'
+import { DELETE as deleteOrganization } from '@/app/api/organizations/[organizationId]/route'
 
 beforeEach(async () => {
   await cleanupTestData()
@@ -44,6 +48,16 @@ function mockUser(userId: string) {
       throw new Error('User not found')
     }
     return user
+  })
+}
+
+function buildJsonRequest(url: string, method: string, body?: Record<string, unknown>) {
+  return new Request(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
   })
 }
 
@@ -89,6 +103,49 @@ test('POST /api/organizations: creates org with plan=free by default', async () 
     },
   })
 
+  assert.equal(membership.role, OrganizationMembershipRole.OWNER)
+  assert.equal(membership.inviteStatus, OrganizationMembershipInviteStatus.ACCEPTED)
+})
+
+test('POST /api/organizations: route creates owner membership and returns limits', async () => {
+  const user = await createTestUser()
+  mockUser(user.id)
+
+  const response = await createOrganization(
+    buildJsonRequest('http://localhost/api/organizations', 'POST', {
+      display_name: 'Route Created Org',
+      description: 'Created through API route test',
+    }) as any,
+  )
+
+  const payload = (await response.json()) as {
+    organization: {
+      id: string
+      plan_code: string
+      limits: {
+        max_active_projects: number
+        max_editors: number
+        max_verifiers: number
+      }
+    }
+  }
+
+  assert.equal(response.status, 201)
+  assert.equal(payload.organization.plan_code, 'free')
+  assert.equal(payload.organization.limits.max_active_projects, 1)
+  assert.equal(payload.organization.limits.max_editors, 0)
+  assert.equal(payload.organization.limits.max_verifiers, 0)
+
+  const membership = await prisma.organizationMembership.findUnique({
+    where: {
+      organizationId_userId: {
+        organizationId: payload.organization.id,
+        userId: user.id,
+      },
+    },
+  })
+
+  assert.ok(membership)
   assert.equal(membership.role, OrganizationMembershipRole.OWNER)
   assert.equal(membership.inviteStatus, OrganizationMembershipInviteStatus.ACCEPTED)
 })
@@ -160,6 +217,39 @@ test('Membership invite: blocks inviting editor on Free plan', async () => {
       return true
     },
   )
+})
+
+test('Membership invite route: returns 409 when inviting editor on Free plan', async () => {
+  const { org, user } = await createTestOrgWithOwner({ planCode: 'free' })
+  const editorUser = await createTestUser({ email: 'editor-free@example.com' })
+  mockUser(user.id)
+
+  const response = await inviteMember(
+    buildJsonRequest(
+      `http://localhost/api/organizations/${org.id}/invite`,
+      'POST',
+      {
+        email: editorUser.email,
+        role: OrganizationMembershipRole.EDITOR,
+      },
+    ) as any,
+    { params: Promise.resolve({ organizationId: org.id }) },
+  )
+
+  const payload = (await response.json()) as {
+    code: string
+    details?: {
+      limit?: number
+      current?: number
+      role?: string
+    }
+  }
+
+  assert.equal(response.status, 409)
+  assert.equal(payload.code, 'SEAT_LIMIT_EXCEEDED')
+  assert.equal(payload.details?.limit, 0)
+  assert.equal(payload.details?.current, 0)
+  assert.equal(payload.details?.role, 'EDITOR')
 })
 
 test('Membership invite: blocks inviting 3rd editor on Pro Beta', async () => {
@@ -281,6 +371,48 @@ test('DELETE organization: soft-deletes org and cascades to projects', async () 
   assert.ok(retention.days_remaining > 0)
 })
 
+test('DELETE /api/organizations/[organizationId]: route soft-deletes org and cascades projects', async () => {
+  const { org, user } = await createTestOrgWithOwner()
+  mockUser(user.id)
+
+  const project1 = await createTestProject({
+    organizationId: org.id,
+    status: ProjectStatus.ACTIVE,
+  })
+  const project2 = await createTestProject({
+    organizationId: org.id,
+    status: ProjectStatus.ARCHIVED,
+  })
+
+  const response = await deleteOrganization(
+    buildJsonRequest(`http://localhost/api/organizations/${org.id}`, 'DELETE') as any,
+    { params: Promise.resolve({ organizationId: org.id }) },
+  )
+
+  const payload = (await response.json()) as {
+    organization_id: string
+    status: string
+    retention_expires_at: string
+  }
+
+  assert.equal(response.status, 202)
+  assert.equal(payload.organization_id, org.id)
+  assert.equal(payload.status, 'deleted')
+  assert.ok(new Date(payload.retention_expires_at).getTime() > Date.now())
+
+  const updatedOrg = await prisma.organization.findUnique({ where: { id: org.id } })
+  assert.equal(updatedOrg?.status, OrganizationStatus.DELETED)
+
+  const updatedProjects = await prisma.project.findMany({
+    where: { id: { in: [project1.id, project2.id] } },
+  })
+  assert.equal(updatedProjects.length, 2)
+  updatedProjects.forEach((project) => {
+    assert.equal(project.status, ProjectStatus.DELETED)
+    assert.ok(project.deletedAt)
+  })
+})
+
 test('DELETE organization: only allows OWNER to delete', async () => {
   const { org } = await createTestOrgWithOwner()
   const adminUser = await createTestUser()
@@ -355,4 +487,49 @@ test('Organization usage: accurately counts all resources', async () => {
   assert.equal(usage.active_editors, 1, 'Should count only accepted editors')
   assert.equal(usage.active_viewers, 1, 'Should count accepted viewers')
   assert.equal(usage.active_verifiers, 0, 'Should have no verifiers')
+})
+
+test('Accept membership route: marks invite accepted and increments editor usage', async () => {
+  const { org, user } = await createTestOrgWithOwner({ planCode: 'pro_beta' })
+  const invitedUser = await createTestUser({ email: 'pending-editor@example.com' })
+
+  const pendingMembership = await createTestMembership({
+    organizationId: org.id,
+    userId: invitedUser.id,
+    role: OrganizationMembershipRole.EDITOR,
+    inviteStatus: OrganizationMembershipInviteStatus.PENDING,
+    invitedByUserId: user.id,
+  })
+
+  mockUser(invitedUser.id)
+
+  const beforeUsage = await (await import('@/lib/server-utils')).getOrganizationUsage(org.id)
+  assert.equal(beforeUsage.active_editors, 0)
+
+  const response = await acceptMembership(
+    buildJsonRequest(
+      `http://localhost/api/organizations/${org.id}/members/${pendingMembership.id}/accept`,
+      'POST',
+    ) as any,
+    { params: Promise.resolve({ organizationId: org.id, membershipId: pendingMembership.id }) },
+  )
+
+  const payload = (await response.json()) as {
+    membership: {
+      membership_id: string
+      invite_status: string
+    }
+  }
+
+  assert.equal(response.status, 200)
+  assert.equal(payload.membership.membership_id, pendingMembership.id)
+  assert.equal(payload.membership.invite_status, 'accepted')
+
+  const updatedMembership = await prisma.organizationMembership.findUnique({
+    where: { id: pendingMembership.id },
+  })
+  assert.equal(updatedMembership?.inviteStatus, OrganizationMembershipInviteStatus.ACCEPTED)
+
+  const afterUsage = await (await import('@/lib/server-utils')).getOrganizationUsage(org.id)
+  assert.equal(afterUsage.active_editors, 1)
 })

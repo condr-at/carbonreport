@@ -1,0 +1,304 @@
+{
+  "schemaVersion": "cbam-supplier-review-package/1.0",
+  "title": "CBAM Supplier Review Package v1",
+  "scope": "A preparation package for recipient review. This is not a CBAM declaration, a statutory operator emissions report, or verification of emissions.",
+  "metadata": {
+    "projectId": "3ca3f18e-81bf-467b-97d4-8b193b0ae68b",
+    "projectName": "QA Supplier Review Steel 20261011",
+    "reportId": "3e5a85b6-a6ed-4693-abfd-6d9bced78921",
+    "templateCode": "CBAM_DATA_PACKAGE",
+    "datasetVersion": 8,
+    "generatedAt": "2026-10-11T08:46:04.782Z",
+    "profileVersion": "cbam-supplier-review/1.0"
+  },
+  "review": {
+    "status": "ready_for_recipient_review",
+    "coverage": "partial",
+    "directDataBasis": "actual",
+    "indirectTreatment": "reported",
+    "indirectDataBasis": "actual"
+  },
+  "values": [
+    {
+      "fieldId": "cbam_pkg_recipient",
+      "label": "Recipient",
+      "rawValue": "Example EU customer reviewer",
+      "unit": "",
+      "hint": "Name the customer or reviewer receiving this preparation package."
+    },
+    {
+      "fieldId": "cbam_pkg_prepared_by",
+      "label": "Prepared by",
+      "rawValue": "Alex QA Preparer — revision 2",
+      "unit": "",
+      "hint": "Person responsible for the supplied information."
+    },
+    {
+      "fieldId": "cbam_pkg_supplier_role",
+      "label": "Supplier role",
+      "rawValue": "operator",
+      "unit": "",
+      "hint": "Keep the supplier and producing operator distinct."
+    },
+    {
+      "fieldId": "cbam_pkg_production_year",
+      "label": "Production year",
+      "rawValue": "2026",
+      "unit": "",
+      "hint": "Definitive-period production year, 2026 or later. This is not a fiscal year."
+    },
+    {
+      "fieldId": "cbam_pkg_coverage_start",
+      "label": "Data coverage starts",
+      "rawValue": "2026-01-01",
+      "unit": "",
+      "hint": "Actual first date covered by these values, within the production year."
+    },
+    {
+      "fieldId": "cbam_pkg_coverage_end",
+      "label": "Data coverage ends",
+      "rawValue": "2026-09-30",
+      "unit": "",
+      "hint": "Actual last date covered, no later than today. Partial-year values remain provisional."
+    },
+    {
+      "fieldId": "cbam_operator_name",
+      "label": "Producing operator",
+      "rawValue": "Example Steel Ltd",
+      "unit": "",
+      "hint": "Legal name of the installation operator."
+    },
+    {
+      "fieldId": "cbam_operator_contact",
+      "label": "Operator contact",
+      "rawValue": "Operator reporting team",
+      "unit": "",
+      "hint": "Contact responsible for the emissions information."
+    },
+    {
+      "fieldId": "cbam_installation_id",
+      "label": "Installation identifier",
+      "rawValue": "",
+      "unit": "",
+      "hint": "Existing installation or registry identifier, if available; registration is not inferred."
+    },
+    {
+      "fieldId": "cbam_installation_country",
+      "label": "Installation country",
+      "rawValue": "Serbia",
+      "unit": "",
+      "hint": "Country where the goods are produced."
+    },
+    {
+      "fieldId": "cbam_pkg_installation_name",
+      "label": "Installation name",
+      "rawValue": "Example works",
+      "unit": "",
+      "hint": "This profile covers one producing installation."
+    },
+    {
+      "fieldId": "cbam_pkg_installation_address",
+      "label": "Installation address",
+      "rawValue": "Example industrial road 1",
+      "unit": "",
+      "hint": "Physical location of the producing installation."
+    },
+    {
+      "fieldId": "product_name",
+      "label": "Product name",
+      "rawValue": "Example steel goods",
+      "unit": "",
+      "hint": "One product represented by this review package."
+    },
+    {
+      "fieldId": "product_description",
+      "label": "Product description",
+      "rawValue": "Synthetic engineering fixture, not a verified emissions declaration.",
+      "unit": "",
+      "hint": "Product specification and production route, if known."
+    },
+    {
+      "fieldId": "cbam_pkg_cn8",
+      "label": "Reported CN code",
+      "rawValue": "72081000",
+      "unit": "",
+      "hint": "Exactly eight digits. Syntax checking does not confirm legal scope or classification."
+    },
+    {
+      "fieldId": "cbam_pkg_cn_review",
+      "label": "CN classification review",
+      "rawValue": "not_reviewed",
+      "unit": "",
+      "hint": "A user-declared review status, not classification verified by this app."
+    },
+    {
+      "fieldId": "cbam_pkg_boundary",
+      "label": "Process boundary and attribution",
+      "rawValue": "Operator-reported process attribution and total saleable output; see OPS-2026-Q3.",
+      "unit": "",
+      "hint": "Describe the process, production route, outputs, attribution and period underlying the reported values. Reference the monitoring plan or operator report."
+    },
+    {
+      "fieldId": "cbam_pkg_precursor_statement",
+      "label": "Precursor treatment",
+      "rawValue": "Reported direct value already includes the relevant precursor contribution; see operator paper.",
+      "unit": "",
+      "hint": "Explain which relevant precursors are already included, or why none apply. No precursor amount is added by this app."
+    },
+    {
+      "fieldId": "cbam_pkg_unit",
+      "label": "Reported specific-emissions unit",
+      "rawValue": "tCO2e/t_goods",
+      "unit": "",
+      "hint": "Only already reported tCO2e per tonne of goods is supported. No functional-unit conversion is performed."
+    },
+    {
+      "fieldId": "cbam_pkg_direct_see",
+      "label": "Reported direct embedded emissions",
+      "rawValue": "2.5",
+      "unit": "tCO2e / t goods",
+      "hint": "tCO2e/t goods, including the relevant precursor contribution already attributed by the operator. Zero is valid; blank is unknown."
+    },
+    {
+      "fieldId": "cbam_pkg_direct_basis",
+      "label": "Direct data basis",
+      "rawValue": "actual",
+      "unit": "",
+      "hint": "A stated basis, not a validated actual-emissions claim."
+    },
+    {
+      "fieldId": "cbam_pkg_direct_source",
+      "label": "Direct source evidence ID",
+      "rawValue": "operator-1",
+      "unit": "",
+      "hint": "ID of a document in the evidence register supporting this reported value."
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_status",
+      "label": "Indirect emissions treatment",
+      "rawValue": "reported",
+      "unit": "",
+      "hint": "Indirect applicability depends on the goods. Not applicable is distinct from zero or unknown."
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_see",
+      "label": "Reported indirect embedded emissions",
+      "rawValue": "0.5",
+      "unit": "tCO2e / t goods",
+      "hint": "Required when indirect emissions are reported; tCO2e/t goods, including relevant precursors. Never added to direct emissions by this app."
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_basis",
+      "label": "Indirect data basis",
+      "rawValue": "actual",
+      "unit": "",
+      "hint": "Required when indirect emissions are reported."
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_source",
+      "label": "Indirect source evidence ID",
+      "rawValue": "operator-1",
+      "unit": "",
+      "hint": "Required when reported; must identify an entry in the evidence register."
+    },
+    {
+      "fieldId": "cbam_pkg_lot_mass_tonnes",
+      "label": "Optional lot net mass",
+      "rawValue": "12",
+      "unit": "t goods",
+      "hint": "Tonnes of the named goods. Used only for indicative, separate mass × reported SEE calculations."
+    },
+    {
+      "fieldId": "cbam_pkg_verification_status",
+      "label": "Verification evidence status",
+      "rawValue": "not_verified",
+      "unit": "",
+      "hint": "The app never verifies emissions or checks accreditation."
+    },
+    {
+      "fieldId": "cbam_pkg_evidence_json",
+      "label": "Evidence register",
+      "rawValue": "[{\"id\":\"operator-1\",\"title\":\"Operator production and emissions working paper\",\"reference\":\"Operator document OPS-2026-Q3, pages 1-5\",\"version\":\"2026-10-01 revision 1\",\"period\":\"2026-01-01 through 2026-09-30\",\"owner\":\"Example Steel Ltd\",\"disclosure\":\"shareable\"}]",
+      "unit": "",
+      "hint": "JSON array of {id,title,reference,version,period,owner,disclosure}. Disclosure is shareable, restricted or unknown. References are not uploaded or verified by this app."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "operator-1",
+      "title": "Operator production and emissions working paper",
+      "reference": "Operator document OPS-2026-Q3, pages 1-5",
+      "version": "2026-10-01 revision 1",
+      "period": "2026-01-01 through 2026-09-30",
+      "owner": "Example Steel Ltd",
+      "disclosure": "shareable"
+    }
+  ],
+  "issues": [
+    {
+      "fieldId": "cbam_pkg_coverage_end",
+      "ruleId": "PARTIAL_YEAR",
+      "severity": "warning",
+      "message": "Partial-year / YTD data are provisional. Do not represent these values as a completed annual operator report.",
+      "sourceRefs": [
+        "TR25",
+        "TR26"
+      ]
+    },
+    {
+      "fieldId": "cbam_pkg_cn_review",
+      "ruleId": "CN_REVIEW",
+      "severity": "warning",
+      "message": "A reviewer must confirm classification and goods-specific CBAM scope. Eight digits alone do not establish applicability.",
+      "sourceRefs": [
+        "TR01",
+        "TR25"
+      ]
+    },
+    {
+      "fieldId": "cbam_pkg_verification_status",
+      "ruleId": "UNVERIFIED_DATA",
+      "severity": "warning",
+      "message": "Data have not been declared verified. Actual values require appropriate accredited verification for regulatory use; this package can be ready for review only.",
+      "sourceRefs": [
+        "TR25",
+        "TR26"
+      ]
+    },
+    {
+      "fieldId": "_package",
+      "ruleId": "REVIEW_ONLY",
+      "severity": "warning",
+      "message": "This is a preparation/review package, not the mandatory operator emissions report, a CBAM declaration, a verification statement or confirmation of legal readiness.",
+      "sourceRefs": [
+        "TR25",
+        "TR26"
+      ]
+    }
+  ],
+  "calculations": {
+    "kind": "indicative_mass_times_reported_specific_emissions",
+    "supportedUnitConfirmed": true,
+    "massTonnes": 12,
+    "directLotEmissions": 30,
+    "indirectLotEmissions": 6,
+    "massUnit": "t goods",
+    "emissionsUnit": "tCO2e",
+    "rule": "Lot net mass × the corresponding reported specific embedded emissions. Direct and indirect remain separate. No precursor amount is added."
+  },
+  "evidenceFilesIncluded": false,
+  "sources": [
+    {
+      "title": "European Commission — CBAM legislation and guidance",
+      "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-legislation-and-guidance_en"
+    },
+    {
+      "title": "European Commission — Guidance No. 2: quick guide for non-EU operators (14 August 2026)",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/91e1056c-4524-4705-aaa7-e25c1439a87a_en?filename=Guidance%20No.%202%20-%20Quick%20guide%20for%20non-EU%20operators%20on%20CBAM%20implementation.pdf"
+    },
+    {
+      "title": "European Commission — Guidance No. 3: methods for embedded emissions (14 August 2026)",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/29b9eec7-1a4b-4eb6-ab85-96a0c9e35fd0_en?filename=Guidance%20No.%203%20-%20CBAM%20methods%20for%20the%20calculation%20of%20emissions%20embedded%20in%20goods.pdf"
+    }
+  ]
+}

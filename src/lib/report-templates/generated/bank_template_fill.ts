@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const BANKTEMPLATEFILLTemplate: ReportTemplate = {
   code: 'BANK_TEMPLATE_FILL' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Bank Data Template Fill',
+  name: 'Bank Questionnaire Preparation',
+  description: 'Company and sustainability inputs for a lender request.',
   scope: 'corporate',
   sections: [
     {

@@ -65,6 +65,16 @@ export interface ScopeRequirements {
 
 export type Frequency = 'ANNUAL' | 'QUARTERLY' | 'MONTHLY' | 'ONE_OFF' | 'ON_DEMAND'
 
+/** A recommendation to check scope/output, not a determination of a legal obligation. */
+export interface ApplicabilityReview {
+	status: 'required'
+	reason: string
+	checks: string[]
+	checkedOn: string
+	/** Internal references into docs/report-reference/research. */
+	sourceRefs: string[]
+}
+
 export interface ReportDefinition {
 	id: string
 	name: string
@@ -78,6 +88,7 @@ export interface ReportDefinition {
 	tags?: string[]
 	timelineMonths?: [number, number]
 	budgetEUR?: [number, number]
+	applicabilityReview?: ApplicabilityReview
 }
 
 // =============================
@@ -188,6 +199,7 @@ export interface ResolvedReport {
 	notes?: string[]
 	tags?: string[]
 	priorityScore: number
+	applicabilityReview?: ApplicabilityReview
 }
 
 export interface WarningMessage {

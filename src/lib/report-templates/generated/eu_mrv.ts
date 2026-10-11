@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const EUMRVTemplate: ReportTemplate = {
   code: 'EU_MRV' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'EU MRV (Maritime)',
+  name: 'EU MRV Shipping Data',
+  description: 'Ship activity, fuel and emissions inputs for maritime reporting.',
   scope: 'corporate',
   sections: [
     {

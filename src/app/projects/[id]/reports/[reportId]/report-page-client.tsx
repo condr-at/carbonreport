@@ -14,6 +14,7 @@ import {
 } from '@/lib/dataset-utils-v2';
 import { initializeFullDataset } from '@/lib/dataset-init';
 import type { Dataset } from '@/lib/dataset-validation';
+import { getReportCompletion } from '@/lib/report-completion';
 import { useProjectDataset, type ProjectDataset } from '@/lib/data-client/dataset';
 import { useDataRequests } from '@/lib/data-client/data-requests';
 import { useProjectContacts } from '@/lib/data-client/contacts';
@@ -45,7 +46,6 @@ interface ReportPageClientProps {
   fieldDefinitions: FieldDefinition[];
   initialDataset: Dataset | null;
   initialDatasetVersion: number;
-  completion: { filled: number; required: number; percentage: number };
   mailtoTemplate: { subject?: string; body?: string } | null;
   initialRequests: DataRequestSummary[];
   initialContacts: ContactSummary[];
@@ -71,7 +71,6 @@ export function ReportPageClient({
   initialDataset,
   fieldDefinitions,
   initialDatasetVersion,
-  completion,
   mailtoTemplate,
   initialRequests,
   initialContacts,
@@ -114,6 +113,10 @@ export function ReportPageClient({
     staleTime: Infinity, // Prevent refetching on navigation to preserve optimistic updates
   });
   const datasetVersion = datasetQuery.data?.datasetVersion ?? initialDatasetVersion;
+  const completion = useMemo(
+    () => getReportCompletion(datasetQuery.data?.dataset ?? initialDataset, { sections }),
+    [datasetQuery.data?.dataset, initialDataset, sections],
+  );
 
   const rows = useMemo<TableRow[]>(() => {
     // 1. Get raw data points

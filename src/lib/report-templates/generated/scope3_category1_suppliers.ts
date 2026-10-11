@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const SCOPE3CATEGORY1SUPPLIERSTemplate: ReportTemplate = {
   code: 'SCOPE3_CATEGORY1_SUPPLIERS' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Scope 3 Category 1 (Suppliers)',
+  name: 'Scope 3 Purchased Goods Data',
+  description: 'Supplier and activity inputs for purchased goods and services.',
   scope: 'corporate',
   sections: [
     {

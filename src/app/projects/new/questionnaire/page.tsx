@@ -29,8 +29,10 @@ import {
   QuestionGroup,
   EvaluationResult,
   evaluateQuestionnaire,
-  GroupVisibilityMap,
-  computeGroupVisibility,
+  getVisibleQuestions,
+  removeHiddenAnswers,
+  areQuestionGroupsComplete,
+  skipQuestionGroups,
   UNKNOWN_ANSWER_CODE,
   UNKNOWN_ANSWER_LABEL,
   UNKNOWN_ANSWER_DESCRIPTION,
@@ -53,21 +55,6 @@ const QUESTION_GROUP_TITLES: Record<QuestionGroup, { title: string; description?
   constraints: { title: 'Ограничения по срокам и бюджету', description: 'Реалистичность внедрения' },
   sector: { title: 'Отраслевые особенности', description: 'Детализируем контекст бизнеса' },
 }
-
-const QUESTION_GROUP_ORDER: QuestionGroup[] = [
-  'profile',
-  'initiator',
-  'regulator',
-  'client',
-  'financial',
-  'program',
-  'exchange',
-  'internal',
-  'operations',
-  'trade',
-  'constraints',
-  'sector',
-]
 
 const WIZARD_ACTIVE_STEP_KEY = 'wizardActiveStepIndex'
 
@@ -132,6 +119,7 @@ function QuestionnaireContent() {
   const [submissionError, setSubmissionError] = useState<string | null>(null)
   const [activeStepIndex, setActiveStepIndex] = useState(0)
 
+  const visibleQuestions = useMemo(() => getVisibleQuestions(answers), [answers])
   const groupedQuestions = useMemo(() => {
     const grouping: Record<QuestionGroup, QuestionDefinition[]> = {
       profile: [],
@@ -148,19 +136,18 @@ function QuestionnaireContent() {
       sector: [],
     }
 
-    QUESTION_DEFINITIONS.forEach((question) => {
+    visibleQuestions.forEach((question) => {
       grouping[question.group].push(question)
     })
 
     return grouping
-  }, [])
-
-  const groupVisibility = useMemo<GroupVisibilityMap>(() => computeGroupVisibility(answers), [answers])
+  }, [visibleQuestions])
 
   const persistAnswers = useCallback((nextAnswers: AnswerMap) => {
-    setAnswers(nextAnswers)
+    const visibleAnswers = removeHiddenAnswers(nextAnswers)
+    setAnswers(visibleAnswers)
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('wizardAnswers', JSON.stringify(nextAnswers))
+      sessionStorage.setItem('wizardAnswers', JSON.stringify(visibleAnswers))
     }
   }, [])
 
@@ -174,12 +161,12 @@ function QuestionnaireContent() {
       const stored = typeof window !== 'undefined' ? sessionStorage.getItem('wizardAnswers') : null
       if (stored) {
         const parsed = JSON.parse(stored) as AnswerMap
-        setAnswers(coerceStoredAnswers(parsed))
+        persistAnswers(coerceStoredAnswers(parsed))
       }
     } catch (error) {
       console.warn('Failed to restore questionnaire answers', error)
     }
-  }, [])
+  }, [persistAnswers])
 
   useEffect(() => {
     if (typeof window === 'undefined' || hasRestoredStepIndex.current) return
@@ -206,13 +193,20 @@ function QuestionnaireContent() {
     return STEP_DEFINITIONS.map((step) => ({
       ...step,
       visibleGroups: step.groups.filter(
-        (group) => groupVisibility[group] && (groupedQuestions[group]?.length ?? 0) > 0,
+        (group) => (groupedQuestions[group]?.length ?? 0) > 0,
       ),
     }))
-  }, [groupVisibility, groupedQuestions])
+  }, [groupedQuestions])
 
   const activeSteps = useMemo(() => stepStates.filter((step) => step.visibleGroups.length > 0), [stepStates])
-  const stepperSteps = useMemo(() => activeSteps.map((step) => ({ id: step.id, title: step.title })), [activeSteps])
+  const stepperSteps = useMemo(() => activeSteps.map((step) => {
+    const questions = step.visibleGroups.flatMap((group) => groupedQuestions[group] ?? [])
+    return {
+      id: step.id,
+      title: step.title,
+      completed: questions.length > 0 && questions.every((question) => hasAnswer(answers[question.id])),
+    }
+  }), [activeSteps, groupedQuestions, answers])
 
   useEffect(() => {
     if (activeSteps.length === 0) {
@@ -232,33 +226,8 @@ function QuestionnaireContent() {
       return false
     }
 
-    return currentStep.visibleGroups.every((group) => {
-      const questions = groupedQuestions[group] ?? []
-      if (questions.length === 0) {
-        return true
-      }
-      return questions.every((question) => hasProgressAnswer(answers[question.id]))
-    })
-  }, [answers, currentStep, groupedQuestions])
-
-  const clearGroups = useCallback(
-    (groups: QuestionGroup[]) => {
-      const nextAnswers: AnswerMap = { ...answers }
-      let changed = false
-      groups.forEach((group) => {
-        groupedQuestions[group]?.forEach((question) => {
-          if (nextAnswers[question.id] !== undefined) {
-            delete nextAnswers[question.id]
-            changed = true
-          }
-        })
-      })
-      if (changed) {
-        persistAnswers(nextAnswers)
-      }
-    },
-    [answers, groupedQuestions, persistAnswers],
-  )
+    return areQuestionGroupsComplete(answers, currentStep.visibleGroups)
+  }, [answers, currentStep])
 
   const goToNextStep = useCallback(() => {
     if (activeSteps.length === 0) return
@@ -271,7 +240,7 @@ function QuestionnaireContent() {
 
   const handleSkipCurrentStep = () => {
     if (!currentStep) return
-    clearGroups(currentStep.groups)
+    persistAnswers(skipQuestionGroups(answers, currentStep.visibleGroups))
     goToNextStep()
   }
 
@@ -287,37 +256,11 @@ function QuestionnaireContent() {
     }
   }
 
-  useEffect(() => {
-    if (!answers || Object.keys(answers).length === 0) {
-      return
-    }
-
-    const nextAnswers: AnswerMap = { ...answers }
-    let changed = false
-
-    QUESTION_GROUP_ORDER.forEach((group) => {
-      if (groupVisibility[group]) return
-      groupedQuestions[group]?.forEach((question) => {
-        if (nextAnswers[question.id] !== undefined) {
-          delete nextAnswers[question.id]
-          changed = true
-        }
-      })
-    })
-
-    if (changed) {
-      setAnswers(nextAnswers)
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('wizardAnswers', JSON.stringify(nextAnswers))
-      }
-    }
-  }, [answers, groupVisibility, groupedQuestions])
-
   const answeredCount = useMemo(() => {
-    return QUESTION_DEFINITIONS.filter((question) => hasAnswer(answers[question.id])).length
-  }, [answers])
+    return visibleQuestions.filter((question) => hasAnswer(answers[question.id])).length
+  }, [answers, visibleQuestions])
 
-  const totalQuestions = QUESTION_DEFINITIONS.length
+  const totalQuestions = visibleQuestions.length
   const progressRatio = totalQuestions > 0 ? answeredCount / totalQuestions : 0
 
   const handleSingleChange = (questionId: string, value: string) => {
@@ -579,12 +522,13 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-base font-semibold">{question.text}</p>
+        <p id={`${question.id}-label`} className="text-base font-semibold">{question.text}</p>
         {question.hint && <p className="text-sm text-muted-foreground">{question.hint}</p>}
       </div>
 
       {question.type === 'single' && optionsWithUnknown && (
         <RadioGroup
+          aria-labelledby={`${question.id}-label`}
           value={typeof value === 'string' ? value : ''}
           onValueChange={(nextValue) => onSingleChange(question.id, nextValue)}
         >
@@ -592,6 +536,7 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
             {optionsWithUnknown.map((option) => (
               <label
                 key={option.code}
+                htmlFor={`${question.id}-${option.code}`}
                 className="flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-3 hover:bg-accent"
               >
                 <RadioGroupItem value={option.code} id={`${question.id}-${option.code}`} />
@@ -612,6 +557,7 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
           {optionsWithUnknown.map((option) => (
             <label
               key={option.code}
+              htmlFor={`${question.id}-${option.code}`}
               className="flex cursor-pointer items-start gap-3 rounded-lg border px-3 py-3 hover:bg-accent"
             >
               <Checkbox
@@ -632,6 +578,7 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
 
       {question.type === 'free-text' && (
         <Input
+          aria-labelledby={`${question.id}-label`}
           value={typeof value === 'string' ? value : ''}
           onChange={(event) => onFreeTextChange(question.id, event.target.value)}
           placeholder="Ваш ответ"
@@ -643,23 +590,6 @@ function QuestionField({ question, value, onSingleChange, onMultiToggle, onFreeT
 
 function hasAnswer(value: AnswerValue): boolean {
   return hasMeaningfulAnswer(value)
-}
-
-function hasProgressAnswer(value: AnswerValue): boolean {
-  if (hasMeaningfulAnswer(value)) {
-    return true
-  }
-  return includesUnknownAnswer(value)
-}
-
-function includesUnknownAnswer(value: AnswerValue): boolean {
-  if (typeof value === 'string') {
-    return value.trim() === UNKNOWN_ANSWER_CODE
-  }
-  if (Array.isArray(value)) {
-    return value.some((item) => typeof item === 'string' && item.trim() === UNKNOWN_ANSWER_CODE)
-  }
-  return false
 }
 
 function ensureUnknownOption(options: AnswerOption[]): AnswerOption[] {

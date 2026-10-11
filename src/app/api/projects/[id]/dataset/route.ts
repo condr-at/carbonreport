@@ -257,7 +257,7 @@ export async function PATCH(
     }
 
     const currentDataset = (project.dataset as Dataset | null) ?? ({ data_points: [] } as Dataset)
-    const dataPoints = currentDataset.data_points ?? []
+    const dataPoints = [...(currentDataset.data_points ?? [])]
 
     const existingIndex = dataPoints.findIndex(
       (dp) => dp.field_id === fieldId && (itemId === null ? dp.item_id === null : dp.item_id === itemId),
@@ -282,7 +282,7 @@ export async function PATCH(
           datasetVersion: project.datasetVersion,
         },
         data: {
-          dataset: { data_points: dataPoints } as unknown as Prisma.InputJsonValue,
+          dataset: { ...currentDataset, data_points: dataPoints } as unknown as Prisma.InputJsonValue,
           datasetVersion: { increment: 1 },
         },
         select: {

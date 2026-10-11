@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const RECSORPPASTRATEGYTemplate: ReportTemplate = {
   code: 'RECS_OR_PPA_STRATEGY' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'RECS_OR_PPA_STRATEGY', // We don't have a long name in CSV, using code
+  name: 'Renewable Electricity Planning Data',
+  description: 'Energy and procurement inputs for certificate or PPA planning.',
   scope: 'corporate',
   sections: [
     {

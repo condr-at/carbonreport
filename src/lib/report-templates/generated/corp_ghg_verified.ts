@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CORPGHGVERIFIEDTemplate: ReportTemplate = {
   code: 'CORP_GHG_VERIFIED' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Verified Corporate GHG Inventory',
+  name: 'Corporate GHG Verification Preparation',
+  description: 'Inventory information and verification-related fields.',
   scope: 'corporate',
   sections: [
     {

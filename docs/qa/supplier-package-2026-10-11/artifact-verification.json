@@ -1,0 +1,19 @@
+{
+  "result": "pass",
+  "datasetVersion": 8,
+  "activeFields": 29,
+  "directLotEmissions": 30,
+  "indirectLotEmissions": 6,
+  "zipSha256": "cc848fdb04f09f21c4d767f1ae4c3f43f08eb3fd1eaf549c6be24e4ddb3acda7",
+  "checked": [
+    "CRC and fixed entries",
+    "saved version and exact inputs",
+    "separate arithmetic",
+    "CSV/JSON consistency",
+    "evidence references",
+    "review warnings",
+    "inactive draft exclusion",
+    "conflict draft exclusion",
+    "readable HTML"
+  ]
+}

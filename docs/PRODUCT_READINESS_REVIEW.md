@@ -292,6 +292,15 @@ Until this works well, the product feels less differentiated than it really is.
 
 ## Recommended Near-Term Product Changes
 
+### Active sequencing rule
+
+Landing is frozen until the final polish phase.
+
+Это означает:
+- landing page is not part of the active implementation surface right now;
+- product, onboarding, workspace, verification, and source-of-truth cleanup have priority first;
+- landing/message alignment is deferred intentionally to the end, once the in-product experience is more stable.
+
 ### P0
 
 - Product-first create-project UX
@@ -302,12 +311,12 @@ Until this works well, the product feels less differentiated than it really is.
 
 ### P1
 
-- Landing and in-app messaging alignment
 - Better segmentation of report catalog
 - Stronger legal/disclaimer and regulatory metadata presentation
 
 ### P2
 
+- Landing and in-app messaging alignment after core product surfaces stabilize
 - Supplier portal / reminders / deeper external collaboration
 - Broader disclosure workflows as a clearer second product layer
 

@@ -12,7 +12,8 @@ import prisma from '@/lib/db'
 import { getCurrentUser } from '@/lib/auth'
 import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
 import { assertOrgMembership, assertWithinLimit } from '@/lib/server-utils'
-import { getReportTemplate, getAllReportTemplates } from '@/lib/report-templates'
+import { getReportTemplate, getAllReportTemplates, type ReportTemplateCode } from '@/lib/report-templates'
+import { getReportCompletion } from '@/lib/report-completion'
 import { createEmptyDataset } from '@/lib/dataset-validation'
 import { scheduleUsageRecompute } from '@/lib/organizations/usage-scheduler'
 
@@ -123,6 +124,7 @@ export async function GET(request: NextRequest) {
         status: true,
         createdAt: true,
         datasetVersion: true,
+        dataset: true,
         deletedAt: true,
         checklist: true,
         reports: {
@@ -157,7 +159,7 @@ export async function GET(request: NextRequest) {
         reports: project.reports.map((report) => ({
           id: report.id,
           template_code: report.templateCode,
-          completion: report.completion,
+          completion: getReportCompletion(project.dataset, getReportTemplate(report.templateCode as ReportTemplateCode)).percentage,
         })),
       })),
     })

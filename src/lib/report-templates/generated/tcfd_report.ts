@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const TCFDREPORTTemplate: ReportTemplate = {
   code: 'TCFD_REPORT' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'TCFD Recommendations Report',
+  name: 'TCFD Disclosure Preparation',
+  description: 'Governance, strategy, risk and metrics inputs.',
   scope: 'corporate',
   sections: [
     {

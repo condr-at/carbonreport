@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const SCOPE2DETAILEDTemplate: ReportTemplate = {
   code: 'SCOPE2_DETAILED' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Detailed Scope 2 Report',
+  name: 'Scope 2 Inventory Data',
+  description: 'Purchased electricity, heat, steam and cooling inputs.',
   scope: 'corporate',
   sections: [
     {

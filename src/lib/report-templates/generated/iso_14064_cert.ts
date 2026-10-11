@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const ISO14064CERTTemplate: ReportTemplate = {
   code: 'ISO_14064_CERT' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'ISO 14064-1 (Organization Level)',
+  name: 'ISO 14064-1 Inventory Preparation',
+  description: 'Organization-level emissions and methodology inputs.',
   scope: 'corporate',
   sections: [
     {

@@ -240,7 +240,7 @@ export function RequestsBoard({
 
   const handleBulkResend = useCallback(() => {
     if (!filteredSelection.length) {
-      notifications.error('Select at least one request to resend.');
+      notifications.error('Select at least one request to log a reminder or reopen.');
       return;
     }
 
@@ -425,7 +425,7 @@ export function RequestsBoard({
       <CardHeader className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <Select value={effectiveFilters.status ?? 'all'} onValueChange={(value) => handleFiltersChange({ status: value as GlobalRequestFilters['status'] })}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px]" aria-label="Filter requests by status">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -437,7 +437,7 @@ export function RequestsBoard({
             </SelectContent>
           </Select>
           <Select value={effectiveFilters.deadline ?? 'all'} onValueChange={(value) => handleFiltersChange({ deadline: value as GlobalRequestFilters['deadline'] })}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[150px]" aria-label="Filter requests by deadline">
               <SelectValue placeholder="Deadline" />
             </SelectTrigger>
             <SelectContent>
@@ -449,7 +449,7 @@ export function RequestsBoard({
             </SelectContent>
           </Select>
           <Select value={effectiveFilters.projectId ?? 'all'} onValueChange={(value) => handleFiltersChange({ projectId: value === 'all' ? undefined : value })}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px]" aria-label="Filter requests by project">
               <SelectValue placeholder="Project" />
             </SelectTrigger>
             <SelectContent>
@@ -462,7 +462,7 @@ export function RequestsBoard({
           </Select>
           {!lockedContactId && (
             <Select value={effectiveFilters.contactId ?? 'all'} onValueChange={(value) => handleFiltersChange({ contactId: value === 'all' ? undefined : value })}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[200px]" aria-label="Filter requests by contact">
                 <SelectValue placeholder="Contact" />
               </SelectTrigger>
               <SelectContent>
@@ -526,13 +526,18 @@ export function RequestsBoard({
             variant="outline"
             onClick={handleBulkResend}
             disabled={!activeSelectionCount || bulkBusy}
+            title="Record a reminder for pending requests or reopen closed requests. No email is sent."
           >
             {resendMutation.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <RefreshCw className="mr-2 h-4 w-4" />
             )}
-            Resend
+            {pendingCount === activeSelectionCount
+              ? 'Log reminder'
+              : pendingCount === 0
+              ? 'Reopen requests'
+              : 'Log reminders / reopen'}
           </Button>
         </div>
 
@@ -542,6 +547,7 @@ export function RequestsBoard({
               <tr className="text-left">
                 <th className="py-3 pr-3">
                   <Checkbox
+                    aria-label="Select all visible requests"
                     className="translate-y-[1px]"
                     checked={headerCheckboxState}
                     onCheckedChange={toggleSelectAll}
@@ -582,6 +588,7 @@ export function RequestsBoard({
                     <tr key={request.id} className="border-b last:border-b-0">
                       <td className="py-3 pr-3 align-top">
                         <Checkbox
+                          aria-label={`Select request for ${request.dataPoint?.label ?? request.dataPoint?.id ?? 'data field'} from ${contactLabel}`}
                           checked={isSelected}
                           onCheckedChange={(checked) => toggleSelection(request.id, checked === true)}
                         />
@@ -659,13 +666,16 @@ export function RequestsBoard({
                             variant="ghost"
                             onClick={() => handleRowResend(request)}
                             disabled={resendMutation.isPending}
+                            title={request.status === 'pending'
+                              ? 'Record a reminder already sent. No email is sent.'
+                              : 'Return this request to pending. No email is sent.'}
                           >
                             {resendMutation.isPending ? (
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             ) : (
                               <RefreshCw className="mr-2 h-4 w-4" />
                             )}
-                            Resend
+                            {request.status === 'pending' ? 'Log reminder' : 'Reopen request'}
                           </Button>
                         </div>
                       </td>

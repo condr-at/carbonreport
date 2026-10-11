@@ -32,19 +32,23 @@ export function ProjectRoadmap({ items, incompleteCount }: ProjectRoadmapProps) 
           <div>
             <CardTitle>Project Roadmap</CardTitle>
             <CardDescription>
-              {incompleteCount > 0
+              {items.length === 0
+                ? 'Your project tasks will appear here'
+                : incompleteCount > 0
                 ? `${incompleteCount} tasks remaining`
                 : 'All tasks complete!'}
             </CardDescription>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setHideCompleted(!hideCompleted)}
-            className="text-xs"
-          >
-            {hideCompleted ? 'Show completed' : 'Hide completed'}
-          </Button>
+          {items.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setHideCompleted(!hideCompleted)}
+              className="text-xs"
+            >
+              {hideCompleted ? 'Show completed' : 'Hide completed'}
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="flex-1 overflow-y-auto max-h-[546px]">
@@ -74,7 +78,7 @@ export function ProjectRoadmap({ items, incompleteCount }: ProjectRoadmapProps) 
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {hideCompleted ? 'All tasks completed!' : 'No roadmap items yet'}
+            {items.length === 0 ? 'No roadmap items yet' : 'All tasks completed!'}
           </p>
         )}
       </CardContent>

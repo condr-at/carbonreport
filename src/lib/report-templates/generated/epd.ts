@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const EPDTemplate: ReportTemplate = {
   code: 'EPD' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Environmental Product Declaration (EPD)',
+  name: 'EPD Data Preparation',
+  description: 'Product LCA inputs for the chosen programme and product category rules.',
   scope: 'product',
   sections: [
     {

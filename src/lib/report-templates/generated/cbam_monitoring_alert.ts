@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CBAMMONITORINGALERTTemplate: ReportTemplate = {
   code: 'CBAM_MONITORING_ALERT' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'CBAM Monitoring Alert',
+  name: 'CBAM Monitoring Data',
+  description: 'Supplier data and monitoring-method inputs for review.',
   scope: 'product',
   sections: [
     {

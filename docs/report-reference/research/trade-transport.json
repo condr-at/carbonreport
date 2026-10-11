@@ -1,0 +1,956 @@
+{
+  "group": "trade-transport",
+  "checked_on": "2026-10-11",
+  "sources": [
+    {
+      "id": "TR01",
+      "title": "CBAM definitive regime",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-definitive-regime_en",
+      "kind": "official_guidance",
+      "version_or_date": "страница проверена 2026-10-11",
+      "access": "public",
+      "notes": "Открыта. Краткий обзор; исключения 50 т проверять по TR29, а не одной общей формулировке страницы.",
+      "local_file": null
+    },
+    {
+      "id": "TR02",
+      "title": "CBAM legislation and guidance",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-legislation-and-guidance_en",
+      "kind": "official_index",
+      "version_or_date": "проверено 2026-10-11",
+      "access": "public",
+      "notes": "Открыта. Перечень 2023/956, 2025/2083, актов 2025/2546–2551, 2025/2620–2621 и корректировки default values 2026/1740; предложения выделены отдельно.",
+      "local_file": null
+    },
+    {
+      "id": "TR03",
+      "title": "Regulation (EU) 2023/956, consolidated after 2025/2083",
+      "publisher": "European Union, EUR-Lex",
+      "url": "https://eur-lex.europa.eu/eli/reg/2023/956/2025-10-20",
+      "kind": "legislation",
+      "version_or_date": "2025-10-20",
+      "access": "public_access_problem",
+      "notes": "Ссылка реально открыта из TR02; вместо текста получена JS-проверка, alternate TXT redirected. После двух способов чтение остановлено. Содержание в этой работе сверено по официальным пояснениям, не заявлено как полная постатейная проверка.",
+      "local_file": null
+    },
+    {
+      "id": "TR04",
+      "title": "Implementing Regulation (EU) 2025/2547: embedded-emissions methods",
+      "publisher": "European Commission, EUR-Lex",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32025R2547",
+      "kind": "legislation",
+      "version_or_date": "2025-12",
+      "access": "public_access_problem",
+      "notes": "Открыта ELI и TXT-ссылка, обе JS-проверка. Использованы доступные официальные guidance TR25/TR26; необходима окончательная сверка Annexes закона.",
+      "local_file": null
+    },
+    {
+      "id": "TR05",
+      "title": "Implementing Regulation (EU) 2025/2620: free allocation adjustment",
+      "publisher": "European Commission, EUR-Lex",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32025R2620",
+      "kind": "legislation",
+      "version_or_date": "2025-12-16; OJ 2025-12-22",
+      "access": "public",
+      "notes": "Текст открыт. Это уменьшение числа CBAM certificates к погашению, не выдача импортёру EU ETS allowances. Articles 1–4 и Annex.",
+      "local_file": null
+    },
+    {
+      "id": "TR06",
+      "title": "CBAM archive: transitional reporting resources",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-archive_en",
+      "kind": "official_archive",
+      "version_or_date": "2023-10–2025-12; проверено 2026-10-11",
+      "access": "public",
+      "notes": "Открыта. Сам издатель помечает материалы как архивные и не отражающие definitive regime.",
+      "local_file": null
+    },
+    {
+      "id": "TR07",
+      "title": "CBAM Registry",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-registry_en",
+      "kind": "official_system_guidance",
+      "version_or_date": "проверено 2026-10-11",
+      "access": "public",
+      "notes": "Открыта; AMM, DRMC, O3CI. Сам реестр требует регистрации/EU Login 2FA. Подача не выполнялась.",
+      "local_file": null
+    },
+    {
+      "id": "TR08",
+      "title": "CBAM communication and news",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-communication-and-news_en",
+      "kind": "official_index",
+      "version_or_date": "новости до 2026-10-05",
+      "access": "public",
+      "notes": "Открыта. Публикует FAQ, communication XLSX 2024, sector examples и подтверждение первого annual deadline 2027-09-30. Публикация старого XLSX здесь не делает его definitive-template.",
+      "local_file": null
+    },
+    {
+      "id": "TR09",
+      "title": "EU ETS monitoring, reporting and verification: guidance and templates",
+      "publisher": "European Commission, DG CLIMA",
+      "url": "https://climate.ec.europa.eu/areas-action/carbon-markets/eu-emissions-trading-system-eu-ets/monitoring-reporting-and-verification_en",
+      "kind": "official_index",
+      "version_or_date": "проверено 2026-10-11",
+      "access": "public",
+      "notes": "Открыта. Annual compliance cycle; ERT; AER installation template 2026-02-09, aircraft template 2026-01-23. Национальные формы могут отличаться.",
+      "local_file": null
+    },
+    {
+      "id": "TR10",
+      "title": "Monitoring and Reporting Regulation (EU) 2018/2066, consolidated",
+      "publisher": "European Commission, EUR-Lex",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02018R2066-20250527",
+      "kind": "legislation",
+      "version_or_date": "2025-05-27",
+      "access": "public",
+      "notes": "Текст открыт по актуальной ссылке из TR09; более старая 2024 consolidation не использована как актуальная версия.",
+      "local_file": null
+    },
+    {
+      "id": "TR11",
+      "title": "Reducing emissions from the shipping sector",
+      "publisher": "European Commission, DG CLIMA",
+      "url": "https://climate.ec.europa.eu/areas-action/transport-decarbonisation/reducing-emissions-shipping-sector_en",
+      "kind": "official_guidance",
+      "version_or_date": "проверено 2026-10-11",
+      "access": "public",
+      "notes": "Открыта. MRV/ETS overlap и phase-in. Июльская 2026 реформа на странице названа proposal, не принятая норма.",
+      "local_file": null
+    },
+    {
+      "id": "TR12",
+      "title": "Regulation (EU) 2015/757, consolidated MRV maritime",
+      "publisher": "European Union, EUR-Lex",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02015R0757-20240101",
+      "kind": "legislation",
+      "version_or_date": "2024-01-01",
+      "access": "public_intermittent",
+      "notes": "Первое открытие вернуло полный текст; повторный find перенаправлялся. Изменения последующих лет дополнительно сверены через TR14/TR39; эта старая consolidation не объявляется полной редакцией 2026.",
+      "local_file": null
+    },
+    {
+      "id": "TR13",
+      "title": "Implementing Regulation (EU) 2023/2449: MRV forms",
+      "publisher": "European Commission, EUR-Lex",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R2449",
+      "kind": "official_form_in_legislation",
+      "version_or_date": "2023-11-06",
+      "access": "public_intermittent",
+      "notes": "Первое открытие вернуло 1218 строк; повторный fetch/host blocked. Annex I monitoring plan, Annex II emissions/partial report, Annex III document of compliance, Annex IV company report. Локальный PDF не получен; официальный crosswalk сохранён TR42.",
+      "local_file": null
+    },
+    {
+      "id": "TR14",
+      "title": "MRV Regulation: amended obligations",
+      "publisher": "EMSA",
+      "url": "https://www.emsa.europa.eu/reducing-emissions/mrv-changes.html",
+      "kind": "official_guidance",
+      "version_or_date": "проверено 2026-10-11",
+      "access": "public",
+      "notes": "Открыта. Расширение на газы и суда, годовой ship report и отдельный company report для ETS, сроки и право authority назначить более ранний срок.",
+      "local_file": null
+    },
+    {
+      "id": "TR15",
+      "title": "FAQ MRV Regulation",
+      "publisher": "EMSA",
+      "url": "https://www.emsa.europa.eu/reducing-emissions/mrv-changes/faq-mrv-changes.html",
+      "kind": "official_guidance",
+      "version_or_date": "страница указывает update 2024-08-23; проверено 2026-10-11",
+      "access": "public",
+      "notes": "Открыта. Сама направляет к более подробному и свежему TR39; не заменяет закон.",
+      "local_file": null
+    },
+    {
+      "id": "TR16",
+      "title": "CORSIA standardized templates",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/CORSIA/standardized-templates",
+      "kind": "official_form_index",
+      "version_or_date": "Doc 9501 Vol IV 4th edition; files 2025",
+      "access": "public",
+      "notes": "Открыта. ER и EMP остались по структуре 3rd edition; VR обновлён. Это рекомендованные стандартные формы оператор→государство, не CCR state→ICAO.",
+      "local_file": null
+    },
+    {
+      "id": "TR17",
+      "title": "SARPs Annex 16 Volume IV",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/CORSIA/sarps-annex-16-volume-iv",
+      "kind": "official_standard_index",
+      "version_or_date": "2nd edition July 2023; applies 2024-01-01",
+      "access": "public",
+      "notes": "Открыта. Страница базового издания не разрешает игнорировать поправки; TR18 сообщает Amendment 2.",
+      "local_file": null
+    },
+    {
+      "id": "TR18",
+      "title": "Annex 16 Volume IV, 2nd edition including Amendment 2",
+      "publisher": "ICAO Store",
+      "url": "https://store.icao.int/en/annex-16-environmental-protection-volume-iv-carbon-offsetting-and-reduction-scheme-for-international-aviation-corsia",
+      "kind": "licensed_standard",
+      "version_or_date": "2nd ed. 2023; catalog Amendment 2 dated 2026-08-03",
+      "access": "paid/registration",
+      "notes": "Официальная индексированная карточка проверена: USD 140, single-user protected PDF; открытие страницы вернуло 407. Полный платный текст/поправка не приобретались, применимость отдельных изменений требует licensed review.",
+      "local_file": null
+    },
+    {
+      "id": "TR19",
+      "title": "CORSIA States for Chapter 3 State Pairs",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/CORSIA/corsia-states-chapter-3-state-pairs",
+      "kind": "official_index",
+      "version_or_date": "проверено 2026-10-11",
+      "access": "public",
+      "notes": "Открыта. Есть разные списки по годам, включая уже опубликованный 2027. Для 2026 сохранено именно Edition 6; 2027 не подменяет текущий год.",
+      "local_file": null
+    },
+    {
+      "id": "TR20",
+      "title": "CBAM quarterly report XSD/stypes",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/b473e58d-655b-4d21-a4ef-144d48e9877a_en?filename=CBAM%20XSD%20version%2018.30.zip",
+      "kind": "official_schema",
+      "version_or_date": "18.30; 2024-09-10",
+      "access": "public_downloaded",
+      "notes": "Архивная transitional XSD, не definitive annual schema.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-quarterly-xsd-v18.30.zip"
+    },
+    {
+      "id": "TR21",
+      "title": "CBAM quarterly importer sample",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/e26f421b-4825-4c03-ba0a-5d2e3e6278e4_en?filename=CBAM_Quarterly_Report_sample_file_for_importer_ver1.3.0.0.zip",
+      "kind": "official_filled_example",
+      "version_or_date": "1.3.0.0; 2024-09-12",
+      "access": "public_downloaded",
+      "notes": "Официальный учебный ZIP: export.xml и mock supporting documents. XML содержит Q2/2024 и демонстрационные реквизиты. Не универсальный образец; совместимость с XSD 18.30 ещё не проверена.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-quarterly-importer-sample-v1.3.0.0.zip"
+    },
+    {
+      "id": "TR22",
+      "title": "CBAM quarterly report structure",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/d3cc400c-ce53-43df-87ed-2b4bcaed4bb9_en?filename=Report%20Structure%20ver%2018.30.xlsx",
+      "kind": "official_schema_workbook",
+      "version_or_date": "18.30; 2024-09-10",
+      "access": "public_downloaded",
+      "notes": "Архивный справочник fields/обязательности/code lists; 33 sheets, открывается.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-quarterly-structure-v18.30.xlsx"
+    },
+    {
+      "id": "TR23",
+      "title": "CBAM communication template for installations",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/2c15cd0e-2447-4ef8-ab70-68b80b66ede8_en?filename=CBAM%20Communication%20template%20for%20installations_en_20241213.xlsx",
+      "kind": "official_form",
+      "version_or_date": "2024-12-13; webpage 2024-12-18",
+      "access": "public_downloaded",
+      "notes": "19 sheets. Transitional supplier communication workbook; использовать только как исторический структурный ориентир и не как annual declaration за 2026.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-communication-template-20241213.xlsx"
+    },
+    {
+      "id": "TR24",
+      "title": "CBAM communication template: sector examples",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/8d00a979-e57d-4e53-a11f-8b01370236a9_en?filename=Communication-template-examples.zip",
+      "kind": "official_filled_examples",
+      "version_or_date": "2024-06-20",
+      "access": "public_download_failed",
+      "notes": "Ссылка найдена в открытой TR08; 429, затем premature response. Две попытки исчерпаны, ZIP не сохранён. Сам архив: illustrative sector examples, не нормативный эталон definitive.",
+      "local_file": null
+    },
+    {
+      "id": "TR25",
+      "title": "CBAM Guidance No. 2: quick guide non-EU operators",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/91e1056c-4524-4705-aaa7-e25c1439a87a_en?filename=Guidance%20No.%202%20-%20Quick%20guide%20for%20non-EU%20operators%20on%20CBAM%20implementation.pdf",
+      "kind": "official_guidance",
+      "version_or_date": "2026-08-14",
+      "access": "public_downloaded",
+      "notes": "Definitive period; методический ориентир, не обязательный бланк.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-guidance-2-operators-20260814.pdf"
+    },
+    {
+      "id": "TR26",
+      "title": "CBAM Guidance No. 3: methods for embedded emissions",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/29b9eec7-1a4b-4eb6-ab85-96a0c9e35fd0_en?filename=Guidance%20No.%203%20-%20CBAM%20methods%20for%20the%20calculation%20of%20emissions%20embedded%20in%20goods.pdf",
+      "kind": "official_guidance_with_examples",
+      "version_or_date": "2026-08-14",
+      "access": "public_downloaded",
+      "notes": "147 pages; non-binding. Monitoring plan, boundaries, production processes, source streams, precursors; примеры/структуры иллюстративны.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-guidance-3-methods-20260814.pdf"
+    },
+    {
+      "id": "TR27",
+      "title": "CBAM default values definitive period, corrected",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/1c05d211-80cb-4aaa-8ef0-e08005a95d7e_en?filename=DV%20correcting%20act_final%20update_06.08.xlsx",
+      "kind": "official_reference_data",
+      "version_or_date": "page 2026-08-10; filename 2026-08-06",
+      "access": "public_downloaded",
+      "notes": "Информационный Excel; юридически обязательны 2025/2621 + correcting 2026/1740 из TR02. Не отчёт и не расчёт пользователя.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-default-values-20260810.xlsx"
+    },
+    {
+      "id": "TR28",
+      "title": "CBAM benchmarks definitive period",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/9877523c-2a02-4926-a211-aefae7cf6d0d_en?filename=CBAM%20Benchmarks_20260206.xlsx",
+      "kind": "official_reference_data",
+      "version_or_date": "file 2026-02-06; page 2026-02-13",
+      "access": "public_downloaded",
+      "notes": "Информационная таблица benchmarks; юридический источник TR05, не бесплатные allowances импортёру.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-benchmarks-20260206.xlsx"
+    },
+    {
+      "id": "TR29",
+      "title": "CBAM Questions and Answers",
+      "publisher": "European Commission, DG TAXUD",
+      "url": "https://taxation-customs.ec.europa.eu/document/download/013fa763-5dce-4726-a204-69fec04d5ce2_en?filename=CBAM_Questions%20and%20Answers.pdf",
+      "kind": "official_guidance",
+      "version_or_date": "2026-05-28",
+      "access": "public_downloaded",
+      "notes": "63 pages; объясняет сроки, thresholds, certificates, calculations; возможные редакционные неточности (например квартальная дата 31 October) не превращать в автоматическое правило без сверки закона.",
+      "local_file": "docs/report-reference/assets/trade-transport/cbam-faq-20260528.pdf"
+    },
+    {
+      "id": "TR30",
+      "title": "EU ETS Template 4: Annual Emissions Report installations",
+      "publisher": "European Commission, DG CLIMA",
+      "url": "https://climate.ec.europa.eu/document/download/ef2f9250-ae8b-48d9-99c8-378703f369f8_en?filename=policy_ets_monitoring_t4_aer_installations_en.xlsx",
+      "kind": "official_form",
+      "version_or_date": "2026-02-09",
+      "access": "public_downloaded",
+      "notes": "19 sheets, 4.06 MB, workbook opens; A–J structured AER. Национальный authority может использовать свою версию/ERT.",
+      "local_file": "docs/report-reference/assets/trade-transport/ets-aer-installations-20260209.xlsx"
+    },
+    {
+      "id": "TR31",
+      "title": "EU ETS/Swiss ETS/CORSIA Template 5: aircraft AER",
+      "publisher": "European Commission, DG CLIMA",
+      "url": "https://climate.ec.europa.eu/document/download/4a327569-5092-4d55-a457-530a5a4eb487_en?filename=t5_aer_aircraft_en.xlsx",
+      "kind": "official_form",
+      "version_or_date": "2026-01-23",
+      "access": "public_downloaded",
+      "notes": "17 sheets, включая CORSIA emissions/fuels; разделять границы режимов. Это EU reporting context, не универсальный ICAO filing format.",
+      "local_file": "docs/report-reference/assets/trade-transport/ets-corsia-aircraft-aer-20260123.xlsx"
+    },
+    {
+      "id": "TR32",
+      "title": "EU ETS exemplar verification report: installation",
+      "publisher": "European Commission, DG CLIMA",
+      "url": "https://climate.ec.europa.eu/document/download/84c3bff8-0ba4-4657-a594-c8430597f115_en?filename=examplar_avr_verification_installations_en.pdf",
+      "kind": "official_filled_example",
+      "version_or_date": "дата файла отдельно не подтверждена; index checked 2026-10-11",
+      "access": "public_downloaded",
+      "notes": "Учебный заполненный пример верификатора, не годовой emissions report и не реальное заключение по клиенту.",
+      "local_file": "docs/report-reference/assets/trade-transport/ets-installation-verification-exemplar.pdf"
+    },
+    {
+      "id": "TR33",
+      "title": "ICAO emissions report operator to State",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/sites/default/files/environmental-protection/CORSIA/Documents/Standardized%20templates%20-%202025/ETM-Volume-IV-Appendix-1.2-ER-template_ETM-Vol-IV-4th-ed.xlsx",
+      "kind": "official_form",
+      "version_or_date": "ETM Vol IV 4th ed., 2025",
+      "access": "public_downloaded",
+      "notes": "8 sheets: identity, basic info, fleet, density, reporting, State pairs, aerodrome pairs, data gaps. Не CCR upload.",
+      "local_file": "docs/report-reference/assets/trade-transport/corsia-emissions-report-etm4.xlsx"
+    },
+    {
+      "id": "TR34",
+      "title": "ICAO emissions monitoring plan",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/sites/default/files/environmental-protection/CORSIA/Documents/Standardized%20templates%20-%202025/ETM-Volume-IV-Appendix-1.1-EMP-template_ETM-Vol-IV-4th-ed.xlsx",
+      "kind": "official_form",
+      "version_or_date": "ETM Vol IV 4th ed., 2025",
+      "access": "public_downloaded",
+      "notes": "11 sheets: versions/identification/fleet/methods/data management; approval State required.",
+      "local_file": "docs/report-reference/assets/trade-transport/corsia-monitoring-plan-etm4.xlsx"
+    },
+    {
+      "id": "TR35",
+      "title": "ICAO verification report",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/sites/default/files/environmental-protection/CORSIA/Documents/Standardized%20templates%20-%202025/ETM-Volume-IV-Appendix-1.6-VR-template_ETM-Vol-IV-4th-ed.xlsx",
+      "kind": "official_form",
+      "version_or_date": "ETM Vol IV 4th ed., 2025",
+      "access": "public_downloaded",
+      "notes": "10 sheets. Заполняется верификатором; генерация не даёт verified status.",
+      "local_file": "docs/report-reference/assets/trade-transport/corsia-verification-report-etm4.xlsx"
+    },
+    {
+      "id": "TR36",
+      "title": "CORSIA States for Chapter 3 State Pairs, Edition 6",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/sites/default/files/sp-files/environmental-protection/CORSIA/Documents/CORSIA-States-for-Chapter-3-State-Pairs_6Ed_web.pdf",
+      "kind": "official_applicability_list",
+      "version_or_date": "2026 reporting year",
+      "access": "public_downloaded",
+      "notes": "4 pages; 2026 state-pair applicability, не 2027 list.",
+      "local_file": "docs/report-reference/assets/trade-transport/corsia-state-pairs-2026-ed6.pdf"
+    },
+    {
+      "id": "TR37",
+      "title": "CORSIA Frequently Asked Questions",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/sites/default/files/environmental-protection/CORSIA/CORSIA_FAQs_Apr2024.pdf",
+      "kind": "official_guidance",
+      "version_or_date": "2024-04",
+      "access": "public_downloaded",
+      "notes": "83 pages; Q3.19 scope thresholds, Q3.64 timing, Q3.65 route scope. Срок 30 April перепроверен TR41; новые поправки сверить TR18.",
+      "local_file": "docs/report-reference/assets/trade-transport/corsia-faq-202404.pdf"
+    },
+    {
+      "id": "TR38",
+      "title": "THETIS-MRV webinar: monitoring plan structure",
+      "publisher": "EMSA",
+      "url": "https://www.emsa.europa.eu/we-do/digitalisation/maritime-monitoring/download/7764/5154/23.html",
+      "kind": "official_training_example",
+      "version_or_date": "2024-03-05",
+      "access": "public_downloaded",
+      "notes": "10 slides, slide 7 maps Annex I A–F to THETIS. Учебный UI/process reference; не заполненный annual report.",
+      "local_file": "docs/report-reference/assets/trade-transport/mrv-thetis-monitoring-plan-training-20240305.pdf"
+    },
+    {
+      "id": "TR39",
+      "title": "EU ETS and MRV Maritime: General guidance for shipping companies",
+      "publisher": "European Commission, DG CLIMA",
+      "url": "https://climate.ec.europa.eu/document/download/31875b4f-39b9-4cde-a4e2-fbb8f65ee703_en?filename=policy_transport_shipping_gd1_maritime_en.pdf",
+      "kind": "official_guidance",
+      "version_or_date": "2025-11-18 updated version",
+      "access": "public_downloaded",
+      "notes": "125 pages; найден через EMSA. Более свежий guide имеет приоритет над устаревшими FAQ по интерпретации, но не над законом.",
+      "local_file": "docs/report-reference/assets/trade-transport/mrv-ets-general-guidance.pdf"
+    },
+    {
+      "id": "TR40",
+      "title": "Assembly Resolution A42-22: CORSIA",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/sites/default/files/environmental-protection/Assembly42/Resolution-A42-22_CORSIA.pdf",
+      "kind": "official_resolution",
+      "version_or_date": "42nd Assembly 2025",
+      "access": "public_downloaded",
+      "notes": "7 pages, фазирование и route-based offsetting; не заменяет национальное внедрение/SARPs.",
+      "local_file": "docs/report-reference/assets/trade-transport/corsia-resolution-a42-22.pdf"
+    },
+    {
+      "id": "TR41",
+      "title": "CORSIA newsletter: 2026 implementation deadlines",
+      "publisher": "ICAO",
+      "url": "https://www.icao.int/sites/default/files/environmental-protection/CORSIA/Newsletter/CORSIA-Newsletter_Feb-2026_v5.pdf",
+      "kind": "official_current_guidance",
+      "version_or_date": "2026-02",
+      "access": "public_downloaded",
+      "notes": "Публично доступен на ICAO site. Page 2 подтверждает operator ER/VR deadline 2026-04-30 за 2025, States 2026-07-31.",
+      "local_file": "docs/report-reference/assets/trade-transport/corsia-deadlines-newsletter-202602.pdf"
+    },
+    {
+      "id": "TR42",
+      "title": "THETIS-MRV monitoring plan: reference to tables of legal acts",
+      "publisher": "EMSA",
+      "url": "https://www.emsa.europa.eu/thetis-mrv/download/7902/5281/23.html",
+      "kind": "official_form_crosswalk",
+      "version_or_date": "дата PDF не указана; linked FuelEU integration 2024",
+      "access": "public_downloaded",
+      "notes": "3 pages, реально скачан и визуально проверен: crosswalk MRV/FuelEU. Не сами annual report формы; разделяет общие и специальные поля.",
+      "local_file": "docs/report-reference/assets/trade-transport/mrv-monitoring-plan-legal-template-crosswalk.pdf"
+    }
+  ],
+  "reports": [
+    {
+      "code": "CBAM",
+      "family": "CBAM",
+      "classification": "internal_workpaper",
+      "normative_status": "Пользовательский narrative importer summary; самостоятельной обязательной формы с этим названием нет.",
+      "applicability": "CN/TARIC и непреференциальное происхождение; роль импортёра/indirect representative/operator; режим и год; exempt origins; суммарная годовая net mass охваченных cement/iron-steel/aluminium/fertilisers по импортёру. 50 t исключение не распространяется на electricity/hydrogen. [TR01, TR29]",
+      "deliverable": "Ненормативный PDF-summary с сопоставлением к годовой декларации; подача через CBAM Registry отдельно. [TR07]",
+      "source_ids": [
+        "TR01",
+        "TR02",
+        "TR06",
+        "TR07",
+        "TR25",
+        "TR26",
+        "TR29",
+        "TR23"
+      ],
+      "required_inputs": [
+        "Режим/год/роль/товары и applicability evidence [TR01, TR29]",
+        "Количество и units, installation/process/year, direct и применимые indirect emissions, actual/default provenance [TR25, TR26]"
+      ],
+      "validation_rules": [
+        "Норма: import year >=2026 → definitive; Q4 2025 и прежние периоды → transitional [TR01, TR06]",
+        "UX: суммы PDF сверять с наборами для реестра; статус draft/verified/submitted хранить отдельно [TR07]"
+      ],
+      "human_review": [
+        "Подтверждены ли охват CN, происхождение и назначение summary? [TR29]",
+        "Методология CBAM проверена отдельно от cradle-to-grave PCF? [TR26]"
+      ],
+      "example_source_ids": [
+        "TR23",
+        "TR26"
+      ],
+      "example_status": "partial_reference",
+      "example_notes": "TR23 — старый supplier form; TR26 — текущая методика, а не образец обязательного summary.",
+      "ui_warnings": [
+        "Подготовленный CBAM-пакет не означает принятие реестром или положительную верификацию. [TR07, TR26]"
+      ],
+      "implementation_gaps": [
+        "generated/cbam.ts требует quarter, certificates used и building modules независимо от режима; quantity tonnes optional.",
+        "Нужны режим/роль/год/применимость и условные поля; нормативная готовность не доказана массивом fields."
+      ]
+    },
+    {
+      "code": "CBAM_REPORT",
+      "family": "CBAM",
+      "classification": "regulated",
+      "normative_status": "2026+: annual CBAM declaration. Quarterly report относится к transitional 2023–2025; название шаблона устарело.",
+      "applicability": "CN/TARIC и непреференциальное происхождение; роль импортёра/indirect representative/operator; режим и год; exempt origins; суммарная годовая net mass охваченных cement/iron-steel/aluminium/fertilisers по импортёру. 50 t исключение не распространяется на electricity/hydrogen. [TR01, TR29]",
+      "deliverable": "2026+: годовая декларация authorised declarant через CBAM Registry с данными goods/emissions/certificates и verification evidence для actual data. Первый срок 30.09.2027 за 2026; текущая definitive upload schema не подтверждена. Исторически: quarterly XML/ZIP transitional registry. [TR07, TR08, TR29]",
+      "source_ids": [
+        "TR01",
+        "TR02",
+        "TR03",
+        "TR04",
+        "TR06",
+        "TR07",
+        "TR08",
+        "TR20",
+        "TR21",
+        "TR22",
+        "TR25",
+        "TR26",
+        "TR29",
+        "TR05"
+      ],
+      "required_inputs": [
+        "Importer EORI, authorised account, legal representation, import year, declarations/quantities/origin/CN [TR07, TR29]",
+        "Installation/operator, production periods/processes/precursors; methodology and actual/default selector by applicable goods [TR25, TR26]",
+        "Embedded emissions, carbon price deduction evidence, free-allocation adjustment, certificates due; actual-values verifier evidence [TR05, TR29]"
+      ],
+      "validation_rules": [
+        "Норма: annual first due 2027-09-30 for 2026 imports, не quarterly filing и не старое 31 May [TR08, TR29]",
+        "Норма: transitional reports не требуют purchases/surrender certificates [TR06]",
+        "Норма: actual/default, production functional unit и Annex II treatment отделить от generic product PCF [TR25, TR26]",
+        "UX: не применять XSD TR20 как definitive annual schema; подтвердить формат/версию в реестре [TR06, TR07]"
+      ],
+      "human_review": [
+        "Установлены право подачи и национальный authority, CN scope/exempt origin/threshold, completeness annual import register? [TR07, TR29]",
+        "Аккредитованный verifier и reviewer должны проверить actual-value chain, boundaries и carbon price evidence. [TR25, TR26]"
+      ],
+      "example_source_ids": [
+        "TR20",
+        "TR21",
+        "TR22"
+      ],
+      "example_status": "historical_official_sample_current_format_gap",
+      "example_notes": "Получены реальные XSD, structure XLSX, importer XML ZIP 2024. Они пригодны для исторического режима; definitive annual образец/схема не получены.",
+      "ui_warnings": [
+        "Supplier communication и registry declaration — разные результаты; применимый акт и Annex указывать явно. [TR06, TR26]",
+        "Не смешивать периодичность декларации с учётом сертификатов и историческим transitional regime. [TR06, TR29]"
+      ],
+      "implementation_gaps": [
+        "generated/cbam_report.ts: quarter required, authorised ID optional, goods quantity optional, unrelated building/PCF fields required.",
+        "Нет подтверждённого schema mapping к definitive declaration и end-to-end принятия в registry."
+      ],
+      "historical_findings": [
+        "До CATALOG-01: UI Official Annex IV filing вводит в заблуждение: ссылка на Annex без указания акта неоднозначна; supplier communication и registry declaration различаются. [TR06, TR26]",
+        "До CATALOG-01: UI certificates each quarter ошибочно объединяет режимы и баланс сертификатов с периодичностью декларации. [TR06, TR29]",
+        "До CATALOG-01: user-facing.ts: title Quarterly Declaration, subtitle transitional, useWhen certificates each quarter."
+      ]
+    },
+    {
+      "code": "CBAM_DATA_PACKAGE",
+      "family": "CBAM",
+      "classification": "internal_workpaper",
+      "normative_status": "Собственный supplier review profile cbam-supplier-review/1.0 реализован как internal workpaper. Он поддерживает подготовку данных, но не является statutory declaration, обязательным operator emissions report/summary или подтверждением верификации. Готовность означает комплектность для проверки получателем, а не юридическую готовность. [TR25, TR26]",
+      "applicability": "Реализованный профиль: один продукт, одна производящая установка, один календарный год производства начиная с 2026; фактические даты покрытия не позднее даты проверки, неполный год явно provisional/YTD. CN проверяется только на восемь цифр. Юридическую применимость CBAM, CN/TARIC, происхождение, исключения, роль импортёра/представителя/оператора и 50 t порог необходимо устанавливать отдельно; это не критерий автоматического освобождения поставщика. [TR01, TR25, TR29]",
+      "deliverable": "Реализован собственный downloadable supplier REVIEW ZIP: читаемое HTML-представление, data.json, values.csv, evidence.csv и README.txt; active values, ссылки на доказательства, предупреждения, период и версия набора данных. Это не официальный XLSX, обязательная форма или отправка через O3CI. Guided input, сохранение черновика и проверки находятся в [core profile](../../../src/lib/cbam/supplier-package.ts); [экспорт](../../../src/lib/cbam/supplier-package-export.ts); [контракт и границы](../CBAM_SUPPLIER_PACKAGE_CONTRACT.md). Полные monitoring plan/operator report/verification materials остаются внешними доказательствами, которые должны соответствовать своему назначению. [TR07, TR25, TR26]",
+      "source_ids": [
+        "TR02",
+        "TR04",
+        "TR07",
+        "TR23",
+        "TR25",
+        "TR26",
+        "TR29",
+        "TR01",
+        "TR24",
+        "TR27"
+      ],
+      "required_inputs": [
+        "Профиль продукта: получатель, составитель, роль поставщика; для trader отдельное юридическое наименование поставщика; оператор/контакт, имя/адрес/страна установки, продукт, CN8 и заявленный статус проверки классификации. Это минимальные поля нашей подготовки, а не универсальный statutory field list. [TR25, TR26]",
+        "Год производства >=2026, фактическое начало/конец покрытия, явное описание границы процесса/атрибуции и уже учтённых релевантных прекурсоров. Полная нормативная методика требует дополнительных исходных данных и отраслевых условий; профиль их не выводит. [TR25, TR26]",
+        "Сообщённый direct SEE в tCO2e/t goods, actual/default/mixed и ID источника; indirect отдельно reported либо not_applicable с обоснованием. Unknown блокирует готовность. Для default/mixed каждого активного компонента — sourceId, точная версия, строка таблицы и контекст markup. Необязательная масса партии в тоннах. [TR26, TR27]",
+        "Реестр evidence: id/title/reference/version/period/owner/disclosure; заявленный verification status, условно verifier и evidence ID. Это ссылки, а не загруженные или проверенные приложением документы. [TR07, TR25]"
+      ],
+      "validation_rules": [
+        "Норма: operator reporting calendar year; применение actual values требует подходящей аккредитованной верификации. Наш частичный/YTD review package не заменяет годовой operator report и не доказывает допустимость actual values. [TR25, TR26]",
+        "Реализованные UX/инженерные проверки: комплектность активных полей, валидные даты в указанном году не позднее сегодня, CN8 syntax, поддерживаемая единица, конечные неотрицательные числа, zero != blank/unknown, уникальные evidence IDs и разрешение ссылок. Это наши gates подготовки, а не подтверждение нормативного расчёта. [TR25, TR26]",
+        "Реализованная арифметика: optional lot tonnes × отдельно сообщённый direct SEE; независимо lot tonnes × reported indirect SEE. Нет direct+indirect total, повторного сложения прекурсоров, вычисления SEE, выбора/коррекции defaults или пересчёта функциональных единиц. [TR26, TR27]",
+        "Реализованный review gate допускает actual without declared verification с явным предупреждением; declared_verified остаётся заявлением составителя. Неактивные условные строки сохраняются в draft и исключены из активных export assertions. Неоднозначные scalar datapoints блокируются. [TR25, TR26]"
+      ],
+      "human_review": [
+        "Подтверждены CN/юридическая применимость, период, границы процесса, производственные выходы и атрибуция? Можно ли восстановить SEE и chain of precursors из внешних первичных материалов без двойного счёта? [TR01, TR26]",
+        "Применимы ли indirect treatment, exact default table/version/row/year/country и markup; соответствуют ли заявленная верификация, аккредитация и scope фактической установке/товару/периоду? [TR25, TR26, TR27]",
+        "Согласованы передача коммерчески чувствительных сведений и права recipient/O3CI? Клиент принял именно наш review format и достаточность внешних evidence? Такая приёмка пока не подтверждена. [TR07, TR25]"
+      ],
+      "example_source_ids": [
+        "TR23",
+        "TR24",
+        "TR26"
+      ],
+      "example_status": "own_review_profile_implemented_official_form_and_client_acceptance_gap",
+      "example_notes": "Собственный review profile реализован: синтетические regression fixtures и локальный инженерный пример фактически скачанного browser ZIP приведены ниже. Они не являются независимым нормативным golden case или подтверждением приёмки клиентом. Локальный Communication XLSX 2024 исторический/transitional и не подменяет definitive-period mandatory operator form. Актуальный полный mandatory operator workbook не получен. Current guidance 3 содержит методические примеры; ни они, ни наш ZIP не являются заверенным клиентским package. Исторический illustrative filled sector ZIP не скачался за две попытки.",
+      "ui_warnings": [
+        "Own supplier review ZIP != filed declaration, mandatory operator report, verification statement or official template. BOM/invoices сами по себе не универсально достаточны. [TR07, TR25, TR26]",
+        "Ready for recipient review не означает legal-ready: actual/default/mixed, CN review и verification status заявлены пользователем; приложение не подтверждает методику, аккредитацию или точность исходных документов. Partial-year values provisional. [TR25, TR26]"
+      ],
+      "implementation_gaps": [
+        "Текущая обязательная definitive-period operator form/summary и полное соответствие её структуре не реализованы; исторический 2024 workbook нельзя использовать как доказательство такого соответствия. O3CI/Registry submission отсутствует. [TR07, TR25]",
+        "Нет подтверждённой внешней/клиентской приёмки собственного формата и независимого нормативного golden calculation. Синтетические unit/route/export tests подтверждают программное поведение в своём scope, а не compliance. [TR25, TR26]",
+        "Профиль хранит ссылки на evidence; retrieval, проверка содержимого/прав, методический вывод SEE, goods-specific scope, accreditation check, функциональные единицы и специальные правила electricity не реализованы. Необходима проверка человеком. [TR25, TR26]"
+      ],
+      "examples_summary": {
+        "description": "Синтетический инженерный пример собственного review profile: ZIP фактически скачан через браузер из приложения 11 октября 2026 года. Сохранены точный входной dataset и распакованные выходы. Для этой фикстуры масса 12 t, сообщённые direct SEE 2.5 и indirect SEE 0.5 tCO2e/t дают отдельно 30 и 6 tCO2e; данные частичного периода actual остаются заявленными и непроверенными. Это проверка программного поведения, не официальный CBAM sample, независимый нормативный golden case или клиентская приёмка. Статус golden test: не утверждён.",
+        "artifacts": [
+          {
+            "label": "Скачанный review ZIP",
+            "path": "docs/qa/supplier-package-2026-10-11/downloaded-package.zip"
+          },
+          {
+            "label": "Читаемый HTML-пример",
+            "path": "docs/qa/supplier-package-2026-10-11/example/summary.html"
+          },
+          {
+            "label": "Точные входы — input-dataset.json",
+            "path": "docs/qa/supplier-package-2026-10-11/input-dataset.json"
+          },
+          {
+            "label": "Машиночитаемый результат — data.json",
+            "path": "docs/qa/supplier-package-2026-10-11/example/data.json"
+          },
+          {
+            "label": "Активные значения — values.csv",
+            "path": "docs/qa/supplier-package-2026-10-11/example/values.csv"
+          },
+          {
+            "label": "Ссылки на доказательства — evidence.csv",
+            "path": "docs/qa/supplier-package-2026-10-11/example/evidence.csv"
+          },
+          {
+            "label": "Описание содержимого и ограничений — README.txt",
+            "path": "docs/qa/supplier-package-2026-10-11/example/README.txt"
+          },
+          {
+            "label": "Проверяемые утверждения — verify-artifact.py",
+            "path": "docs/qa/supplier-package-2026-10-11/verify-artifact.py"
+          }
+        ]
+      }
+    },
+    {
+      "code": "CBAM_PREP_METHOD",
+      "family": "CBAM",
+      "classification": "internal_workpaper",
+      "normative_status": "Internal preparation/QA checklist. Не statutory filing, не аккредитованная верификация.",
+      "applicability": "CN/TARIC и непреференциальное происхождение; роль импортёра/indirect representative/operator; режим и год; exempt origins; суммарная годовая net mass охваченных cement/iron-steel/aluminium/fertilisers по импортёру. 50 t исключение не распространяется на electricity/hydrogen. [TR01, TR29]",
+      "deliverable": "Checklist/method statement c applicability decision, monitoring gaps, владельцами/сроками и ссылками на evidence; при необходимости отдельный monitoring plan. [TR25, TR26]",
+      "source_ids": [
+        "TR01",
+        "TR02",
+        "TR25",
+        "TR26",
+        "TR29"
+      ],
+      "required_inputs": [
+        "Role/year/CN/threshold decision, process map, monitoring methods, data gaps, evidence inventory [TR25, TR26]",
+        "UX: owner, deadline, status и основание закрытия каждой задачи [TR25]"
+      ],
+      "validation_rules": [
+        "Норма: подходы к измерению/вычислению, источникам/precursors и boundaries соответствуют применимому definitive method [TR26]",
+        "UX: missing data/uncertainty остаётся явно unresolved, не synthetic zero [TR25, TR26]"
+      ],
+      "human_review": [
+        "Подтверждена ли методика профильным специалистом и готовы ли данные к verifier review? [TR26]"
+      ],
+      "example_source_ids": [
+        "TR25",
+        "TR26"
+      ],
+      "example_status": "official_guidance_only_no_mandated_form",
+      "example_notes": "Нет универсального обязательного CBAM Prep Checklist; текущая guidance 2 даёт последовательность подготовки, guidance 3 — мониторинг.",
+      "ui_warnings": [
+        "Внутренняя QA не создаёт approved monitoring plan или verification opinion. [TR25, TR26]"
+      ],
+      "implementation_gaps": [
+        "generated/cbam_prep_method.ts требует certificates и verification results до завершения подготовки.",
+        "Нет first-class task owner/due/evidence/acceptance mapping; checklist title не соответствует плоскому набору emissions fields."
+      ]
+    },
+    {
+      "code": "CBAM_ALLOWANCES",
+      "family": "CBAM",
+      "classification": "internal_workpaper",
+      "normative_status": "Внутренний реестр/прогноз CBAM certificates, не EU ETS allowances и не новая statutory форма.",
+      "applicability": "CN/TARIC и непреференциальное происхождение; роль импортёра/indirect representative/operator; режим и год; exempt origins; суммарная годовая net mass охваченных cement/iron-steel/aluminium/fertilisers по импортёру. 50 t исключение не распространяется на electricity/hydrogen. [TR01, TR29]",
+      "deliverable": "Ledger и forecast обязательств с reconciliation к registry; certificates приобретаются с 01.02.2027, обязательства по импорту 2026 погашаются до 30.09.2027. [TR29]",
+      "source_ids": [
+        "TR01",
+        "TR05",
+        "TR07",
+        "TR28",
+        "TR29",
+        "TR02"
+      ],
+      "required_inputs": [
+        "Annual imports и embedded emissions, actual/default route, benchmarks/adjustment, carbon-price-paid evidence [TR05, TR29]",
+        "Certificate transactions, import quarter/year, applicable published prices, purchases/surrender/repurchase/cancellation and account balances [TR01, TR29]"
+      ],
+      "validation_rules": [
+        "Норма: TR05 free allocation adjustment уменьшает surrender quantity; не выдаёт бесплатные CBAM allowances [TR05]",
+        "Норма: CBAM certificates нельзя передавать другим лицам или использовать как EU ETS allowances [TR29]",
+        "UX: forecast отделён от purchased/available/surrendered; quarterly balance control с 2027 отделён от annual declaration [TR07, TR29]"
+      ],
+      "human_review": [
+        "Сверены ли registry balance и операции, formula/benchmark/year, carbon price deduction и корректировки? [TR05, TR29]",
+        "Точный календарь 50%-контроля и новые акты о carbon price deduction перепроверены по действующему праву до автоматизации? [TR02, TR29]"
+      ],
+      "example_source_ids": [
+        "TR28",
+        "TR29"
+      ],
+      "example_status": "reference_data_only_no_mandated_ledger",
+      "example_notes": "Benchmarks XLSX — официальный справочник, не ledger template; обязательный универсальный ledger не обнаружен.",
+      "ui_warnings": [
+        "Не отображать forecast как приобретённые сертификаты или free allocation entitlement. [TR05, TR29]"
+      ],
+      "implementation_gaps": [
+        "Поле cbam_free_allowances_quantity остаётся семантически неоднозначным; корректировка free allocation не равна бесплатной выдаче сертификатов импортёру. [TR05, TR29]",
+        "Нет журналов transactions/reconciliation в плоском шаблоне, purchase/use required независимо от даты."
+      ],
+      "historical_findings": [
+        "До CATALOG-01: Переименовать Allowance Ledger в CBAM Certificate Register/Forecast. [TR05, TR29]",
+        "До CATALOG-01: user-facing.ts useWhen предлагал Plan free allocations; эта формулировка пользовательского каталога удалена. Семантика поля cbam_free_allowances_quantity остаётся текущим пробелом."
+      ]
+    },
+    {
+      "code": "CBAM_MONITORING_ALERT",
+      "family": "CBAM",
+      "classification": "internal_workpaper",
+      "normative_status": "Сервисное уведомление о полноте данных/сроках; не официальный regulator alert или statutory report.",
+      "applicability": "CN/TARIC и непреференциальное происхождение; роль импортёра/indirect representative/operator; режим и год; exempt origins; суммарная годовая net mass охваченных cement/iron-steel/aluminium/fertilisers по импортёру. 50 t исключение не распространяется на electricity/hydrogen. [TR01, TR29]",
+      "deliverable": "Watchlist незакрытых данных/методов/изменений/сроков со ссылкой на затронутые товары/установки и evidence. [TR07, TR25, TR26]",
+      "source_ids": [
+        "TR01",
+        "TR02",
+        "TR07",
+        "TR25",
+        "TR26",
+        "TR29"
+      ],
+      "required_inputs": [
+        "Role/year/methodology version, supplier requests/status, missing parameters, applicability/threshold state [TR07, TR25, TR26]",
+        "UX: rule ID, severity, affected item, owner, due date, observed_at, evidence [TR25]"
+      ],
+      "validation_rules": [
+        "Норма: различать monitoring/verification requirements по режиму и actual/default; отсутствие ответа supplier не делает любой fallback допустимым [TR26]",
+        "UX: duplicate alerts deduplicate по item/rule/version; закрывать по evidence, показывать freshness [TR07, TR25]"
+      ],
+      "human_review": [
+        "Подтверждены источник правила, deadline и юридическая значимость alert? [TR02, TR29]"
+      ],
+      "example_source_ids": [
+        "TR25",
+        "TR26"
+      ],
+      "example_status": "official_guidance_only_no_mandated_form",
+      "example_notes": "Нет официальной универсальной формы Monitoring Alert; источники служат базой правил, не оформлением уведомления.",
+      "ui_warnings": [
+        "Не называть внутреннее сообщение предписанием регулятора или доказательством несоответствия без review. [TR07, TR26]"
+      ],
+      "implementation_gaps": [
+        "generated/cbam_monitoring_alert.ts требует полные verified emissions/certificates вместо event/rule/owner/status.",
+        "Нужна версия нормативного правила и handling 2023–2025 vs 2026+."
+      ]
+    },
+    {
+      "code": "EU_ETS",
+      "family": "EU ETS",
+      "classification": "regulated",
+      "normative_status": "Regulated annual emissions reporting; применимость зависит от установки/деятельности и jurisdiction. Разные ветки stationary, aviation, maritime; ETS2 — отдельная система. [TR09, TR10]",
+      "applicability": "Сначала выбрать stationary installation с ETS permit/competent authority либо авиационную/морскую ветку. Не назначать по факту наличия корпоративных Scope 1–3. [TR09, TR10, TR11]",
+      "deliverable": "AER по принятой authority форме/ERT + независимый verification report; allowance surrender отдельной операцией Union Registry. Обычно report до 31 March следующего года, surrender до 30 September; национальные сроки проверять. [TR09]",
+      "source_ids": [
+        "TR09",
+        "TR10",
+        "TR11",
+        "TR30",
+        "TR31",
+        "TR32"
+      ],
+      "required_inputs": [
+        "Permit/installation IDs/operator/year/authority, approved monitoring plan and changes [TR09, TR10]",
+        "Source streams, activity quantities/units, factors, tiers/uncertainty, emissions by relevant gases, fallbacks/data gaps and verifier opinion [TR10, TR30]",
+        "Allowance transactions отдельно от emissions calculation; activity-specific scope and exclusions [TR09, TR31]"
+      ],
+      "validation_rules": [
+        "Норма: approved monitoring plan и applicability sector branch до выбора формы; installation AER не corporate inventory [TR09, TR10]",
+        "Норма: latest authority template, source-stream totals and units, data gaps, verification outcome [TR10, TR30]",
+        "UX: расчётный AER не маркировать Verified автоматически; surrender status не выводится из PDF [TR09, TR32]"
+      ],
+      "human_review": [
+        "Есть ли permit, утверждённый MP, правильные thresholds/exclusions и национальная форма? [TR09, TR10]",
+        "Аккредитованный verifier подтвердил год/полноту/результат; authority принял submission? [TR09, TR32]"
+      ],
+      "example_source_ids": [
+        "TR30",
+        "TR31",
+        "TR32"
+      ],
+      "example_status": "official_forms_and_verifier_example",
+      "example_notes": "Локальные актуальные XLSX для stationary и aviation; отдельный заполненный verification exemplar. Последний не универсальный AER и не подпись по клиенту.",
+      "ui_warnings": [
+        "Каталог обозначает stationary installation; отдельные модели aviation/maritime/ETS2 не подтверждены этим исправлением. [TR09, TR11]"
+      ],
+      "implementation_gaps": [
+        "generated/eu_ets.ts смешивает six ETS totals с RE100/GRESB/BCorp/aviation/Scope2 и не моделирует source-stream AER.",
+        "Реальный verification workflow и фиксация результата независимой проверки остаются необходимым отдельным этапом."
+      ],
+      "historical_findings": [
+        "До CATALOG-01: Рекомендуется ограничить текущий UI stationary scope или добавить отдельный выбор aviation/maritime/ETS2. [TR09, TR11]",
+        "До CATALOG-01: UI verified installation emissions заявляет статус без самого verification workflow."
+      ]
+    },
+    {
+      "code": "EU_MRV",
+      "family": "Maritime MRV / EU ETS",
+      "classification": "regulated",
+      "normative_status": "Regulation 2015/757 as amended; templates 2023/2449. MRV продолжается одновременно с shipping EU ETS, не только до onboarding. [TR11, TR13, TR14]",
+      "applicability": "Cargo/passenger ships >=5000 GT; с 2025 также general cargo 400–<5000 GT и offshore >=400 GT при EEA-related voyages; проверить exclusions, port calls, responsibility and reporting year. ETS охват отдельно. [TR14, TR15, TR39]",
+      "deliverable": "Ship emissions report/partial report + verification; ETS company aggregate report там, где применим; submission THETIS-MRV, document of compliance выдает verifier. Templates Annex I–IV 2023/2449. [TR13, TR14]",
+      "source_ids": [
+        "TR11",
+        "TR12",
+        "TR13",
+        "TR14",
+        "TR15",
+        "TR38",
+        "TR39",
+        "TR42"
+      ],
+      "required_inputs": [
+        "Ship IMO/name/type/GT, company/ISM responsibility, authority, reporting period and approved MP [TR13, TR39]",
+        "Voyages/ports/dates, fuel and emission sources/factors, CO2 CH4 N2O, transport work/distance/cargo/time, data gaps [TR13, TR39]",
+        "Ship transfers/partial periods, verifier report, ETS scope aggregation, derogations and phase-in [TR11, TR14, TR39]"
+      ],
+      "validation_rules": [
+        "Норма: MRV включает CH4/N2O с 2024; maritime ETS включает их с 2026. Не смешивать totals [TR11, TR14]",
+        "Норма: phase-in по emission year 2024/2025/2026 = 40%/70%/100%; surrender следующий год, не занижать MRV emissions этими коэффициентами [TR11]",
+        "Норма: annual ship report к 31 March следующего года; authority может требовать раньше, но не раньше 28 February; company ETS report отдельно [TR14]",
+        "UX: суммировать ship/partial periods без пропуска/дубля при смене company; не применять ETS 50% extra-EEA voyage к gross MRV inventory [TR11, TR39]"
+      ],
+      "human_review": [
+        "Правильно ли определены ship type, GT, voyages/port calls, exemptions и company responsible? [TR39]",
+        "Verifier/authority подтверждают MP, emissions reports/DoC; не смешаны ли MRV, ETS и FuelEU? [TR13, TR39, TR42]"
+      ],
+      "example_source_ids": [
+        "TR13",
+        "TR38",
+        "TR42"
+      ],
+      "example_status": "official_form_online_and_local_crosswalk",
+      "example_notes": "Нормативные бланки в Annexes TR13 проверены онлайн, локально сохранены EMSA structure tutorial и legal-table crosswalk. Полный текущий THETIS annual submission sample/XML не получен.",
+      "ui_warnings": [
+        "MRV шире/параллелен shipping ETS; применимость и результаты этих процессов проверять отдельно. [TR11, TR14]",
+        "THETIS доступен после регистрации; выгрузка сервиса не равна accepted report/DoC. [TR38, TR39]"
+      ],
+      "implementation_gaps": [
+        "generated/eu_mrv.ts: 45 полей, нет ни ship/IMO/GT, ни fuel/voyage/emission methods; обязательны gender pay gap/privacy/SBTi.",
+        "Нужны ship entities, voyage/port model, company responsibility history, gas-specific emissions, actual Annex mappings."
+      ],
+      "historical_findings": [
+        "До CATALOG-01: Удалить обещание prior to ETS onboarding. MRV шире/параллелен ETS. [TR11, TR14]"
+      ]
+    },
+    {
+      "code": "CORSIA",
+      "family": "International aviation",
+      "classification": "regulated",
+      "normative_status": "ICAO SARPs реализуются через государство attribution; reporting и offsetting имеют разную применимость. 2024–2026 first phase; 2027 second phase не применяется досрочно. [TR17, TR36, TR40]",
+      "applicability": "Aeroplane operator international flights: annual CO2 >10000 t от aeroplanes MTOM >5700 kg, с установленными исключениями. Не любой airport/aviation business. MRV независимо от State volunteering; offsetting определяется state pairs/годом и new entrant rules. [TR37, TR40]",
+      "deliverable": "Annual verified operator Emissions Report + Verification Report to State. EMP approved by State; отдельный EUCR при offsetting. Для EU-операторов возможен Template 5 national/EU implementation; CCR — канал State→ICAO. [TR16, TR31, TR33–TR35, TR37]",
+      "source_ids": [
+        "TR16",
+        "TR17",
+        "TR18",
+        "TR19",
+        "TR31",
+        "TR33",
+        "TR34",
+        "TR35",
+        "TR36",
+        "TR37",
+        "TR40",
+        "TR41"
+      ],
+      "required_inputs": [
+        "State attribution/operator identity, monitoring year, fleet/MTOM, flights/state pairs and exclusions [TR33, TR34, TR37]",
+        "Fuel quantity/type/density, approved method/CERT eligibility, route CO2 aggregates and data gaps [TR33, TR34]",
+        "Verifier report; optional eligible-fuel claims with certification and supporting chain; offsetting values only when assigned/eligible [TR35, TR37, TR40]"
+      ],
+      "validation_rules": [
+        "Норма: distinguish MRV scope and offset routes; 2026 use Edition 6 state list, not 2027 list [TR36, TR37, TR40]",
+        "Норма: annual ER/VR deadline 30 April to State; в 2026 это отчёт за 2025. State reports ICAO к 31 July [TR37, TR41]",
+        "Норма: flight/fuel CO2 не corporate CO2e inventory; emissions gaps must be disclosed by relevant form [TR33, TR37]",
+        "UX: eligible fuel/units, new entrant and 3-year offset compliance не смешивать с annual ER; не выдавать credits balance как verification [TR16, TR35, TR40]"
+      ],
+      "human_review": [
+        "Государство attribution/национальный акт, операторские thresholds/exclusions и approved EMP подтверждены? [TR17, TR34, TR37]",
+        "Проверить Amendment 2 (каталог Aug 2026), его дату применения и national implementation до production rules; полный licensed text здесь не получен. [TR18]",
+        "Независимый verifier проверил полноту полётов, топливо/плотность, gaps и eligible fuel evidence? [TR33, TR35, TR37]"
+      ],
+      "example_source_ids": [
+        "TR31",
+        "TR33",
+        "TR34",
+        "TR35"
+      ],
+      "example_status": "official_forms_available_full_standard_paid_gap",
+      "example_notes": "Сохранены 3 ICAO XLSX и EU combined AER. Это пустые стандартные формы, не заверенный заполненный report. Полный Annex 16 с Amendment 2 остаётся paid/registration gap.",
+      "ui_warnings": [
+        "Отрасль aviation сама по себе не доказывает применимость; проверить aeroplane operator и условия выбранного периода. [TR37]",
+        "Generated PDF не ICAO certification и не receipt национального authority. [TR16, TR35]"
+      ],
+      "implementation_gaps": [
+        "generated/corsia.ts: 47 fields, ни одного aviation/corsia-specific поля; требует Scope2/SBTi/taxonomy/waste.",
+        "Нужны fleet/flight/state-pair/method/density/data-gap schema и national filing branch. Check applicability предупреждает о проверке, но не реализует полный расчёт применимости."
+      ],
+      "historical_findings": [
+        "До CATALOG-01: Airlines слишком узко: обязанный aeroplane operator может быть не авиакомпанией; industry aviation слишком широко. [TR37]"
+      ]
+    }
+  ],
+  "findings": [
+    "Исходный сбор охватил 9 generated templates и 9 user-facing записей. CBAM_DATA_PACKAGE теперь переопределён отдельным own review profile cbam-supplier-review/1.0; его работа не подтверждает регуляторную или клиентскую приёмку.",
+    "Classification относится к фактическому deliverable Carbon Report: 4 regulated (CBAM_REPORT, EU_ETS, EU_MRV, CORSIA), 5 internal_workpaper (остальные CBAM). Underlying CBAM law регулирует содержание, но не превращает каждый UI export в обязательную форму.",
+    "Предупреждения о применимости не заменяют проверяемую модель режима/роли/периода, формализованные поля и подтверждение регуляторной приёмки.",
+    "Исходные generated templates содержали нерелевантные обязательные поля. Для CBAM_DATA_PACKAGE эффективный шаблон заменён на 34 поля собственного review profile; исходная массовая required-матрица остальных шаблонов не является доказательством нормативного покрытия.",
+    "Нужен reviewer доступ к актуальным consolidated CBAM acts и licensed ICAO Amendment 2, национальные submission rules. Частично доступный закон не скрыт за статусом complete.",
+    "Архивный CBAM communication example ZIP не скачан после 2 попыток; XSD и XML importer sample сохранены и исследованы, их совместимость отдельно не выполнена.",
+    "Скачивание ограничено 10 MB/file, 30 MB/group, timeout 10+35 s; MIME/signature/ZIP integrity проверены. Manifest сохраняет точные URL, failures, размер и SHA256. Не запускались макросы и не выполнялась подача.",
+    "QA: XLSX открывались read-only, извлечены sheet names; PDF signatures/pages проверены; визуально прочитаны CORSIA FAQ p51 и EMSA crosswalk p1. Эти проверки подтверждают читаемость, не compliance."
+  ],
+  "historical_findings": [
+    "Критические UI исправления предложены, не выполнены: annual CBAM, certificate terminology, parallel MRV/ETS, CORSIA scope gate. Это состояние исходного снимка до CATALOG-01; тексты и предупреждения о применимости впоследствии изменены локально."
+  ]
+}

@@ -1,0 +1,529 @@
+
+> carbonreport@0.1.0 test:sanity
+> node --import tsx --test --test-concurrency=1 src/middleware.test.ts src/lib/auth/jwt.test.ts src/lib/projects/overview-state.test.ts src/lib/data-requests/service.test.ts src/lib/questionnaires/decision-engine/logic.test.ts src/lib/questionnaires/report-template-mapping.test.ts src/app/api/uploads/sign/route.test.ts src/app/api/uploads/relay/route.test.ts src/app/api/auth/login/route.test.ts src/app/api/auth/logout/route.test.ts src/app/api/auth/register/route.test.ts src/app/api/auth/resend-verification/route.test.ts src/app/api/auth/forgot-password/route.test.ts src/app/api/auth/verify-email/[token]/route.test.ts src/lib/sync/queue.test.ts src/lib/server-data/access.test.ts src/app/api/data-requests/bulk/route.test.ts src/app/api/projects/[id]/data-requests/route.test.ts src/app/api/projects/[id]/reports/[reportId]/route.test.ts
+
+TAP version 13
+# Resend not configured. Skipping email send for Reset your Carbon Report password
+# Subtest: returns generic success when user exists
+ok 1 - returns generic success when user exists
+  ---
+  duration_ms: 321.751958
+  ...
+# Subtest: returns same generic success when user does not exist
+ok 2 - returns same generic success when user does not exist
+  ---
+  duration_ms: 1.302041
+  ...
+# Subtest: returns generic success for invalid payloads
+ok 3 - returns generic success for invalid payloads
+  ---
+  duration_ms: 1.02525
+  ...
+# Subtest: returns auth cookies for valid credentials
+ok 4 - returns auth cookies for valid credentials
+  ---
+  duration_ms: 650.570334
+  ...
+# Subtest: rejects invalid credentials
+ok 5 - rejects invalid credentials
+  ---
+  duration_ms: 607.383084
+  ...
+# Subtest: rejects missing users
+ok 6 - rejects missing users
+  ---
+  duration_ms: 0.881792
+  ...
+# Subtest: clears auth cookies on logout
+ok 7 - clears auth cookies on logout
+  ---
+  duration_ms: 4.76725
+  ...
+# Resend not configured. Skipping email send for Verify your Carbon Report email
+# Subtest: creates user, sends verification flow, and returns auth cookies
+ok 8 - creates user, sends verification flow, and returns auth cookies
+  ---
+  duration_ms: 318.10375
+  ...
+# Subtest: rejects duplicate email addresses
+ok 9 - rejects duplicate email addresses
+  ---
+  duration_ms: 1.1375
+  ...
+# Subtest: rejects passwords that fail policy
+ok 10 - rejects passwords that fail policy
+  ---
+  duration_ms: 0.856291
+  ...
+# Resend not configured. Skipping email send for Verify your Carbon Report email
+# Subtest: returns already_verified when user is already verified
+ok 11 - returns already_verified when user is already verified
+  ---
+  duration_ms: 7.210875
+  ...
+# Subtest: returns sent when user is unverified
+ok 12 - returns sent when user is unverified
+  ---
+  duration_ms: 1.85825
+  ...
+# [VerifyEmail] Token received: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLXZlcmlmeSIsInB1cnBvc2UiOiJlbWFpbF92ZXJpZmljYXRpb24iLCJlbWFpbCI6InZlcmlmeUBleGFtcGxlLmNvbSIsImN0eCI6ImMzYmM1ODJmZmZmOGY4ZjUzOTEwZjg4MmNlZTEwZmUwMTYxNTU5NzQwY2I1YWU4MjIyYzhkZWFiYzM3OTNmMDAiLCJqdGkiOiJmYmViN2I3OC1lNmE2LTQ2OWMtYjdhOS1iYzdkMzg2OWI0MzAiLCJpc3MiOiJjYXJib24tcmVwb3J0LXBsYXRmb3JtIiwiaWF0IjoxNzkxNjk1MDU1LCJleHAiOjE3OTE3ODE0NTUsImF1ZCI6ImNhcmJvbi1yZXBvcnQtdXNlcnMifQ.oKdOLoGrowiq9i2edRIIGQFUI3szWaQP_B-0BhnYIW0
+# [VerifyEmail] Claims: {
+#   sub: 'user-verify',
+#   purpose: 'email_verification',
+#   email: 'verify@example.com',
+#   ctx: 'c3bc582ffff8f8f53910f882cee10fe0161559740cb5ae8222c8deabc3793f00',
+#   jti: 'fbeb7b78-e6a6-469c-b7a9-bc7d3869b430',
+#   iss: 'carbon-report-platform',
+#   iat: 1791695055,
+#   exp: 1791781455,
+#   aud: 'carbon-report-users'
+# }
+# [VerifyEmail] Context validated
+# [VerifyEmail] User verified
+# [VerifyEmail] Token received: bad-token
+# [VerifyEmail] Error: JWSInvalid: Invalid Compact JWS
+#     at compactVerify (/private/tmp/carbonreport-qa-runtime/node_modules/jose/dist/node/cjs/jws/compact/verify.js:16:15)
+#     at jwtVerify (/private/tmp/carbonreport-qa-runtime/node_modules/jose/dist/node/cjs/jwt/verify.js:8:58)
+#     at verifyToken (/private/tmp/carbonreport-qa-runtime/src/lib/auth/jwt.ts:123:29)
+#     at verifyEmailVerificationToken (/private/tmp/carbonreport-qa-runtime/src/lib/auth/jwt.ts:145:10)
+#     at GET (/private/tmp/carbonreport-qa-runtime/src/app/api/auth/verify-email/[token]/route.ts:20:26)
+#     at async TestContext.<anonymous> (/private/tmp/carbonreport-qa-runtime/src/app/api/auth/verify-email/[token]/route.test.ts:64:20)
+#     at async Test.run (node:internal/test_runner/test:797:9)
+#     at async Test.processPendingSubtests (node:internal/test_runner/test:526:7) {
+#   code: 'ERR_JWS_INVALID'
+# }
+# Subtest: verifies user and returns JSON success when token is valid
+ok 13 - verifies user and returns JSON success when token is valid
+  ---
+  duration_ms: 332.971292
+  ...
+# Subtest: returns JSON error when token is invalid
+ok 14 - returns JSON error when token is invalid
+  ---
+  duration_ms: 2.473834
+  ...
+# [VerifyEmail] Token received: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLXJlZGlyZWN0IiwicHVycG9zZSI6ImVtYWlsX3ZlcmlmaWNhdGlvbiIsImVtYWlsIjoicmVkaXJlY3RAZXhhbXBsZS5jb20iLCJjdHgiOiI3ZDE0Yjc3NjMxM2Y2MmVjYWMxZjk1MTU0ZThmNjk1M2E1YWMyZjBiM2UxZTRmMWYwZWY0M2E2YzZjYTZkMDc3IiwianRpIjoiNGI0ZTNmMjYtYjc2NS00OWI1LWExMTktYjgxNjNlMDA1MzAwIiwiaXNzIjoiY2FyYm9uLXJlcG9ydC1wbGF0Zm9ybSIsImlhdCI6MTc5MTY5NTA1NSwiZXhwIjoxNzkxNzgxNDU1LCJhdWQiOiJjYXJib24tcmVwb3J0LXVzZXJzIn0.xBhhZVeoRMjoqEw-BpiwLIkyQ36tmT3vOjUjFWPygUI
+# [VerifyEmail] Claims: {
+#   sub: 'user-redirect',
+#   purpose: 'email_verification',
+#   email: 'redirect@example.com',
+#   ctx: '7d14b776313f62ecac1f95154e8f6953a5ac2f0b3e1e4f1f0ef43a6c6ca6d077',
+#   jti: '4b4e3f26-b765-49b5-a119-b8163e005300',
+#   iss: 'carbon-report-platform',
+#   iat: 1791695055,
+#   exp: 1791781455,
+#   aud: 'carbon-report-users'
+# }
+# [VerifyEmail] Context validated
+# [VerifyEmail] User verified
+# Subtest: redirects to verify-email page when HTML flow is used
+ok 15 - redirects to verify-email page when HTML flow is used
+  ---
+  duration_ms: 293.486666
+  ...
+# [data-requests] prepareBulk project=deadline-project took 0.37ms
+# [data-requests] executeBulk project=deadline-project inserts=1 revokes=0 took 0.85ms
+# [data-requests] serializeRequests count=1 took 0.13ms
+# [data-requests] GET /projects/deadline-project/data-requests took 0.41ms
+# Subtest: chosen deadline reaches persistence and is returned by creation, list and page hydration
+ok 16 - chosen deadline reaches persistence and is returned by creation, list and page hydration
+  ---
+  duration_ms: 13.2555
+  ...
+# [data-requests] GET /projects/fresh-project/data-requests took 5.28ms
+# [data-requests] serializeRequests count=1 took 0.08ms
+# [data-requests] reassignRequestsBulk count=1 took 0.55ms
+# [data-requests] GET /projects/fresh-project/data-requests took 0.23ms
+# [data-requests] serializeRequests count=1 took 0.02ms
+# [data-requests] completeRequestsBulk count=1 took 0.09ms
+# [data-requests] GET /projects/fresh-project/data-requests took 0.26ms
+# [data-requests] serializeRequests count=1 took 0.02ms
+# [data-requests] resendRequestsBulk count=1 took 0.07ms
+# [data-requests] GET /projects/fresh-project/data-requests took 0.23ms
+# [data-requests] serializeRequests count=1 took 0.06ms
+# [data-requests] revokeRequestsBulk count=1 took 0.40ms
+# [data-requests] GET /projects/fresh-project/data-requests took 0.29ms
+# [contacts] GET /projects/fresh-project/contacts took 0.20ms
+# Subtest: reads immediately reflect request mutations even when a stale response survives in a local cache
+ok 17 - reads immediately reflect request mutations even when a stale response survives in a local cache
+  ---
+  duration_ms: 16.367666
+  ...
+# Subtest: report GET rejects an unauthenticated caller before database reads
+ok 18 - report GET rejects an unauthenticated caller before database reads
+  ---
+  duration_ms: 8.711
+  ...
+# Subtest: report GET rejects an authenticated outsider with known project and report IDs
+ok 19 - report GET rejects an authenticated outsider with known project and report IDs
+  ---
+  duration_ms: 1.2945
+  ...
+# Subtest: report GET rejects a pending organization membership
+ok 20 - report GET rejects a pending organization membership
+  ---
+  duration_ms: 1.228666
+  ...
+# Subtest: report GET rejects a deleted organization even for its owner
+ok 21 - report GET rejects a deleted organization even for its owner
+  ---
+  duration_ms: 0.800625
+  ...
+# Subtest: report GET rejects a deleted project during retention
+ok 22 - report GET rejects a deleted project during retention
+  ---
+  duration_ms: 0.796584
+  ...
+# Subtest: report GET rejects a deleted project after retention expires
+ok 23 - report GET rejects a deleted project after retention expires
+  ---
+  duration_ms: 1.417666
+  ...
+# Subtest: report GET preserves report JSON for an accepted VIEWER_READONLY
+ok 24 - report GET preserves report JSON for an accepted VIEWER_READONLY
+  ---
+  duration_ms: 1.053958
+  ...
+# Subtest: report GET preserves report JSON for an accepted OWNER
+ok 25 - report GET preserves report JSON for an accepted OWNER
+  ---
+  duration_ms: 0.601666
+  ...
+# Subtest: report GET does not return another project report through an authorized project URL
+ok 26 - report GET does not return another project report through an authorized project URL
+  ---
+  duration_ms: 0.798458
+  ...
+# Subtest: uploads are stored via S3 client when relay is invoked
+ok 27 - uploads are stored via S3 client when relay is invoked
+  ---
+  duration_ms: 8.19425
+  ...
+# Subtest: rejects uploads pointing to unexpected targets
+ok 28 - rejects uploads pointing to unexpected targets
+  ---
+  duration_ms: 0.885458
+  ...
+# Subtest: returns 413 when file size exceeds limit
+ok 29 - returns 413 when file size exceeds limit
+  ---
+  duration_ms: 7.434
+  ...
+# Subtest: returns 415 when MIME type is unsupported
+ok 30 - returns 415 when MIME type is unsupported
+  ---
+  duration_ms: 0.497167
+  ...
+# Subtest: returns presigned payload and records asset on success
+ok 31 - returns presigned payload and records asset on success
+  ---
+  duration_ms: 10.33975
+  ...
+# Subtest: presigned URL uses custom endpoint when configured
+ok 32 - presigned URL uses custom endpoint when configured
+  ---
+  duration_ms: 2.421209
+  ...
+# Subtest: falls back to local upload target when bucket config is missing
+ok 33 - falls back to local upload target when bucket config is missing
+  ---
+  duration_ms: 0.903291
+  ...
+# Subtest: access and refresh tokens round-trip with expected claims
+ok 34 - access and refresh tokens round-trip with expected claims
+  ---
+  duration_ms: 2.1655
+  ...
+# Subtest: issued session tokens share a session id but differ by purpose
+ok 35 - issued session tokens share a session id but differ by purpose
+  ---
+  duration_ms: 0.576958
+  ...
+# [data-requests] prepareBulk project=project-1 took 0.60ms
+# [data-requests] executeBulk project=project-1 inserts=1 revokes=0 took 0.87ms
+# [data-requests] prepareBulk project=project-1 took 1.77ms
+# [data-requests] executeBulk project=project-1 inserts=1 revokes=1 took 0.11ms
+# [data-requests] prepareBulk project=project-1 took 0.04ms
+# [data-requests] executeBulk project=project-1 inserts=1 revokes=1 took 0.04ms
+# Subtest: bulk data requests keep only one pending record per field and surface the latest contact
+ok 36 - bulk data requests keep only one pending record per field and surface the latest contact
+  ---
+  duration_ms: 7.544084
+  ...
+# Subtest: prioritizes pending external data requests and names the contact owner
+ok 37 - prioritizes pending external data requests and names the contact owner
+  ---
+  duration_ms: 0.698041
+  ...
+# Subtest: assigns open roadmap work to the project owner
+ok 38 - assigns open roadmap work to the project owner
+  ---
+  duration_ms: 0.115
+  ...
+# Subtest: surfaces an empty dataset as internal missing work
+ok 39 - surfaces an empty dataset as internal missing work
+  ---
+  duration_ms: 0.100041
+  ...
+# Subtest: links report completion actions to project reports
+ok 40 - links report completion actions to project reports
+  ---
+  duration_ms: 0.145042
+  ...
+# Subtest: does not invent missing work when project state is complete
+ok 41 - does not invent missing work when project state is complete
+  ---
+  duration_ms: 0.075625
+  ...
+# Subtest: hasMeaningfulAnswer treats UNKNOWN as empty
+ok 42 - hasMeaningfulAnswer treats UNKNOWN as empty
+  ---
+  duration_ms: 0.444875
+  ...
+# Subtest: computeGroupVisibility hides optional blocks until drivers present
+ok 43 - computeGroupVisibility hides optional blocks until drivers present
+  ---
+  duration_ms: 0.135584
+  ...
+# Subtest: computeGroupVisibility enables regulator trade path for EU companies
+ok 44 - computeGroupVisibility enables regulator trade path for EU companies
+  ---
+  duration_ms: 0.065959
+  ...
+# Subtest: trade answers keep the block visible even without an operations driver
+ok 45 - trade answers keep the block visible even without an operations driver
+  ---
+  duration_ms: 0.137125
+  ...
+# Subtest: non-EU client suppliers can reach CBAM trade questions without implying legal applicability
+ok 46 - non-EU client suppliers can reach CBAM trade questions without implying legal applicability
+  ---
+  duration_ms: 1.595667
+  ...
+# Subtest: manufacturing company can complete its profile without financial-sector assets
+ok 47 - manufacturing company can complete its profile without financial-sector assets
+  ---
+  duration_ms: 0.14175
+  ...
+# Subtest: product client request requires only its own follow-up questions
+ok 48 - product client request requires only its own follow-up questions
+  ---
+  duration_ms: 0.100917
+  ...
+# Subtest: multiple client request types show the union of their follow-up questions
+ok 49 - multiple client request types show the union of their follow-up questions
+  ---
+  duration_ms: 0.077542
+  ...
+# Subtest: switching branches removes stale answers including nested CBAM details
+ok 50 - switching branches removes stale answers including nested CBAM details
+  ---
+  duration_ms: 0.950625
+  ...
+# Subtest: unknown client requirements do not reveal or require unrelated follow-ups
+ok 51 - unknown client requirements do not reveal or require unrelated follow-ups
+  ---
+  duration_ms: 0.163125
+  ...
+# Subtest: sector questions follow the selected sector only
+ok 52 - sector questions follow the selected sector only
+  ---
+  duration_ms: 0.146583
+  ...
+# Subtest: skipping a partly answered block preserves drivers, product details and later groups
+ok 53 - skipping a partly answered block preserves drivers, product details and later groups
+  ---
+  duration_ms: 0.120833
+  ...
+# Subtest: old CSRD employee and revenue shortcuts no longer determine scope
+ok 54 - old CSRD employee and revenue shortcuts no longer determine scope
+  ---
+  duration_ms: 0.605166
+  ...
+# Subtest: explicit CSRD request survives small-private profile and unknown inputs
+ok 55 - explicit CSRD request survives small-private profile and unknown inputs
+  ---
+  duration_ms: 0.341834
+  ...
+# Subtest: CBAM supplier and planned export do not become importer filing or certificate duties
+ok 56 - CBAM supplier and planned export do not become importer filing or certificate duties
+  ---
+  duration_ms: 0.248083
+  ...
+# Subtest: no-export answer does not suppress a CBAM importer or an explicit CBAM request
+ok 57 - no-export answer does not suppress a CBAM importer or an explicit CBAM request
+  ---
+  duration_ms: 0.202625
+  ...
+# Subtest: CBAM period and certificate terms remain explicit when the questionnaire has no reporting year
+ok 58 - CBAM period and certificate terms remain explicit when the questionnaire has no reporting year
+  ---
+  duration_ms: 0.166792
+  ...
+# Subtest: stayed SEC rule remains an optional review, including explicit regulator requests
+ok 59 - stayed SEC rule remains an optional review, including explicit regulator requests
+  ---
+  duration_ms: 0.325208
+  ...
+# Subtest: SFDR review is independent of the arbitrary AUM bands
+ok 60 - SFDR review is independent of the arbitrary AUM bands
+  ---
+  duration_ms: 0.225459
+  ...
+# Subtest: UK unquoted and small listed candidates require scope review instead of a public-only exemption
+ok 61 - UK unquoted and small listed candidates require scope review instead of a public-only exemption
+  ---
+  duration_ms: 0.217375
+  ...
+# Subtest: listing and sector signals retain period-specific checks and never prove mandatory scope
+ok 62 - listing and sector signals retain period-specific checks and never prove mandatory scope
+  ---
+  duration_ms: 0.282333
+  ...
+# Subtest: ambiguous EPD and neutrality requests require output review without promising certification
+ok 63 - ambiguous EPD and neutrality requests require output review without promising certification
+  ---
+  duration_ms: 0.247792
+  ...
+# Subtest: missing or unknown answers do not create a mandatory conclusion or an exemption
+ok 64 - missing or unknown answers do not create a mandatory conclusion or an exemption
+  ---
+  duration_ms: 0.158958
+  ...
+# Subtest: every engine output resolves to selectable registered templates
+ok 65 - every engine output resolves to selectable registered templates
+  ---
+  duration_ms: 0.883292
+  ...
+# Subtest: exact report variants keep their identity instead of collapsing into another report
+ok 66 - exact report variants keep their identity instead of collapsing into another report
+  ---
+  duration_ms: 0.101041
+  ...
+# Subtest: combined recommendations offer distinct alternatives without choosing either for the user
+ok 67 - combined recommendations offer distinct alternatives without choosing either for the user
+  ---
+  duration_ms: 0.26575
+  ...
+# Subtest: optional reports remain available but are not silently preselected
+ok 68 - optional reports remain available but are not silently preselected
+  ---
+  duration_ms: 0.103875
+  ...
+# Subtest: a legacy cached mandatory result cannot bypass current applicability review
+ok 69 - a legacy cached mandatory result cannot bypass current applicability review
+  ---
+  duration_ms: 0.091708
+  ...
+# Subtest: selection and badges exclude templates hidden by project scope
+ok 70 - selection and badges exclude templates hidden by project scope
+  ---
+  duration_ms: 0.254375
+  ...
+# Subtest: repeated reasons for one template do not create duplicate selected codes
+ok 71 - repeated reasons for one template do not create duplicate selected codes
+  ---
+  duration_ms: 0.078459
+  ...
+# [contacts] GET /projects/project-org-a/contacts took 0.31ms
+# [data-requests] GET /projects/project-org-a/data-requests took 0.28ms
+# Subtest: contact and request reads isolate accepted organization memberships across SSR and APIs
+    # Subtest: page hydration excludes other, pending and deleted organizations
+    ok 1 - page hydration excludes other, pending and deleted organizations
+      ---
+      duration_ms: 6.421292
+      ...
+    # Subtest: API lists and explicit outsider filters cannot bypass scope
+    ok 2 - API lists and explicit outsider filters cannot bypass scope
+      ---
+      duration_ms: 5.476958
+      ...
+    # Subtest: project contact picker checks access before returning or caching contacts
+    ok 3 - project contact picker checks access before returning or caching contacts
+      ---
+      duration_ms: 2.298417
+      ...
+    # Subtest: users without memberships see empty lists and unauthenticated requests return 401
+    ok 4 - users without memberships see empty lists and unauthenticated requests return 401
+      ---
+      duration_ms: 0.692
+      ...
+    1..4
+ok 72 - contact and request reads isolate accepted organization memberships across SSR and APIs
+  ---
+  duration_ms: 17.389833
+  ...
+# Subtest: mount/repeated hydration never overwrites stored edits with the initial empty state
+ok 73 - mount/repeated hydration never overwrites stored edits with the initial empty state
+  ---
+  duration_ms: 0.799208
+  ...
+# Subtest: an edit is durable before returning and survives immediate reload and server-data overlay
+ok 74 - an edit is durable before returning and survives immediate reload and server-data overlay
+  ---
+  duration_ms: 0.256333
+  ...
+# Subtest: retry exhaustion preserves failed values across reload; missing batch results are failures too
+ok 75 - retry exhaustion preserves failed values across reload; missing batch results are failures too
+  ---
+  duration_ms: 0.194833
+  ...
+# Subtest: uncertain non-idempotent additions require review instead of automatic replay
+ok 76 - uncertain non-idempotent additions require review instead of automatic replay
+  ---
+  duration_ms: 0.243792
+  ...
+# Subtest: a new edit during an in-flight request survives its success and supersedes its failure
+ok 77 - a new edit during an in-flight request survives its success and supersedes its failure
+  ---
+  duration_ms: 0.512875
+  ...
+# Subtest: only acknowledged operations are removed; unrelated project changes stay queued
+ok 78 - only acknowledged operations are removed; unrelated project changes stay queued
+  ---
+  duration_ms: 0.112792
+  ...
+# Subtest: multiple new repeatable items are retained and deletion is scoped to its project
+ok 79 - multiple new repeatable items are retained and deletion is scoped to its project
+  ---
+  duration_ms: 0.171583
+  ...
+# Subtest: corrupt storage is preserved, and unavailable storage reports a visible recovery warning
+ok 80 - corrupt storage is preserved, and unavailable storage reports a visible recovery warning
+  ---
+  duration_ms: 0.20975
+  ...
+# Subtest: allows public pages without auth
+ok 81 - allows public pages without auth
+  ---
+  duration_ms: 2.787834
+  ...
+# Subtest: redirects protected pages to login when no token is present
+ok 82 - redirects protected pages to login when no token is present
+  ---
+  duration_ms: 0.755875
+  ...
+# Subtest: returns 401 for protected API routes without auth
+ok 83 - returns 401 for protected API routes without auth
+  ---
+  duration_ms: 1.563792
+  ...
+# Subtest: passes authenticated requests through and injects auth headers
+ok 84 - passes authenticated requests through and injects auth headers
+  ---
+  duration_ms: 2.195333
+  ...
+# Subtest: redirects authenticated users away from login page
+ok 85 - redirects authenticated users away from login page
+  ---
+  duration_ms: 0.680125
+  ...
+1..85
+# tests 89
+# suites 0
+# pass 89
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6913.371791

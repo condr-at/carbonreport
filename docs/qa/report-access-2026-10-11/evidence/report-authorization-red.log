@@ -1,0 +1,72 @@
+TAP version 13
+# Subtest: report GET rejects an unauthenticated caller before database reads
+ok 1 - report GET rejects an unauthenticated caller before database reads # SKIP test name does not match pattern
+  ---
+  duration_ms: 0.537916
+  ...
+# Subtest: report GET rejects an authenticated outsider with known project and report IDs
+not ok 2 - report GET rejects an authenticated outsider with known project and report IDs
+  ---
+  duration_ms: 10.358708
+  location: '/private/tmp/carbonreport-qa-runtime/src/app/api/projects/[id]/reports/[reportId]/route.test.ts:2:4335'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    200 !== 403
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 403
+  actual: 200
+  operator: 'strictEqual'
+  stack: |-
+    assertDenied (/private/tmp/carbonreport-qa-runtime/src/app/api/projects/[id]/reports/[reportId]/route.test.ts:76:10)
+    TestContext.<anonymous> (/private/tmp/carbonreport-qa-runtime/src/app/api/projects/[id]/reports/[reportId]/route.test.ts:94:9)
+    async Test.run (node:internal/test_runner/test:797:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:526:7)
+  ...
+# Subtest: report GET rejects a pending organization membership
+ok 3 - report GET rejects a pending organization membership # SKIP test name does not match pattern
+  ---
+  duration_ms: 0.046417
+  ...
+# Subtest: report GET rejects a deleted organization even for its owner
+ok 4 - report GET rejects a deleted organization even for its owner # SKIP test name does not match pattern
+  ---
+  duration_ms: 0.099917
+  ...
+# Subtest: report GET rejects a deleted project during retention
+ok 5 - report GET rejects a deleted project during retention # SKIP test name does not match pattern
+  ---
+  duration_ms: 0.1025
+  ...
+# Subtest: report GET rejects a deleted project after retention expires
+ok 6 - report GET rejects a deleted project after retention expires # SKIP test name does not match pattern
+  ---
+  duration_ms: 0.044667
+  ...
+# Subtest: report GET preserves report JSON for an accepted VIEWER_READONLY
+ok 7 - report GET preserves report JSON for an accepted VIEWER_READONLY # SKIP test name does not match pattern
+  ---
+  duration_ms: 0.037208
+  ...
+# Subtest: report GET preserves report JSON for an accepted OWNER
+ok 8 - report GET preserves report JSON for an accepted OWNER # SKIP test name does not match pattern
+  ---
+  duration_ms: 0.093708
+  ...
+# Subtest: report GET does not return another project report through an authorized project URL
+ok 9 - report GET does not return another project report through an authorized project URL # SKIP test name does not match pattern
+  ---
+  duration_ms: 0.10225
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 8
+# todo 0
+# duration_ms 450.940625

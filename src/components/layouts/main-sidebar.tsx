@@ -223,6 +223,7 @@ export function MainSidebar() {
           activeUsage={currentOrganization?.usage.active_projects ?? null}
           usageLimit={currentOrganization?.plan.max_active_projects ?? null}
           planLabel={currentOrganization?.plan.label ?? activeOrganization?.plan_label ?? '—'}
+          planValidUntil={currentOrganization?.plan.valid_until ?? activeOrganization?.plan_valid_until ?? null}
           isSwitching={Boolean(pendingOrganizationSwitch)}
         />
       </SidebarHeader>
@@ -361,6 +362,7 @@ type OrganizationSwitcherProps = {
   activeUsage: number | null
   usageLimit: number | null
   planLabel: string
+  planValidUntil: string | null
   isSwitching: boolean
 }
 
@@ -377,6 +379,7 @@ function OrganizationSwitcher({
   activeUsage,
   usageLimit,
   planLabel,
+  planValidUntil,
   isSwitching,
 }: OrganizationSwitcherProps) {
   const pendingActiveLogo = usePendingAssetPreview(activeOrganization ? `org-logo:${activeOrganization.id}` : null)
@@ -441,6 +444,7 @@ function OrganizationSwitcher({
     typeof activeUsage === 'number' && typeof usageLimit === 'number'
       ? `${activeUsage} / ${usageLimit}`
       : null
+  const expiryWarning = getPlanExpiryWarning(planValidUntil)
 
   return (
     <DropdownMenu>
@@ -465,6 +469,11 @@ function OrganizationSwitcher({
                 {planLabel}
                 {usageLabel ? ` · ${usageLabel} projects` : null}
               </span>
+              {expiryWarning ? (
+                <Badge variant={expiryWarning.expired ? 'destructive' : 'secondary'} className="shrink-0 text-[10px]">
+                  {expiryWarning.label}
+                </Badge>
+              ) : null}
             </div>
           </div>
           <ChevronsUpDown className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -497,7 +506,12 @@ function OrganizationSwitcher({
               />
               <div className="flex min-w-0 flex-col">
                 <span className="truncate text-sm font-medium">{organization.display_name}</span>
-                <span className="truncate text-xs text-muted-foreground">{organization.plan_label}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {organization.plan_label}
+                  {getPlanExpiryWarning(organization.plan_valid_until)?.label
+                    ? ` · ${getPlanExpiryWarning(organization.plan_valid_until)?.label}`
+                    : ''}
+                </span>
               </div>
               {typeof usage === 'number' && typeof limit === 'number' ? (
                 <Badge variant="secondary" className="ml-auto text-xs">
@@ -552,6 +566,35 @@ function OrganizationSwitcher({
       </DropdownMenuContent>
     </DropdownMenu>
   )
+}
+
+function getPlanExpiryWarning(validUntil: string | null) {
+  if (!validUntil) {
+    return null
+  }
+
+  const expiry = new Date(validUntil)
+  if (Number.isNaN(expiry.getTime())) {
+    return null
+  }
+
+  const diffMs = expiry.getTime() - Date.now()
+  const dayMs = 24 * 60 * 60 * 1000
+  const days = Math.ceil(diffMs / dayMs)
+
+  if (days > 14) {
+    return null
+  }
+
+  if (days < 0) {
+    return { label: 'Expired', expired: true }
+  }
+
+  if (days === 0) {
+    return { label: 'Expires today', expired: false }
+  }
+
+  return { label: `Expires in ${days}d`, expired: false }
 }
 
 type OrganizationAvatarImageProps = {

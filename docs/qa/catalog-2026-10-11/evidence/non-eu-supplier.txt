@@ -1,0 +1,142 @@
+Browser tab: 600622345, Title: "Carbon Report", URL: "http://localhost:3000/projects/new/questionnaire?resume=1".
+1 AXWebArea Carbon Report, URL: localhost:3000/projects/new/questionnaire?resume=1
+	2 container Notifications alt+T
+	3 container
+		29 pop up button (collapsed) QS QA Switching Workspace Free · 1 / 1 projects Open organization menu, ID: radix-_r_0_, Secondary Actions: Expand
+			30 text QS
+			31 text QA Switching Workspace
+			32 text Free
+			33 text  · 1 / 1 projects
+			34 text Open organization menu
+		35 container
+			36 link Description: Dashboard, Value: localhost:3000/dashboard
+			37 link Description: Projects, Value: localhost:3000/projects
+			38 link Description: Requests, Value: localhost:3000/requests
+			39 link Description: Contacts, Value: localhost:3000/contacts
+			40 link Description: Settings, Value: localhost:3000/settings
+		4 pop up button (collapsed) QC QA Carbon Auditor qa.browser.20261010@example.test Open user menu, ID: radix-_R_1pknebn6lb_, Secondary Actions: Expand
+			5 text QC
+			6 text QA Carbon Auditor
+			7 text qa.browser.20261010@example.test
+			8 text Open user menu
+		9 container
+			51 heading Расширенный опросник, Value: 1
+				52 text Расширенный опросник
+			53 text Ответьте на вопросы — движок рекомендаций подберёт релевантные отчёты.
+			54 button
+				55 image
+			56 text Прогресс опросника Заполняйте блоки последовательно или пропускайте и возвращайтесь позднее. Блоки опросника
+			57 tab group
+				58 container
+					59 tab (selectable, settable, boolean) 1 Профиль компании Не завершён, ID: stepper-tab-1, Value: 0
+1
+Профиль компании
+Не завершён
+					60 tab (selectable, settable, boolean) 2 Внешние драйверы Не завершён, ID: stepper-tab-2, Value: 0
+2
+Внешние драйверы
+Не завершён
+					99 tab (selectable, settable, boolean) 3 Внутренний контекст Не завершён, ID: stepper-tab-3, Value: 0
+3
+Внутренний контекст
+Не завершён
+					61 tab (selected, settable, boolean) 4 Экспорт и ограничения Текущий блок, ID: stepper-tab-4, Value: 1
+4
+Экспорт и ограничения
+Текущий блок
+			103 text Экспорт и CBAM
+			104 text Торговые операции с ЕС
+			105 text Есть ли экспорт в ЕС?
+			106 Есть ли экспорт в ЕС?
+				107 container
+					108 radio button Description: Да, экспортируем, Value: 1, ID: Q9.1-YES
+						163 image
+					109 text Да, экспортируем
+				110 container
+					111 radio button Description: Нет, Value: 0, ID: Q9.1-NO
+					112 text Нет
+				113 container
+					114 radio button Description: Планируем в ближайшие 12 мес., Value: 0, ID: Q9.1-PLANNED
+					115 text Планируем в ближайшие 12 мес.
+				116 container
+					117 radio button Description: Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу, Value: 0, ID: Q9.1-UNKNOWN
+					118 text Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу
+			164 text Какие товары экспортируются?
+			165 container
+				166 checkbox Description: Товары из списка CBAM, Value: 1, ID: Q9.2-CBAM_GOODS
+					174 image
+				167 text Товары из списка CBAM
+			168 container
+				169 checkbox Description: Другие товары, Value: 0, ID: Q9.2-NON_CBAM_GOODS
+				170 text Другие товары
+			171 container
+				172 checkbox Description: Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу, Value: 0, ID: Q9.2-UNKNOWN
+				173 text Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу
+			175 text Вы импортёр CBAM или поставщик данных?
+			176 Вы импортёр CBAM или поставщик данных?
+				177 container
+					178 radio button Description: Поставщик данных для клиентов, Value: 1, ID: Q9.3-SUPPLIER_ONLY
+						186 image
+					179 text Поставщик данных для клиентов
+				180 container
+					181 radio button Description: Импортёр, подающий отчётность, Value: 0, ID: Q9.3-IMPORTER_OF_RECORD
+					182 text Импортёр, подающий отчётность
+				183 container
+					184 radio button Description: Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу, Value: 0, ID: Q9.3-UNKNOWN
+					185 text Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу
+			119 text Ограничения по срокам и бюджету
+			120 text Реалистичность внедрения
+			121 text Желаемый срок выполнения проекта
+			122 Желаемый срок выполнения проекта
+				123 container
+					124 radio button Description: ≤ 2 месяцев, Value: 0, ID: Q10.1-<=2M
+					125 text ≤ 2 месяцев
+				126 container
+					127 radio button Description: 3 – 6 месяцев, Value: 0, ID: Q10.1-3_6M
+					128 text 3 – 6 месяцев
+				129 container
+					130 radio button Description: > 6 месяцев, Value: 0, ID: Q10.1->6M
+					131 text > 6 месяцев
+				132 container
+					133 radio button Description: Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу, Value: 0, ID: Q10.1-UNKNOWN
+					134 text Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу
+			135 text Есть ли внутренняя команда / данные?
+			136 Есть ли внутренняя команда / данные?
+				137 container
+					138 radio button Description: Нет команды, данных мало, Value: 0, ID: Q10.2-NO_TEAM
+					139 text Нет команды, данных мало
+				140 container
+					141 radio button Description: Есть часть данных, Value: 0, ID: Q10.2-SOME_DATA
+					142 text Есть часть данных
+				143 container
+					144 radio button Description: Полная команда и данные, Value: 0, ID: Q10.2-FULL_DATA
+					145 text Полная команда и данные
+				146 container
+					147 radio button Description: Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу, Value: 0, ID: Q10.2-UNKNOWN
+					148 text Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу
+			149 text Бюджет на проект
+			150 Бюджет на проект
+				151 container
+					152 radio button Description: Низкий, Value: 0, ID: Q10.3-LOW
+					153 text Низкий
+				154 container
+					155 radio button Description: Средний, Value: 0, ID: Q10.3-MEDIUM
+					156 text Средний
+				157 container
+					158 radio button Description: Высокий, Value: 0, ID: Q10.3-HIGH
+					159 text Высокий
+				160 container
+					161 radio button Description: Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу, Value: 0, ID: Q10.3-UNKNOWN
+					162 text Не знаю / нет данных Отметьте, если пока нет данных по этому вопросу
+			92 button Предыдущий блок
+				93 image
+				94 text Предыдущий блок
+			96 button Перейти к выбору отчётов
+				97 text Перейти к выбору отчётов
+				98 image
+	47 button Open Tanstack query devtools
+		48 image
+	49 pop up button (collapsed) Description: Open Next.js Dev Tools, ID: next-logo, Secondary Actions: Expand
+		50 image
+
+The focused UI element is 178 radio button Description: Поставщик данных для клиентов, Value: 1, ID: Q9.3-SUPPLIER_ONLY

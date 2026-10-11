@@ -13,14 +13,12 @@ const OPERATIONS_DRIVERS = new Set([
 
 const CLIENT_DRIVERS = new Set(['CLIENT_EXISTING', 'CLIENT_PROSPECT'])
 const INTERNAL_DRIVERS = new Set(['INTERNAL_TOP', 'INTERNAL_OTHER'])
-const TRADE_REGIONS = new Set(['EU', 'UK', 'US'])
 const SECTOR_SPECIFIC_CODES = new Set(['AVIATION', 'MARITIME', 'FINANCE', 'CONSTRUCTION', 'IT'])
 
 export type GroupVisibilityMap = Record<QuestionGroup, boolean>
 
 export function computeGroupVisibility(answers: AnswerMap): GroupVisibilityMap {
   const initiators = new Set(sanitizeMultiSelectAnswer(answers['Q1.1']))
-  const country = sanitizeSingleSelectAnswer(answers['Q0.1'])
   const sector = sanitizeSingleSelectAnswer(answers['Q0.2'])
 
   const regulatorSelected = initiators.has('REGULATOR')
@@ -30,7 +28,6 @@ export function computeGroupVisibility(answers: AnswerMap): GroupVisibilityMap {
   const programSelected = initiators.has('PROGRAM')
   const internalSelected = intersects(initiators, INTERNAL_DRIVERS)
   const operationsEnabled = intersects(initiators, OPERATIONS_DRIVERS)
-  const regulatorInTradeRegion = regulatorSelected && !!country && TRADE_REGIONS.has(country)
   const tradeAnswersExist =
     hasMeaningfulAnswer(answers['Q9.1']) ||
     hasMeaningfulAnswer(answers['Q9.2']) ||
@@ -46,7 +43,9 @@ export function computeGroupVisibility(answers: AnswerMap): GroupVisibilityMap {
     exchange: exchangeSelected,
     internal: internalSelected,
     operations: operationsEnabled,
-    trade: (operationsEnabled && regulatorInTradeRegion) || tradeAnswersExist,
+    // Registration country does not determine whether a company supplies EU imports.
+    // This only exposes the trade questions; report applicability is reviewed separately.
+    trade: operationsEnabled || tradeAnswersExist,
     constraints: true,
     sector: !!sector && SECTOR_SPECIFIC_CODES.has(sector),
   }

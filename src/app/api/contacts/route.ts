@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getContactsOverview } from '@/lib/server-data/contacts';
+import { ensureApiError, errorResponse } from '@/lib/api-error';
 
 export async function GET() {
   try {
@@ -7,6 +8,6 @@ export async function GET() {
     return NextResponse.json({ contacts });
   } catch (error) {
     console.error('Failed to load contacts', error);
-    return NextResponse.json({ error: 'Failed to fetch contacts' }, { status: 500 });
+    return errorResponse(ensureApiError(error, 'Failed to fetch contacts'));
   }
 }

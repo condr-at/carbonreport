@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const RECSSTRATEGYTemplate: ReportTemplate = {
   code: 'RECS_STRATEGY' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Renewable Energy Certificates (RECs) Strategy',
+  name: 'Renewable Certificate Planning',
+  description: 'Electricity and certificate inputs for procurement review.',
   scope: 'corporate',
   sections: [
     {

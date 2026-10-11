@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getGlobalDataRequests } from '@/lib/server-data/requests';
 import type { GlobalRequestFilters } from '@/lib/data-requests/filters';
+import { ensureApiError, errorResponse } from '@/lib/api-error';
 
 const statusValues = ['all', 'pending', 'completed', 'revoked'] as const;
 const deadlineValues = ['all', 'due-soon', 'overdue', 'no-deadline'] as const;
@@ -57,11 +58,6 @@ export async function GET(request: NextRequest) {
 
     console.error('Failed to load data requests', error);
 
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch data requests',
-      },
-      { status: 500 }
-    );
+    return errorResponse(ensureApiError(error, 'Failed to fetch data requests'));
   }
 }

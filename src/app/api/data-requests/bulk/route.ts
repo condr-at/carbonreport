@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/db';
+import { OrganizationMembershipRole } from '@prisma/client';
+import { getCurrentUser } from '@/lib/auth';
+import { assertOrgMembership } from '@/lib/server-utils';
+import { isApiError, errorResponse } from '@/lib/api-error';
 import {
   DataRequestServiceError,
   executeBulk,
@@ -52,15 +56,17 @@ export async function POST(request: Request) {
   try {
     const rawPayload = await request.json();
     const payload = requestSchema.parse(rawPayload);
+    const user = await getCurrentUser();
 
     const project = await prisma.project.findUnique({
       where: { id: payload.projectId },
-      select: { id: true, organizationId: true, createdByUserId: true },
+      select: { id: true, organizationId: true },
     });
 
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
+    await assertOrgMembership(user.id, project.organizationId, OrganizationMembershipRole.EDITOR);
 
     const deadlineDate = parseDeadline(payload.deadline);
     const now = new Date();
@@ -69,7 +75,7 @@ export async function POST(request: Request) {
       {
         projectId: payload.projectId,
         organizationId: project.organizationId,
-        requestedByUserId: project.createdByUserId,
+        requestedByUserId: user.id,
         contact: payload.contact,
         deadline: deadlineDate,
         fields: payload.fields,
@@ -93,6 +99,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
+    if (isApiError(error)) return errorResponse(error);
     console.error('Failed to log data requests', error);
 
     if (error instanceof z.ZodError) {

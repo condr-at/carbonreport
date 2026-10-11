@@ -1,0 +1,114 @@
+[
+  {
+    "source_id": "PG18",
+    "file": "docs/report-reference/assets/product-ghg/ghg-corporate-reporting-template.docx",
+    "url": "https://ghgprotocol.org/sites/default/files/2022-12/GHG-Protocol-Reporting-Template.docx",
+    "resolved_url": "https://ghgprotocol.org/sites/default/files/2022-12/GHG-Protocol-Reporting-Template.docx",
+    "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "bytes": 34433,
+    "sha256": "ec630126dae21a81d7f3d2cf90e9478438227fe3af9ffde261a4c7feb478b336",
+    "checked_on": "2026-10-11",
+    "signature": "ZIP OOXML",
+    "package_part": "word/document.xml",
+    "validation": "HTTP success; response MIME; magic bytes; parsed PDF page count or OOXML package parts",
+    "content_review": "Read OOXML document text or workbook sheet names; not rendered and not filled",
+    "rights_note": "Publicly downloadable source retained for internal reference. Copyright remains with publisher; no open licence inferred; do not redistribute as own work."
+  },
+  {
+    "source_id": "PG19",
+    "file": "docs/report-reference/assets/product-ghg/ghg-inventory-reporting-template-2023.docx",
+    "url": "https://ghgprotocol.org/sites/default/files/2023-07/Sample%20GHG%20Inventory%20Reporting%20Template%20%28updated%207.10.23%29.docx",
+    "resolved_url": "https://ghgprotocol.org/sites/default/files/2023-07/Sample%20GHG%20Inventory%20Reporting%20Template%20%28updated%207.10.23%29.docx",
+    "mime": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "bytes": 546017,
+    "sha256": "a4371e5a2facb0ff81c925926caf90701d67dc539a1462203500b57009dadf02",
+    "checked_on": "2026-10-11",
+    "signature": "ZIP OOXML",
+    "package_part": "word/document.xml",
+    "validation": "HTTP success; response MIME; magic bytes; parsed PDF page count or OOXML package parts",
+    "content_review": "Read OOXML document text or workbook sheet names; not rendered and not filled",
+    "rights_note": "Publicly downloadable source retained for internal reference. Copyright remains with publisher; no open licence inferred; do not redistribute as own work."
+  },
+  {
+    "source_id": "PG20",
+    "file": "docs/report-reference/assets/product-ghg/ghg-product-reporting-template.pdf",
+    "url": "https://ghgprotocol.org/sites/default/files/2022-12/Sample%20Product%20Standard%20GHG%20Inventory%20Reporting%20Template.pdf",
+    "resolved_url": "https://ghgprotocol.org/sites/default/files/2022-12/Sample%20Product%20Standard%20GHG%20Inventory%20Reporting%20Template.pdf",
+    "mime": "application/pdf",
+    "bytes": 51857,
+    "sha256": "ece9c373c0d22e1bbf36d4a1f9fb3d98b14b8dd2fe0d73f2a2a123acc3433fb8",
+    "checked_on": "2026-10-11",
+    "pages": 7,
+    "signature": "%PDF-",
+    "validation": "HTTP success; response MIME; magic bytes; parsed PDF page count or OOXML package parts",
+    "visual_review": {
+      "method": "pypdfium2 local render + view_image",
+      "pages_1_based": [
+        1,
+        6,
+        7
+      ],
+      "result": "Readable pages; template blanks, PCF table/footnotes, EPD verification and multi-indicator/module tables inspected; original files unchanged"
+    },
+    "rights_note": "Publicly downloadable source retained for internal reference. Copyright remains with publisher; no open licence inferred; do not redistribute as own work."
+  },
+  {
+    "source_id": "PG21",
+    "file": "docs/report-reference/assets/product-ghg/rics-wlca-buildings-template.xlsx",
+    "url": "https://www.rics.org/content/dam/ricsglobal/documents/standards/Reporting-template-buildings.xlsx",
+    "resolved_url": "https://www.rics.org/content/dam/ricsglobal/documents/standards/Reporting-template-buildings.xlsx",
+    "mime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "bytes": 205477,
+    "sha256": "1e1ad0458b28126b94c2928876a3a3be940828a02d13b54ae63d5ef1b3fd8198",
+    "checked_on": "2026-10-11",
+    "signature": "ZIP OOXML",
+    "package_part": "xl/workbook.xml",
+    "validation": "HTTP success; response MIME; magic bytes; parsed PDF page count or OOXML package parts",
+    "content_review": "Read OOXML document text or workbook sheet names; not rendered and not filled",
+    "rights_note": "Publicly downloadable source retained for internal reference. Copyright remains with publisher; no open licence inferred; do not redistribute as own work."
+  },
+  {
+    "source_id": "PG22",
+    "file": "docs/report-reference/assets/product-ghg/apple-iphone16-product-environmental-report-june2025.pdf",
+    "url": "https://www.apple.com/si/environment/pdf/products/iphone/iPhone_16_and_iPhone_16_Plus_PER_June2025.pdf",
+    "resolved_url": "https://www.apple.com/si/environment/pdf/products/iphone/iPhone_16_and_iPhone_16_Plus_PER_June2025.pdf",
+    "mime": "application/pdf",
+    "bytes": 7798358,
+    "sha256": "57c98d2338452d7ca6703ba8143459c2ae3a3492e4f23e55b9e97a6c5587b4fd",
+    "checked_on": "2026-10-11",
+    "pages": 12,
+    "signature": "%PDF-",
+    "validation": "HTTP success; response MIME; magic bytes; parsed PDF page count or OOXML package parts",
+    "visual_review": {
+      "method": "pypdfium2 local render + view_image",
+      "pages_1_based": [
+        10,
+        12
+      ],
+      "result": "Readable pages; template blanks, PCF table/footnotes, EPD verification and multi-indicator/module tables inspected; original files unchanged"
+    },
+    "rights_note": "Publicly downloadable source retained for internal reference. Copyright remains with publisher; no open licence inferred; do not redistribute as own work."
+  },
+  {
+    "source_id": "PG23",
+    "file": "docs/report-reference/assets/product-ghg/schueco-low-carbon-aluminium-epd-2025.pdf",
+    "url": "https://www.schueco.com/resource/blob/4385164/e1096f93dbaf9025600a63a92bd6f546/Schueco%20Low%20Carbon%20Aluminium%20Profile%202.pdf?domain=se",
+    "resolved_url": "https://www.schueco.com/resource/blob/4385164/e1096f93dbaf9025600a63a92bd6f546/Schueco%20Low%20Carbon%20Aluminium%20Profile%202.pdf?domain=se",
+    "mime": "application/pdf",
+    "bytes": 971046,
+    "sha256": "1a374e40217028857e20de27ca1066b8f0b3b825dbd94042109c9beae4d59dc6",
+    "checked_on": "2026-10-11",
+    "pages": 9,
+    "signature": "%PDF-",
+    "validation": "HTTP success; response MIME; magic bytes; parsed PDF page count or OOXML package parts",
+    "visual_review": {
+      "method": "pypdfium2 local render + view_image",
+      "pages_1_based": [
+        2,
+        6
+      ],
+      "result": "Readable pages; template blanks, PCF table/footnotes, EPD verification and multi-indicator/module tables inspected; original files unchanged"
+    },
+    "rights_note": "Publicly downloadable source retained for internal reference. Copyright remains with publisher; no open licence inferred; do not redistribute as own work."
+  }
+]

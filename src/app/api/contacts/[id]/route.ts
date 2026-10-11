@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getContactDetail } from '@/lib/server-data/contacts';
 import { getGlobalDataRequests } from '@/lib/server-data/requests';
+import { ensureApiError, errorResponse } from '@/lib/api-error';
 
 const paramsSchema = z.object({
   id: z.string().min(1, 'Contact id is required'),
@@ -33,11 +34,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     }
 
     console.error('Failed to load contact', error);
-    return NextResponse.json(
-      {
-        error: 'Failed to fetch contact',
-      },
-      { status: 500 }
-    );
+    return errorResponse(ensureApiError(error, 'Failed to fetch contact'));
   }
 }

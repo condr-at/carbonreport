@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const BUILDINGCARBONFOOTPRINTTemplate: ReportTemplate = {
   code: 'BUILDING_CARBON_FOOTPRINT' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Building Carbon Footprint (EN 15978)',
+  name: 'Building Carbon Data',
+  description: 'Material, life-cycle module and operational-energy inputs.',
   scope: 'product',
   sections: [
     {

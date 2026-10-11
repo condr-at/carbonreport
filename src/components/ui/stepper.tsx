@@ -189,7 +189,7 @@ interface StepperItemProps extends React.HTMLAttributes<HTMLDivElement> {
 
 function StepperItem({
   step,
-  completed = false,
+  completed,
   disabled = false,
   loading = false,
   className,
@@ -198,7 +198,8 @@ function StepperItem({
 }: StepperItemProps) {
   const { activeStep } = useStepper();
 
-  const state: StepState = completed || step < activeStep ? 'completed' : activeStep === step ? 'active' : 'inactive';
+  const isCompleted = completed ?? step < activeStep;
+  const state: StepState = isCompleted ? 'completed' : activeStep === step ? 'active' : 'inactive';
 
   const isLoading = loading && step === activeStep;
 

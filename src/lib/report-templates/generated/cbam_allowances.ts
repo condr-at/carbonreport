@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const CBAMALLOWANCESTemplate: ReportTemplate = {
   code: 'CBAM_ALLOWANCES' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'CBAM Allowances',
+  name: 'CBAM Certificate Planning',
+  description: 'Certificate quantities and cost assumptions for the reporting year.',
   scope: 'product',
   sections: [
     {

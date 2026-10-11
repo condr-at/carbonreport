@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -124,13 +124,10 @@ export function ContactsPageClient({ initialContacts }: ContactsPageClientProps)
       <PageHeader
         title="Contacts"
         description="Manage your address book and track outstanding data requests per contact."
-        actions={(
-          <Button disabled size="sm">
-            <ChevronDown className="mr-2 h-4 w-4" />
-            New Contact
-          </Button>
-        )}
       />
+      <p className="text-sm text-muted-foreground">
+        Add a contact by requesting data from a project’s dataset.
+      </p>
 
       <Card>
         <CardHeader className="gap-4">
@@ -138,6 +135,7 @@ export function ContactsPageClient({ initialContacts }: ContactsPageClientProps)
             <div className="relative w-full lg:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
+                aria-label="Search contacts by name or email"
                 placeholder="Search by name or email"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
@@ -146,7 +144,7 @@ export function ContactsPageClient({ initialContacts }: ContactsPageClientProps)
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Select value={activeFilter} onValueChange={(value) => setActiveFilter(value as ActiveFilter)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-[180px]" aria-label="Filter contacts by request activity">
                   <SelectValue placeholder="Filter contacts" />
                 </SelectTrigger>
                 <SelectContent>
@@ -156,7 +154,7 @@ export function ContactsPageClient({ initialContacts }: ContactsPageClientProps)
                 </SelectContent>
               </Select>
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[200px]" aria-label="Sort contacts">
                   <SelectValue placeholder="Sort contacts" />
                 </SelectTrigger>
                 <SelectContent>

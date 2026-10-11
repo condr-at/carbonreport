@@ -1,15 +1,15 @@
 import { ReportTemplate } from './types'
 
 /**
- * EU CBAM (Carbon Border Adjustment Mechanism) Declaration Template
+ * EU CBAM (Carbon Border Adjustment Mechanism) Data Collection Template
  * 
  * EU regulation requiring importers to report embedded emissions in imported goods.
  * 
  * User Story:
  * - Importer fills out company and shipment details
  * - Provides information about goods being imported
- * - Calculates embedded emissions (direct + indirect)
- * - Submits quarterly declarations to EU authorities
+ * - Collects inputs and results for embedded-emissions review
+ * - Prepares data for the applicable reporting period and separate registry submission
  * 
  * Page Layout:
  * 1. Importer Information - Company details and EORI number
@@ -17,13 +17,13 @@ import { ReportTemplate } from './types'
  * 3. Embedded Emissions - Direct and indirect emissions calculations
  * 4. Supporting Documentation - Evidence and verification
  * 
- * Output: HTML report ready for CBAM registry submission
+ * Current use: editable data collection; registry filing and report export are separate work.
  */
 export const CBAMTemplate: ReportTemplate = {
   code: 'CBAM',
-  name: 'EU CBAM Declaration',
+  name: 'CBAM Importer Data',
   version: '1.0',
-  description: 'Carbon Border Adjustment Mechanism declaration for EU imports',
+  description: 'Product, shipment and embedded-emissions inputs.',
   scope: 'product',
   layoutMeta: {
     layout: 'tabbed',

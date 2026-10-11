@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const PPASTRATEGYTemplate: ReportTemplate = {
   code: 'PPA_STRATEGY' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Power Purchase Agreement (PPA) Strategy',
+  name: 'PPA Planning Data',
+  description: 'Energy demand and contract assumptions for a power purchase agreement.',
   scope: 'corporate',
   sections: [
     {

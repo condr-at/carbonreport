@@ -1,217 +1,90 @@
-# Multi-Org Implementation Status
+# Implementation Status
 
-_Last updated: 2025-11-16_
+_Last updated: 2026-10-11_
 
-Quick reference for current implementation state of the multi-organization architecture.
+Краткий снимок реализации и доказательств. Изменяемые статусы задач находятся только в [BACKLOG](planning/BACKLOG.md), порядок — в [ROADMAP](planning/ROADMAP.md). Этот файл не заменяет код, схему и API-контракты.
 
----
+## Текущее состояние
 
-## 🎯 Overall Status: **85% Complete** 🟡
+Рабочий локальный прототип для демонстраций и подготовки ограниченного пилота. Готовность к публичному запуску не подтверждена. По сообщению владельца, клиентов и продаж пока нет; коммерческие предположения записаны отдельно в [бизнес-планировании](business-planning/README.md).
 
-**Staging Ready**: ✅ YES  
-**Production Ready**: ❌ NO (test coverage blocker)
+Первый выдаваемый результат реализован: CBAM Supplier Review Package. Локальный путь до скачанного ZIP и его содержимое проверены. Главный оставшийся разрыв — подтверждение покупателя и приёмка формата/содержания конкретным получателем; нормативный CBAM-отчёт не реализован.
 
----
+## Что проверено 2026-10-10
 
-## ✅ Completed (100%)
+[Браузерный аудит](qa/browser-audit-2026-10-10/REPORT.md) содержит сценарии, 34 скриншота, исправления B01–B15 и ограничения проверки.
 
-### Backend Core
-- ✅ **Database Schema** — All tables, enums, indices per ARCHITECTURE.md
-- ✅ **Migrations & Seed** — Plans (free, pro_beta), demo orgs, users, memberships
-- ✅ **Server Guards** — assertOrgMembership, assertWithinLimit, getPlan, getOrganizationUsage
-- ✅ **Error Handling** — Unified `{ error, code, details }` format across all APIs
+- Регистрация, вход, неверный пароль и выход; корректные переходы с главной.
+- Создание и переключение организаций; создание продуктового проекта, ветвление анкеты и выбор отчёта, включая основные клавиатурные действия.
+- Ввод dataset, сохранение через очередь, немедленная перезагрузка и сохранность правки; ручное сохранение/повтор после ошибок покрыты соответствующими проверками.
+- Создание синтетических запросов и локальная отметка отправки, deadline, complete/reopen/revoke и смена контакта без отката списка к старым данным.
+- Contacts/detail и Requests с ограничением доступными организациями; прямой URL чужого контакта не открывает данные.
+- Архивирование, удаление, восстановление в архив и активация; сохранение dataset и актуальность лимита проектов.
+- Согласованный процент заполнения обязательных полей в отчёте, Overview и карточке проекта.
+- Сохранение описания организации и email-шаблона; просмотр Usage/Billing.
 
-### APIs (Complete Coverage)
-- ✅ **Organizations API** — CRUD, members, invite, usage, restore, plan/upgrade stub
-- ✅ **Projects API** — Lifecycle (status, delete, restore), limit enforcement
-- ✅ **Dataset API** — Optimistic locking (datasetVersion), VERSION_CONFLICT handling
-- ✅ **Uploads API** — Signed URLs, MIME/size validation (413/415), asset tracking
+В исходном репозитории исправлены 15 групп ошибок, включая потерю ожидающих правок, чтение чужих contacts/requests и неисправный Restore. Это локальная проверка текущих изменений; коммита, публикации и реальной рассылки в рамках аудита не было.
 
-### Frontend
-- ✅ **Organization Switcher** — Plan pill, usage counter, empty/loading/error states
-- ✅ **Settings UI** — Profile, Members, Usage, Billing, Danger Zone tabs
-- ✅ **Dataset Optimistic Locking** — UI handles VERSION_CONFLICT with refetch
-- ✅ **Project Lifecycle UI** — Archive, restore, delete actions
+## Дополнение 2026-10-11: доступ к отчёту
 
-### Documentation
-- ✅ **ARCHITECTURE.md** — Complete multi-org model specification
-- ✅ **API_REFERENCE.md** — All endpoints documented with error codes
-- ✅ **UX_GUIDE.md** — Settings flows, switcher patterns
-- ✅ **DEVELOPMENT.md** — Migrations, seed, test plan
-- ✅ **BILLING_PLAYBOOK.md** — Plan expiry handling, future billing strategy
+Найден и исправлен B16: API отчёта пропускал проверку членства пользователя в организации. Тест до исправления получил 200 для вошедшего постороннего, после — ожидаемый отказ. Добавлены проверка текущего пользователя, общий guard проекта и поиск отчёта в пределах разрешённого проекта. [Точное воспроизведение и доказательства](qa/report-access-2026-10-11/REPORT.md).
 
----
+Новые проверки — **9/9**, полный sanity — **70/70**, TypeScript и scoped ESLint — чисто. Реальная БД в дополнении не использовалась. Общие механизмы доступа есть; полнота их применения на всех API ещё не доказана.
 
-## 🟡 In Progress (90%)
+## Дополнение 2026-10-11: библиотека отчётов и требований
 
-### UI Polish
-- ✅ Core functionality working
-- ❌ **Expiry warning** — Visual indicator when `plan_valid_until <= 14 days`
-- ❌ **Restore error UX** — Actionable suggestions on PLAN_LIMIT_EXCEEDED
-- ❌ **Retention countdown** — Badge for deleted projects ("Expires in X days")
+Инвентаризированы **48 активных шаблонов** и 12 дополнительных кодов только в типах. Для всех активных кодов созданы [карточки источников и образцов](report-reference/CATALOG.md) и отдельные [требования](regulatory-requirements/README.md): применимость, входы, проверки, участие человека, версии и пробелы. Скачанные материалы имеют происхождение и контрольные суммы; официальный бланк, публичный заполненный пример и будущий контрольный тест различаются.
 
-**Estimate**: ~4 hours to complete
+Сбор выявил [устаревшие рекомендации и несоответствия полей](regulatory-requirements/GAPS.md), включая CBAM, SFDR и транспортные схемы. Первичные наблюдения о старом интерфейсе теперь отделены от текущих пробелов; изменения каталога описаны ниже. Полная нормативная логика не реализована. Платные/закрытые тексты и неподтверждённые условия не подменялись догадками. Охват и состав файлов: [coverage.json](report-reference/coverage.json).
 
----
+На этом этапе добавлены документы, образцы и скрипты их сборки. Новых расчётов, экспорта, автоматических юридических проверок или E2E до полученного отчёта библиотека сама по себе не реализует.
 
-## 🔴 Critical Gaps (15%)
+## Дополнение 2026-10-11: каталог и рекомендации
 
-### Test Coverage
-**Current**: 3 test files only
-- ✅ `service.test.ts` — Data requests (unit)
-- ✅ `uploads/sign/route.test.ts` — Upload validation (unit)
-- ✅ `uploads/relay/route.test.ts` — Local uploads (unit)
+[CATALOG-01](qa/catalog-2026-10-11/REPORT.md): исправлены описания 48 активных шаблонов, рекомендации с неустановленной применимостью, составные варианты и mapping всех 44 ID движка. Optional и варианты с необходимой проверкой больше не выбраны автоматически; scope одинаково применяется к видимым карточкам и отправляемым кодам. Торговый блок доступен поставщикам вне ЕС.
 
-**Missing** (production blockers):
-- ❌ Integration tests:
-  - Create org with plan=free
-  - Invite editor → SEAT_LIMIT_EXCEEDED
-  - Delete org → cascade soft-delete
-  - Restore project → PLAN_LIMIT_EXCEEDED/RETENTION_EXPIRED
-- ❌ Unit tests:
-  - Guards (assertWithinLimit, assertOrgMembership)
-  - Usage calculations
-  - Retention checks
-- ❌ E2E tests:
-  - Switcher context changes
-  - Expiry warnings
-  - VERSION_CONFLICT handling
+**89/89 sanity**, TypeScript и scoped ESLint — чисто. В браузере пройдены продуктовый выбор, ручной корпоративный путь, ветка non-EU поставщика, создание проекта с CBAM и EPD, reload и открытие EPD; ранее созданный PRODUCT_PCF доступен. Коды, scope, версии, разделы и поля всех 48 шаблонов сохранены. Точный набор сценариев и ограничения — в отчёте проверки. Расчёты, нормативные dataset-схемы и выдача файла не добавлены.
 
-**Estimate**: 1-2 days to unblock production
+## Дополнение 2026-10-11: supplier review package
 
-### Authentication
-- 🔴 **Dev stub active** — Auto-creates users, bypasses real auth
-- ⚠️ **Production blocker** — Must implement JWT middleware before deploy
+Для `CBAM_DATA_PACKAGE` добавлены 34 профильных поля, пять разделов ввода и финальная проверка, серверное сохранение черновика и скачивание ZIP из согласованной версии dataset. Архив содержит HTML, JSON, два CSV и реестр ссылок evidence. [Контракт](regulatory-requirements/CBAM_SUPPLIER_PACKAGE_CONTRACT.md), [инженерный пример](report-reference/examples/CBAM_DATA_PACKAGE/README.md), [точная проверка](qa/supplier-package-2026-10-11/REPORT.md).
 
-**Estimate**: TBD (requires scoping)
+**147/147 sanity**, TypeScript и scoped ESLint — чисто; проверка согласованности полей с реальной локальной БД проходит. В браузере: новая организация → продукт → форма → сохранение → reload → ZIP, блокировка неполного пакета, отрицательное число, условные поля, конфликт записи/скачивания двух вкладок и восстановление черновика. ZIP независимо проверен через Python; HTML осмотрен в браузере. Регистрация заново в этом проходе не выполнялась.
 
----
+Исправлены потеря корневых данных при обычном PATCH dataset, попадание лишних вложенных JSON-свойств в новый экспорт, переход Overview в общую таблицу вместо guided form и дублирующиеся ID полей создания организации. Добавлены 28 определений полей без изменения существующих; полный seed и миграции не запускались. Остальные 47 схем сохранены.
 
-## 📋 Verification Checklist
+Готовность означает только передачу данных на проверку. Удельные выбросы вводит пользователь; приложение рассчитывает отдельно `mass × direct SEE` и `mass × indirect SEE`. Оно не рассчитывает выбросы установки, сертификаты, применимость или верификацию. Документы перечислены ссылками, но не вложены. Клиентская приёмка и официальный annual operator report остаются открытыми.
 
-### Schema & Data
-- [x] All tables exist with correct enums
-- [x] Indices match ARCHITECTURE.md requirements
-- [x] Seed creates Free + Pro Beta plans
-- [x] Demo orgs and memberships created
+## Автоматическая проверка и среда основного аудита 2026-10-10
 
-### API Contracts
-- [x] All endpoints return unified error format
-- [x] PLAN_LIMIT_EXCEEDED returns `{ limit, current, needed }`
-- [x] SEAT_LIMIT_EXCEEDED returns `{ role, limit, current }`
-- [x] RETENTION_EXPIRED returns `{ deleted_at, window_days }`
-- [x] VERSION_CONFLICT returns `{ expectedVersion, currentVersion }`
+- **61/61 sanity**, **70/70 integration**, TypeScript без ошибок.
+- Scoped ESLint: 0 ошибок, 2 прежних предупреждения. Полный lint всех посторонних файлов не заявляется.
+- Четыре граничные проверки retention; после синхронизации защитного изменения visibility helper повторно прошли 11 затронутых тестов.
+- Из-за зависания чтения исходных зависимостей использован изолированный runtime `/tmp/carbonreport-qa-runtime`, Node 20.20.0, установка по lockfile. Проверены совпадение исходников и перенос исправлений; это не отдельная версия продукта.
+- Браузер использовал локальную dev-БД и синтетические данные; интеграционные тесты — отдельную тестовую БД.
 
-### Guards & Limits
-- [x] assertOrgMembership enforces role hierarchy
-- [x] assertWithinLimit checks project/editor/verifier
-- [x] getPlan merges plan_definitions + valid_until
-- [x] getOrganizationUsage counts all resource types
+Точные команды, логи и оговорки: [evidence/summary.txt](qa/browser-audit-2026-10-10/evidence/summary.txt) и раздел проверки в отчёте. Автоматические браузерные тесты и CI этим проходом не закрыты.
 
-### Frontend Integration
-- [x] Switcher shows plan + usage
-- [x] Settings tabs functional
-- [x] Dataset VERSION_CONFLICT triggers refetch
-- [x] Restore/delete/archive work with limit checks
-- [ ] Expiry warnings visible (<14 days)
-- [ ] Limit exceeded errors show suggestions
-- [ ] Retention countdown displayed
+## Реализованная база и пределы утверждений
 
-### Feature Flags
-- [x] verifierRoleEnabled=false (guards active)
-- [x] billingUiEnabled=true (UI shows plans)
-- [x] approvalsEnabled=false (reserved)
+Multi-org, memberships/roles, планы и лимиты, lifecycle, auth middleware, организация/настройки, dataset, requests и каталог шаблонов уже существуют. Повторно планировать их реализацию с нуля не требуется.
 
----
+Наличие механизма не означает проверку всего пользовательского пути:
 
-## 🎯 Next Actions
+| Область | Что ещё не подтверждено / отсутствует |
+| --- | --- |
+| Итоговый результат | Supplier review ZIP проверен локально; приёмка клиентом и остальные 47 результатов не реализованы/не подтверждены |
+| Evidence / Files | Files — заглушка; upload routes и asset schema не доказывают готовность хранения подтверждающих документов |
+| Email и участники | Реальная доставка, verification/reset/refresh в полном пути и реальные приглашения не проверены; доступ неподтверждённого аккаунта требует явного продуктового правила |
+| Dataset | Конфликт двух вкладок проверен в supplier package; для общей таблицы/очереди все конкурентные сценарии ещё не доказаны |
+| Запросы | Используется ручной email-клиент; Log reminder фиксирует действие, а Reopen меняет статус, не отправляя письмо |
+| Workspace | Contacts/Requests объединяют доступные организации, Projects использует текущую; остаётся вопрос ясного обозначения контекста |
+| Платежи и инфраструктура | Не проверены платежи, внешнее storage, production scheduler, backup/restore и rollout выбранной среды |
+| Методика | Первичный сбор источников охватывает все активные шаблоны; соответствие реализации не подтверждено, для supplier review внедрены проверки комплектности и инженерная арифметика; полная нормативная методика не реализована |
+| UX и доступность | Нужны короткий первый запуск, релевантные поля и понятный следующий шаг; мобильный и полный WCAG-аудит не выполнялись |
 
-### Priority 1: Unblock Production (1-2 days)
-1. **Integration Tests**
-   - Org creation + plan assignment
-   - Limit enforcement (PLAN/SEAT_LIMIT_EXCEEDED)
-   - Soft-delete cascade
-   - Restore scenarios (limits + retention)
+## Что дальше
 
-2. **Unit Tests**
-   - Guards coverage >80%
-   - Usage calculations
-   - Retention logic
+Следующие работы определены в [BACKLOG](planning/BACKLOG.md): после локального supplier review ZIP **PLAN-01** должен уточнить покупателя и критерии приёмки этого примера. Полные **RULES-01 + FLOW-01 + OUTPUT-01** закрываются только в согласованном объёме, включая оставшиеся нормативные и пользовательские критерии. Параллельно закрепить критические исправления по **REL-01**. До реальных данных пилота проверить соответствующие функции и среду; широкий self-service launch пока не заявлять.
 
-3. **E2E Tests**
-   - Critical user flows (switcher, restore, optimistic locking)
-
-### Priority 2: UI Polish (~4 hours)
-1. Expiry warning badge in switcher
-2. Restore error with upgrade/archive suggestions
-3. Retention countdown for deleted projects
-
-### Priority 3: Authentication (TBD)
-1. Scope JWT middleware requirements
-2. Replace dev stub
-3. Test auth flows
-
----
-
-## 📊 Epic Status Summary
-
-| Epic | Status | Notes |
-|------|--------|-------|
-| Schema & Migrations | ✅ 100% | Complete |
-| Server Guards | ✅ 100% | Complete |
-| Organizations API | ✅ 100% | Complete |
-| Projects API | ✅ 100% | Complete |
-| Dataset API | ✅ 100% | Complete |
-| Uploads API | ✅ 100% | Complete |
-| Settings UI | ✅ 100% | Complete |
-| Org Switcher | ✅ 100% | Complete |
-| Memberships & Roles | ✅ 100% | Complete |
-| Usage & Limits | ✅ 100% | Complete |
-| Error Handling | ✅ 100% | Complete |
-| Documentation | ✅ 100% | Complete |
-| **UI Polish** | 🟡 **90%** | Minor gaps |
-| **Testing** | 🔴 **15%** | **Critical** |
-
----
-
-## 🚀 Deployment Readiness
-
-### Staging Environment
-**Status**: ✅ **READY**
-
-Requirements met:
-- All backend APIs functional
-- Database schema complete
-- Error handling consistent
-- UI core workflows working
-
-Safe to deploy for:
-- Internal testing
-- Stakeholder demos
-- QA validation
-
-### Production Environment
-**Status**: ❌ **BLOCKED**
-
-Blockers:
-1. 🔴 Test coverage <20% (need >80%)
-2. 🔴 Authentication using dev stub
-3. 🟡 UI polish gaps (non-critical)
-
-Do not deploy to production until:
-- Integration test suite passes
-- E2E tests cover critical flows
-- Authentication middleware implemented
-- Manual QA sign-off on limit scenarios
-
----
-
-## 📞 Questions or Issues?
-
-- Architecture: See `docs/ARCHITECTURE.md`
-- API contracts: See `docs/API_REFERENCE.md`
-- Dev setup: See `docs/DEVELOPMENT.md`
-- Outstanding work: See `docs/planning/BACKLOG.md`
-
-**Last verified**: 2025-11-16  
-**Next review**: After test implementation
+Предложения аудита не реализованы автоматически: их приоритет и критерии включены в рабочую очередь. Общий процент готовности и срок «2–3 дня до production» удалены как неподтверждённые оценки.

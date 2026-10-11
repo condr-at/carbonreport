@@ -17,6 +17,13 @@ import { cleanupTestData } from '@/__tests__/setup'
 import prisma from '@/lib/db'
 import { PROJECT_RETENTION_DAYS } from '@/lib/server-utils'
 import type { ApiError } from '@/lib/api-error'
+import * as auth from '@/lib/auth'
+import { getReportTemplate } from '@/lib/report-templates'
+import { GET as getProjectRoute } from '@/app/api/projects/[id]/route'
+import { GET as listProjectsRoute } from '@/app/api/projects/route'
+import { GET as getReportRoute } from '@/app/api/projects/[id]/reports/[reportId]/route'
+import { POST as restoreProjectRoute } from '@/app/api/projects/[id]/restore/route'
+import { PATCH as changeProjectStatusRoute } from '@/app/api/projects/[id]/status/route'
 
 beforeEach(async () => {
   await cleanupTestData()
@@ -25,6 +32,171 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await cleanupTestData()
+  auth.__resetCurrentUserResolver()
+})
+
+function mockUser(userId: string) {
+  auth.__setCurrentUserResolver(async () => {
+    const user = await prisma.user.findUnique({ where: { id: userId } })
+    if (!user) {
+      throw new Error('User not found')
+    }
+    return user
+  })
+}
+
+function buildJsonRequest(url: string, method: string, body?: Record<string, unknown>) {
+  return new Request(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+}
+
+async function assertReportCompletionAcrossRoutes(
+  projectId: string,
+  reportId: string,
+  organizationId: string,
+  expectedCompletion: number,
+) {
+  const [projectResponse, listResponse, reportResponse] = await Promise.all([
+    getProjectRoute(
+      buildJsonRequest(`http://localhost/api/projects/${projectId}`, 'GET') as any,
+      { params: Promise.resolve({ id: projectId }) },
+    ),
+    listProjectsRoute(
+      buildJsonRequest(`http://localhost/api/projects?organization_id=${organizationId}`, 'GET') as any,
+    ),
+    getReportRoute(
+      buildJsonRequest(`http://localhost/api/projects/${projectId}/reports/${reportId}`, 'GET') as any,
+      { params: Promise.resolve({ id: projectId, reportId }) },
+    ),
+  ])
+
+  assert.equal(projectResponse.status, 200, 'project detail response')
+  assert.equal(listResponse.status, 200, 'projects list response')
+  assert.equal(reportResponse.status, 200, 'report response')
+
+  type ProjectWithReports = { id: string; reports: { id: string; completion: number }[] }
+  const projectPayload = (await projectResponse.json()) as { project: ProjectWithReports }
+  const listPayload = (await listResponse.json()) as { projects: ProjectWithReports[] }
+  const reportPayload = (await reportResponse.json()) as { completion: number }
+
+  assert.equal(
+    projectPayload.project.reports.find((report) => report.id === reportId)?.completion,
+    expectedCompletion,
+    'project detail completion reflects the current dataset',
+  )
+  assert.equal(
+    listPayload.projects.find((project) => project.id === projectId)
+      ?.reports.find((report) => report.id === reportId)?.completion,
+    expectedCompletion,
+    'projects list completion reflects the current dataset',
+  )
+  assert.equal(reportPayload.completion, expectedCompletion, 'report completion agrees with project summaries')
+}
+
+// ============================================================================
+// Report Completion Across Project and Report Reads
+// ============================================================================
+
+test('GET project and report routes: completion follows filled and cleared data despite stale stored completion', async () => {
+  const { org, user } = await createTestOrgWithOwner({ planCode: 'free' })
+  mockUser(user.id)
+
+  const template = getReportTemplate('PRODUCT_PCF')
+  assert.ok(template)
+  const requiredFieldIds = new Set(template.sections.flatMap((section) =>
+    section.fields.filter((field) => field.isRequired).map((field) => field.fieldId),
+  ))
+  const requiredScalarField = template.sections
+    .filter((section) => !section.config?.repeatableKey)
+    .flatMap((section) => section.fields)
+    .find((field) => field.isRequired && field.fieldId === 'organization_name')
+  assert.ok(requiredScalarField, 'the template includes a required organization name')
+
+  const project = await createTestProject({
+    organizationId: org.id,
+    createdByUserId: user.id,
+  })
+  const report = await prisma.report.create({
+    data: { projectId: project.id, templateCode: template.code, completion: 0 },
+  })
+
+  for (const value of ['Regression Test Organization', '']) {
+    await prisma.project.update({
+      where: { id: project.id },
+      data: {
+        dataset: {
+          data_points: [{ field_id: requiredScalarField.fieldId, item_id: null, value }],
+        },
+      },
+    })
+
+    const storedReport = await prisma.report.findUniqueOrThrow({ where: { id: report.id } })
+    assert.equal(storedReport.completion, 0, 'stored completion remains stale during dataset edits')
+    await assertReportCompletionAcrossRoutes(
+      project.id,
+      report.id,
+      org.id,
+      value ? Math.round(100 / requiredFieldIds.size) : 0,
+    )
+  }
+})
+
+test('GET project and report routes: repeatable fields count once and completion stays within 100 percent', async () => {
+  const { org, user } = await createTestOrgWithOwner({ planCode: 'free' })
+  mockUser(user.id)
+
+  const template = getReportTemplate('ISO14067')
+  assert.ok(template)
+  const requiredFieldIds = new Set(template.sections.flatMap((section) =>
+    section.fields.filter((field) => field.isRequired).map((field) => field.fieldId),
+  ))
+  const repeatableRequiredFieldIds = new Set(template.sections
+    .filter((section) => section.config?.repeatableKey)
+    .flatMap((section) => section.fields)
+    .filter((field) => field.isRequired)
+    .map((field) => field.fieldId))
+  const repeatableFieldId = repeatableRequiredFieldIds.values().next().value
+  assert.ok(repeatableFieldId)
+
+  const repeatedDataPoints = ['1', '2', '3'].map((itemId) => ({
+    field_id: repeatableFieldId,
+    item_id: itemId,
+    value: `Material ${itemId}`,
+  }))
+  const project = await createTestProject({
+    organizationId: org.id,
+    createdByUserId: user.id,
+    dataset: { data_points: repeatedDataPoints },
+  })
+  const report = await prisma.report.create({
+    data: { projectId: project.id, templateCode: template.code, completion: 0 },
+  })
+
+  await assertReportCompletionAcrossRoutes(project.id, report.id, org.id, Math.round(100 / requiredFieldIds.size))
+
+  await prisma.project.update({
+    where: { id: project.id },
+    data: {
+      dataset: {
+        data_points: [...requiredFieldIds].flatMap((fieldId) => {
+          const itemIds = repeatableRequiredFieldIds.has(fieldId) ? ['1', '2', '3'] : [null]
+          return itemIds.map((itemId) => ({ field_id: fieldId, item_id: itemId, value: 'Filled' }))
+        }),
+      },
+    },
+  })
+  await assertReportCompletionAcrossRoutes(project.id, report.id, org.id, 100)
+
+  await prisma.project.update({
+    where: { id: project.id },
+    data: { dataset: { data_points: repeatedDataPoints.map((point) => ({ ...point, value: '   ' })) } },
+  })
+  await assertReportCompletionAcrossRoutes(project.id, report.id, org.id, 0)
 })
 
 // ============================================================================
@@ -264,6 +436,64 @@ test('POST /api/projects/:id/restore: blocks restore after retention window', as
   )
 })
 
+test('POST /api/projects/[id]/restore: route returns structured PLAN_LIMIT_EXCEEDED details', async () => {
+  const { org, user } = await createTestOrgWithOwner({ planCode: 'free' })
+  mockUser(user.id)
+
+  await createTestProject({
+    organizationId: org.id,
+    status: ProjectStatus.ACTIVE,
+  })
+
+  const archivedProject = await createTestProject({
+    organizationId: org.id,
+    status: ProjectStatus.ARCHIVED,
+  })
+
+  const response = await restoreProjectRoute(
+    buildJsonRequest(`http://localhost/api/projects/${archivedProject.id}/restore`, 'POST') as any,
+    { params: Promise.resolve({ id: archivedProject.id }) },
+  )
+
+  const payload = (await response.json()) as {
+    code: string
+    details?: {
+      resource?: string
+      current?: number
+      limit?: number
+      needed?: number
+    }
+  }
+
+  assert.equal(response.status, 409)
+  assert.equal(payload.code, 'PLAN_LIMIT_EXCEEDED')
+  assert.equal(payload.details?.resource, 'active_projects')
+  assert.equal(payload.details?.current, 1)
+  assert.equal(payload.details?.limit, 1)
+  assert.equal(payload.details?.needed, 1)
+})
+
+test('POST /api/projects/[id]/restore: route returns RETENTION_EXPIRED after 30 days', async () => {
+  const { org, user } = await createTestOrgWithOwner({ planCode: 'free' })
+  mockUser(user.id)
+
+  const deletedProject = await createTestProject({
+    organizationId: org.id,
+    status: ProjectStatus.DELETED,
+    deletedAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000),
+  })
+
+  const response = await restoreProjectRoute(
+    buildJsonRequest(`http://localhost/api/projects/${deletedProject.id}/restore`, 'POST') as any,
+    { params: Promise.resolve({ id: deletedProject.id }) },
+  )
+
+  const payload = (await response.json()) as { code: string }
+
+  assert.equal(response.status, 410)
+  assert.equal(payload.code, 'RETENTION_EXPIRED')
+})
+
 test('POST /api/projects/:id/restore: restores archived to active requires limit check', async () => {
   const { org } = await createTestOrgWithOwner({ planCode: 'free' })
 
@@ -406,4 +636,32 @@ test('Project status transitions: reported → archived is blocked', async () =>
       return true
     },
   )
+})
+
+test('PATCH /api/projects/[id]/status: route marks active project as reported', async () => {
+  const { org, user } = await createTestOrgWithOwner({ planCode: 'free' })
+  mockUser(user.id)
+
+  const project = await createTestProject({
+    organizationId: org.id,
+    status: ProjectStatus.ACTIVE,
+  })
+
+  const response = await changeProjectStatusRoute(
+    buildJsonRequest(`http://localhost/api/projects/${project.id}/status`, 'PATCH', {
+      status: 'reported',
+    }) as any,
+    { params: Promise.resolve({ id: project.id }) },
+  )
+
+  const payload = (await response.json()) as {
+    project: {
+      id: string
+      status: ProjectStatus
+    }
+  }
+
+  assert.equal(response.status, 200)
+  assert.equal(payload.project.id, project.id)
+  assert.equal(payload.project.status, ProjectStatus.REPORTED)
 })

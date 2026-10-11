@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const ECOVADISSCORETemplate: ReportTemplate = {
   code: 'ECOVADIS_SCORE' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'EcoVadis Scorecard',
+  name: 'EcoVadis Assessment Preparation',
+  description: 'Company and environmental inputs for an evidence review.',
   scope: 'corporate',
   sections: [
     {

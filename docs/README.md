@@ -1,33 +1,43 @@
 # Documentation Index
 
-_Last updated: 2025-11-16_
+_Last updated: 2026-10-11_
 
 This folder contains the working documentation for the Carbon Report Platform. The layout was refreshed to reduce duplication and make it easier to find the right reference quickly.
 
 ---
 
-## 🎯 Current Status: Multi-Org Implementation
+## Current Status
 
-**Overall Progress**: 🟡 **85% Complete**  
-**Staging Ready**: ✅ YES | **Production Ready**: ❌ NO (test coverage blocker)
+**Product maturity**: локальный прототип, проверенный в перечисленных сценариях аудита
+**Production readiness**: не подтверждена; ограниченный внешний пилот требует законченного результата и проверки используемых функций/среды
 
-👉 **Quick Status**: See [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md)  
-📋 **Remaining Work**: See [`planning/BACKLOG.md`](./planning/BACKLOG.md)
+👉 **Quick Status**: See [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md)
+📋 **Active Plan**: [`planning/BACKLOG.md`](./planning/BACKLOG.md) — единственная очередь задач и статусов; [`planning/ROADMAP.md`](./planning/ROADMAP.md) — порядок и условия перехода
 
-**Production Blockers**:
-- 🔴 Test coverage critical gap (only 3 test files, need integration/E2E)
-- 🔴 Authentication dev stub (requires JWT middleware)
-- 🟡 Minor UI polish (expiry warnings, retention countdown)
+**Основные открытые вопросы**:
+- Один принимаемый покупателем результат и путь к его получению
+- Автоматические браузерные регрессии и CI; оставшиеся auth-контракты и внешние интеграции
+- Понятный первый запуск, необходимые поля и область организации
+- Перенос проверенных требований в правила и один законченный экспорт; [образцы всех активных типов](./report-reference/CATALOG.md) собраны отдельно от реализации
 
-**Timeline to Production**: ~2-3 days (excluding auth work)
+Свежие доказательства: [браузерный аудит 2026-10-10](./qa/browser-audit-2026-10-10/REPORT.md). Предложения: [улучшения флоу](./qa/browser-audit-2026-10-10/FLOW_IMPROVEMENTS.md). Коммерческие гипотезы и ограниченный эксперимент: [бизнес-планирование](./business-planning/README.md).
+
+[`PRODUCT_READINESS_REVIEW.md`](./PRODUCT_READINESS_REVIEW.md) сохраняет продуктовый контекст предыдущей оценки; актуальные наблюдения и задачи находятся по ссылкам выше.
+
+Current sequencing rule:
+- landing is frozen until the final polish phase; active work should stay in product surfaces and verification.
 
 ---
 
 ## 🧭 Documentation Structure
 
-- `IMPLEMENTATION_STATUS.md` — **NEW**: Current multi-org implementation status & readiness
+- `IMPLEMENTATION_STATUS.md` — Quick implementation snapshot and current blockers
 - `planning/BACKLOG.md` — Actionable tasks and work queue
 - `planning/ROADMAP.md` — Phase sequencing, milestones, dependencies
+- `business-planning/` — коммерческие гипотезы и план проверки спроса
+- `report-reference/` — реестр типов, официальные формы, опубликованные примеры и происхождение файлов
+- `regulatory-requirements/` — применимость, требования, проверки и пробелы по каждому типу; модель будущего пошагового маршрута
+- `qa/browser-audit-2026-10-10/` — завершённый аудит, доказательства и отдельные UX-предложения
 - `archive/` — Historical deep-dives retained for context
 
 Use the table below when you need to know "why does this file exist?" and the Backlog when you need the next concrete task.
@@ -53,9 +63,9 @@ Use the table below when you need to know "why does this file exist?" and the Ba
 
 ### For Product & UX
 
-1. **User flows & IA**: [`UX_GUIDE.md`](./UX_GUIDE.md)
-2. **Design system**: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)
-3. **Product direction**: [`PRODUCT_READINESS_REVIEW.md`](./PRODUCT_READINESS_REVIEW.md) → [`planning/ROADMAP.md`](./planning/ROADMAP.md)
+1. **Observed experience**: [браузерный аудит](./qa/browser-audit-2026-10-10/REPORT.md) → [предложения по флоу](./qa/browser-audit-2026-10-10/FLOW_IMPROVEMENTS.md). [`UX_GUIDE.md`](./ux/UX_GUIDE.md) — справочник, не доказательство текущего поведения.
+2. **Design system**: [`DESIGN_SYSTEM.md`](./ux/DESIGN_SYSTEM.md)
+3. **Next work**: [`planning/ROADMAP.md`](./planning/ROADMAP.md) → [`planning/BACKLOG.md`](./planning/BACKLOG.md); [проверка спроса](./business-planning/VALIDATION_PLAN.md)
 
 ---
 
@@ -65,16 +75,20 @@ Use the table below when you need to know "why does this file exist?" and the Ba
 | --- | --- | --- |
 | [`PRODUCT_READINESS_REVIEW.md`](./PRODUCT_READINESS_REVIEW.md) | Product, Founders, Leads | Honest human-readable assessment of product readiness, product thesis, and near-term decisions. |
 | [`AGENT_PRODUCT_GUARDRAILS.md`](./AGENT_PRODUCT_GUARDRAILS.md) | Engineers, AI agents | Execution guardrails for product-facing changes: source-of-truth hierarchy, UX rules, messaging constraints, and acceptance criteria. |
-| [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) | **Everyone** | **Quick status**: Multi-org readiness (85%), blockers, timeline |
+| [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md) | **Everyone** | Краткий снимок реализации, проверок и их ограничений |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Engineers, PMs | High-level system & data architecture (supersedes archived requirements docs). |
 | [`DEVELOPMENT.md`](./DEVELOPMENT.md) | Engineers | Day-to-day workflow, active technical debt, validation tooling. |
 | [`API_REFERENCE.md`](./API_REFERENCE.md) | Engineers | REST endpoint definitions, request/response schemas. |
-| [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) | Engineers, Designers | UI components, spacing, accessibility rules. |
-| [`UX_GUIDE.md`](./UX_GUIDE.md) | Product, Design | UX flows, layout templates, page-to-API mapping. |
+| [`DESIGN_SYSTEM.md`](./ux/DESIGN_SYSTEM.md) | Engineers, Designers | UI components, spacing, accessibility rules. |
+| [`UX_GUIDE.md`](./ux/UX_GUIDE.md) | Product, Design | UX flows, layout templates, page-to-API mapping. |
 | [`BILLING_PLAYBOOK.md`](./BILLING_PLAYBOOK.md) | Engineers, PMs | Эволюция биллинга: история планов, expiry, webhooks, источники usage. |
 | [`planning/ROADMAP.md`](./planning/ROADMAP.md) | PMs, Leads | Phase sequencing, milestones, and dependencies. |
 | [`planning/BACKLOG.md`](./planning/BACKLOG.md) | Engineers, PMs | Prioritized tasks and follow-ups feeding the roadmap phases. |
-| [`reference/data-points-hints.md`](./reference/data-points-hints.md) | Engineers, Analysts | Narrative hints for key dataset fields (legacy CamelCase identifiers). |
+| [`business-planning/README.md`](./business-planning/README.md) | Founder, Product | Оценка заработка, сегмент и ценовые гипотезы; ссылки на план пилота |
+| [`report-reference/CATALOG.md`](./report-reference/CATALOG.md) | Product, Engineers, Methodology | Все активные коды, ссылки на требования и доступные образцы; наличие шаблона не означает готовность отчёта |
+| [`regulatory-requirements/README.md`](./regulatory-requirements/README.md) | Product, Engineers, Methodology | Нормативная библиотека, условия применимости и контракт будущих проверок |
+| [`qa/browser-audit-2026-10-10/REPORT.md`](./qa/browser-audit-2026-10-10/REPORT.md) | Product, Engineers | Пройденные сценарии, исправленные баги, скриншоты и результаты проверок |
+| [`data-points-hints (outdated).md`](./data%20points%20guide/data-points-hints%20%28outdated%29.md) | Engineers, Analysts | Исторические подсказки (outdated, legacy CamelCase); не актуальный контракт полей. |
 
 ---
 
@@ -82,24 +96,25 @@ Use the table below when you need to know "why does this file exist?" and the Ba
 
 **New to the project?**
 1. Skim [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the system overview.
-2. Read [`UX_GUIDE.md`](./UX_GUIDE.md) to understand the product experience.
+2. Read [`UX_GUIDE.md`](./ux/UX_GUIDE.md) to understand the product experience.
 3. Check [`DEVELOPMENT.md`](./DEVELOPMENT.md) for active engineering focus areas.
 
 **Working on datasets or templates?**
+- Требования и образцы: [`report-reference/CATALOG.md`](./report-reference/CATALOG.md), [`regulatory-requirements/RULE_MODEL.md`](./regulatory-requirements/RULE_MODEL.md). Реестр кода и старые матрицы не доказывают нормативную полноту.
 - Canonical definitions: `prisma/seed-data/dataset-fields.ts`
 - Validation tooling: `npm run templates:check`
-- Field guidance: [`reference/data-points-hints.md`](./reference/data-points-hints.md)
+- Historical field guidance (outdated): [`data-points-hints (outdated).md`](./data%20points%20guide/data-points-hints%20%28outdated%29.md)
  - Data points guide & matrix: `docs/data points guide/` — план расширения полей (`data points expansion plan.md`) и матрица `datapoints-reports matrix.csv` как источник истины, какие `fieldId` где используются и реализованы.
 
 **Implementing backend changes?**
 - API specs: [`API_REFERENCE.md`](./API_REFERENCE.md)
 - Technical debt / priorities: [`DEVELOPMENT.md`](./DEVELOPMENT.md#active-technical-debt)
 - Backlog tasks: [`planning/BACKLOG.md`](./planning/BACKLOG.md)
-- Release gates: [`IMPLEMENTATION_CHECKLIST.md`](./IMPLEMENTATION_CHECKLIST.md)
+- Условия следующего этапа: [`planning/ROADMAP.md`](./planning/ROADMAP.md); прежний [`IMPLEMENTATION_CHECKLIST.md`](./archive/IMPLEMENTATION_CHECKLIST.md) — исторический документ
 
 **Building frontend features?**
-- UX flows & layouts: [`UX_GUIDE.md`](./UX_GUIDE.md)
-- Components: [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md)
+- UX flows & layouts: [`UX_GUIDE.md`](./ux/UX_GUIDE.md)
+- Components: [`DESIGN_SYSTEM.md`](./ux/DESIGN_SYSTEM.md)
 - Data contracts: [`API_REFERENCE.md`](./API_REFERENCE.md)
 
 ---
@@ -126,6 +141,7 @@ The previous long-form documents are preserved for reference:
 - `docs/archive/Requirements v0.0.1.md`
 - `docs/archive/REPORT_TEMPLATES_ARCHITECTURE.md`
 - `docs/archive/IMPLEMENTATION_CHECKLIST.md`
+- `docs/archive/BACKLOG-before-2026-10-10.md` и `ROADMAP-before-2026-10-10.md` — исходные критерии и изменения до ревизии; их статусы и сроки не действуют
 - `docs/archive/REFERENCE_data_points_hints.json`
 - Additional planning artefacts inside `docs/archive/`
 

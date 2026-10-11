@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const SFDRTemplate: ReportTemplate = {
   code: 'SFDR' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'SFDR (Sustainable Finance Disclosure Regulation)',
+  name: 'SFDR Entity PAI — Initial Inputs',
+  description: 'Initial company and emissions data for PAI preparation.',
   scope: 'corporate',
   sections: [
     {

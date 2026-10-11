@@ -1,0 +1,4 @@
+PASS deleted 1000ms ago: elapsed days 0
+PASS deleted 86399999ms ago: elapsed days 0
+PASS deleted 86400000ms ago: elapsed days 1
+PASS 30-day retention deadline: 0 days remaining

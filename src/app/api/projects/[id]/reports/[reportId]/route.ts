@@ -12,9 +12,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { OrganizationMembershipRole } from '@prisma/client'
 import prisma from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth'
+import { ApiError, ensureApiError, errorResponse } from '@/lib/api-error'
+import { requireProjectForDataset } from '@/lib/projects/dataset-guards'
 import { getReportTemplate } from '@/lib/report-templates'
-import { calculateCompletion } from '@/lib/dataset-validation'
+import { getReportCompletion } from '@/lib/report-completion'
 import type { Dataset } from '@/lib/dataset-validation'
 import type { ReportTemplateCode } from '@/lib/report-templates/types'
 
@@ -34,12 +38,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string; reportId: string }> }
 ) {
   try {
+    const user = await getCurrentUser()
     const { id, reportId } = await params
     const projectId = id
+    await requireProjectForDataset(user.id, projectId, {
+      role: OrganizationMembershipRole.VIEWER_READONLY,
+    })
 
-    // Fetch report with related project dataset
-    const report = await prisma.report.findUnique({
-      where: { id: reportId },
+    // Read the dataset only after access checks, and scope the report to this project.
+    const report = await prisma.report.findFirst({
+      where: { id: reportId, projectId },
       include: {
         project: {
           select: {
@@ -53,27 +61,13 @@ export async function GET(
     })
 
     if (!report) {
-      return NextResponse.json(
-        { error: 'Report not found' },
-        { status: 404 }
-      )
-    }
-
-    // Verify report belongs to project
-    if (report.projectId !== projectId) {
-      return NextResponse.json(
-        { error: 'Report does not belong to this project' },
-        { status: 403 }
-      )
+      throw new ApiError(404, 'NOT_FOUND', 'Report not found')
     }
 
     // Load report template
     const template = getReportTemplate(report.templateCode as ReportTemplateCode)
     if (!template) {
-      return NextResponse.json(
-        { error: `Invalid template code: ${report.templateCode}` },
-        { status: 500 }
-      )
+      throw new ApiError(500, 'INTERNAL_ERROR', 'Report template is unavailable')
     }
 
     // Extract all field IDs from template
@@ -94,13 +88,7 @@ export async function GET(
       data_points: filteredDataPoints,
     }
 
-    // Calculate completion based on template requirements
-    const requiredFieldIds = template.sections
-      .flatMap((s) => s.fields)
-      .filter((f) => f.isRequired)
-      .map((f) => f.fieldId)
-
-    const completionPercentage = calculateCompletion(filteredDataset, requiredFieldIds)
+    const completionPercentage = getReportCompletion(filteredDataset, template).percentage
 
     return NextResponse.json({
       reportInfo: {
@@ -121,12 +109,8 @@ export async function GET(
       datasetVersion: report.project.datasetVersion, // For optimistic locking when updating
       completion: completionPercentage, // 0-100 percentage
       metadata: report.metadata || {}, // UI settings (sort, filters, etc)
-    })
+    }, { headers: { 'Cache-Control': 'private, no-store' } })
   } catch (error) {
-    console.error('Error fetching report:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch report' },
-      { status: 500 }
-    )
+    return errorResponse(ensureApiError(error, 'Failed to fetch report'))
   }
 }

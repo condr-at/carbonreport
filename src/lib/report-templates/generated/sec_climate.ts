@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const SECCLIMATETemplate: ReportTemplate = {
   code: 'SEC_CLIMATE' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'SEC Climate Disclosure',
+  name: 'SEC Climate Disclosure Preparation',
+  description: 'Climate-risk and emissions inputs for legal review.',
   scope: 'corporate',
   sections: [
     {

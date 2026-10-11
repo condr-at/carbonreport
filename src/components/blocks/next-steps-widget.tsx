@@ -50,7 +50,7 @@ export function NextStepsWidget({ projects }: NextStepsWidgetProps) {
         <CardTitle>Next Steps</CardTitle>
         <CardDescription>
           {nextSteps.length === 0
-            ? 'All tasks completed! 🎉'
+            ? 'No pending roadmap tasks'
             : `${nextSteps.length} action${nextSteps.length === 1 ? '' : 's'} across your projects`}
         </CardDescription>
       </CardHeader>

@@ -48,7 +48,7 @@ export function getProjectRetentionCountdown(
   }
 
   const elapsedMs = Math.max(0, Date.now() - deletedAt.getTime());
-  const daysSinceDeletion = Math.ceil(elapsedMs / DAY_IN_MS);
+  const daysSinceDeletion = Math.floor(elapsedMs / DAY_IN_MS);
 
   return {
     deleted_at: deletedAt,

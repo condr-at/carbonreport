@@ -1,0 +1,629 @@
+{
+  "compared_with": "REF-01 code snapshot captured before CATALOG-01",
+  "templates": [
+    {
+      "code": "BANK_TEMPLATE_FILL",
+      "scope": "corporate",
+      "field_count": 88,
+      "required_count": 82,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "BCORP_IMPACT_ASSESSMENT",
+      "scope": "corporate",
+      "field_count": 95,
+      "required_count": 85,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "BUILDING_CARBON_FOOTPRINT",
+      "scope": "product",
+      "field_count": 61,
+      "required_count": 52,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CARBON_NEUTRAL_CERT",
+      "scope": "corporate",
+      "field_count": 107,
+      "required_count": 97,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CBAM",
+      "scope": "product",
+      "field_count": 14,
+      "required_count": 6,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CBAM_ALLOWANCES",
+      "scope": "product",
+      "field_count": 51,
+      "required_count": 51,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CBAM_DATA_PACKAGE",
+      "scope": "product",
+      "field_count": 68,
+      "required_count": 62,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CBAM_MONITORING_ALERT",
+      "scope": "product",
+      "field_count": 52,
+      "required_count": 52,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CBAM_PREP_METHOD",
+      "scope": "product",
+      "field_count": 66,
+      "required_count": 58,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CBAM_REPORT",
+      "scope": "product",
+      "field_count": 68,
+      "required_count": 62,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CDP_DISCLOSURE",
+      "scope": "corporate",
+      "field_count": 139,
+      "required_count": 122,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CLIENT_SCOPE3_PACKAGE",
+      "scope": "corporate",
+      "field_count": 70,
+      "required_count": 66,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CLIENT_TEMPLATE_FILL",
+      "scope": "corporate",
+      "field_count": 76,
+      "required_count": 70,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CLIMATE_ACTION_PLAN",
+      "scope": "corporate",
+      "field_count": 120,
+      "required_count": 112,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CORP_GHG",
+      "scope": "corporate",
+      "field_count": 84,
+      "required_count": 51,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CORP_GHG_ANNUAL",
+      "scope": "corporate",
+      "field_count": 84,
+      "required_count": 51,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CORP_GHG_INTERNAL",
+      "scope": "corporate",
+      "field_count": 41,
+      "required_count": 33,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CORP_GHG_PUBLIC",
+      "scope": "corporate",
+      "field_count": 84,
+      "required_count": 51,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CORP_GHG_SIMPLIFIED",
+      "scope": "corporate",
+      "field_count": 42,
+      "required_count": 34,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CORP_GHG_VERIFIED",
+      "scope": "corporate",
+      "field_count": 84,
+      "required_count": 61,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CORSIA",
+      "scope": "corporate",
+      "field_count": 47,
+      "required_count": 47,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "CSRD",
+      "scope": "corporate",
+      "field_count": 207,
+      "required_count": 172,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "ECOVADIS_SCORE",
+      "scope": "corporate",
+      "field_count": 82,
+      "required_count": 74,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "ENERGY_AUDIT_SCOPE12",
+      "scope": "corporate",
+      "field_count": 52,
+      "required_count": 46,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "EPD",
+      "scope": "product",
+      "field_count": 62,
+      "required_count": 54,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "EU_ETS",
+      "scope": "corporate",
+      "field_count": 63,
+      "required_count": 61,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "EU_MRV",
+      "scope": "corporate",
+      "field_count": 45,
+      "required_count": 43,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "GRESB_ASSESSMENT",
+      "scope": "corporate",
+      "field_count": 106,
+      "required_count": 81,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "HKEX_ESG",
+      "scope": "corporate",
+      "field_count": 132,
+      "required_count": 103,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "IFRS_S2_CLIMATE",
+      "scope": "corporate",
+      "field_count": 135,
+      "required_count": 105,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "ISO_14064_CERT",
+      "scope": "corporate",
+      "field_count": 87,
+      "required_count": 63,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "ISO_14067",
+      "scope": "product",
+      "field_count": 62,
+      "required_count": 54,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "ISO14067",
+      "scope": "product",
+      "field_count": 20,
+      "required_count": 9,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "PPA_STRATEGY",
+      "scope": "corporate",
+      "field_count": 53,
+      "required_count": 47,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "PREP_GHG",
+      "scope": "corporate",
+      "field_count": 43,
+      "required_count": 35,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "PRODUCT_PCF",
+      "scope": "product",
+      "field_count": 62,
+      "required_count": 54,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "RE100_REPORTING",
+      "scope": "corporate",
+      "field_count": 56,
+      "required_count": 50,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "RECS_STRATEGY",
+      "scope": "corporate",
+      "field_count": 53,
+      "required_count": 47,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "SBTI_COMMITMENT",
+      "scope": "corporate",
+      "field_count": 97,
+      "required_count": 89,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "SCOPE123_DATASET",
+      "scope": "corporate",
+      "field_count": 75,
+      "required_count": 75,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "SCOPE2_DETAILED",
+      "scope": "corporate",
+      "field_count": 55,
+      "required_count": 45,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "SCOPE3_CATEGORY1_SUPPLIERS",
+      "scope": "corporate",
+      "field_count": 56,
+      "required_count": 51,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "SCOPE3_DETAILED",
+      "scope": "corporate",
+      "field_count": 70,
+      "required_count": 67,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "SEC_CLIMATE",
+      "scope": "corporate",
+      "field_count": 138,
+      "required_count": 107,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "SFDR",
+      "scope": "corporate",
+      "field_count": 50,
+      "required_count": 47,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "TCFD_REPORT",
+      "scope": "corporate",
+      "field_count": 112,
+      "required_count": 98,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "UK_SECR",
+      "scope": "corporate",
+      "field_count": 57,
+      "required_count": 47,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    },
+    {
+      "code": "UK_TCFD",
+      "scope": "corporate",
+      "field_count": 110,
+      "required_count": 81,
+      "preserved": [
+        "code",
+        "scope",
+        "implementation_version",
+        "sections",
+        "fields"
+      ]
+    }
+  ]
+}

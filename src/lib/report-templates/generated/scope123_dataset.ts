@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const SCOPE123DATASETTemplate: ReportTemplate = {
   code: 'SCOPE123_DATASET' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'Full Scope 1, 2, 3 Dataset',
+  name: 'Scope 1–3 Data Collection',
+  description: 'Shared emissions inputs for internal or external review.',
   scope: 'corporate',
   sections: [
     {

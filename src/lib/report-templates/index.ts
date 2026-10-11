@@ -2,6 +2,7 @@ import { GeneratedReportTemplates } from './generated';
 import { ReportTemplate, ReportTemplateCode } from './types'
 import { ISO14067Template } from './iso14067'
 import { CBAMTemplate } from './cbam'
+import { CBAMSupplierPackageTemplate } from './cbam-data-package'
 
 /**
  * Report Templates Registry
@@ -14,6 +15,7 @@ export const REPORT_TEMPLATES: Partial<Record<ReportTemplateCode, ReportTemplate
   ...GeneratedReportTemplates,
   ISO14067: ISO14067Template,
   CBAM: CBAMTemplate,
+  CBAM_DATA_PACKAGE: CBAMSupplierPackageTemplate,
 }
 
 /**

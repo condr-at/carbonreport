@@ -1,0 +1,188 @@
+Browser tab: 600622345, Title: "Carbon Report", URL: "http://localhost:3000/projects/new/select-reports".
+1 AXWebArea Carbon Report, URL: localhost:3000/projects/new/select-reports
+	2 container Notifications alt+T
+	3 container
+		29 pop up button (collapsed) QS QA Switching Workspace Free · 1 / 1 projects Open organization menu, ID: radix-_r_0_, Secondary Actions: Expand
+			30 text QS
+			31 text QA Switching Workspace
+			32 text Free
+			33 text  · 1 / 1 projects
+			34 text Open organization menu
+		35 container
+			36 link Description: Dashboard, Value: localhost:3000/dashboard
+			37 link Description: Projects, Value: localhost:3000/projects
+			38 link Description: Requests, Value: localhost:3000/requests
+			39 link Description: Contacts, Value: localhost:3000/contacts
+			40 link Description: Settings, Value: localhost:3000/settings
+		4 pop up button (collapsed) QC QA Carbon Auditor qa.browser.20261010@example.test Open user menu, ID: radix-_R_1pknebn6lb_, Secondary Actions: Expand
+			5 text QC
+			6 text QA Carbon Auditor
+			7 text qa.browser.20261010@example.test
+			8 text Open user menu
+		9 container
+			51 heading Create New Project, Value: 1
+				52 text Create New Project
+			53 text Choose data templates for your reporting needs.
+			54 button Close project wizard
+				55 image
+			56 text Select Report Types Choose data templates for  QA Catalog Corporate 20261011 . You can collect and review data here; finished report exports and submissions are not available yet.
+			57 checkbox Description: Carbon Neutrality Claim Preparation, Value: 0, ID: CARBON_NEUTRAL_CERT
+			58 text Carbon Neutrality Claim Preparation
+			59 text Emissions, reductions and compensation evidence for review.
+			60 text Use when:  Gather the basis for assessing a proposed claim under the applicable standard and local rules.
+			61 checkbox Description: B Corp Assessment Preparation, Value: 0, ID: BCORP_IMPACT_ASSESSMENT
+			62 text B Corp Assessment Preparation
+			63 text Company data and evidence for a B Lab assessment.
+			64 text Use when:  Prepare inputs for the applicable certification pathway and independent review.
+			65 checkbox Description: CSRD / ESRS Data Preparation, Value: 0, ID: CSRD
+			66 text CSRD / ESRS Data Preparation
+			67 text Sustainability inputs for an ESRS statement.
+			68 text Use when:  Collect information after confirming scope, reporting year and the applicable ESRS edition.
+			69 checkbox Description: EU ETS Installation Data, Value: 0, ID: EU_ETS
+			70 text EU ETS Installation Data
+			71 text Installation emissions and monitoring inputs for annual reporting.
+			72 text Use when:  Prepare stationary-installation data for verifier review and the national reporting process.
+			73 checkbox Description: EU MRV Shipping Data, Value: 0, ID: EU_MRV
+			74 text EU MRV Shipping Data
+			75 text Ship activity, fuel and emissions inputs for maritime reporting.
+			76 text Use when:  Prepare data for MRV review and, where applicable, the parallel EU ETS process.
+			77 checkbox Description: SEC Climate Disclosure Preparation, Value: 0, ID: SEC_CLIMATE
+			78 text SEC Climate Disclosure Preparation
+			79 text Climate-risk and emissions inputs for legal review.
+			80 text Use when:  Prepare relevant disclosure information; the 2024 SEC climate rule remains stayed.
+			81 checkbox Description: UK SECR Data Preparation, Value: 0, ID: UK_SECR
+			82 text UK SECR Data Preparation
+			83 text Energy, emissions and methodology inputs for annual reporting.
+			84 text Use when:  Prepare data after confirming quoted-company, unquoted-company or LLP reporting requirements.
+			85 checkbox Description: UK Climate Disclosure Preparation, Value: 0, ID: UK_TCFD
+			86 text UK Climate Disclosure Preparation
+			87 text Climate governance, risk and metrics inputs for UK reporting.
+			88 text Use when:  Prepare for the applicable TCFD or UK SRS regime for your entity and reporting period.
+			89 checkbox Description: SFDR Entity PAI — Initial Inputs, Value: 0, ID: SFDR
+			90 text SFDR Entity PAI — Initial Inputs
+			91 text Initial company and emissions data for PAI preparation.
+			92 text Use when:  Prepare source data for a separate mapping to the entity-level principal adverse impacts statement.
+			93 checkbox Description: HKEX ESG Data Preparation, Value: 0, ID: HKEX_ESG
+			94 text HKEX ESG Data Preparation
+			95 text Company data for Appendix C2 ESG Reporting Code disclosures.
+			96 text Use when:  Gather inputs for the requirements applicable to your listing tier and reporting year.
+			97 checkbox Description: IFRS S2 Climate Data, Value: 0, ID: IFRS_S2_CLIMATE
+			98 text IFRS S2 Climate Data
+			99 text Climate-risk, strategy and emissions inputs for reporting.
+			100 text Use when:  Prepare data for voluntary IFRS S2 use or the applicable local reporting regime.
+			101 checkbox Description: ISO 14064-1 Inventory Preparation, Value: 0, ID: ISO_14064_CERT
+			102 text ISO 14064-1 Inventory Preparation
+			103 text Organization-level emissions and methodology inputs.
+			104 text Use when:  Collect data for an inventory study and, when required, independent verification.
+			105 checkbox Description: Corporate GHG Inventory Data, Value: 0, ID: CORP_GHG
+			106 text Corporate GHG Inventory Data
+			107 text Scope 1–3 inputs and methodology notes.
+			108 text Use when:  Collect the activity data and reported emissions needed for a corporate inventory.
+			109 checkbox Description: Corporate GHG Verification Preparation, Value: 0, ID: CORP_GHG_VERIFIED
+			110 text Corporate GHG Verification Preparation
+			111 text Inventory information and verification-related fields.
+			112 text Use when:  Prepare data for an independent verifier to assess.
+			113 checkbox Description: Corporate GHG Disclosure Preparation, Value: 0, ID: CORP_GHG_PUBLIC
+			114 text Corporate GHG Disclosure Preparation
+			115 text Inventory inputs for an external communications review.
+			116 text Use when:  Prepare selected emissions information for approval before public disclosure.
+			117 checkbox Description: Corporate GHG Operational Data, Value: 0, ID: CORP_GHG_INTERNAL
+			118 text Corporate GHG Operational Data
+			119 text Inventory inputs for internal emissions analysis.
+			120 text Use when:  Collect data to support facilities and procurement reduction planning.
+			121 checkbox Description: Corporate GHG Annual Data, Value: 0, ID: CORP_GHG_ANNUAL
+			122 text Corporate GHG Annual Data
+			123 text Reporting-year emissions and comparison inputs.
+			124 text Use when:  Prepare annual inventory information and explanations of changes.
+			125 checkbox Description: Corporate GHG Overview Data, Value: 0, ID: CORP_GHG_SIMPLIFIED
+			126 text Corporate GHG Overview Data
+			127 text High-level emissions and organization fields.
+			128 text Use when:  Start an inventory or gather emissions totals for a buyer request.
+			129 checkbox Description: TCFD Disclosure Preparation, Value: 0, ID: TCFD_REPORT
+			130 text TCFD Disclosure Preparation
+			131 text Governance, strategy, risk and metrics inputs.
+			132 text Use when:  Prepare information for a TCFD-based request after checking the applicable local reporting rules.
+			133 checkbox Description: CORSIA Emissions Data, Value: 0, ID: CORSIA
+			134 text CORSIA Emissions Data
+			135 text Aircraft-operator emissions and monitoring inputs.
+			136 text Use when:  Prepare annual data for verification and reporting to the responsible State authority.
+			137 checkbox Description: CDP Disclosure Preparation, Value: 0, ID: CDP_DISCLOSURE
+			138 text CDP Disclosure Preparation
+			139 text Company and environmental data for a CDP response.
+			140 text Use when:  Gather inputs for the reporting year and questionnaire assigned to your organization.
+			141 checkbox Description: GRESB Assessment Preparation, Value: 0, ID: GRESB_ASSESSMENT
+			142 text GRESB Assessment Preparation
+			143 text Portfolio and environmental inputs for a GRESB response.
+			144 text Use when:  Collect data before mapping it to the assessment type, year and asset-level requirements.
+			145 checkbox Description: EcoVadis Assessment Preparation, Value: 0, ID: ECOVADIS_SCORE
+			146 text EcoVadis Assessment Preparation
+			147 text Company and environmental inputs for an evidence review.
+			148 text Use when:  Gather source information to support the questionnaire and documents requested by EcoVadis.
+			149 checkbox Description: SBTi Target Preparation, Value: 0, ID: SBTI_COMMITMENT
+			150 text SBTi Target Preparation
+			151 text Inventory and target inputs for the next SBTi step.
+			152 text Use when:  Prepare data for a commitment or target submission using the relevant pathway and standard version.
+			153 checkbox Description: RE100 Electricity Data, Value: 0, ID: RE100_REPORTING
+			154 text RE100 Electricity Data
+			155 text Renewable-electricity consumption and procurement inputs.
+			156 text Use when:  Gather data for annual RE100 reporting and review of eligible renewable claims.
+			157 checkbox Description: Climate Action Planning Data, Value: 0, ID: CLIMATE_ACTION_PLAN
+			158 text Climate Action Planning Data
+			159 text Emissions, targets and transition-planning inputs.
+			160 text Use when:  Collect information for an internal plan before assigning measures, owners and budgets.
+			161 checkbox Description: Renewable Certificate Planning, Value: 0, ID: RECS_STRATEGY
+			162 text Renewable Certificate Planning
+			163 text Electricity and certificate inputs for procurement review.
+			164 text Use when:  Prepare sourcing, coverage and budget information for the relevant certificate market.
+			165 checkbox Description: PPA Planning Data, Value: 0, ID: PPA_STRATEGY
+			166 text PPA Planning Data
+			167 text Energy demand and contract assumptions for a power purchase agreement.
+			168 text Use when:  Gather information for finance and legal review before comparing offers.
+			169 checkbox Description: Energy Audit Preparation, Value: 0, ID: ENERGY_AUDIT_SCOPE12
+			170 text Energy Audit Preparation
+			171 text Energy consumption and site information for an audit.
+			172 text Use when:  Collect inputs for an assessor under the applicable country and audit scheme.
+			173 checkbox Description: Scope 2 Inventory Data, Value: 0, ID: SCOPE2_DETAILED
+			174 text Scope 2 Inventory Data
+			175 text Purchased electricity, heat, steam and cooling inputs.
+			176 text Use when:  Prepare information for location-based and, where applicable, market-based emissions calculations.
+			177 checkbox Description: Scope 3 Inventory Data, Value: 0, ID: SCOPE3_DETAILED
+			178 text Scope 3 Inventory Data
+			179 text Value-chain category inputs and methodology notes.
+			180 text Use when:  Gather data for the relevant Scope 3 categories and explain exclusions.
+			181 checkbox Description: Scope 3 Purchased Goods Data, Value: 0, ID: SCOPE3_CATEGORY1_SUPPLIERS
+			182 text Scope 3 Purchased Goods Data
+			183 text Supplier and activity inputs for purchased goods and services.
+			184 text Use when:  Collect Category 1 data with procurement teams and suppliers.
+			185 checkbox Description: Client Scope 3 Data Preparation, Value: 0, ID: CLIENT_SCOPE3_PACKAGE
+			186 text Client Scope 3 Data Preparation
+			187 text Emissions inputs for an agreed customer reporting request.
+			188 text Use when:  Collect data, boundaries and methodology notes before mapping them to the customer format.
+			189 checkbox Description: Scope 1–3 Data Collection, Value: 0, ID: SCOPE123_DATASET
+			190 text Scope 1–3 Data Collection
+			191 text Shared emissions inputs for internal or external review.
+			192 text Use when:  Build a dataset for later calculation, review and recipient-specific formatting.
+			193 checkbox Description: Client Questionnaire Preparation, Value: 0, ID: CLIENT_TEMPLATE_FILL
+			194 text Client Questionnaire Preparation
+			195 text Source data for a customer-provided form or portal.
+			196 text Use when:  Collect requested information before mapping it to the current customer template.
+			197 checkbox Description: Bank Questionnaire Preparation, Value: 0, ID: BANK_TEMPLATE_FILL
+			198 text Bank Questionnaire Preparation
+			199 text Company and sustainability inputs for a lender request.
+			200 text Use when:  Gather information for the specific bank questionnaire and reporting period.
+			201 checkbox Description: GHG Preparation Checklist, Value: 0, ID: PREP_GHG
+			202 text GHG Preparation Checklist
+			203 text Boundary, methodology and data-source inputs.
+			204 text Use when:  Organize collection and review ahead of an inventory or disclosure deadline. ℹ️ Please select at least one report type to continue
+			205 button Back
+				206 image
+				207 text Back
+			208 button (disabled) Create Project (0 reports)
+				209 text Create Project ( 0 reports )
+			210 text Selected report types determine which fields your project collects.
+	47 button Open Tanstack query devtools
+		48 image
+	49 pop up button (collapsed) Description: Open Next.js Dev Tools, ID: next-logo, Secondary Actions: Expand
+		50 image
+
+The focused UI element is 1 AXWebArea Carbon Report, URL: localhost:3000/projects/new/select-reports

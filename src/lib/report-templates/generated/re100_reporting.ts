@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const RE100REPORTINGTemplate: ReportTemplate = {
   code: 'RE100_REPORTING' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'RE100 Reporting',
+  name: 'RE100 Electricity Data',
+  description: 'Renewable-electricity consumption and procurement inputs.',
   scope: 'corporate',
   sections: [
     {

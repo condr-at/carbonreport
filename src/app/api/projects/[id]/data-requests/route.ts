@@ -4,7 +4,8 @@ import { z } from 'zod';
 import type { Prisma } from '@prisma/client';
 import prisma from '@/lib/db';
 import { computeStatus } from '@/lib/data-requests/service';
-import { getCacheValue, setCacheValue } from '@/lib/cache';
+import { getAccessibleOrganizationIds } from '@/lib/server-data/access';
+import { isApiError, errorResponse } from '@/lib/api-error';
 
 const paramsSchema = z.object({
   params: z.object({
@@ -30,6 +31,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     const startedAt = ENABLE_TIMING ? process.hrtime.bigint() : BigInt(0);
     const paramsInput = await context.params;
     const { params } = paramsSchema.parse({ params: paramsInput });
+    const organizationIds = await getAccessibleOrganizationIds();
+    const project = await prisma.project.findFirst({
+      where: { id: params.id, organizationId: { in: organizationIds } },
+      select: { id: true },
+    });
+    if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
 
     const url = new URL(request.url);
     const statusParamInput = (url.searchParams.get('status') ?? 'active').toLowerCase();
@@ -42,14 +49,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     const sortParam = parsedSort.success ? parsedSort.data : 'requested_at';
     const contactFilter = url.searchParams.get('contact');
 
-    const cacheKey = `project:data-requests:${params.id}:${statusParam}:${contactFilter ?? 'all'}:${sortParam}`;
-    const cached = getCacheValue<{ requests: unknown[]; updatedAt: string; version: number }>(cacheKey);
-
-    if (cached) {
-      logTiming(`GET /projects/${params.id}/data-requests (cache hit)`, startedAt);
-      return NextResponse.json(cached, { status: 200 });
-    }
-
+    // Read mutable request state directly: mutation routes may run in another
+    // bundle/worker, where invalidating a module-local response cache has no effect.
     const where: Prisma.DataRequestWhereInput = {
       projectId: params.id,
     };
@@ -161,12 +162,14 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       version,
     };
 
-    setCacheValue(cacheKey, responsePayload);
-
-    const response = NextResponse.json(responsePayload, { status: 200 });
+    const response = NextResponse.json(responsePayload, {
+      status: 200,
+      headers: { 'Cache-Control': 'private, no-store' },
+    });
     logTiming(`GET /projects/${params.id}/data-requests`, startedAt);
     return response;
   } catch (error) {
+    if (isApiError(error)) return errorResponse(error);
     console.error('Failed to fetch data requests', error);
 
     if (error instanceof z.ZodError) {

@@ -1,0 +1,17 @@
+Final verification after UI and required-field coverage fixes (2026-10-10; Node20.20.0)
+Runtime: /tmp/carbonreport-qa-runtime, clean npm ci with unchanged lockfile; changed source mirrored from original repository.
+
+PASS npm run test:sanity: 61 tests, 0 failures, 0 cancelled, 0 skipped; 5.96s. Expanded package suite includes queue/access/bulk/cache regressions. Log sanity-final.log.
+PASS npm run test:integration:local: 70 tests, 0 failures, 0 cancelled, 0 skipped; 3.39s. Includes fill/clear agreement across project detail, projects list, report GET and unique repeatable required-field coverage. Log integration-final.log.
+Safety: .env.test.local both DATABASE_URL/DIRECT_URL independently verified localhost:5432/carbonreport_test before final integration; no dev reset.
+PASS npx tsc --noEmit --incremental false: exit0/no diagnostics. Log tsc-final.log.
+PASS scoped ESLint cumulative UI13files: 0errors,1pre-existing unusedisPending warning in project-layout.tsx; eslint-ui-final.log.
+PASS scoped ESLint progress8files: 0errors,1pre-existing unusedgetAllReportTemplates warning in api/projects/route.ts; eslint-progress-final.log.
+PASS scoped ESLint root dashboard copy2files: 0errors/0warnings; eslint-dashboard-final.log.
+PASS retention fixed-time checks4/4: elapsed1second and23:59:59.999=>0days;24h=>1day;30daydeadline=>0daysremaining. retention-regression.log.
+
+Environmental provenance: original repository dependency reads stalled on initial attempts; isolated install fixed. Initial isolated runtime lacked root middleware.ts; exact copy resolved. First progress tsc encountered transient generated .next/types during dev regeneration; subsequent runs passed without source workaround. Earlier logs retained to distinguish interruptions/import/environmental errors from assertion failures.
+
+Exact scoped paths: ui-files.txt (13files), progress-files.txt (8files); dashboard files are src/components/blocks/next-steps-widget.tsx and src/app/dashboard/page.tsx.
+
+Final provenance comparison: 376 TS/TSX and root runtime contract files compared. One defensive typeof guard in question-visibility.ts was mirrored after the suite; its affected decision-engine suite rerun11/11 pass underNode20. Browser verified final queue Save now/reload and progress4%->2%->4%, consistent project/overview/report displays.

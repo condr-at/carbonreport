@@ -19,9 +19,21 @@ interface BulkMutationPayload {
   requestedAt?: string | null;
 }
 
+interface ReassignMutationPayload {
+  ids: string[];
+  contact: {
+    id?: string;
+    email: string;
+    name?: string | null;
+  };
+  reassignedAt?: string | null;
+}
+
 interface BulkMutationResult {
   success: boolean;
   updated?: number;
+  revoked?: number;
+  created?: number;
   requests: DataRequestSummary[];
   version?: number;
   updatedAt?: string;
@@ -180,7 +192,7 @@ export function useResendDataRequests(projectId: string) {
   return useMutation({
     mutationKey: ['data-requests', 'resend', projectId],
     mutationFn: (payload: BulkMutationPayload) =>
-      request<BulkMutationResult>('/api/data-requests/resend-bulk', {
+      request<BulkMutationResult>('/api/data-requests/remind', {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
@@ -217,7 +229,7 @@ export function useResendDataRequests(projectId: string) {
         queryClient.setQueryData(dataRequestKeys.list(projectId, 'all'), context.snapshot);
       }
 
-      const message = error instanceof ApiError ? error.message : 'Failed to resend requests.';
+      const message = error instanceof ApiError ? error.message : 'Failed to update requests.';
       notifications.error(message);
       logOptimistic('mutate:error', { action: 'resend', projectId, ids: variables.ids, error: message });
     },
@@ -253,12 +265,65 @@ export function useResendDataRequests(projectId: string) {
       }
 
       const updatedCount = typeof data?.updated === 'number' ? data.updated : variables.ids.length;
-      notifications.success(`Resent ${updatedCount} request${updatedCount === 1 ? '' : 's'}.`);
+      notifications.success(`Updated ${updatedCount} request${updatedCount === 1 ? '' : 's'}. No email was sent.`);
       logOptimistic('mutate:success', { action: 'resend', projectId, ids: variables.ids });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: dataRequestKeys.list(projectId, 'all') });
       logOptimistic('mutate:settled', { action: 'resend', projectId });
+    },
+  });
+}
+
+export function useReassignDataRequests(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ['data-requests', 'reassign', projectId],
+    mutationFn: (payload: ReassignMutationPayload) =>
+      request<BulkMutationResult>('/api/data-requests/reassign', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: dataRequestKeys.list(projectId, 'all') });
+      const snapshot = queryClient.getQueryData<DataRequestSummary[]>(dataRequestKeys.list(projectId, 'all'));
+      logOptimistic('mutate:start', { action: 'reassign', projectId, ids: variables.ids });
+      return { snapshot };
+    },
+    onError: (error, variables, context) => {
+      if (context?.snapshot) {
+        queryClient.setQueryData(dataRequestKeys.list(projectId, 'all'), context.snapshot);
+      }
+
+      const message = error instanceof ApiError ? error.message : 'Failed to change contact.';
+      notifications.error(message);
+      logOptimistic('mutate:error', { action: 'reassign', projectId, ids: variables.ids, error: message });
+    },
+    onSuccess: (data, variables, context) => {
+      if (data?.requests?.length && context?.snapshot) {
+        const replacedIds = new Set(variables.ids);
+        queryClient.setQueryData<DataRequestSummary[]>(
+          dataRequestKeys.list(projectId, 'all'),
+          [
+            ...context.snapshot.map((request) =>
+              replacedIds.has(request.id)
+                ? { ...request, status: 'revoked' as const, revokedAt: data.updatedAt ?? new Date().toISOString() }
+                : request
+            ),
+            ...data.requests,
+          ],
+        );
+      }
+
+      const createdCount = typeof data?.created === 'number' ? data.created : variables.ids.length;
+      notifications.success(`Changed contact for ${createdCount} request${createdCount === 1 ? '' : 's'}.`);
+      logOptimistic('mutate:success', { action: 'reassign', projectId, ids: variables.ids });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: dataRequestKeys.list(projectId, 'all') });
+      queryClient.invalidateQueries({ queryKey: dataRequestKeys.list(projectId, 'pending') });
+      logOptimistic('mutate:settled', { action: 'reassign', projectId });
     },
   });
 }

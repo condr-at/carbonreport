@@ -1,289 +1,197 @@
-# Project Backlog
-
-_Last updated: 2025-11-16_
-
-This backlog captures the remaining work items that were previously tracked in `IMPLEMENTATION_CHECKLIST.md`. Items are grouped by theme and prioritised roughly by impact. Move completed items to version control history or note them in `DEVELOPMENT.md`.
-
----
-
-## � PRODUCTION BLOCKERS (Critical Priority)
-
-### **Test Coverage** 
-**Status**: 🔴 Critical gap — only 3 test files exist
-
-**Impact**: Cannot safely deploy to production without automated coverage of multi-org flows.
-
-**Tasks**:
-- Unit tests for guards and limits:
-  - AC: `assertWithinLimit` covers project/editor/verifier scenarios with correct error codes.
-  - AC: `assertOrgMembership` validates role hierarchy and returns correct errors.
-  - AC: `getOrganizationUsage` returns accurate counts for all resource types.
-  - AC: `computeProjectRetention` correctly calculates days remaining and expiry.
-  - DoD: Test coverage >80% for `src/lib/server-utils.ts`, `src/lib/projects/service.ts`.
-
-- Integration tests for multi-org core flows:
-  - AC: Create org → auto plan=free, owner membership created, limits returned.
-  - AC: Invite editor on Free plan → 409 SEAT_LIMIT_EXCEEDED.
-  - AC: Delete org → status=DELETED, all projects soft-deleted with cascade.
-  - AC: Restore project when at limit → 409 PLAN_LIMIT_EXCEEDED with structured details.
-  - AC: Restore project after 30 days → 409 RETENTION_EXPIRED.
-  - AC: Accept membership → seat count incremented, invite_status=ACCEPTED.
-  - DoD: Integration test suite runs in CI; covers all error codes.
+# Рабочий план Carbon Report
 
-- E2E tests for user-facing flows:
-  - AC: Switcher changes active org → context updates, navigation reloads.
-  - AC: Expiry warning shows when plan_valid_until <= 14 days.
-  - AC: Dataset VERSION_CONFLICT → refetch triggered, user notification shown.
-  - DoD: E2E suite covers critical paths; runs on pre-deploy.
+_Last updated: 2026-10-11_
 
-**Timeline**: 1-2 days
+Это единственная рабочая очередь задач и их статусов. [ROADMAP](ROADMAP.md) задаёт последовательность и условия перехода, [IMPLEMENTATION_STATUS](../IMPLEMENTATION_STATUS.md) — краткий снимок реализации. Наблюдения и доказательства хранятся в [браузерном аудите](../qa/browser-audit-2026-10-10/REPORT.md), предложения — в [разборе флоу](../qa/browser-audit-2026-10-10/FLOW_IMPROVEMENTS.md).
 
----
+## Текущее положение
 
-### **Authentication Rollout (P0)**
-**Status**: 🔴 Not started — dev stub still returns the first user, no JWT/cookie handling.
+- В локальном браузерном проходе исправлены B01–B15; основной путь от регистрации до данных и запросов работает. Это не подтверждение готовности к публичному запуску.
+- Дополнение 2026-10-11: исправлен B16 — API отчёта не проверял членство в организации. [Воспроизведение и проверки](../qa/report-access-2026-10-11/REPORT.md): 9/9 новых регрессий, 70/70 sanity; реальная БД в этом дополнении не запускалась.
+- Для `CBAM_DATA_PACKAGE` локально проверен путь до скачанного review ZIP. Клиентская приёмка и официальный нормативный результат не подтверждены. Files — заглушка; доставка email, платежи и реальные приглашения не проверены.
+- По сообщению владельца, клиентов и продаж пока нет. Сегмент, цена и платный пилот в [бизнес-плане](../business-planning/README.md) остаются гипотезами.
+- **REF-01**: первичный сбор для всех 48 активных кодов выполнен; [охват и материалы](../report-reference/coverage.json), [явные пробелы](../regulatory-requirements/GAPS.md). **CATALOG-01 выполнен локально**: исправлены названия/обещания, рекомендации, mapping и торговая ветка; [проверка](../qa/catalog-2026-10-11/REPORT.md) — 89/89 sanity и браузерные сценарии. **RULES-01 + FLOW-01 + OUTPUT-01 выполнены в локальном объёме supplier review profile**: `CBAM_DATA_PACKAGE`, один продукт/установка, 34 поля, серверные проверки и ZIP из сохранённой версии dataset. [Проверка и пример](../qa/supplier-package-2026-10-11/REPORT.md): 147/147 sanity, браузер до файла, конфликт двух вкладок, независимое чтение ZIP. Полные критерии задач остаются открыты: нормативная применимость, согласование с получателем, первый запуск нового аккаунта и внешний пилот. **PLAN-01** и **REL-01** остаются параллельными направлениями.
 
-**Objective**: Replace stubbed auth with production-ready email/password flow so dashboard pages, API routes, and middleware can trust `getCurrentUser()`.
-
-**Phases (4-8h each)**:
-1. **Phase 1 — Tokens & Middleware**
-  - Implement JWT helpers (sign/verify, ttl, cookie helpers).
-  - Add Next.js middleware enforcing auth on protected routes and injecting `x-user-id` header for server handlers.
-  - Update `getCurrentUser()` to read the injected header.
-  - DoD: Authenticated requests hit APIs successfully; unauthenticated requests receive 401/redirect.
-2. **Phase 2 — Core Auth Endpoints**
-  - `/api/auth/register`, `/login`, `/logout`, `/refresh` issuing httpOnly cookies (access 24h, refresh 90d).
-  - Zod validation, bcrypt hashing (12 rounds), shared error envelope.
-  - Unit/integration tests covering happy path + invalid credentials.
-  - DoD: Register/login flows work via API client (no UI dependency).
-3. **Phase 3 — Email Verification Flow**
-  - `/api/auth/verify-email/:token` + `/api/auth/resend-verification` using Resend templates.
-  - Stateless verification tokens tied to `emailVerified` flag.
-  - `/verify-email` page with resend CTA + success/error states.
-  - DoD: Clicking email link flips `emailVerified=true`, middleware respects state.
-4. **Phase 4 — Password Reset Flow** (Should-have, 4h)
-  - `/api/auth/forgot-password` + `/api/auth/reset-password/:token` endpoints.
-  - `/forgot-password` + `/reset-password` pages with form + validation.
-  - Email template for password reset, tokens scoped to password hash.
-  - DoD: Reset link updates password, invalid/expired links handled cleanly.
+## Приоритетная очередь
 
-**Dependencies**: Env vars (`JWT_SECRET`, expiry values, Resend API key) already provisioned in `vercel.env.template`.
+Статус «предложено» означает, что работа не выполнена. Исправления аудита перечислены отдельно и не смешиваются с будущими улучшениями.
 
-**Timeline**: ~2.5 days total (Phases 1-3 are P0, Phase 4 is P1 if time allows).
+| ID | Задача | Статус | Зависимость / условие |
+| --- | --- | --- | --- |
+| REF-01 | Собрать нормативную базу, форматы и примеры всех активных отчётов | Первичный сбор выполнен; пробелы перечислены | 48/48 карточек; это не нормативное одобрение реализации |
+| CATALOG-01 | Исправить устаревшие обещания, рекомендации и дубли каталога по результатам исследования | Выполнено локально 2026-10-11 | 48 кодов/схем сохранены; 44 ID движка сопоставлены; 89/89 sanity и браузер |
+| RULES-01 | Перевести проверенные требования в пошаговый маршрут и валидации одного отчёта | Частично: review profile проверен локально | REF-01; выбранные юрисдикция, период, результат и версия методики |
+| PLAN-01 | Определить принимаемый результат одного пилота | Следующая; гипотеза подготовлена | Первые разговоры по существующему плану проверки спроса |
+| FLOW-01 | Сократить путь к первому продукту и нужным полям | Частично: guided form проверена | Состав результата из PLAN-01 |
+| OUTPUT-01 | Довести один пакет данных до передачи получателю | Локальный ZIP проверен; приёмка открыта | PLAN-01; реализовывать вместе с FLOW-01 как один маршрут |
+| REL-01 | Закрепить критические сценарии в автоматических браузерных тестах и CI | Осталось после локальной проверки | Можно начать параллельно; до внешнего пилота проверить используемый маршрут |
+| AUTH-01 | Проверить оставшиеся контракты аутентификации и email | Частично проверено | До доступа внешних участников к соответствующим функциям |
+| FLOW-02 | Сделать ручной запрос данных понятным | Предложено; функциональные баги исправлены | Перед самостоятельным сбором данных участниками пилота |
+| FLOW-03 | Явно обозначить область организации | Предложено; изоляция доступа исправлена | До пилота с несколькими организациями |
+| OPS-01 | Подготовить среду и условия ограниченного внешнего пилота | Не проверено | До размещения реальных клиентских данных |
+| PILOT-01 | Провести ограниченный платный эксперимент и принять решение | Предложено, не запущено | PLAN-01; пригодный результат и проверки используемых функций |
 
----
+### REF-01 — нормативная база и эталонные материалы
 
-## 🟡 UI Polish (High Priority)
+Папки: [образцы и каталог](../report-reference/README.md), [нормативные требования](../regulatory-requirements/README.md). Охват — каждый фактически зарегистрированный шаблон; типовые alias и неактивные заготовки учитываются отдельно, без обещания их реализации.
 
----
+Критерии: для каждого кода указаны применимость, редакция/дата проверки, обязательные входные данные, формат результата, официальные источники и доступные примеры. Различать официальный бланк, опубликованный заполненный пример, наше тестовое ожидание и отсутствие доступного образца. Платные/закрытые материалы и неустановленные требования сохранять как конкретные пробелы. Не выдавать схему текущего dataset за нормативную спецификацию.
 
-## 🟡 UI Polish (High Priority)
+Первый сбор ограничен публично доступными первичными материалами и явно учтёнными пробелами; объём скачанных материалов — до 120 МБ. Не копировать целые сайты и закрытые базы. Получение лицензий, одобрение методики специалистом и поддержка каждой юрисдикции — следующие отдельные действия.
 
-### **Expiry Warning in Switcher**
-- Add visual indicator (badge/icon) when `plan_valid_until <= NOW() + 14 days`.
-- AC: Badge shows "Expires in X days" for Pro Beta orgs.
-- DoD: Implemented in `src/components/layouts/main-sidebar.tsx`.
+Результат 2026-10-11: все 48 активных кодов сопоставлены с требованиями и доступными материалами; оригиналы, версии, происхождение и ограничения сохранены. [Точный состав](../report-reference/coverage.json) и [каталог](../report-reference/CATALOG.md). Для части типов получены только формы/руководства или ссылка на закрытый процесс, а не законченный заполненный пример. Пробелы выбранного результата закрывать в RULES-01 до заявления соответствия.
 
-### **Project Restore Error Handling**
-- Enhance restore flow to show actionable error when PLAN_LIMIT_EXCEEDED.
-- AC: Error message includes current/limit, suggests archiving other projects or upgrade link.
-- DoD: Implemented in `src/app/projects/page.tsx` mutation error handler.
+### CATALOG-01 — согласовать обещания каталога с реальным результатом
 
-### **Deleted Projects Retention Countdown**
-- Show retention countdown in project list for deleted projects.
-- AC: Badge displays "Deleted X days ago • Expires in Y days".
-- DoD: UI updated in projects list component.
+Основание: [найденные расхождения и пробелы](../regulatory-requirements/GAPS.md). Пересмотреть определения CBAM по периоду, certificates/allowances, соотношение MRV/ETS, старые редакции стандартов и обещания внешней сертификации/рейтинга. Проверить `ISO14067`/`ISO_14067` и коды только в TypeScript; не удалять и не объединять автоматически без проверки сохранённых данных и mapping рекомендаций.
 
-### **Regulatory Version & Legal Disclaimers**
-- Add visible versioning for regulatory standards used in reports.
-  - AC: Each regulatory report template (CSRD/ESRS, SEC_CLIMATE, SFDR, CBAM, EU_ETS, etc.) shows `Standard version last reviewed: YYYY‑MM` in UI (and PDF if applicable).
-  - DoD: Version metadata wired from config/code, not hardcoded per template.
-- Add unobtrusive, dismissible legal disclaimer banner in app layout.
-  - AC: Banner text clarifies that the product is a data/automation tool and **not** legal advice; appears on first visits and can be dismissed per user.
-  - DoD: Dismissal state persisted; copy reviewed and stored in a single config.
+Критерии: название, описание и рекомендация указывают фактический выдаваемый результат и условия применимости; будущие функции различимы. Шаблоны с общими нерелевантными полями (в частности SFDR, MRV, CORSIA) не выдаются за готовые профильные отчёты. Для изменённой рекомендации проверить нужные ветви анкеты. Нормативные выводы брать из проверенной версии источников, не из названия текущего шаблона.
 
----
+Результат 2026-10-11: [CATALOG-01 — изменения и доказательства](../qa/catalog-2026-10-11/REPORT.md). Неопределённая применимость требует уточнения вместо автоматического mandatory; optional/составные форматы не выбираются автоматически, scope одинаково фильтрует карточки и отправляемый выбор. Исправлен недоступный экспортный блок для non-EU поставщиков. Коды, версии и поля всех 48 шаблонов сохранены; миграции/seed не запускались. Нормативные поля и экспорт этой задачей не реализованы. Исходные исправленные наблюдения в библиотеке отделены от оставшихся пробелов.
 
-## 🟩 Completed (Recent)
+### RULES-01 — провести пользователя до проверяемого результата
 
-- ✅ **Dataset optimistic locking in UI** — VERSION_CONFLICT handling with refetch + user notification.
-- ✅ **Organization Settings UI** — All tabs (Profile, Members, Usage, Danger Zone) implemented.
-- ✅ **Organization Switcher** — Implemented with loading/error/empty states, plan pill, usage counter.
-- ✅ **Projects API lifecycle** — Status transitions, soft-delete, restore with limit checks.
-- ✅ **Dataset API** — Full CRUD with optimistic locking (datasetVersion).
-- ✅ **Uploads API** — Signed URL generation, MIME/size validation, asset tracking.
-- ✅ **Server guards** — assertOrgMembership, assertWithinLimit, getPlan, getOrganizationUsage.
-- ✅ **Feature flags** — verifierRoleEnabled, billingUiEnabled, approvalsEnabled in config.
-- ✅ **Error format consistency** — All API endpoints use unified { error, code, details } format.
-
----
+Для одного выбранного типа построить цепочку «страна/роль/период → применимость → границы расчёта → необходимые поля/подтверждения → проверки → проверка человеком при необходимости → выдача».
 
-## 🟦 Completed (Archive)
-
-- **Dataset optimistic locking in UI** (`app/projects/[id]/dataset/page.tsx`)
-  - ✅ Send `datasetVersion` with save mutations.
-  - ✅ Handle `409 Conflict` by refreshing + surfacing messaging.
-
----
-
-## 🟧 API & Services
-
-- `POST /api/projects/[id]/duplicate`
-  - Clone project, reset `datasetVersion`, copy `mailtoTemplate`.
-- `POST /api/data-requests/remind`
-  - Implement reminder flow (contract defined, route missing).
-
----
-
-## 🟨 Frontend Experience
-
-- **Data Requests Page** (`app/projects/[id]/data-requests/page.tsx`)
-  - ➡️ Moved to Post-MVP: sorting controls + e2e coverage, bulk toolbar polish (resend/change/close).
-- **Requests (Global)**
-  - Ship a top-level "Requests" page in the sidebar: list all project requests with filters (project, status, deadline) and quick actions (resend, reassign, complete, revoke).
-- **Contacts Page**
-  - Create table of Contacts in the menu page.
-  - Create contact detail page (`app/contacts/[id]/page.tsx`) with a "Requests" tab showing history (requested/revoked/completed timestamps) sourced from the global store.
-- **Mailto Template Editor**
-  - Validate allowed placeholders.
-  - Surface inline error feedback for invalid tokens.
-
----
-
-## 🟩 Tooling & Documentation
-
-- Add JSDoc to newly introduced helpers (dataset, data-requests, mailto).
-- Automate HAR capture and regression alerts for SSR payload metrics. _Note_: `NEXT_PUBLIC_LAZY_DATA_REQUESTS` env var already provisioned on Vercel; no perf improvement yet — further analysis required.
-- Define staging deployment checklist (backup, rollback, smoke tests).
- - Legal & policy docs: draft and publish Terms of Use / Privacy Policy / Data Processing terms including a clear statement that reports are generated on a best-effort basis and do not constitute legal advice.
-
----
-
-## 📦 Nice-to-Have / Future
-
-- Expand data-request status enums to include `received`, `declined`.
-- Style deadline badges for overdue highlighting.
-- Outline bulk reminder UX (disabled CTA + tooltip until endpoint ships).
-- Plan for exports/reporting needs of operations stakeholders.
-
-Track progress by updating this file or referencing linked issues / tickets in your PM tool of choice.
-
----
-
-## 📚 Epics — Multi‑Org (без Account) & Plans
-
-### Epic: Schema & Migrations
-**Description**: Ввести таблицы/enum/индексы для multi‑org, статусы проектов, assets.
-
-Tasks:
-- Create tables and enums per `docs→ARCHITECTURE.md`.
-  - AC: все таблицы существуют; индексы созданы; миграции применяются на чистой БД.
-  - DoD: миграции в репозитории; проверка `npm run db:migrate` проходит; документировано в `DEVELOPMENT.md`.
-
-### Epic: Org Settings & Switcher
-**Description**: Настройки организации и переключатель в сайдбаре.
-
-Tasks:
-- Implement Organization Switcher UI.
-  - AC: логотип/инициалы, имя, план, `X / limit`; empty/loading/error.
-  - DoD: `UX_GUIDE.md` обновлён; ручной тест сценариев.
-- Settings Profile/Members/Usage/Danger tabs.
-  - AC: формы валидируются; PATCH/GET/DELETE/usage задокументированы.
-  - DoD: unit тесты валидаторов; `API_REFERENCE.md` обновлён.
-
-### Epic: Memberships & Roles
-**Description**: Инвайты/роли/лимиты мест.
-
-Tasks:
-- Invite flow with seat checks.
-  - AC: добавление EDITOR при исчерпанных местах → `409 SEAT_LIMIT_EXCEEDED`.
-  - DoD: unit тесты guard’ов; спецификация в `API_REFERENCE.md`.
-- Role change guard.
-  - AC: смена на EDITOR проверяет лимит; OWNER immutable.
-  - DoD: integration тест.
-
-### Epic: Project Status Lifecycle
-**Description**: Переходы статусов, soft-delete и restore.
-
-Tasks:
-- PATCH status endpoint.
-  - AC: `reported` делает read-only; `active` ограничивается лимитом.
-  - DoD: интеграционный тест.
-- DELETE project (soft).
-  - AC: возврат retention_expires_at.
-  - DoD: тест восстановление → успех.
-- POST restore.
-  - AC: 409 `PLAN_LIMIT_EXCEEDED` и 409 `RETENTION_EXPIRED` случаи.
-  - DoD: e2e сценарий.
-
-### Epic: Uploads & Assets
-Tasks:
-- Signed URL endpoint с валидацией.
-  - AC: >512KB или неподдерживаемый MIME → 413/415.
-  - DoD: тест успешной загрузки + сохранение asset_id.
-
-### Epic: Usage & Limits
-Tasks:
-- Usage endpoint.
-  - AC: возвращает usage + limits + plan_valid_until.
-  - DoD: кэш стратегия описана.
-- Snapshots job.
-  - AC: создаёт запись; несколько запусков — новые строки.
-  - DoD: подтверждено просмотром в БД.
-
-### Epic: API Contracts & Errors
-Tasks:
-- Unified error envelope.
-  - AC: ответы содержат `error` и `code`.
-  - DoD: таблица кодов в `API_REFERENCE.md`.
-
-### Epic: Billing Preparation
-Tasks:
-- Billing playbook.
-  - AC: описаны события планов, expiry downgrade.
-  - DoD: ссылка в README.
-
----
-
-## 📊 Implementation Status (as of 2025-11-16)
-
-**Overall Readiness**: 🟡 **85% Complete**
-
-### By Epic:
-- ✅ Schema & Migrations: COMPLETE
-- ✅ Server Guards & Utilities: COMPLETE  
-- ✅ Organizations API: COMPLETE
-- ✅ Projects API (Lifecycle): COMPLETE
-- ✅ Dataset API with Optimistic Locking: COMPLETE
-- ✅ Uploads & Assets: COMPLETE
-- ✅ Org Settings & Switcher: COMPLETE
-- ✅ Memberships & Roles: COMPLETE
-- ✅ Usage & Limits: COMPLETE
-- ✅ API Contracts & Errors: COMPLETE
-- ✅ Documentation: COMPLETE
-- 🟡 UI Polish: 90% (minor gaps: expiry warnings, retention countdown)
-- 🔴 Testing & Quality: 15% (CRITICAL GAP - production blocker)
-
-### Production Blockers:
-1. 🔴 **Test Coverage** — Only 3 test files exist; need integration/E2E for multi-org flows
-2. 🟡 **UI Polish** — Expiry warnings, limit exceeded UX, retention countdown
-3. 🔴 **Authentication** — Dev stub needs replacement with real JWT middleware
-
-### Ready for Staging: ✅ YES
-- All backend APIs implemented and working
-- Database schema complete with proper indices
-- Error handling unified across all endpoints
-- UI functional for core workflows
-
-### Ready for Production: ❌ NO
-- Critical test coverage gap (integration/E2E)
-- Authentication still using dev stub
-- Minor UX polish needed
-
-### Estimated Time to Production-Ready:
-- **Testing**: 1-2 days (Priority 1)
-- **UI Polish**: ~4 hours (Priority 2)
-- **Authentication**: TBD (requires scoping)
-
-Total: ~2-3 days excluding authentication work
+Критерии: каждое нормативное правило имеет источник и версию, условие применимости, вопрос/подсказку, проверку, ошибку и тест. Неизвестный ответ не трактуется как освобождение от обязанности; заполненность, рассчитанность, верификация и подача имеют разные статусы. Учесть обязательные поля только при выполненных условиях. Закрытый стандарт не заменять догадкой.
 
+Для каждого реализуемого результата установить [допустимый формат и свободу оформления](../regulatory-requirements/RULE_MODEL.md#формат-результата-и-допустимая-свобода-оформления): официальный бланк, обязательное содержание с гибкой вёрсткой, файл по схеме получателя или внутренний документ. В пакете могут сочетаться несколько форматов. Записать источник, версию, неизменяемые элементы и разрешённые изменения; неизвестное не считать свободной формой. Для всего каталога эта детализация пока не выполнена.
+
+Перед выпуском исправить подтверждённые устаревшие обязательные рекомендации/названия выбранного типа; весь каталог не объявлять готовым после одного рабочего примера.
+
+Результат локального среза 2026-10-11: [контракт review-профиля](../regulatory-requirements/CBAM_SUPPLIER_PACKAGE_CONTRACT.md), [проверки и исправления](../qa/supplier-package-2026-10-11/REPORT.md). Внедрены правила комплектности, условные поля, календарные/числовые проверки и связи evidence. Классификация CN, применимость indirect, методика SEE и аккредитация остаются проверкой специалиста; ZIP не является обязательным operator report.
+
+### PLAN-01 — результат, за который можно заплатить
+
+Начать с первых пяти квалифицированных разговоров из [VALIDATION_PLAN](../business-planning/VALIDATION_PLAN.md). Исходная гипотеза — небольшой CBAM-консультант и пакет данных поставщиков; это не подтверждённый выбор рынка.
+
+Критерий завершения: на конкретном кейсе записаны покупатель, получатель, обязательные данные, источники, допустимые пробелы, формат передачи и критерий приёмки. Подготовлен обезличенный пример результата; перечислены ручные этапы и отсутствующие функции. Согласие обсуждать продукт не считается оплатой.
+
+Решение и изменения предложения записывать в существующие документы бизнес-планирования. Если покупатель требует расчёт или нормативный формат, которого нет, сначала определить объём и возможность выполнения. Не обещать его на основании наличия шаблона в каталоге.
+
+### FLOW-01 + OUTPUT-01 — один законченный маршрут
+
+Граница работы: организация → первый продукт → нужные данные → запрос поставщику при необходимости → проверка пробелов → передача согласованного результата.
+
+Критерии приёмки:
+
+- после создания организации очевидно действие «Создать первый продукт»; настройки не прерывают первый запуск;
+- анкетой рекомендаций можно воспользоваться как помощью; основной путь не требует ответов на нерелевантные вопросы;
+- по умолчанию видны поля выбранного результата с различением обязательных, условных и дополнительных; полный dataset остаётся доступен;
+- Overview объясняет заполненность и предлагает одно следующее действие; заполненность не называется верификацией;
+- получатель может открыть согласованный файл/пакет, понять продукт, период, единицы, источники и пробелы; пример принят получателем, а не только успешно скачан;
+- один контрольный набор входных данных даёт заранее согласованный результат; E2E проходит от нового аккаунта до скачанного файла и проверки его содержимого, а не заканчивается открытием таблицы;
+- правила и формат выбранного результата сверены с REF-01/RULES-01; расчёты, единицы, округление и обязательные раскрытия имеют проверяемые ожидания;
+- подготовлен контрольный файл применимого формата: для фиксированной формы/схемы проверяется её соблюдение, для собственного PDF — согласованный макет, читаемость длинных таблиц, переносов и приложений; дополнительный PDF не заменяет требуемый файл или подачу;
+- доступные и будущие функции различимы; неподключённые Files/Billing не служат обещанием готовой возможности;
+- выбран единый язык основного маршрута; корпоративная ветка сохранена как расширенный путь.
+
+Локальный путь supplier package завершён от новой организации в существующем QA-аккаунте до скачанного и прочитанного файла. Сохранён инженерный пример с точными входами и ожидаемыми 30/6 tCO2e; нормативным или клиентским эталоном он не объявлен. Остаются приёмка получателем, полный повтор от регистрации, улучшение перехода после создания организации и закрепление E2E в CI. [Предложения по флоу](../qa/supplier-package-2026-10-11/FLOW_IMPROVEMENTS.md).
+
+Первый пакет может включать явно оговорённую ручную подготовку. Её время учитывать в экономике пилота. Не строить универсальные экспорт, расчёты и хранилище до согласования результата. Разработка внутри эксперимента ограничена **12 часами суммарно** по бизнес-плану: если минимальный результат не помещается, сузить предложение либо отдельно оценить разработку до продажи такого пилота.
+
+### REL-01 — повторяемая проверка критических рисков
+
+Актуальная non-DB проверка 2026-10-11: **147/147 sanity, TypeScript без ошибок**; [проверка supplier package](../qa/supplier-package-2026-10-11/REPORT.md). Последний DB-прогон 2026-10-10: **70/70 integration**. Это выполненные локальные проверки, автоматический браузерный прогон и CI ими не заменены.
+
+Добавить небольшой повторяемый набор сценариев:
+
+- создание проекта, условные вопросы и выбор отчёта мышью/клавиатурой;
+- сохранение → немедленная перезагрузка → сохранность значения; ошибка сервера → видимое ожидающее/неуспешное изменение → корректный повтор;
+- два пользователя и организации: переключение, списки, прямые URL и API не открывают чужие данные;
+- для каждого API основного сценария проверить применение прав, включая чтение отчёта: наличие общего middleware/guard не гарантирует, что конкретный endpoint его использует;
+- запрос → смена контакта → complete/reopen/revoke: актуальный список без reload и ложной отправки email;
+- delete → restore в архив → активация с сохранением dataset, правильным лимитом и ошибкой истёкшего retention;
+- изменение обязательного поля обновляет одинаковый прогресс на связанных экранах.
+
+В supplier package проверены две вкладки: stale save/download отклоняются, черновик сохраняется, явный reload получает актуальную версию. Отдельная незакрытая проверка для общего dataset/очереди: одновременное редактирование в двух сессиях. Старый план объявлял `VERSION_CONFLICT` полностью готовым, но аудит очереди сохранения этого не доказывает. Проверить фактический путь записи, защиту от потери чужого изменения и понятное разрешение конфликта; при дефекте завести исправление.
+
+Критерий завершения: проверки и DB-backed suite выполняются в CI на отдельной тестовой БД, воспроизводят нужные состояния, сохраняют понятную причину сбоя. Предзапускной smoke включает используемый пилотом путь. Не заменять проверку рисков общим процентом покрытия. Интеграционный harness очищает таблицы — не запускать его на dev/клиентской БД.
+
+### AUTH-01 — оставшиеся проверки доступа
+
+Регистрация, вход, неверный пароль и выход пройдены в браузере; auth middleware уже реализован. Не планировать замену «dev stub» заново.
+
+Осталось:
+
+- проверить refresh route и поведение истёкшей сессии;
+- пройти reset-password, включая неверный/истёкший/повторный токен и вход новым паролем;
+- проверить verify/resend с реальным тестовым почтовым ящиком в настроенной среде;
+- явно определить доступ неподтверждённого аккаунта и проверить выбранное правило. Текущий вход без подтверждения сам по себе не объявлен багом;
+- если пилот использует приглашения, пройти приглашение/принятие, роли и лимиты мест в браузере.
+
+Наличие env-шаблона не доказывает настройку провайдера или доставку. Критерий завершения — воспроизводимый проход соответствующих функций и отрицательных случаев с сохранёнными результатами.
+
+### FLOW-02 — запрос данных без ложных ожиданий
+
+Критерии: preview и копирование письма; понятные шаги «подготовлено → открыт email-клиент → вручную отмечено отправленным»; продолжение при неработающем mailto. Отдельно объяснить получение ответа, внесение и проверку данных. Проверять допустимые placeholders с inline-ошибкой. Deadline показывать календарным днём; определить правило часового пояса для просрочки.
+
+Log reminder и Reopen уже исправлены. Автоотправка, новые серверные статусы и портал поставщика не обязательны для этого улучшения; необходимость подтвердить в пилоте.
+
+### FLOW-03 — понятная область организации
+
+Contacts/Requests сейчас показывают все организации с принятым членством; Projects — выбранную. Это оставшееся UX-расхождение, не незакрытый баг утечки B06.
+
+Критерий: согласовано и последовательно показано «Текущая организация» либо явное «Все мои организации»; в объединённом списке видна организация. Проверить две доступные организации и одну недоступную. Не ослаблять серверную проверку членства.
+
+### OPS-01 — ограниченный внешний пилот
+
+Проверить настройки фактически используемой среды, сохранение и восстановление данных, rollback и короткий smoke. Проверить scheduler/expiry/usage snapshots и object storage только если они нужны выбранному сценарию; API загрузок не означает, что пользовательский Files готов.
+
+Согласовать хранение клиентских материалов, доступ участников и условия услуги; подготовить соответствующие Terms/Privacy/Data Processing документы перед реальным использованием. Для выбранного нормативного результата проверить применимость и актуальность методики с профильным специалистом, указать версию/ограничения в самом результате. Универсальный dismissible banner не заменяет эти проверки и не является отдельным обязательным релизом.
+
+Критерий: записан проверенный маршрут пилота, ограничения, способ поддержки и восстановления. Внешний пилот не объявляется общедоступным production-запуском.
+
+### PILOT-01 — проверка спроса и повторной оплаты
+
+Единственный источник бюджета, выборки, сроков и порогов решения — [VALIDATION_PLAN](../business-planning/VALIDATION_PLAN.md). Интервью, продажи, отправка предложений и платежи пока не выполнялись. Отсчёт срока начинается с фактического запуска, а не с даты документа.
+
+Критерий завершения: сохранены оплаты и отказы, принятие результатов, часы ручной работы, расходы и следующий оплаченный шаг либо причина отказа; принято одно решение о продолжении/изменении/остановке гипотезы. При запуске вести один реестр эксперимента, не создавать параллельные журналы.
+
+## Уже сделано — не заказывать повторную реализацию
+
+- Первичная библиотека **REF-01** охватывает все активные коды; дальнейшая работа — закрытие конкретных пробелов и внедрение правил, а не повторная инвентаризация с нуля.
+- Браузерный аудит и исправления **B01–B15** завершены локально. Точная область и доказательства находятся в [REPORT](../qa/browser-audit-2026-10-10/REPORT.md#исправления).
+- Global Requests и Contacts/detail существуют; исправлены чтение чужих данных, недоступная карточка и устаревшие результаты действий. Отдельное создание контактов и полный набор массовых действий глобального списка не объявлены готовыми.
+- Мастер product-first, организация/переключатель/настройки, lifecycle и ограничения уже реализованы. Аудит проверил указанные в отчёте сценарии; оставшиеся варианты покрываются REL-01/AUTH-01.
+- Сохранение с очередью, восстановление проекта, актуальность счётчика лимитов, честные подписи запросов и единый прогресс исправлены. Специализированный supplier package выдаёт review ZIP; остальные страницы отчётов остаются сбором данных.
+- API/схема для memberships, uploads, usage и optimistic locking имеются по предыдущему состоянию реализации. Их наличие не закрывает внешние интеграции, пользовательские сценарии или проверку конкурирующих записей.
+
+## Отложено до сигнала из пилота
+
+| Тема | Сохранённый остаток работы / основание возврата |
+| --- | --- |
+| Таблицы и контакты | Сортировка по полю/сроку/времени запроса; overdue badges; дополнительные фильтры и global reassign/bulk; отдельное создание/импорт контактов, если ручной путь мешает пилоту |
+| Duplicate project | Сначала проверить существующее действие списка и API: копирование dataset/mailtoTemplate, версии и права. Не реализовывать дубликат функции по старой записи backlog |
+| Расширенная обработка ответов | `received`/`declined`, ответственное лицо, подтверждение проверки — только после выбора нужных состояний реального процесса |
+| Автоматизация | Автоотправка и напоминания, портал поставщика, извлечение данных из документов — после измерения ручного труда |
+| Платежи | Billing/webhooks и переходы планов по существующему [playbook](../BILLING_PLAYBOOK.md); не нужны для проверки ручной продажи пилота |
+| Инфраструктура | Проверка миграций на чистой БД, загрузок MIME/size/asset, scheduled usage snapshots, expiry downgrade — по используемому окружению и функции, без повторной реализации готовой схемы |
+| Производительность | Измерить конкретную медленную операцию перед изменениями; прежний lazy flag не дал подтверждённого улучшения. HAR/SSR budget и regression alerts вводить под измеренную проблему |
+| Документация | JSDoc затронутых helpers, точечное выравнивание API/UX с кодом; не объявлять все error envelopes и документацию завершёнными без проверки |
+| Широкий каталог | Исследование всех активных типов входит в REF-01; реализация новых форматов, расчётов и универсального экспорта — после подтверждения одного результата |
+| Landing | Визуальная/маркетинговая переработка остаётся отложенной. Исправленные сломанные auth-ссылки B01 не означают начала редизайна |
+
+## Решения ревизии 2026-10-10
+
+1. Убрать проценты общей готовности и старую оценку «2–3 дня до production»: у них нет проверенного основания.
+2. Поднять принимаемый клиентом результат из Nice-to-Have в основной маршрут; не расширять каталог до проверки оплаты.
+3. Развести исправленные баги, предложенные UX-изменения и непроверенные внешние интеграции.
+4. Хранить изменяемые статусы здесь; бюджет коммерческого эксперимента — только в бизнес-плане. Пересматривать очередь после критического дефекта, первых разговоров или результата пилота.
+
+Исходные критерии и незакоммиченные правки прежних планов сохранены для сверки: [старый backlog](../archive/BACKLOG-before-2026-10-10.md), [старый roadmap](../archive/ROADMAP-before-2026-10-10.md). Это исторические документы, не дополнительные очереди.
+
+## Решения 2026-10-11 — нормативная библиотека и проверяемый результат
+
+1. Охватить источниками все 48 фактически активных шаблонов; 12 кодов только в типах учитывать отдельно. Это исследование, а не обещание реализовать весь каталог сразу.
+2. Разделить нормативные карточки и материалы для сравнения. Хранить первичный файл один раз, с URL, датой, версией и контрольной суммой; карточки ссылаются на него.
+3. Редактируемые факты вести в `docs/report-reference/research/*.json`, производные карточки пересобирать. Статусы работ остаются здесь.
+4. Различать бланк, опубликованный заполненный отчёт и утверждённый контрольный набор с исходными данными. Последний ещё предстоит подготовить для первого результата.
+5. Привязать каждое внедряемое правило к применимости, источнику и версии. Неизвестное значение не считать нулём или освобождением; заполненность, расчёт, верификация и подача — разные состояния.
+6. Исправить подтверждённые риски каталога и завершить один путь от регистрации до проверенного файла. Широкую реализацию стандартов не включать скрыто в ограниченный бюджет пилота.
+7. Свободу оформления устанавливать по каждому выходному документу и версии требований. Единый фирменный A4/PDF не заменяет официальные формы или схемы получателя; правила оформления закреплены в RULE_MODEL, а их реализация и контрольные файлы входят в RULES-01/OUTPUT-01.
+
+8. В CATALOG-01 сохранить все действующие коды и схемы. Составные рекомендации трактовать как выбор разных результатов, а не aliases; неопределённую применимость и optional не превращать в автоматический обязательный выбор. Следующий контрольный кейс готовить для одного результата (кандидат CBAM_DATA_PACKAGE), без заявления готовности остальных 47.
+
+9. Первый выдаваемый результат — собственный supplier review ZIP (HTML/JSON/CSV), а не официальный operator workbook. Сохранять исходный dataset; экспортировать только активные разрешённые поля, включая вложенные структуры. Доступ, версия и комплектность проверяются сервером перед скачиванием.
+10. Контрольный инженерный пример реализован и проверен локально; следующий внешний критерий — PLAN-01: получатель принимает конкретные содержание и формат. Не расширять обещание на остальные 47 кодов и обязательную CBAM-подачу по результату одного технического прохода.

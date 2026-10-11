@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, X, Building, Package } from 'lucide-react';
+import { ArrowRight, X, Building, Package, ChevronDown, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -36,13 +36,16 @@ export default function NewProjectPage() {
   const [isExitDialogOpen, setIsExitDialogOpen] = useState(false);
   const [storedProgress, setStoredProgress] = useState(false);
   const [step, setStep] = useState<'type-selection' | 'details'>('type-selection');
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const exitTargetRef = useRef<string | null>(null);
 
   const {
     register,
     handleSubmit,
+    getValues,
     watch,
     setValue,
+    setError,
     formState: { errors },
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
@@ -72,6 +75,9 @@ export default function NewProjectPage() {
     // If type is already selected (e.g. from back button or prefill), go to details
     if (typeValue) {
       setStep('details');
+    }
+    if (typeValue === 'corporate') {
+      setShowAdvancedOptions(true);
     }
   }, [typeValue]);
 
@@ -117,21 +123,22 @@ export default function NewProjectPage() {
   };
 
   const handleSkipToReports = () => {
-    // Get current form values
-    const name = (document.getElementById('name') as HTMLInputElement)?.value;
+    const { name, description, type } = getValues();
     
     if (!name || name.length < 3) {
-      alert('Please enter a project name (at least 3 characters)');
+      setError('name', {
+        type: 'manual',
+        message: 'Project name must be at least 3 characters',
+      });
       return;
     }
 
-    if (!typeValue) {
-      alert('Please select a project type');
+    if (!type) {
       setStep('type-selection');
       return;
     }
 
-    sessionStorage.setItem('projectData', JSON.stringify({ name, description: descriptionValue || '', type: typeValue }));
+    sessionStorage.setItem('projectData', JSON.stringify({ name, description: description || '', type }));
     router.push('/projects/new/select-reports');
   };
 
@@ -140,11 +147,12 @@ export default function NewProjectPage() {
       <div className="mx-auto max-w-2xl space-y-6">
         <PageHeader
           title="Create New Project"
-          description={step === 'type-selection' ? "Select the type of project you want to create." : "Provide the basic project details to get started."}
+          description={step === 'type-selection' ? "Start with the reporting workflow that fits your project. Product carbon reporting is the recommended path for most teams." : "Provide the basic project details to get started."}
           actions={
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Close project wizard"
               onClick={() => requestExit('/dashboard')}
             >
               <X className="h-4 w-4" />
@@ -153,32 +161,84 @@ export default function NewProjectPage() {
         />
 
         {step === 'type-selection' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <Card 
-              className="cursor-pointer hover:border-primary transition-colors"
-              onClick={() => handleTypeSelect('corporate')}
+              className="relative border-primary/40 bg-primary/5 transition-colors hover:border-primary"
             >
+              <button
+                type="button"
+                className="absolute inset-0 cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                aria-labelledby="product-project-title"
+                aria-describedby="product-project-description"
+                onClick={() => handleTypeSelect('product')}
+              />
               <CardHeader>
-                <Building className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>Organization (Corporate)</CardTitle>
-                <CardDescription>
-                  Report for the entire company (Scope 1, 2, 3), CSRD, GHG Protocol Corporate.
+                <div className="mb-2 flex items-center gap-2 text-primary">
+                  <Package className="h-8 w-8" />
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-background px-2 py-1 text-xs font-medium">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Recommended
+                  </span>
+                </div>
+                <CardTitle id="product-project-title">Product Carbon Project</CardTitle>
+                <CardDescription id="product-project-description">
+                  Best for CBAM, ISO 14067, PCF, EPD, and client-specific product reporting from one shared dataset.
                 </CardDescription>
               </CardHeader>
+              <CardContent className="pt-0">
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>Use this when one product or SKU is the reporting subject.</li>
+                  <li>Recommended for supplier data collection and deadline-driven product compliance work.</li>
+                </ul>
+              </CardContent>
             </Card>
 
-            <Card 
-              className="cursor-pointer hover:border-primary transition-colors"
-              onClick={() => handleTypeSelect('product')}
-            >
-              <CardHeader>
-                <Package className="h-8 w-8 mb-2 text-primary" />
-                <CardTitle>Product</CardTitle>
-                <CardDescription>
-                  Carbon footprint of a specific product, CBAM, ISO 14067.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+            <div className="rounded-lg border border-dashed p-4">
+              <button
+                type="button"
+                className="flex w-full items-center justify-between text-left"
+                aria-expanded={showAdvancedOptions}
+                aria-controls="corporate-project-option"
+                onClick={() => setShowAdvancedOptions((current) => !current)}
+              >
+                <div>
+                  <p className="font-medium">Need broader corporate reporting?</p>
+                  <p className="text-sm text-muted-foreground">
+                    Reveal advanced options for company-level disclosures and inventories.
+                  </p>
+                </div>
+                <ChevronDown
+                  className={`h-5 w-5 text-muted-foreground transition-transform ${showAdvancedOptions ? 'rotate-180' : ''}`}
+                />
+              </button>
+
+              {showAdvancedOptions ? (
+                <Card
+                  id="corporate-project-option"
+                  className="relative mt-4 transition-colors hover:border-primary"
+                >
+                  <button
+                    type="button"
+                    className="absolute inset-0 cursor-pointer rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-labelledby="corporate-project-title"
+                    aria-describedby="corporate-project-description"
+                    onClick={() => handleTypeSelect('corporate')}
+                  />
+                  <CardHeader>
+                    <Building className="mb-2 h-8 w-8 text-primary" />
+                    <CardTitle id="corporate-project-title">Corporate Reporting Workspace</CardTitle>
+                    <CardDescription id="corporate-project-description">
+                      Advanced path for company-level disclosures such as CSRD, CDP, TCFD, and corporate GHG reporting.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <p className="text-sm text-muted-foreground">
+                      Use this when the reporting subject is the organization as a whole rather than a single product.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : null}
+            </div>
           </div>
         ) : (
           /* Form */
@@ -186,7 +246,9 @@ export default function NewProjectPage() {
             <CardHeader>
               <CardTitle>Project Details</CardTitle>
               <CardDescription>
-                Give your project a name and description
+                {typeValue === 'corporate'
+                  ? 'Set up the company-level reporting workspace.'
+                  : 'Set up the product-level reporting workspace.'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -197,7 +259,7 @@ export default function NewProjectPage() {
                   </Label>
                   <Input
                     id="name"
-                    placeholder="e.g., Electric Bicycle Carbon Assessment"
+                    placeholder={typeValue === 'corporate' ? 'e.g., 2026 Corporate GHG Reporting Cycle' : 'e.g., Electric Bicycle Carbon Assessment'}
                     {...register('name')}
                   />
                   {errors.name && (
@@ -239,7 +301,7 @@ export default function NewProjectPage() {
         {/* Helper text */}
         <div className="text-sm text-muted-foreground text-center">
           {step === 'type-selection' ? (
-            <p>Select a project type to continue.</p>
+            <p>Most teams should start with a product project. Corporate reporting remains available as an advanced path.</p>
           ) : (
             <p>
               Next: Answer a few questions to help us recommend the right reports,

@@ -8,18 +8,21 @@ import { Stepper, StepperIndicator, StepperItem, StepperNav, StepperTrigger } fr
 export interface TitleStatusStep {
   id: string;
   title: string;
+  completed?: boolean;
 }
 
 interface TitleStatusStepperLabels {
   completed: string;
   active: string;
   upcoming: string;
+  incomplete: string;
 }
 
 const DEFAULT_LABELS: TitleStatusStepperLabels = {
   completed: 'Готово',
   active: 'Текущий блок',
   upcoming: 'Ожидает',
+  incomplete: 'Не завершён',
 };
 
 export interface TitleStatusStepperProps {
@@ -57,18 +60,20 @@ export function TitleStatusStepper({
     >
       <StepperNav className="flex w-full flex-wrap gap-3">
         {steps.map((step, index) => {
-          const isCompleted = index < activeIndex;
-          const status = isCompleted
-            ? mergedLabels.completed
-            : index === activeIndex
-              ? mergedLabels.active
-              : mergedLabels.upcoming;
+          const isCompleted = step.completed === true;
+          const status = index === activeIndex
+            ? mergedLabels.active
+            : isCompleted
+              ? mergedLabels.completed
+              : index < activeIndex
+                ? mergedLabels.incomplete
+                : mergedLabels.upcoming;
 
           return (
             <StepperItem
               key={step.id}
               step={index + 1}
-              completed={isCompleted}
+              completed={index !== activeIndex && isCompleted}
               disabled={disableFutureSteps && index > activeIndex}
               className="min-w-[220px] flex-1 items-stretch"
             >

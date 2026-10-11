@@ -1,0 +1,66 @@
+{
+  "checked_at_utc": "2026-10-11T08:52:33.147136+00:00",
+  "runtime": "/tmp/carbonreport-qa-runtime",
+  "node": "20.20.0",
+  "source_runtime_identical": true,
+  "source_hashes": {
+    "package.json": "45cf2e362d728b7a3edac49abcb72382f3d4786f90aafea651146fb4265cac56",
+    "prisma/seed-data/cbam-package-fields.ts": "f94106e647a23640669c88c9c4479e5398620195d4887dbab83c1e5091afcefd",
+    "prisma/seed-data/dataset-fields.ts": "cb7fb4bebb31330038b59bae359f49eb42198a165ac12712da9f687471728334",
+    "scripts/sync-cbam-package-fields.ts": "63ccac7ce45c7eded1884638b86ec1bf9bfb634de44c1dea7a9aeb569538014d",
+    "src/app/api/projects/[id]/dataset/route.test.ts": "a7279212667b2efcd8af70adc1b93ef5e7355cb4693fa2b14373e4a26699da15",
+    "src/app/api/projects/[id]/dataset/route.ts": "b2f8e57d2915f1c39861c673d623b5f031865fbb8206b25b553fe29abd7e11c2",
+    "src/app/api/projects/[id]/reports/[reportId]/supplier-package/route.test.ts": "a3069f8a01bad0f62d568e429001c3793f4f2343ed30dedb2a2acd84414abd72",
+    "src/app/api/projects/[id]/reports/[reportId]/supplier-package/route.ts": "6d7e0a1907d03c1df9cc76093f090bde070bf808df8a667252f1a806c62f802d",
+    "src/app/projects/[id]/page.tsx": "e3888544263f0f2d34ec9a1e4e3431beb6ecbd6343dd86a1e6a4e1c121d02e43",
+    "src/app/projects/[id]/reports/[reportId]/cbam-supplier-package-client.tsx": "a6a9e1a56aa50926b89da39983da76360344cbbb35ccf62b620fd754da04b7f1",
+    "src/app/projects/[id]/reports/[reportId]/page.tsx": "73eae6a6a56d820e75fc7eaac312e54b7128aefac506a7fc6ddc404b9d4a13f9",
+    "src/app/projects/new/select-reports/page.tsx": "5e6c68b86ae16b88d83f0c764910017a2b78f25f43f4dfdaeeba58f6ca45bbda",
+    "src/app/settings/create-organization-form.tsx": "78302a84a9ab6ddd5ce299fa9eef983168d4ae0f7c5502062e2b4d26484dac33",
+    "src/lib/cbam/supplier-package-export.test.ts": "436c36e31762c0c50d320cfcfb5e330d8b1135bdc83e4fc844967f15b9ed898b",
+    "src/lib/cbam/supplier-package-export.ts": "a71e60bf1d7ae03eb85b34a6e100f03c11b78423767514ae05f97d4842832791",
+    "src/lib/cbam/supplier-package-snapshot.ts": "356a6b7ec1493f22512d42851518cd350e2a31b46c84b1a39127fe88a15a5072",
+    "src/lib/cbam/supplier-package.test.ts": "5317f8f70051fb2b4c8902f2a45721f16266cb5634414058d1490bf1046f6b99",
+    "src/lib/cbam/supplier-package.ts": "5ff562355af47a53b9fb8bd5cc48d2524371a1b5e5b97da9f6d4d02e8dce2a83",
+    "src/lib/projects/overview-state.test.ts": "cba130c1387105e60ad4a41be3d23cdcbed1639189dd325ebf7a4cf1a41edcb2",
+    "src/lib/projects/overview-state.ts": "06d2bdb9c97a0bcaf7cb2ded59b688cd896d26dd761ec3d60be542e0d74866ea",
+    "src/lib/report-templates/cbam-data-package.ts": "65c4447e8e86ed9474de6f2b805daa2b15a42c53fc030bfa936f94cf5e0a8361",
+    "src/lib/report-templates/index.ts": "d84887cfe6be3d2ca4ece3440caab441c1210ba3309b318180079248c241e4b7",
+    "src/lib/report-templates/user-facing.ts": "c884b80a71bb588ba40206b74bcfa6da6cd929134485c095706d225dff3b6d71"
+  },
+  "catalog_active_codes": 48,
+  "other_catalog_records_unchanged": 47,
+  "catalog_source_hashes_matched": 48,
+  "checks": {
+    "sanity": {
+      "pass": 147,
+      "fail": 0,
+      "log": "sanity.log"
+    },
+    "typescript": {
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    "scoped_eslint": {
+      "exit": 0,
+      "log": "lint.log"
+    },
+    "templates_with_local_env": {
+      "exit": 0,
+      "log": "templates-check.log"
+    },
+    "artifact": {
+      "result": "pass",
+      "log": "artifact-verification.json"
+    }
+  },
+  "excluded_claims": [
+    "client acceptance",
+    "statutory operator report",
+    "fresh registration-to-download in one browser run",
+    "full DB integration rerun",
+    "mobile and print pagination",
+    "production deployment"
+  ],
+  "local_links_checked": 73
+}

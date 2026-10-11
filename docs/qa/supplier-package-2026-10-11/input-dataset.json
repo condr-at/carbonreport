@@ -1,0 +1,183 @@
+{
+  "id": "3ca3f18e-81bf-467b-97d4-8b193b0ae68b",
+  "name": "QA Supplier Review Steel 20261011",
+  "dataset": {
+    "bom_items": [],
+    "processes": [],
+    "data_points": [
+      {
+        "value": "Example EU customer reviewer",
+        "item_id": null,
+        "field_id": "cbam_pkg_recipient"
+      },
+      {
+        "value": "Alex QA Preparer — revision 2",
+        "item_id": null,
+        "field_id": "cbam_pkg_prepared_by"
+      },
+      {
+        "value": "operator",
+        "item_id": null,
+        "field_id": "cbam_pkg_supplier_role"
+      },
+      {
+        "value": "",
+        "item_id": null,
+        "field_id": "cbam_pkg_supplier_name"
+      },
+      {
+        "value": "2026",
+        "item_id": null,
+        "field_id": "cbam_pkg_production_year"
+      },
+      {
+        "value": "2026-01-01",
+        "item_id": null,
+        "field_id": "cbam_pkg_coverage_start"
+      },
+      {
+        "value": "2026-09-30",
+        "item_id": null,
+        "field_id": "cbam_pkg_coverage_end"
+      },
+      {
+        "value": "Example Steel Ltd",
+        "item_id": null,
+        "field_id": "cbam_operator_name"
+      },
+      {
+        "value": "Operator reporting team",
+        "item_id": null,
+        "field_id": "cbam_operator_contact"
+      },
+      {
+        "value": "",
+        "item_id": null,
+        "field_id": "cbam_installation_id"
+      },
+      {
+        "value": "Serbia",
+        "item_id": null,
+        "field_id": "cbam_installation_country"
+      },
+      {
+        "value": "Example works",
+        "item_id": null,
+        "field_id": "cbam_pkg_installation_name"
+      },
+      {
+        "value": "Example industrial road 1",
+        "item_id": null,
+        "field_id": "cbam_pkg_installation_address"
+      },
+      {
+        "value": "Example steel goods",
+        "item_id": null,
+        "field_id": "product_name"
+      },
+      {
+        "value": "Synthetic engineering fixture, not a verified emissions declaration.",
+        "item_id": null,
+        "field_id": "product_description"
+      },
+      {
+        "value": "72081000",
+        "item_id": null,
+        "field_id": "cbam_pkg_cn8"
+      },
+      {
+        "value": "not_reviewed",
+        "item_id": null,
+        "field_id": "cbam_pkg_cn_review"
+      },
+      {
+        "value": "Operator-reported process attribution and total saleable output; see OPS-2026-Q3.",
+        "item_id": null,
+        "field_id": "cbam_pkg_boundary"
+      },
+      {
+        "value": "Reported direct value already includes the relevant precursor contribution; see operator paper.",
+        "item_id": null,
+        "field_id": "cbam_pkg_precursor_statement"
+      },
+      {
+        "value": "tCO2e/t_goods",
+        "item_id": null,
+        "field_id": "cbam_pkg_unit"
+      },
+      {
+        "value": "2.5",
+        "item_id": null,
+        "field_id": "cbam_pkg_direct_see"
+      },
+      {
+        "value": "actual",
+        "item_id": null,
+        "field_id": "cbam_pkg_direct_basis"
+      },
+      {
+        "value": "operator-1",
+        "item_id": null,
+        "field_id": "cbam_pkg_direct_source"
+      },
+      {
+        "value": "reported",
+        "item_id": null,
+        "field_id": "cbam_pkg_indirect_status"
+      },
+      {
+        "value": "0.5",
+        "item_id": null,
+        "field_id": "cbam_pkg_indirect_see"
+      },
+      {
+        "value": "actual",
+        "item_id": null,
+        "field_id": "cbam_pkg_indirect_basis"
+      },
+      {
+        "value": "operator-1",
+        "item_id": null,
+        "field_id": "cbam_pkg_indirect_source"
+      },
+      {
+        "value": "",
+        "item_id": null,
+        "field_id": "cbam_pkg_indirect_rationale"
+      },
+      {
+        "value": "[{\"component\":\"direct\",\"sourceId\":\"INACTIVE_DEFAULT_A\",\"version\":\"INACTIVE_TEST_VERSION\",\"row\":\"\",\"markup\":\"\"},{\"component\":\"direct\",\"sourceId\":\"INACTIVE_DEFAULT_B\",\"version\":\"\",\"row\":\"\",\"markup\":\"\"}]",
+        "item_id": null,
+        "field_id": "cbam_pkg_default_context"
+      },
+      {
+        "value": "12",
+        "item_id": null,
+        "field_id": "cbam_pkg_lot_mass_tonnes"
+      },
+      {
+        "value": "not_verified",
+        "item_id": null,
+        "field_id": "cbam_pkg_verification_status"
+      },
+      {
+        "value": "",
+        "item_id": null,
+        "field_id": "cbam_pkg_verifier"
+      },
+      {
+        "value": "",
+        "item_id": null,
+        "field_id": "cbam_pkg_verification_source"
+      },
+      {
+        "value": "[{\"id\":\"operator-1\",\"title\":\"Operator production and emissions working paper\",\"reference\":\"Operator document OPS-2026-Q3, pages 1-5\",\"version\":\"2026-10-01 revision 1\",\"period\":\"2026-01-01 through 2026-09-30\",\"owner\":\"Example Steel Ltd\",\"disclosure\":\"shareable\"}]",
+        "item_id": null,
+        "field_id": "cbam_pkg_evidence_json"
+      }
+    ],
+    "product_info": {},
+    "transport_stages": []
+  },
+  "datasetVersion": 8
+}

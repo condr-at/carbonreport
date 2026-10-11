@@ -1,0 +1,1221 @@
+{
+  "group": "product-ghg",
+  "checked_on": "2026-10-11",
+  "sources": [
+    {
+      "id": "PG01",
+      "title": "ISO 14067:2018 — Carbon footprint of products",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/71206.html",
+      "kind": "standard_catalogue",
+      "version_or_date": "2018-08; confirmed 2024; revision under development",
+      "access": "public_metadata",
+      "notes": "Only public scope/status read; licensed clauses not accessed. Climate-change impact only; partial CFP included; offsets and communication outside its scope.",
+      "local_file": null
+    },
+    {
+      "id": "PG02",
+      "title": "ISO 14040:2006 — LCA principles and framework",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/37456.html",
+      "kind": "standard_catalogue",
+      "version_or_date": "2006 edition 2; Amd 1:2020",
+      "access": "public_metadata",
+      "notes": "Catalogue only; obtain licensed applicable edition/amendment before conformance review.",
+      "local_file": null
+    },
+    {
+      "id": "PG03",
+      "title": "ISO 14044:2006 — LCA requirements and guidelines",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/38498.html",
+      "kind": "standard_catalogue",
+      "version_or_date": "2006; Amd 1:2017 and Amd 2:2020; confirmed 2022",
+      "access": "public_metadata",
+      "notes": "Public abstract describes goal/scope, LCI, LCIA, interpretation, reporting and critical review. No inaccessible clause claims.",
+      "local_file": null
+    },
+    {
+      "id": "PG04",
+      "title": "Product Life Cycle Accounting and Reporting Standard",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/product-standard",
+      "kind": "standard_landing_page",
+      "version_or_date": "2011; ISO joint development announced February 2026",
+      "access": "public_fulltext",
+      "notes": "Current public page still links 2011 standard; future harmonisation is not an adopted replacement.",
+      "local_file": null
+    },
+    {
+      "id": "PG05",
+      "title": "Corporate Accounting and Reporting Standard",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/corporate-standard",
+      "kind": "standard_landing_page",
+      "version_or_date": "Revised edition 2004; gases amendment 2013; Scope 2 Guidance 2015",
+      "access": "public_fulltext",
+      "notes": "Inventory accounting; not an offset-project standard or a verification procedure.",
+      "local_file": null
+    },
+    {
+      "id": "PG06",
+      "title": "Scope 2 Guidance",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/scope-2-guidance",
+      "kind": "standard_landing_page",
+      "version_or_date": "2015; consultation October 2025–January 2026",
+      "access": "public_fulltext",
+      "notes": "Eight quality criteria for contractual instruments; distinguish current requirements from consultation proposals.",
+      "local_file": null
+    },
+    {
+      "id": "PG07",
+      "title": "Corporate Value Chain (Scope 3) Standard",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/corporate-value-chain-scope-3-standard",
+      "kind": "standard_landing_page",
+      "version_or_date": "2011 with published corrections",
+      "access": "public_fulltext",
+      "notes": "15 categories; use together with Corporate Standard.",
+      "local_file": null
+    },
+    {
+      "id": "PG08",
+      "title": "Scope 3 Calculation Guidance — Category 1, Purchased goods and services",
+      "publisher": "GHG Protocol / Carbon Trust",
+      "url": "https://ghgprotocol.org/sites/default/files/2022-12/Chapter1.pdf",
+      "kind": "official_calculation_guidance",
+      "version_or_date": "April 2013; PDF pp.20–35 printed",
+      "access": "public_fulltext",
+      "notes": "Supplier-specific, hybrid, average-data and spend-based methods; numerical examples explicitly illustrative, not real completed reports.",
+      "local_file": null
+    },
+    {
+      "id": "PG09",
+      "title": "ISO 14064-1:2018 — Organization-level quantification/reporting",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/66453.html",
+      "kind": "standard_catalogue",
+      "version_or_date": "2018-12 edition 2; confirmed 2024; revision in progress",
+      "access": "public_metadata",
+      "notes": "Programme-neutral inventory requirements; not a certificate issued by the application. Licensed text not read.",
+      "local_file": null
+    },
+    {
+      "id": "PG10",
+      "title": "ISO 14064-3:2019 — Verification and validation of GHG statements",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/66455.html",
+      "kind": "standard_catalogue",
+      "version_or_date": "2019-04 edition 2; confirmed 2024",
+      "access": "public_metadata",
+      "notes": "Applies to organisation, project and product statements. Only public scope/status, no clause-level audit.",
+      "local_file": null
+    },
+    {
+      "id": "PG11",
+      "title": "ISO 14025:2026 — Environmental product declarations",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/14025",
+      "kind": "standard_catalogue",
+      "version_or_date": "2026-06 edition 2, Published",
+      "access": "public_metadata",
+      "notes": "Replaces ISO 14025:2006. Programme/PCR transition must be checked; catalogue update does not itself prove expiry of an existing EPD.",
+      "local_file": null
+    },
+    {
+      "id": "PG12",
+      "title": "General Programme Instructions",
+      "publisher": "EPD International AB",
+      "url": "https://www.environdec.com/resources/general-programme-instructions",
+      "kind": "programme_rules_landing_page",
+      "version_or_date": "Live page checked 2026-10-11",
+      "access": "public_fulltext",
+      "notes": "Public transition rules read: existing PCR/EPD validity retained on programme update, surveillance uses original verified PCR/GPI. Full current GPI file/version was not retrieved.",
+      "local_file": null
+    },
+    {
+      "id": "PG13",
+      "title": "EPD Verification",
+      "publisher": "EPD International AB",
+      "url": "https://www.environdec.com/verification",
+      "kind": "programme_guidance",
+      "version_or_date": "Live page checked 2026-10-11",
+      "access": "public_fulltext",
+      "notes": "IES requires verification before publication; approved individual/certification-body and other approved routes. These are IES rules, not every programme’s exact workflow.",
+      "local_file": null
+    },
+    {
+      "id": "PG14",
+      "title": "Whole life carbon assessment for the built environment",
+      "publisher": "RICS",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/standards/Whole_life_carbon_assessment_PS_Sept23.pdf",
+      "kind": "professional_standard",
+      "version_or_date": "2nd edition September 2023, version 3 August 2024; effective 2024-07-01",
+      "access": "public_fulltext",
+      "notes": "Public PDF read, not copied locally. §§2,6: assessment boundaries/modules, reference study period and reporting; national rules take precedence.",
+      "local_file": null
+    },
+    {
+      "id": "PG15",
+      "title": "ISO 14068:2026 — Climate change management — Carbon neutrality",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/14068",
+      "kind": "standard_catalogue",
+      "version_or_date": "Published 2026-09-11, edition1",
+      "access": "public_metadata",
+      "notes": "Prioritises reductions and removal enhancement within value chain over offsetting; does not specify net-zero requirements. Licensed text not accessed.",
+      "local_file": null
+    },
+    {
+      "id": "PG16",
+      "title": "ISO 14068-1:2023 — withdrawn record",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/43279.html",
+      "kind": "superseded_standard_catalogue",
+      "version_or_date": "Withdrawn 2026-09-11; replaced by ISO 14068:2026",
+      "access": "public_metadata",
+      "notes": "Historical edition only; do not advertise it as current in a new report.",
+      "local_file": null
+    },
+    {
+      "id": "PG17",
+      "title": "PAS 2060:2014 — withdrawn record",
+      "publisher": "BSI",
+      "url": "https://knowledge.bsigroup.com/products/specification-for-the-demonstration-of-carbon-neutrality-1",
+      "kind": "superseded_standard_catalogue",
+      "version_or_date": "Published 2014-04-30; withdrawn 2025-12-01",
+      "access": "public_metadata",
+      "notes": "BSI product record gives exact withdrawal date. Do not confuse withdrawal of document with earlier scheme-sales deadlines. Full paid text not obtained.",
+      "local_file": null
+    },
+    {
+      "id": "PG18",
+      "title": "GHG Protocol Reporting Template",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/sites/default/files/2022-12/GHG-Protocol-Reporting-Template.docx",
+      "kind": "official_blank_template",
+      "version_or_date": "Listed February 2017; legacy contents",
+      "access": "public_download_copyright_retained",
+      "notes": "Legacy form omits NF3 and has one Scope 2 line; needs PG30 and PG27 updates. Not a completed or verified inventory. Download checks and hashes: assets/product-ghg/download-manifest.json.",
+      "local_file": "docs/report-reference/assets/product-ghg/ghg-corporate-reporting-template.docx"
+    },
+    {
+      "id": "PG19",
+      "title": "Sample GHG Inventory Reporting Template",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/sites/default/files/2023-07/Sample%20GHG%20Inventory%20Reporting%20Template%20%28updated%207.10.23%29.docx",
+      "kind": "official_blank_template",
+      "version_or_date": "Updated 2023-07-10",
+      "access": "public_download_copyright_retained",
+      "notes": "DOCX includes 15 Scope 3 categories, methods/data quality, supplier-data share and seven gases; no real company values. Download checks and hashes: assets/product-ghg/download-manifest.json.",
+      "local_file": "docs/report-reference/assets/product-ghg/ghg-inventory-reporting-template-2023.docx"
+    },
+    {
+      "id": "PG20",
+      "title": "Sample Product Standard GHG Inventory Reporting Template",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/sites/default/files/2022-12/Sample%20Product%20Standard%20GHG%20Inventory%20Reporting%20Template.pdf",
+      "kind": "official_blank_template",
+      "version_or_date": "October 2011; 7 pages",
+      "access": "public_download_copyright_retained",
+      "notes": "Blank reporting form; includes scope, allocation, uncertainty and assurance. Older gas listing must be read with PG30 amendment. Not a finished PCF. Download checks and hashes: assets/product-ghg/download-manifest.json.",
+      "local_file": "docs/report-reference/assets/product-ghg/ghg-product-reporting-template.pdf"
+    },
+    {
+      "id": "PG21",
+      "title": "WLCA reporting template — buildings",
+      "publisher": "RICS",
+      "url": "https://www.rics.org/content/dam/ricsglobal/documents/standards/Reporting-template-buildings.xlsx",
+      "kind": "official_blank_template",
+      "version_or_date": "Current supporting workbook for WLCA 2nd edition; retrieved 2026-10-11",
+      "access": "public_download_copyright_retained",
+      "notes": "Seven sheets: summary, concept, detailed, optional granularity, energy nonresidential/residential and water. Not a completed building assessment. Download checks and hashes: assets/product-ghg/download-manifest.json.",
+      "local_file": "docs/report-reference/assets/product-ghg/rics-wlca-buildings-template.xlsx"
+    },
+    {
+      "id": "PG22",
+      "title": "iPhone 16 and iPhone 16 Plus Product Environmental Report",
+      "publisher": "Apple",
+      "url": "https://www.apple.com/si/environment/pdf/products/iphone/iPhone_16_and_iPhone_16_Plus_PER_June2025.pdf",
+      "kind": "published_product_report",
+      "version_or_date": "June 2025 file; launch 2024-09-09; 12 pages",
+      "access": "public_download_copyright_retained",
+      "notes": "Published manufacturer report includes product/configuration boundaries and PCF results (p. 10) and assumptions/endnotes. Not a full confidential LCA model or an independent verification opinion; no universal benchmark. Download checks and hashes: assets/product-ghg/download-manifest.json.",
+      "local_file": "docs/report-reference/assets/product-ghg/apple-iphone16-product-environmental-report-june2025.pdf"
+    },
+    {
+      "id": "PG23",
+      "title": "Schüco Low Carbon Aluminium Profile EPD",
+      "publisher": "Schüco International KG / Institut Bauen und Umwelt (IBU)",
+      "url": "https://www.schueco.com/resource/blob/4385164/e1096f93dbaf9025600a63a92bd6f546/Schueco%20Low%20Carbon%20Aluminium%20Profile%202.pdf?domain=se",
+      "kind": "published_verified_epd",
+      "version_or_date": "EPD-SCH-20240604-CBA1-EN; issued 2025-01-08; stated valid to 2030-01-07",
+      "access": "public_download_copyright_retained",
+      "notes": "Manufacturer-hosted IBU EPD, 1 kg declared unit; p. 2 external verification (Matthias Schulz), p. 6 multi-indicator/module results. Registry withdrawal status not independently checked; IBU rules differ from IES. Download checks and hashes: assets/product-ghg/download-manifest.json.",
+      "local_file": "docs/report-reference/assets/product-ghg/schueco-low-carbon-aluminium-epd-2025.pdf"
+    },
+    {
+      "id": "PG24",
+      "title": "ISO 14025:2006 — withdrawn record",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/standard/38131.html",
+      "kind": "superseded_standard_catalogue",
+      "version_or_date": "Withdrawn; replaced by ISO 14025:2026",
+      "access": "public_metadata",
+      "notes": "Old edition still cited in examples; confirm programme transition and original verification basis rather than relabel historical documents.",
+      "local_file": null
+    },
+    {
+      "id": "PG25",
+      "title": "EPD development and verification templates",
+      "publisher": "EPD International AB",
+      "url": "https://www.environdec.com/resources/epd-templates",
+      "kind": "official_template_index",
+      "version_or_date": "Construction PCR 2019:14v2.0.1; machine-readable template 20260316",
+      "access": "public_fulltext",
+      "notes": "Development templates are voluntary aids; mandatory verification/machine-readable templates are programme/product-specific. Direct file links were not exposed in browser text; no DOCX was guessed/downloaded.",
+      "local_file": null
+    },
+    {
+      "id": "PG26",
+      "title": "Corporate Standard — full text",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/sites/default/files/standards/ghg-protocol-revised.pdf",
+      "kind": "voluntary_standard",
+      "version_or_date": "Revised 2004; reporting ch. 9 printed pp. 62–65",
+      "access": "public_fulltext",
+      "notes": "Read with PG30 gases amendment and PG27 scope2 update. Public PDF not stored as a report example.",
+      "local_file": null
+    },
+    {
+      "id": "PG27",
+      "title": "Scope 2 Guidance — full text",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/sites/default/files/2023-03/Scope%202%20Guidance.pdf",
+      "kind": "voluntary_standard",
+      "version_or_date": "2015; ch. 6–7, printed pp. 56–65",
+      "access": "public_fulltext",
+      "notes": "Conditional dual reporting, factor hierarchy/residual mix and contractual-instrument quality criteria.",
+      "local_file": null
+    },
+    {
+      "id": "PG28",
+      "title": "Scope3 Standard — full text",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/sites/default/files/standards/Corporate-Value-Chain-Accounting-Reporing-Standard_041613_2.pdf",
+      "kind": "voluntary_standard",
+      "version_or_date": "2011; ch. 6 and 11; table 5.4",
+      "access": "public_fulltext",
+      "notes": "Minimum boundaries and disclosure of exclusions; separate category totals and methodologies. Read with gases amendment.",
+      "local_file": null
+    },
+    {
+      "id": "PG29",
+      "title": "Product Life Cycle Standard — full text",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/sites/default/files/standards/Product-Life-Cycle-Accounting-Reporting-Standard_041613.pdf",
+      "kind": "voluntary_standard",
+      "version_or_date": "2011; ch. 12–13 assurance/reporting",
+      "access": "public_fulltext",
+      "notes": "Public disclosure and assurance requirements are conditional on claiming conformance to this standard; not automatically ISO 14067 clauses.",
+      "local_file": null
+    },
+    {
+      "id": "PG30",
+      "title": "Required Greenhouse Gases and GWP Values — amendment",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/sites/default/files/2022-12/Required%20gases%20and%20GWP%20values_0.pdf",
+      "kind": "standard_amendment",
+      "version_or_date": "2013",
+      "access": "public_fulltext",
+      "notes": "Includes NF3; source and consistency of 100-year IPCC GWP values. Old example/template gas lists do not override amendment.",
+      "local_file": null
+    },
+    {
+      "id": "PG31",
+      "title": "Land Sector and Removals Standard",
+      "publisher": "GHG Protocol / WRI / WBCSD",
+      "url": "https://ghgprotocol.org/land-sector-and-removals-standard",
+      "kind": "voluntary_standard_landing_page",
+      "version_or_date": "v1.1 is current linked version; effective 2027-01-01",
+      "access": "public_fulltext",
+      "notes": "Published 2026 and not yet effective on checked_on. Evaluate land/removals applicability; forest accounting remains separate work.",
+      "local_file": null
+    },
+    {
+      "id": "PG32",
+      "title": "ISO — Certification",
+      "publisher": "ISO",
+      "url": "https://www.iso.org/certification.html",
+      "kind": "official_explanation",
+      "version_or_date": "Live page checked 2026-10-11",
+      "access": "public_fulltext",
+      "notes": "ISO does not perform certification or issue certificates.",
+      "local_file": null
+    },
+    {
+      "id": "PG33",
+      "title": "Key Standard Development Updates: FAQ",
+      "publisher": "GHG Protocol",
+      "url": "https://ghgprotocol.org/blog/ghg-protocol-announces-key-standard-development-updates-faq-resource",
+      "kind": "revision_status",
+      "version_or_date": "2026-07-29",
+      "access": "public_fulltext",
+      "notes": "New consolidated ISO/GHG corporate consultation planned Q2 2027, publication Q4 2028. Supersedes earlier planning timelines; proposals are not current obligations.",
+      "local_file": null
+    },
+    {
+      "id": "PG34",
+      "title": "ECGT Questions and Answers",
+      "publisher": "European Commission",
+      "url": "https://commission.europa.eu/document/download/3c257883-bb2a-4dd9-a6dc-501d587bb34f_en?filename=faq-empowerting-consumers-gtd.pdf",
+      "kind": "official_legal_guidance",
+      "version_or_date": "Index dated 2026-09-22; questions 6 and 10",
+      "access": "public_fulltext",
+      "notes": "Explains UCPD Annex I 4c product-claim prohibition based on offsets. Guidance, not the legislative text; scope/national implementation needs legal review.",
+      "local_file": null
+    },
+    {
+      "id": "PG35",
+      "title": "Sustainable consumption — implementation of Directive (EU) 2024/825",
+      "publisher": "European Commission",
+      "url": "https://commission.europa.eu/topics/consumers/consumer-rights-and-complaints/sustainable-consumption_en",
+      "kind": "official_legal_status",
+      "version_or_date": "Application 2026-09-27; checked 2026-10-11",
+      "access": "public_fulltext",
+      "notes": "Date confirmed by Commission; do not present ISO carbon-neutrality conformance as permission for EU consumer claims.",
+      "local_file": null
+    },
+    {
+      "id": "PG36",
+      "title": "Extruded aluminium profile — EPD-IES-0026622:001",
+      "publisher": "EPD International / TECNOAL",
+      "url": "https://www.environdec.com/library/epd26622",
+      "kind": "published_verified_epd_registry",
+      "version_or_date": "Version 2026-02-17; listed Valid to 2031-01-13",
+      "access": "public_fulltext",
+      "notes": "Online example with named Bureau Veritas verifier, PCR 2019:14v2.0.1 and older ISO 14025:2006 basis. Shows programme transition nuance; PDF discovered but not additionally saved because PG23 already covers verified EPD format.",
+      "local_file": null
+    },
+    {
+      "id": "PG37",
+      "title": "Directive (EU) 2024/825 — official legal text",
+      "publisher": "EUR-Lex",
+      "url": "https://eur-lex.europa.eu/eli/dir/2024/825/oj/eng",
+      "kind": "legislation",
+      "version_or_date": "2024-02-28",
+      "access": "blocked_no_fulltext",
+      "notes": "Two attempts: ELI then CELEX text view both gave anti-bot/JavaScript page; no full text downloaded. Substantive summary relies on official Commission PG34/PG35 instead.",
+      "local_file": null
+    }
+  ],
+  "reports": [
+    {
+      "code": "ISO14067",
+      "family": "product_pcf",
+      "classification": "voluntary_standard",
+      "normative_status": "ISO 14067:2018: опубликованная действующая редакция, подтверждена в 2024. Полный лицензированный текст не прочитан.",
+      "applicability": "Добровольный след продукта; выбранная клиентом методика и цель должны быть зафиксированы. Не универсальная обязанность и не полная оценка жизненного цикла по всем экологическим воздействиям.",
+      "deliverable": "Отчёт исследования CFP / частичного CFP с расчётным следом, границами и ограничениями; при заявлении соответствия GHG Product Standard — предусмотренные раскрытия и assurance.",
+      "source_ids": [
+        "PG01",
+        "PG02",
+        "PG03",
+        "PG04",
+        "PG20",
+        "PG29",
+        "PG30",
+        "PG22"
+      ],
+      "required_inputs": [
+        "[PG20/PG29] Продукт и вариант, цель, единица анализа и reference flow.",
+        "[PG20] Границы, стадии жизненного цикла, период, география, исключения и allocation.",
+        "[PG20/PG30] Исходные потоки, факторы и их версии, источник GWP, качество данных, результаты и неопределённость."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG01] ISO 14067 ограничен изменением климата; partial CFP указывать явно, компенсации находятся вне его области.",
+        "[Норма выбранной базы PG29] Для заявления соответствия GHG Product Standard выполнить его требования раскрытия и assurance; это не автоматически пункты ISO.",
+        "[UX-контроль; PG20/PG30] Проверять единицы, границы, суммы и версии факторов; пропуск не заменять нулём.",
+        "[UX-контроль; PG01/PG20] Разделять заполнение, расчёт и проверку; сравнение продуктов требует сопоставимых функций/границ."
+      ],
+      "human_review": [
+        "[PG01/PG03] LCA-специалист проверяет модель и применимый лицензированный текст ISO.",
+        "[PG20/PG29] Проверяющий подтверждает реально выполненный объём assurance."
+      ],
+      "example_source_ids": [
+        "PG20",
+        "PG22"
+      ],
+      "example_status": "official_blank_template_and_published_product_example",
+      "example_notes": "PG20 — пустая форма GHG, не ISO-форма. PG22 — отчёт Apple по конкретным конфигурациям; исходная модель LCA не открыта в этом PDF, независимое заключение не приложено.",
+      "ui_warnings": [
+        "CFP не является EPD или сертификатом углеродной нейтральности.",
+        "100% заполнения не означает проверенный расчёт."
+      ],
+      "implementation_gaps": [
+        "ISO14067: 20 полей, 9 required; ISO_14067 и PRODUCT_PCF: 62 поля, 54 required. Области одной методики покрыты по-разному.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "ISO_14067",
+      "family": "product_pcf",
+      "classification": "voluntary_standard",
+      "normative_status": "ISO 14067:2018: опубликованная действующая редакция, подтверждена в 2024. Полный лицензированный текст не прочитан.",
+      "applicability": "Добровольный след продукта; выбранная клиентом методика и цель должны быть зафиксированы. Не универсальная обязанность и не полная оценка жизненного цикла по всем экологическим воздействиям.",
+      "deliverable": "Отчёт исследования CFP / частичного CFP с расчётным следом, границами и ограничениями; при заявлении соответствия GHG Product Standard — предусмотренные раскрытия и assurance.",
+      "source_ids": [
+        "PG01",
+        "PG02",
+        "PG03",
+        "PG04",
+        "PG20",
+        "PG29",
+        "PG30",
+        "PG22"
+      ],
+      "required_inputs": [
+        "[PG20/PG29] Продукт и вариант, цель, единица анализа и reference flow.",
+        "[PG20] Границы, стадии жизненного цикла, период, география, исключения и allocation.",
+        "[PG20/PG30] Исходные потоки, факторы и их версии, источник GWP, качество данных, результаты и неопределённость."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG01] ISO 14067 ограничен изменением климата; partial CFP указывать явно, компенсации находятся вне его области.",
+        "[Норма выбранной базы PG29] Для заявления соответствия GHG Product Standard выполнить его требования раскрытия и assurance; это не автоматически пункты ISO.",
+        "[UX-контроль; PG20/PG30] Проверять единицы, границы, суммы и версии факторов; пропуск не заменять нулём.",
+        "[UX-контроль; PG01/PG20] Разделять заполнение, расчёт и проверку; сравнение продуктов требует сопоставимых функций/границ."
+      ],
+      "human_review": [
+        "[PG01/PG03] LCA-специалист проверяет модель и применимый лицензированный текст ISO.",
+        "[PG20/PG29] Проверяющий подтверждает реально выполненный объём assurance."
+      ],
+      "example_source_ids": [
+        "PG20",
+        "PG22"
+      ],
+      "example_status": "official_blank_template_and_published_product_example",
+      "example_notes": "PG20 — пустая форма GHG, не ISO-форма. PG22 — отчёт Apple по конкретным конфигурациям; исходная модель LCA не открыта в этом PDF, независимое заключение не приложено.",
+      "ui_warnings": [
+        "CFP не является EPD или сертификатом углеродной нейтральности.",
+        "100% заполнения не означает проверенный расчёт."
+      ],
+      "implementation_gaps": [
+        "В generated/iso_14067.ts тот же список 62 fieldId, что в EPD, включая CBAM-поля. Требуется разграничение методик и результата.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "PRODUCT_PCF",
+      "family": "product_pcf",
+      "classification": "voluntary_standard",
+      "normative_status": "GHG Protocol Product Standard (2011), с поправкой 2013; добровольное применение.",
+      "applicability": "Добровольный след продукта; выбранная клиентом методика и цель должны быть зафиксированы. Не универсальная обязанность и не полная оценка жизненного цикла по всем экологическим воздействиям.",
+      "deliverable": "Отчёт исследования CFP / частичного CFP с расчётным следом, границами и ограничениями; при заявлении соответствия GHG Product Standard — предусмотренные раскрытия и assurance.",
+      "source_ids": [
+        "PG01",
+        "PG02",
+        "PG03",
+        "PG04",
+        "PG20",
+        "PG29",
+        "PG30",
+        "PG22"
+      ],
+      "required_inputs": [
+        "[PG20/PG29] Продукт и вариант, цель, единица анализа и reference flow.",
+        "[PG20] Границы, стадии жизненного цикла, период, география, исключения и allocation.",
+        "[PG20/PG30] Исходные потоки, факторы и их версии, источник GWP, качество данных, результаты и неопределённость."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG01] ISO 14067 ограничен изменением климата; partial CFP указывать явно, компенсации находятся вне его области.",
+        "[Норма выбранной базы PG29] Для заявления соответствия GHG Product Standard выполнить его требования раскрытия и assurance; это не автоматически пункты ISO.",
+        "[UX-контроль; PG20/PG30] Проверять единицы, границы, суммы и версии факторов; пропуск не заменять нулём.",
+        "[UX-контроль; PG01/PG20] Разделять заполнение, расчёт и проверку; сравнение продуктов требует сопоставимых функций/границ."
+      ],
+      "human_review": [
+        "[PG01/PG03] LCA-специалист проверяет модель и применимый лицензированный текст ISO.",
+        "[PG20/PG29] Проверяющий подтверждает реально выполненный объём assurance."
+      ],
+      "example_source_ids": [
+        "PG20",
+        "PG22"
+      ],
+      "example_status": "official_blank_template_and_published_product_example",
+      "example_notes": "PG20 — пустая форма GHG, не ISO-форма. PG22 — отчёт Apple по конкретным конфигурациям; исходная модель LCA не открыта в этом PDF, независимое заключение не приложено.",
+      "ui_warnings": [
+        "CFP не является EPD или сертификатом углеродной нейтральности.",
+        "100% заполнения не означает проверенный расчёт."
+      ],
+      "implementation_gaps": [
+        "В generated/product_pcf.ts тот же список 62 fieldId, что в EPD, включая CBAM-поля. Требуется разграничение методик и результата.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "EPD",
+      "family": "epd",
+      "classification": "voluntary_standard",
+      "normative_status": "ISO 14025:2026 опубликован; конкретную публикацию определяют выбранная программа, PCR и правила перехода.",
+      "applicability": "Продуктовая декларация в выбранной программе; обязательность по закупке/местному праву определяется отдельно.",
+      "deliverable": "Опубликованная декларация с владельцем, номером/сроком, PCR, единицей и границами, таблицами показателей и подтверждением предусмотренной программой верификации.",
+      "source_ids": [
+        "PG02",
+        "PG03",
+        "PG11",
+        "PG12",
+        "PG13",
+        "PG23",
+        "PG24",
+        "PG25",
+        "PG36"
+      ],
+      "required_inputs": [
+        "[PG11/PG12/PG25] Оператор, категория продукта, версии PCR/c-PCR, GPI и применимый секторный стандарт.",
+        "[PG23/PG36] Declared/functional unit, reference flow, границы/модули, LCA-модель, источники и экологические показатели.",
+        "[PG13/PG23] Верификатор, объём проверки, номер декларации, даты и ограничения сравнения."
+      ],
+      "validation_rules": [
+        "[Норма программы PG12/PG13] Проверка перед публикацией по допустимому маршруту выбранного оператора.",
+        "[Норма программы PG25] Шаблон разработки не заменяет PCR; обязательность форм проверки зависит от программы и категории.",
+        "[UX-контроль; PG11/PG12/PG24] Смена редакции ISO не должна автоматически инвалидировать старую EPD; проверить переход у оператора.",
+        "[UX-контроль; PG23] Не складывать D с A–C и не подменять все impact indicators одним PCF."
+      ],
+      "human_review": [
+        "[PG13] LCA-практик и допущенный программой проверяющий; публикация через оператора.",
+        "[PG11/PG12] Проверить новую ISO 14025:2026 по лицензированному тексту и переход программы/PCR."
+      ],
+      "example_source_ids": [
+        "PG23",
+        "PG25",
+        "PG36"
+      ],
+      "example_status": "verified_product_example_and_official_template_index",
+      "example_notes": "PG23 — скачанная IBU EPD на 1 kg алюминиевого профиля. PG36 — онлайн-пример IES. Программы и PCR разные; чужие коэффициенты и результаты не универсальны.",
+      "ui_warnings": [
+        "Проект декларации не равен опубликованной и верифицированной EPD.",
+        "Заполнение PCF не даёт права назвать результат EPD."
+      ],
+      "implementation_gaps": [
+        "generated/epd.ts: 62 поля идентичны ISO_14067/PRODUCT_PCF; в fieldId отсутствуют PCR/EPD/programme identifiers. Самостоятельная структура экологических показателей EPD не представлена.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "BUILDING_CARBON_FOOTPRINT",
+      "family": "building_wlca",
+      "classification": "assessment",
+      "normative_status": "Оценка по согласованной методике. RICS WLCA 2nd edition v3 применим при принятии этой базы или профессиональном требовании; местное право проверяется отдельно.",
+      "applicability": "Здание/проект строительства или реконструкции; указать страну, стадию и заказанную методику. RICS не универсальный закон.",
+      "deliverable": "WLCA-отчёт и ведомость модулей/элементов за расчётный период исследования, с эксплуатационными сценариями и отдельным модулем D.",
+      "source_ids": [
+        "PG14",
+        "PG21"
+      ],
+      "required_inputs": [
+        "[PG14/PG21] Объект, страна, стадия, площадь/нормирование, reference study period и граница актива.",
+        "[PG14/PG21] Количества материалов/элементов, EPD/факторы, строительство, замены, эксплуатационная энергия/вода и конец жизни.",
+        "[PG14] Сценарии, исключения, качество, неопределённость и результаты по модулям."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG14 §2] WLCA охватывает A–C; D раскрывается отдельно. Подтвердить состав по стадии/назначению.",
+        "[UX-контроль; PG14/PG21] Сверять площадь, единицы, период, количество замен и связь ведомости с модулями.",
+        "[UX-контроль; PG14] Сумма EPD материалов без эксплуатации и сценариев не является полной WLCA."
+      ],
+      "human_review": [
+        "[PG14] WLCA-специалист проверяет модель, качество и отклонения; команда проекта уточняет местные требования."
+      ],
+      "example_source_ids": [
+        "PG21"
+      ],
+      "example_status": "official_blank_workbook_only",
+      "example_notes": "Скачан пустой RICS workbook. Завершённый проверенный отчёт реального здания в этой выборке не получен.",
+      "ui_warnings": [
+        "След здания не равен CFP отдельного стройматериала.",
+        "До обещания соответствия определить страну и применимую базу."
+      ],
+      "implementation_gaps": [
+        "generated/building_carbon_footprint.ts: 61 поле, 52 required. Поля итогов и модулей не доказывают расчёт количеств, замен, сценариев и полный RICS reporting workflow.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "CARBON_NEUTRAL_CERT",
+      "family": "carbon_neutrality",
+      "classification": "voluntary_standard",
+      "normative_status": "ISO 14068:2026 заменил отозванный ISO 14068-1:2023; PAS 2060:2014 отозван 01.12.2025. Публичные заявления регулируются отдельно.",
+      "applicability": "Конкретный субъект и период заявления: организация либо продукт. До коммуникации определить аудиторию и юрисдикцию.",
+      "deliverable": "Отчёт и обоснование заявления: след, сокращения, остаток и доказательства компенсации. Независимое заключение — отдельный реально выполненный этап.",
+      "source_ids": [
+        "PG15",
+        "PG16",
+        "PG17",
+        "PG32",
+        "PG34",
+        "PG35"
+      ],
+      "required_inputs": [
+        "[PG15] Субъект, период, границы, методика следа, сокращения/удаления и остаток.",
+        "[UX-проектирование; PG15] План сокращения; реестр credits с serials, vintage, retirement и доказательствами уникального использования.",
+        "[PG34/PG35] Текст, аудитория и страна claim; выбранная схема и внешняя проверка."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG15] Сокращения и удаления в цепочке имеют приоритет перед компенсацией; carbon neutrality не тождественна net zero.",
+        "[Правовая проверка PG34/PG35] С 27.09.2026 учитывать EU запрет потребительских product claims о нейтральном/сниженном/положительном GHG-воздействии на основе offsets. Национальное применение проверяет юрист.",
+        "[UX-контроль; PG16/PG17] Отозванные PAS 2060 и ISO 14068-1:2023 не представлять текущими редакциями; историческую базу старых заключений сохранять.",
+        "[UX-контроль; PG15/PG32] Не генерировать статус verified/certificate без настоящего заключения; покупка credits не доказывает retirement."
+      ],
+      "human_review": [
+        "[PG15] Эксперт сверяет полный лицензированный ISO 14068:2026 и выбранную схему.",
+        "[PG34/PG35] Юрист проверяет публичное заявление; компетентный проверяющий оценивает его доказательства."
+      ],
+      "example_source_ids": [],
+      "example_status": "no_qualifying_current_completed_example_obtained",
+      "example_notes": "Текущее завершённое заключение по ISO 14068:2026 в ограниченном поиске не получено. Старый PAS 2060 и сам стандарт не подменяют такой пример.",
+      "ui_warnings": [
+        "Приложение не выдаёт сертификаты ISO.",
+        "Компенсации не превращают CFP в ноль и не разрешают запрещённый consumer claim."
+      ],
+      "implementation_gaps": [
+        "generated/carbon_neutral_cert.ts: 107 полей, 97 required. Есть offsets_purchased_co2e и граница claim; отдельного реестра serials/retirement в списке полей нет. Полное соответствие ISO не проверено.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "CORP_GHG",
+      "family": "corporate_ghg",
+      "classification": "voluntary_standard",
+      "normative_status": "GHG Corporate Standard 2004 + amendment 2013 + Scope 2 Guidance 2015. ISO 14064 — альтернативная выбранная база, не автоматическая эквивалентность.",
+      "applicability": "Базовая корпоративная инвентаризация. Scope 3 не становится обязательным только из-за выбора Corporate Standard.",
+      "deliverable": "Корпоративный GHG-отчёт по явно выбранной базе.",
+      "source_ids": [
+        "PG05",
+        "PG09",
+        "PG10",
+        "PG18",
+        "PG19",
+        "PG26",
+        "PG27",
+        "PG30",
+        "PG31",
+        "PG32",
+        "PG33"
+      ],
+      "required_inputs": [
+        "[PG18/PG19] Организация, период, consolidation approach, границы, исключения, исходные данные и факторы.",
+        "[PG19/PG30] Результаты по scopes/газам, GWP, методы, качество, базовый год и пересчёты; Scope 3 — по выбранной базе."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG26 ch9] Scope 1 и 2 отдельно, до GHG trades; раскрыть границы, методы и исключения.",
+        "[Норма выбранной базы PG27/PG30] Применить Scope 2 Guidance и поправку по газам/GWP; legacy-форма PG18 сама по себе недостаточна.",
+        "[UX-контроль; PG19] Проверить трассировку итогов и сопоставимость лет; вариант интерфейса не меняет нормативную базу."
+      ],
+      "human_review": [
+        "[PG19/PG26] Инвентаризатор проверяет организационную полноту, качество и пересчёт базы."
+      ],
+      "example_source_ids": [
+        "PG18",
+        "PG19"
+      ],
+      "example_status": "official_blank_templates_only",
+      "example_notes": "PG18/PG19 — официальные пустые формы, без реальных значений и verification statement. PG18 требует обновления по PG27/PG30. Отдельный завершённый пример этого варианта не получен.",
+      "ui_warnings": [
+        "Вариант annual/public/simplified не является отдельным стандартом.",
+        "Публикация и независимая проверка требуют отдельных подтверждений."
+      ],
+      "implementation_gaps": [
+        "generated/corp_ghg.ts: набор полей не является полным контрактом раскрытий. CORP_GHG/ANNUAL/PUBLIC/VERIFIED имеют одинаковые 84 fieldId, но разные isRequired; присутствуют посторонние отраслевые поля.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "CORP_GHG_VERIFIED",
+      "family": "corporate_ghg",
+      "classification": "voluntary_standard",
+      "normative_status": "GHG Corporate Standard 2004 + amendment 2013 + Scope 2 Guidance 2015. ISO 14064 — альтернативная выбранная база, не автоматическая эквивалентность.",
+      "applicability": "Verified означает состоявшуюся проверку конкретного периода и границ.",
+      "deliverable": "Инвентаризация и подписанное независимое заключение с объёмом, уровнем уверенности и оговорками.",
+      "source_ids": [
+        "PG05",
+        "PG09",
+        "PG10",
+        "PG18",
+        "PG19",
+        "PG26",
+        "PG27",
+        "PG30",
+        "PG31",
+        "PG32",
+        "PG33"
+      ],
+      "required_inputs": [
+        "[PG18/PG19] Организация, период, consolidation approach, границы, исключения, исходные данные и факторы.",
+        "[PG19/PG30] Результаты по scopes/газам, GWP, методы, качество, базовый год и пересчёты; Scope 3 — по выбранной базе."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG26 ch9] Scope 1 и 2 отдельно, до GHG trades; раскрыть границы, методы и исключения.",
+        "[Норма выбранной базы PG27/PG30] Применить Scope 2 Guidance и поправку по газам/GWP; legacy-форма PG18 сама по себе недостаточна.",
+        "[UX-контроль; PG19] Проверить трассировку итогов и сопоставимость лет; вариант интерфейса не меняет нормативную базу.",
+        "[UX-контроль; PG10/PG18/PG32] Verified допустим после проверки подписанного заключения по тому же периоду, границам и версии данных."
+      ],
+      "human_review": [
+        "[PG19/PG26] Инвентаризатор проверяет организационную полноту, качество и пересчёт базы.",
+        "[PG10] Независимый проверяющий определяет критерии, объём и assurance; приложение не имитирует подпись."
+      ],
+      "example_source_ids": [
+        "PG18",
+        "PG19"
+      ],
+      "example_status": "official_blank_templates_only",
+      "example_notes": "PG18/PG19 — официальные пустые формы, без реальных значений и verification statement. PG18 требует обновления по PG27/PG30. Отдельный завершённый пример этого варианта не получен.",
+      "ui_warnings": [
+        "Вариант annual/public/simplified не является отдельным стандартом.",
+        "Публикация и независимая проверка требуют отдельных подтверждений."
+      ],
+      "implementation_gaps": [
+        "generated/corp_ghg_verified.ts: набор полей не является полным контрактом раскрытий. CORP_GHG/ANNUAL/PUBLIC/VERIFIED имеют одинаковые 84 fieldId, но разные isRequired; присутствуют посторонние отраслевые поля.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "CORP_GHG_SIMPLIFIED",
+      "family": "corporate_ghg",
+      "classification": "assessment",
+      "normative_status": "GHG Corporate Standard 2004 + amendment 2013 + Scope 2 Guidance 2015. ISO 14064 — альтернативная выбранная база, не автоматическая эквивалентность.",
+      "applicability": "Simplified — название продукта, не отдельный признанный стандарт. Требования выбранной базы сохраняются.",
+      "deliverable": "Облегчённая инвентаризация либо скрининг с явными пробелами и ограничениями.",
+      "source_ids": [
+        "PG05",
+        "PG09",
+        "PG10",
+        "PG18",
+        "PG19",
+        "PG26",
+        "PG27",
+        "PG30",
+        "PG31",
+        "PG32",
+        "PG33"
+      ],
+      "required_inputs": [
+        "[PG18/PG19] Организация, период, consolidation approach, границы, исключения, исходные данные и факторы.",
+        "[PG19/PG30] Результаты по scopes/газам, GWP, методы, качество, базовый год и пересчёты; Scope 3 — по выбранной базе."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG26 ch9] Scope 1 и 2 отдельно, до GHG trades; раскрыть границы, методы и исключения.",
+        "[Норма выбранной базы PG27/PG30] Применить Scope 2 Guidance и поправку по газам/GWP; legacy-форма PG18 сама по себе недостаточна.",
+        "[UX-контроль; PG19] Проверить трассировку итогов и сопоставимость лет; вариант интерфейса не меняет нормативную базу."
+      ],
+      "human_review": [
+        "[PG19/PG26] Инвентаризатор проверяет организационную полноту, качество и пересчёт базы."
+      ],
+      "example_source_ids": [
+        "PG18",
+        "PG19"
+      ],
+      "example_status": "official_blank_templates_only",
+      "example_notes": "PG18/PG19 — официальные пустые формы, без реальных значений и verification statement. PG18 требует обновления по PG27/PG30. Отдельный завершённый пример этого варианта не получен.",
+      "ui_warnings": [
+        "Вариант annual/public/simplified не является отдельным стандартом.",
+        "Публикация и независимая проверка требуют отдельных подтверждений."
+      ],
+      "implementation_gaps": [
+        "generated/corp_ghg_simplified.ts: набор полей не является полным контрактом раскрытий. CORP_GHG/ANNUAL/PUBLIC/VERIFIED имеют одинаковые 84 fieldId, но разные isRequired; присутствуют посторонние отраслевые поля.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "CORP_GHG_ANNUAL",
+      "family": "corporate_ghg",
+      "classification": "voluntary_standard",
+      "normative_status": "GHG Corporate Standard 2004 + amendment 2013 + Scope 2 Guidance 2015. ISO 14064 — альтернативная выбранная база, не автоматическая эквивалентность.",
+      "applicability": "Annual определяет периодичность, а не новую методику.",
+      "deliverable": "Инвентаризация за год, сопоставимость с базовым/прошлым годом и объяснение изменений.",
+      "source_ids": [
+        "PG05",
+        "PG09",
+        "PG10",
+        "PG18",
+        "PG19",
+        "PG26",
+        "PG27",
+        "PG30",
+        "PG31",
+        "PG32",
+        "PG33"
+      ],
+      "required_inputs": [
+        "[PG18/PG19] Организация, период, consolidation approach, границы, исключения, исходные данные и факторы.",
+        "[PG19/PG30] Результаты по scopes/газам, GWP, методы, качество, базовый год и пересчёты; Scope 3 — по выбранной базе."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG26 ch9] Scope 1 и 2 отдельно, до GHG trades; раскрыть границы, методы и исключения.",
+        "[Норма выбранной базы PG27/PG30] Применить Scope 2 Guidance и поправку по газам/GWP; legacy-форма PG18 сама по себе недостаточна.",
+        "[UX-контроль; PG19] Проверить трассировку итогов и сопоставимость лет; вариант интерфейса не меняет нормативную базу."
+      ],
+      "human_review": [
+        "[PG19/PG26] Инвентаризатор проверяет организационную полноту, качество и пересчёт базы."
+      ],
+      "example_source_ids": [
+        "PG18",
+        "PG19"
+      ],
+      "example_status": "official_blank_templates_only",
+      "example_notes": "PG18/PG19 — официальные пустые формы, без реальных значений и verification statement. PG18 требует обновления по PG27/PG30. Отдельный завершённый пример этого варианта не получен.",
+      "ui_warnings": [
+        "Вариант annual/public/simplified не является отдельным стандартом.",
+        "Публикация и независимая проверка требуют отдельных подтверждений."
+      ],
+      "implementation_gaps": [
+        "generated/corp_ghg_annual.ts: набор полей не является полным контрактом раскрытий. CORP_GHG/ANNUAL/PUBLIC/VERIFIED имеют одинаковые 84 fieldId, но разные isRequired; присутствуют посторонние отраслевые поля.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "CORP_GHG_PUBLIC",
+      "family": "corporate_ghg",
+      "classification": "voluntary_standard",
+      "normative_status": "GHG Corporate Standard 2004 + amendment 2013 + Scope 2 Guidance 2015. ISO 14064 — альтернативная выбранная база, не автоматическая эквивалентность.",
+      "applicability": "Public определяет аудиторию и необходимость раскрытий, а не отдельный стандарт.",
+      "deliverable": "Публичный GHG-отчёт с обязательными раскрытиями и обоснованными ограничениями доступа к деталям.",
+      "source_ids": [
+        "PG05",
+        "PG09",
+        "PG10",
+        "PG18",
+        "PG19",
+        "PG26",
+        "PG27",
+        "PG30",
+        "PG31",
+        "PG32",
+        "PG33"
+      ],
+      "required_inputs": [
+        "[PG18/PG19] Организация, период, consolidation approach, границы, исключения, исходные данные и факторы.",
+        "[PG19/PG30] Результаты по scopes/газам, GWP, методы, качество, базовый год и пересчёты; Scope 3 — по выбранной базе."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG26 ch9] Scope 1 и 2 отдельно, до GHG trades; раскрыть границы, методы и исключения.",
+        "[Норма выбранной базы PG27/PG30] Применить Scope 2 Guidance и поправку по газам/GWP; legacy-форма PG18 сама по себе недостаточна.",
+        "[UX-контроль; PG19] Проверить трассировку итогов и сопоставимость лет; вариант интерфейса не меняет нормативную базу."
+      ],
+      "human_review": [
+        "[PG19/PG26] Инвентаризатор проверяет организационную полноту, качество и пересчёт базы."
+      ],
+      "example_source_ids": [
+        "PG18",
+        "PG19"
+      ],
+      "example_status": "official_blank_templates_only",
+      "example_notes": "PG18/PG19 — официальные пустые формы, без реальных значений и verification statement. PG18 требует обновления по PG27/PG30. Отдельный завершённый пример этого варианта не получен.",
+      "ui_warnings": [
+        "Вариант annual/public/simplified не является отдельным стандартом.",
+        "Публикация и независимая проверка требуют отдельных подтверждений."
+      ],
+      "implementation_gaps": [
+        "generated/corp_ghg_public.ts: набор полей не является полным контрактом раскрытий. CORP_GHG/ANNUAL/PUBLIC/VERIFIED имеют одинаковые 84 fieldId, но разные isRequired; присутствуют посторонние отраслевые поля.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "CORP_GHG_INTERNAL",
+      "family": "corporate_ghg",
+      "classification": "internal_workpaper",
+      "normative_status": "GHG Corporate Standard 2004 + amendment 2013 + Scope 2 Guidance 2015. ISO 14064 — альтернативная выбранная база, не автоматическая эквивалентность.",
+      "applicability": "Внутренняя управленческая цель; не публичное заявление о соответствии.",
+      "deliverable": "Рабочая инвентаризация и анализ для управления; публикация потребует отдельной проверки.",
+      "source_ids": [
+        "PG05",
+        "PG09",
+        "PG10",
+        "PG18",
+        "PG19",
+        "PG26",
+        "PG27",
+        "PG30",
+        "PG31",
+        "PG32",
+        "PG33"
+      ],
+      "required_inputs": [
+        "[PG18/PG19] Организация, период, consolidation approach, границы, исключения, исходные данные и факторы.",
+        "[PG19/PG30] Результаты по scopes/газам, GWP, методы, качество, базовый год и пересчёты; Scope 3 — по выбранной базе."
+      ],
+      "validation_rules": [
+        "[Норма выбранной базы PG26 ch9] Scope 1 и 2 отдельно, до GHG trades; раскрыть границы, методы и исключения.",
+        "[Норма выбранной базы PG27/PG30] Применить Scope 2 Guidance и поправку по газам/GWP; legacy-форма PG18 сама по себе недостаточна.",
+        "[UX-контроль; PG19] Проверить трассировку итогов и сопоставимость лет; вариант интерфейса не меняет нормативную базу."
+      ],
+      "human_review": [
+        "[PG19/PG26] Инвентаризатор проверяет организационную полноту, качество и пересчёт базы."
+      ],
+      "example_source_ids": [
+        "PG18",
+        "PG19"
+      ],
+      "example_status": "official_blank_templates_only",
+      "example_notes": "PG18/PG19 — официальные пустые формы, без реальных значений и verification statement. PG18 требует обновления по PG27/PG30. Отдельный завершённый пример этого варианта не получен.",
+      "ui_warnings": [
+        "Вариант annual/public/simplified не является отдельным стандартом.",
+        "Публикация и независимая проверка требуют отдельных подтверждений."
+      ],
+      "implementation_gaps": [
+        "generated/corp_ghg_internal.ts: набор полей не является полным контрактом раскрытий. CORP_GHG/ANNUAL/PUBLIC/VERIFIED имеют одинаковые 84 fieldId, но разные isRequired; присутствуют посторонние отраслевые поля.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "ISO_14064_CERT",
+      "family": "corporate_iso_inventory",
+      "classification": "voluntary_standard",
+      "normative_status": "ISO 14064-1:2018 и отдельная база проверки ISO 14064-3:2019: текущие опубликованные редакции; полный текст не изучался.",
+      "applicability": "Организационная GHG-инвентаризация по ISO; применимая программа может добавлять требования.",
+      "deliverable": "Инвентаризационный отчёт и, если выполнено, отдельное заключение о проверке. Код CERT не создаёт сертификат.",
+      "source_ids": [
+        "PG09",
+        "PG10",
+        "PG18",
+        "PG19",
+        "PG32",
+        "PG26"
+      ],
+      "required_inputs": [
+        "[PG09] Организация, период, границы, выбросы/удаления, методы, данные и управление инвентаризацией.",
+        "[UX-проектирование; PG10] Критерии, версия, объём и уровень проверки; проверяющий, подписанное заключение и оговорки."
+      ],
+      "validation_rules": [
+        "[Область нормы PG09/PG10] Разделить inventory и verification statement; точные обязательные раскрытия сверить с лицензированными текстами.",
+        "[UX-контроль; PG09/PG26] Не переносить GHG scopes в категории ISO без проверенного мэппинга.",
+        "[UX-контроль; PG32] Самогенерируемый PDF не является сертификатом ISO."
+      ],
+      "human_review": [
+        "[PG09/PG10] Инвентаризатор и компетентный независимый проверяющий сверяют соответствующие лицензированные стандарты."
+      ],
+      "example_source_ids": [
+        "PG18",
+        "PG19"
+      ],
+      "example_status": "related_official_templates_only",
+      "example_notes": "GHG-формы PG18/PG19 — только смежные примеры состава. Это не ISO-формы и не сертификаты; завершённое ISO 14064 verification statement не получено.",
+      "ui_warnings": [
+        "Inventory report и verification statement — разные документы."
+      ],
+      "implementation_gaps": [
+        "generated/iso_14064_cert.ts: 87 полей, 63 required; смесь GHG/SEC/GRESB/aviation. Полный ISO-мэппинг не доказан.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "SCOPE123_DATASET",
+      "family": "corporate_workpaper",
+      "classification": "internal_workpaper",
+      "normative_status": "Внутренний набор данных; не форма регулятора и не самостоятельный стандарт.",
+      "applicability": "Подготовка и передача данных для выбранной корпоративной методики.",
+      "deliverable": "Версионированный dataset, словарь полей, источники/факторы и реестр пробелов.",
+      "source_ids": [
+        "PG05",
+        "PG07",
+        "PG19",
+        "PG26",
+        "PG27",
+        "PG28"
+      ],
+      "required_inputs": [
+        "[PG19] Организация, период, scopes/категории, значения, методы и качество.",
+        "[UX-проектирование; PG19] Источник каждой строки, единица, версия фактора, ответственный и состояние missing/not applicable/estimated."
+      ],
+      "validation_rules": [
+        "[UX-контроль; PG19/PG28] Неизвестное не равно нулю; категории и исключения должны быть объяснимы.",
+        "[UX-контроль; PG27] Не складывать location-based и market-based Scope 2 в один двойной итог.",
+        "[UX-контроль; PG19] Схема и заполненность не означают assurance."
+      ],
+      "human_review": [
+        "[PG26/PG28] Инвентаризатор подтверждает границы, мэппинг и пригодность источников."
+      ],
+      "example_source_ids": [
+        "PG19"
+      ],
+      "example_status": "related_official_blank_template",
+      "example_notes": "PG19 иллюстрирует состав инвентаризации, но не универсальную import schema.",
+      "ui_warnings": [
+        "Dataset ещё не является готовым GHG-отчётом."
+      ],
+      "implementation_gaps": [
+        "generated/scope123_dataset.ts: 75 из 75 полей required. Нужна условная применимость и модель качества/пробелов, а не одинаковая обязательность всех итогов.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "SCOPE2_DETAILED",
+      "family": "scope2",
+      "classification": "voluntary_standard",
+      "normative_status": "Scope 2 Guidance 2015 — действующая основа; изменения PG33 ещё в разработке.",
+      "applicability": "Приобретённые электричество, пар, тепло и охлаждение в выбранной организационной границе.",
+      "deliverable": "Раздел инвентаризации с location-based и, при применимости, market-based результатами и раскрытиями инструментов.",
+      "source_ids": [
+        "PG06",
+        "PG19",
+        "PG27",
+        "PG30",
+        "PG33"
+      ],
+      "required_inputs": [
+        "[PG27] Потребление по площадкам/периодам/видам энергии; grid factors, источники и единицы.",
+        "[PG27] Контракты/сертификаты/supplier factors, права на attributes, retirement, рынок/период и residual mix."
+      ],
+      "validation_rules": [
+        "[Норма PG27 ch7] При операциях в рынках с product/supplier-specific contractual data требуется dual reporting; только в рынках без таких данных — location-based.",
+        "[Норма PG27 ch7] Инструменты market-based проверяются по восьми quality criteria; residual mix/fallback — по установленной иерархии.",
+        "[UX-контроль; PG27] Renewable percent не даёт автоматический нулевой результат; offsets/avoided emissions не вычитать из Scope 2.",
+        "[UX-контроль; PG33] Hourly matching из проекта не выдавать за уже действующее универсальное требование."
+      ],
+      "human_review": [
+        "[PG27] Energy/GHG-специалист проверяет ownership, географию, сроки и применимость методов."
+      ],
+      "example_source_ids": [
+        "PG19"
+      ],
+      "example_status": "related_official_blank_template",
+      "example_notes": "PG19 — общая форма; Scope 2 необходимо раскрывать по Guidance 2015. Завершённый отдельный Scope 2 report не получен.",
+      "ui_warnings": [
+        "Location-based и market-based — параллельные результаты, их не суммируют."
+      ],
+      "implementation_gaps": [
+        "generated/scope2_detailed.ts: 55 полей, 45 required. Два поля итогов не доказывают проверку договорных инструментов и иерархии факторов.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "SCOPE3_DETAILED",
+      "family": "scope3",
+      "classification": "voluntary_standard",
+      "normative_status": "Scope 3 Standard 2011 и amendment 2013; будущая консолидация не заменяет текущую основу.",
+      "applicability": "Корпоративная цепочка стоимости; список ответивших поставщиков не покрывает весь Scope 3.",
+      "deliverable": "Инвентаризация по категориям с применимостью, исключениями, методами, качеством и отдельным биогенным CO2.",
+      "source_ids": [
+        "PG07",
+        "PG19",
+        "PG28",
+        "PG30",
+        "PG31",
+        "PG33"
+      ],
+      "required_inputs": [
+        "[PG28] Карта цепочки стоимости, деятельность отчётного года и minimum boundaries всех категорий.",
+        "[PG19] Activity/spend данные, факторы, методы/allocation, доля supplier data, качество и базовый год при трекинге."
+      ],
+      "validation_rules": [
+        "[Норма PG28 ch6/table5.4] Учитывать Scope 3 по минимальным границам; все исключения раскрывать и обосновывать.",
+        "[Норма PG28 ch11] Категории раскрываются отдельно от offsets/биогенного CO2; для conformance нужен связанный Scope 1/2 report.",
+        "[UX-контроль; PG28] Исключать двойной счёт внутри своей инвентаризации; совпадение выбросов в цепочках разных компаний само по себе допустимо.",
+        "[UX-контроль; PG31] Проверить применимость LSR v1.1 и переход с 2027; не объявлять его вступившим в действие раньше срока."
+      ],
+      "human_review": [
+        "[PG28] Scope 3 специалист проверяет существенность, категории, downstream-сценарии и качество."
+      ],
+      "example_source_ids": [
+        "PG19"
+      ],
+      "example_status": "official_blank_template_only",
+      "example_notes": "PG19 — пустая форма по 15 категориям, не реальная проверенная инвентаризация.",
+      "ui_warnings": [
+        "Category 1 не равна всему Scope 3.",
+        "Черновик пересмотра не является действующим стандартом."
+      ],
+      "implementation_gaps": [
+        "generated/scope3_detailed.ts: 70 полей, 67 required. Нужен контракт coverage/minimum boundaries/обоснований исключений.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "SCOPE3_CATEGORY1_SUPPLIERS",
+      "family": "scope3_category1",
+      "classification": "voluntary_standard",
+      "normative_status": "Category 1 Scope 3 Standard; расчётное руководство 2013.",
+      "applicability": "Закупленные товары/услуги вне категорий 2–8; границы от добычи сырья до выхода с предприятия поставщика.",
+      "deliverable": "Расчёт Category 1 и пакет данных поставщиков с охватом, факторами, единицами и пробелами.",
+      "source_ids": [
+        "PG07",
+        "PG08",
+        "PG19",
+        "PG28"
+      ],
+      "required_inputs": [
+        "[PG08] Объёмы/стоимость закупок, единицы/валюта/год; product-level CFP или подходящие вторичные факторы.",
+        "[PG08] Метод: supplier-specific, hybrid, average-data или spend-based; allocation, границы, первичные источники и качество."
+      ],
+      "validation_rules": [
+        "[Норма границы PG28 table5.4] Category 1 охватывает cradle-to-gate вне категорий 2–8.",
+        "[Руководство PG08] Количество × продуктовый фактор для supplier-specific; весь корпоративный след поставщика не подставляется вместо фактора продукта.",
+        "[UX-контроль; PG08] Проверять kg/tonne, валюту/год, границы CFP и долю охвата закупок; отсутствие ответа не считать нулём."
+      ],
+      "human_review": [
+        "[PG08/PG28] Эксперт проверяет границы CFP/allocation; закупки — полноту популяции."
+      ],
+      "example_source_ids": [
+        "PG08",
+        "PG19"
+      ],
+      "example_status": "official_calculation_example_and_blank_template",
+      "example_notes": "PG08 Example 1.1 — явно синтетический учебный расчёт, не реальный клиентский отчёт; PG19 — пустая форма.",
+      "ui_warnings": [
+        "Ответ поставщика не является независимой верификацией."
+      ],
+      "implementation_gaps": [
+        "generated/scope3_category1_suppliers.ts: 56 полей, 51 required. Нужны отдельные входы методов расчёта и coverage закупок; отраслевые поля не заменяют их.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    },
+    {
+      "code": "PREP_GHG",
+      "family": "corporate_workpaper",
+      "classification": "internal_workpaper",
+      "normative_status": "Подготовительный чеклист; отдельного внешнего стандарта PREP_GHG нет в проверенных источниках.",
+      "applicability": "Подготовка к инвентаризации, распределение ответственности и сбор данных.",
+      "deliverable": "Реестр границ, источников, ответственных, пробелов и выбранных правил.",
+      "source_ids": [
+        "PG05",
+        "PG18",
+        "PG19",
+        "PG26"
+      ],
+      "required_inputs": [
+        "[UX-проектирование; PG19/PG26] Цель, получатель, методика, организация, предварительные границы и период.",
+        "[UX-проектирование; PG18/PG19] Источники, evidence, ответственные и сроки закрытия пробелов."
+      ],
+      "validation_rules": [
+        "[UX-контроль; PG26] Результат называется подготовкой, а не compliant inventory/verified report.",
+        "[UX-контроль; PG19] Для пробела определить действие; unknown не считать измеренными выбросами."
+      ],
+      "human_review": [
+        "[PG26] Инвентаризатор утверждает план и применимость методики."
+      ],
+      "example_source_ids": [
+        "PG18",
+        "PG19"
+      ],
+      "example_status": "related_official_blank_templates",
+      "example_notes": "PG18/PG19 — ориентиры состава данных; отдельный официальный отчёт PREP_GHG не выявлен.",
+      "ui_warnings": [
+        "Готовность к сбору не равна завершённой инвентаризации."
+      ],
+      "implementation_gaps": [
+        "generated/prep_ghg.ts: 43 поля, 35 required. Таблица содержит конечные totals и отраслевые поля, а отдельный подготовительный результат не определён.",
+        "Общий report client показывает редактируемый DatasetTable и заполненность; законченный расчёт/экспорт/проверка соответствия этим исследованием не подтверждены (src/app/projects/[id]/reports/[reportId]/report-page-client.tsx:269)."
+      ]
+    }
+  ],
+  "findings": [
+    "Охвачены 18 назначенных кодов. Classification — исследовательская типология; юридическая обязанность определяется отдельно по юрисдикции, контракту и программе.",
+    "PG11/PG15/PG16/PG24: ISO 14025:2026 и ISO 14068:2026 опубликованы; прежние редакции отозваны. Переход EPD проверять по программе, без автоматической инвалидации исторических деклараций.",
+    "PG33: график гармонизации GHG/ISO от июля 2026 заменяет ранние планы; проекты Scope 2/3 не действующие требования. PG31: LSR v1.1 вступает в действие 01.01.2027.",
+    "ISO14067: 20 полей / 9 required. ISO_14067, PRODUCT_PCF и EPD: одинаковые 62 fieldId / 54 required. Это не доказательство нормативной эквивалентности.",
+    "CORP_GHG/ANNUAL/PUBLIC/VERIFIED имеют одинаковые 84 fieldId, но разные isRequired. Поле verifier не доказывает signed assurance.",
+    "PG18 и PG20 — старые формы с прежним перечнем газов: применять PG30 с NF3. PG18 также не разделяет Scope 2 методы. Образец не равен актуальному чеклисту.",
+    "Скачаны 6 файлов, каждый менее 10 MB, исходники суммарно менее 10 MB. MIME, сигнатуры, структура, URL, размеры, SHA256 и визуальная проверка PDF записаны в assets/product-ghg/download-manifest.json. Сохранены 7 превью проверенных страниц; оригиналы не изменены.",
+    "ISO/BSI платные тексты не копировались; прочитаны публичные каталоги и abstracts. Clause-level compliance не проверен. Полный актуальный GPI IES и DOCX шаблон EPD не получены; точная версия GPI для новой публикации требует уточнения.",
+    "PG37: после ELI и CELEX попыток EUR-Lex возвращал anti-bot страницу. Содержательная правовая оговорка основана на прочитанных официальных разъяснениях Комиссии PG34/PG35; национальное применение проверяет юрист.",
+    "Завершённые заключения ISO 14068:2026/ISO 14064 и реальный building WLCA не получены. PG18–21 — формы; PG22 — продуктовый отчёт производителя; PG23 — опубликованная EPD с проверкой; PG08 — учебный расчёт. Исходные данные чужих моделей обычно недоступны и здесь не воспроизводились."
+  ]
+}

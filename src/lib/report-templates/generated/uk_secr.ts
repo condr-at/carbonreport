@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const UKSECRTemplate: ReportTemplate = {
   code: 'UK_SECR' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'UK SECR (Streamlined Energy and Carbon Reporting)',
+  name: 'UK SECR Data Preparation',
+  description: 'Energy, emissions and methodology inputs for annual reporting.',
   scope: 'corporate',
   sections: [
     {

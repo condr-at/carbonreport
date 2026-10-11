@@ -2,7 +2,8 @@ import { ReportTemplate } from '../types';
 
 export const GRESBASSESSMENTTemplate: ReportTemplate = {
   code: 'GRESB_ASSESSMENT' as any, // Cast to any to avoid type errors before types.ts is updated
-  name: 'GRESB Real Estate Assessment',
+  name: 'GRESB Assessment Preparation',
+  description: 'Portfolio and environmental inputs for a GRESB response.',
   scope: 'corporate',
   sections: [
     {

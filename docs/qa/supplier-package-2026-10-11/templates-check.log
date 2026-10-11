@@ -1,0 +1,5 @@
+
+> carbonreport@0.1.0 templates:check
+> tsx scripts/check-templates.ts
+
+✅ All template fieldIds are aligned with DatasetFieldDefinition records.
