@@ -1,0 +1,5 @@
+
+> carbonreport@0.1.0 db:sync-cbam-fields
+> tsx scripts/sync-cbam-package-fields.ts
+
+Ensured 28 supplier-package field definitions; project data unchanged.

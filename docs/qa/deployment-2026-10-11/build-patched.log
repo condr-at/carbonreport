@@ -1,0 +1,147 @@
+
+> carbonreport@0.1.0 build
+> prisma generate && next build
+
+Prisma schema loaded from prisma/schema.prisma
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.17.1 -> 8.0.0-rc.22                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+
+✔ Generated Prisma Client (v6.17.1) to ./node_modules/@prisma/client in 293ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+   ▲ Next.js 15.5.27
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 11.3s
+   Linting and checking validity of types ...
+
+./src/app/api/batch/route.ts
+5:5  Warning: 'validateDataset' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/projects/route.ts
+15:29  Warning: 'getAllReportTemplates' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/dashboard-greeting.tsx
+13:10  Warning: 'isMounted' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/layouts/project-layout.tsx
+65:10  Warning: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/server-data/metrics.ts
+1:10  Warning: 'headers' is defined but never used.  @typescript-eslint/no-unused-vars
+4:7  Warning: 'HEADER_NAME' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/48) ...
+   Generating static pages (12/48)
+   Generating static pages (24/48)
+   Generating static pages (36/48)
+ ✓ Generating static pages (48/48)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                                Size  First Load JS
+┌ ƒ /                                                                   5.66 kB         198 kB
+├ ƒ /_not-found                                                           276 B         103 kB
+├ ƒ /api/auth/forgot-password                                             276 B         103 kB
+├ ƒ /api/auth/login                                                       276 B         103 kB
+├ ƒ /api/auth/logout                                                      276 B         103 kB
+├ ƒ /api/auth/refresh                                                     276 B         103 kB
+├ ƒ /api/auth/register                                                    276 B         103 kB
+├ ƒ /api/auth/resend-verification                                         276 B         103 kB
+├ ƒ /api/auth/reset-password/[token]                                      276 B         103 kB
+├ ƒ /api/auth/verify-email/[token]                                        276 B         103 kB
+├ ƒ /api/batch                                                            276 B         103 kB
+├ ƒ /api/contacts                                                         276 B         103 kB
+├ ƒ /api/contacts/[id]                                                    276 B         103 kB
+├ ƒ /api/data-requests                                                    276 B         103 kB
+├ ƒ /api/data-requests/[id]/complete                                      276 B         103 kB
+├ ƒ /api/data-requests/[id]/revoke                                        276 B         103 kB
+├ ƒ /api/data-requests/bulk                                               276 B         103 kB
+├ ƒ /api/data-requests/complete-bulk                                      276 B         103 kB
+├ ƒ /api/data-requests/reassign                                           276 B         103 kB
+├ ƒ /api/data-requests/remind                                             276 B         103 kB
+├ ƒ /api/data-requests/resend-bulk                                        276 B         103 kB
+├ ƒ /api/data-requests/revoke-bulk                                        276 B         103 kB
+├ ƒ /api/dataset-fields                                                   276 B         103 kB
+├ ƒ /api/organizations                                                    276 B         103 kB
+├ ƒ /api/organizations/[organizationId]                                   276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/invite                            276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members                           276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]            276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]/accept     276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/members/[membershipId]/decline    276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/plan/upgrade                      276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/restore                           276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/usage                             276 B         103 kB
+├ ƒ /api/organizations/[organizationId]/usage/recompute                   276 B         103 kB
+├ ƒ /api/organizations/current                                            276 B         103 kB
+├ ƒ /api/plan-definitions                                                 276 B         103 kB
+├ ƒ /api/projects                                                         276 B         103 kB
+├ ƒ /api/projects/[id]                                                    276 B         103 kB
+├ ƒ /api/projects/[id]/contacts                                           276 B         103 kB
+├ ƒ /api/projects/[id]/data-requests                                      276 B         103 kB
+├ ƒ /api/projects/[id]/dataset                                            276 B         103 kB
+├ ƒ /api/projects/[id]/dataset/items                                      276 B         103 kB
+├ ƒ /api/projects/[id]/dataset/items/[itemId]                             276 B         103 kB
+├ ƒ /api/projects/[id]/duplicate                                          276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-template                                    276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-template/reset                              276 B         103 kB
+├ ƒ /api/projects/[id]/mailto-templates                                   276 B         103 kB
+├ ƒ /api/projects/[id]/reports/[reportId]                                 276 B         103 kB
+├ ƒ /api/projects/[id]/reports/[reportId]/supplier-package                276 B         103 kB
+├ ƒ /api/projects/[id]/restore                                            276 B         103 kB
+├ ƒ /api/projects/[id]/status                                             276 B         103 kB
+├ ƒ /api/uploads/local                                                    276 B         103 kB
+├ ƒ /api/uploads/relay                                                    276 B         103 kB
+├ ƒ /api/uploads/sign                                                     276 B         103 kB
+├ ƒ /api/user/settings                                                    276 B         103 kB
+├ ƒ /api/user/settings/change-password                                    276 B         103 kB
+├ ƒ /contacts                                                           7.17 kB         232 kB
+├ ƒ /contacts/[id]                                                        419 B         244 kB
+├ ƒ /dashboard                                                          3.45 kB         224 kB
+├ ƒ /forgot-password                                                    4.28 kB         160 kB
+├ ƒ /illustrations-demo                                                 12.2 kB         126 kB
+├ ƒ /login                                                              1.53 kB         161 kB
+├ ƒ /no-organization                                                     3.5 kB         138 kB
+├ ƒ /profile                                                            6.69 kB         163 kB
+├ ƒ /projects                                                           8.92 kB         200 kB
+├ ƒ /projects/[id]                                                       3.6 kB         194 kB
+├ ƒ /projects/[id]/data-requests                                        9.96 kB         188 kB
+├ ƒ /projects/[id]/dataset                                              4.55 kB         196 kB
+├ ƒ /projects/[id]/files                                                  276 B         103 kB
+├ ƒ /projects/[id]/mailto-templates                                     5.65 kB         116 kB
+├ ƒ /projects/[id]/reports                                                166 B         106 kB
+├ ƒ /projects/[id]/reports/[reportId]                                   8.38 kB         207 kB
+├ ƒ /projects/new                                                       29.3 kB         152 kB
+├ ƒ /projects/new/questionnaire                                         11.6 kB         184 kB
+├ ƒ /projects/new/select-reports                                        5.56 kB         197 kB
+├ ƒ /register                                                           2.27 kB         162 kB
+├ ƒ /requests                                                             409 B         244 kB
+├ ƒ /reset-password                                                     4.57 kB         160 kB
+├ ƒ /settings                                                             276 B         103 kB
+├ ƒ /settings/billing                                                   1.61 kB         193 kB
+├ ƒ /settings/danger                                                     7.2 kB         172 kB
+├ ƒ /settings/members                                                   8.18 kB         203 kB
+├ ƒ /settings/profile                                                   8.07 kB         173 kB
+├ ƒ /settings/usage                                                     1.98 kB         193 kB
+└ ƒ /verify-email                                                       3.94 kB         159 kB
++ First Load JS shared by all                                            102 kB
+  ├ chunks/1255-8dc91b756d944555.js                                     46.2 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js                                 54.2 kB
+  └ other shared chunks (total)                                         1.96 kB
+
+
+ƒ  (Dynamic)  server-rendered on demand

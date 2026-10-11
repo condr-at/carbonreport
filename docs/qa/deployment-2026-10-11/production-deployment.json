@@ -1,0 +1,18 @@
+{
+  "id": "dpl_C1af8zPQbo1P52rK74LyEqwmzmzx",
+  "url": "carbonreport-1xmn2efpt-conrad-projects.vercel.app",
+  "readyState": "READY",
+  "target": "production",
+  "alias": [
+    "carbonreport.app",
+    "carbonreport.vercel.app",
+    "carbonreport-conrad-projects.vercel.app"
+  ],
+  "aliasAssigned": true,
+  "errorCode": null,
+  "createdAt": 1791714408737,
+  "buildingAt": 1791714412931,
+  "ready": 1791714482800,
+  "sourceCommit": "02ab2103b4a4466babc3b899cc70f8a2250a06a0",
+  "sourceRepository": "condr-at/carbonreport"
+}

@@ -1,0 +1,49 @@
+
+> carbonreport@0.1.0 build
+> prisma generate && next build
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.17.1) to ./../carbonreport-qa-runtime/node_modules/@prisma/client in 133ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+   ▲ Next.js 15.5.4
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 11.2s
+   Linting and checking validity of types ...
+
+./src/app/api/batch/route.ts
+5:5  Warning: 'validateDataset' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/app/api/projects/route.ts
+15:29  Warning: 'getAllReportTemplates' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/dashboard/dashboard-greeting.tsx
+13:10  Warning: 'isMounted' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/layouts/project-layout.tsx
+65:10  Warning: 'isPending' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/lib/server-data/metrics.ts
+1:10  Warning: 'headers' is defined but never used.  @typescript-eslint/no-unused-vars
+4:7  Warning: 'HEADER_NAME' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/49) ...
+   Generating static pages (12/49)
+   Generating static pages (24/49)
+Error occurred prerendering page "/contacts". Read more: https://nextjs.org/docs/messages/prerender-error
+Error [ApiError]: User is not authenticated
+    at j (.next/server/chunks/6216.js:15:8342) {
+  status: 401,
+  code: 'UNAUTHORIZED',
+  details: undefined,
+  digest: '3524134118'
+}
+Export encountered an error on /contacts/page: /contacts, exiting the build.
+ ⨯ Next.js build worker exited with code: 1 and signal: null

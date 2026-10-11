@@ -1,0 +1,212 @@
+{
+  "checkedAt": "2026-10-11T10:24:38.665Z",
+  "expected": 34,
+  "present": 34,
+  "missing": [],
+  "fields": [
+    {
+      "fieldId": "cbam_pkg_recipient",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_prepared_by",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_supplier_role",
+      "type": "select",
+      "dataType": "select",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_supplier_name",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_production_year",
+      "type": "number",
+      "dataType": "number",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_coverage_start",
+      "type": "date",
+      "dataType": "date",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_coverage_end",
+      "type": "date",
+      "dataType": "date",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_installation_name",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_installation_address",
+      "type": "text",
+      "dataType": "textarea",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_cn8",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_cn_review",
+      "type": "select",
+      "dataType": "select",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_boundary",
+      "type": "text",
+      "dataType": "textarea",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_precursor_statement",
+      "type": "text",
+      "dataType": "textarea",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_unit",
+      "type": "select",
+      "dataType": "select",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_direct_see",
+      "type": "number",
+      "dataType": "number",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_direct_basis",
+      "type": "select",
+      "dataType": "select",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_direct_source",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_status",
+      "type": "select",
+      "dataType": "select",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_see",
+      "type": "number",
+      "dataType": "number",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_basis",
+      "type": "select",
+      "dataType": "select",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_source",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_indirect_rationale",
+      "type": "text",
+      "dataType": "textarea",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_default_context",
+      "type": "text",
+      "dataType": "json",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_lot_mass_tonnes",
+      "type": "number",
+      "dataType": "number",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_verification_status",
+      "type": "select",
+      "dataType": "select",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_verifier",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_verification_source",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_pkg_evidence_json",
+      "type": "text",
+      "dataType": "json",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "product_name",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "product_description",
+      "type": "text",
+      "dataType": "textarea",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_installation_id",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_installation_country",
+      "type": "text",
+      "dataType": "country",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_operator_name",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    },
+    {
+      "fieldId": "cbam_operator_contact",
+      "type": "text",
+      "dataType": "text",
+      "scope": "PRODUCT"
+    }
+  ]
+}

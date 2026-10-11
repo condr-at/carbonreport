@@ -1,0 +1,395 @@
+
+> carbonreport@0.1.0 test:integration
+> node --import tsx --test --test-concurrency=1 src/__tests__/api/organizations.test.ts src/__tests__/api/projects.test.ts src/__tests__/api/data-requests.test.ts src/__tests__/lib/server-utils.test.ts
+
+TAP version 13
+# [data-requests] serializeRequests count=1 took 2.66ms
+# [data-requests] resendRequestsBulk count=1 took 5.52ms
+# Subtest: POST /api/data-requests/remind: updates requestedAt for authorized editor
+ok 1 - POST /api/data-requests/remind: updates requestedAt for authorized editor
+  ---
+  duration_ms: 201.5595
+  ...
+# Subtest: POST /api/data-requests/remind: rejects user without project membership
+ok 2 - POST /api/data-requests/remind: rejects user without project membership
+  ---
+  duration_ms: 33.083625
+  ...
+# [data-requests] serializeRequests count=1 took 1.55ms
+# [data-requests] resendRequestsBulk count=1 took 2.84ms
+# Subtest: POST /api/data-requests/remind: allows accepted editor membership
+ok 3 - POST /api/data-requests/remind: allows accepted editor membership
+  ---
+  duration_ms: 38.901792
+  ...
+# [data-requests] serializeRequests count=1 took 1.05ms
+# [data-requests] reassignRequestsBulk count=1 took 5.93ms
+# Subtest: POST /api/data-requests/reassign: revokes old pending request and creates a new one for target contact
+ok 4 - POST /api/data-requests/reassign: revokes old pending request and creates a new one for target contact
+  ---
+  duration_ms: 36.008167
+  ...
+# Failed to reassign data requests DataRequestServiceError: Access to organization denied
+#     at assertCanMutateDataRequests (/private/tmp/carbonreport-deploy-check-a019946/src/lib/data-requests/authorization.ts:47:15)
+#     at async POST (/private/tmp/carbonreport-deploy-check-a019946/src/app/api/data-requests/reassign/route.ts:39:5)
+#     at async TestContext.<anonymous> (/private/tmp/carbonreport-deploy-check-a019946/src/__tests__/api/data-requests.test.ts:209:20)
+#     at async Test.run (node:internal/test_runner/test:797:9)
+#     at async Test.processPendingSubtests (node:internal/test_runner/test:526:7) {
+#   status: 403,
+#   code: 'FORBIDDEN'
+# }
+# Subtest: POST /api/data-requests/reassign: rejects user without project membership
+ok 5 - POST /api/data-requests/reassign: rejects user without project membership
+  ---
+  duration_ms: 33.096084
+  ...
+# [data-requests] reassignRequestsBulk count=1 took 0.48ms
+# Failed to reassign data requests DataRequestServiceError: Only pending request(s) can be reassigned
+#     at reassignRequestsBulk (/private/tmp/carbonreport-deploy-check-a019946/src/lib/data-requests/service.ts:751:13)
+#     at async POST (/private/tmp/carbonreport-deploy-check-a019946/src/app/api/data-requests/reassign/route.ts:40:20)
+#     at async TestContext.<anonymous> (/private/tmp/carbonreport-deploy-check-a019946/src/__tests__/api/data-requests.test.ts:239:20)
+#     at async Test.run (node:internal/test_runner/test:797:9)
+#     at async Test.processPendingSubtests (node:internal/test_runner/test:526:7) {
+#   status: 409,
+#   code: 'CONFLICT'
+# }
+# Subtest: POST /api/data-requests/reassign: rejects completed requests
+ok 6 - POST /api/data-requests/reassign: rejects completed requests
+  ---
+  duration_ms: 33.364125
+  ...
+# [data-requests] prepareBulk project=1a69d42f-ace0-4a58-b9ea-75cee2102b95 took 3.91ms
+# [data-requests] executeBulk project=1a69d42f-ace0-4a58-b9ea-75cee2102b95 inserts=1 revokes=1 took 2.12ms
+# [data-requests] serializeRequests count=1 took 1.21ms
+# [data-requests] GET /projects/1a69d42f-ace0-4a58-b9ea-75cee2102b95/data-requests took 3.35ms
+# Subtest: POST /api/data-requests/bulk: persists the chosen deadline and authenticated editor
+ok 7 - POST /api/data-requests/bulk: persists the chosen deadline and authenticated editor
+  ---
+  duration_ms: 49.056958
+  ...
+# Subtest: POST /api/data-requests/bulk: denies outsiders, viewers and pending editors without writing
+ok 8 - POST /api/data-requests/bulk: denies outsiders, viewers and pending editors without writing
+  ---
+  duration_ms: 37.267125
+  ...
+# [data-requests] GET /projects/a7d59d11-e493-468d-bd81-7de10ac81c7c/data-requests took 2.58ms
+# [contacts] GET /projects/a7d59d11-e493-468d-bd81-7de10ac81c7c/contacts took 2.56ms
+# Subtest: contacts and requests: cross-organization reads and cached direct project URLs stay isolated
+ok 9 - contacts and requests: cross-organization reads and cached direct project URLs stay isolated
+  ---
+  duration_ms: 70.120375
+  ...
+# Subtest: POST /api/organizations: creates org with plan=free by default
+ok 10 - POST /api/organizations: creates org with plan=free by default
+  ---
+  duration_ms: 72.282167
+  ...
+# Subtest: POST /api/organizations: route creates owner membership and returns limits
+ok 11 - POST /api/organizations: route creates owner membership and returns limits
+  ---
+  duration_ms: 38.074458
+  ...
+# Subtest: POST /api/organizations: generates unique slug from display_name
+ok 12 - POST /api/organizations: generates unique slug from display_name
+  ---
+  duration_ms: 28.210959
+  ...
+# Subtest: Membership invite: allows inviting editor on Pro Beta
+ok 13 - Membership invite: allows inviting editor on Pro Beta
+  ---
+  duration_ms: 31.015542
+  ...
+# Subtest: Membership invite: blocks inviting editor on Free plan
+ok 14 - Membership invite: blocks inviting editor on Free plan
+  ---
+  duration_ms: 29.052917
+  ...
+# Subtest: Membership invite route: returns 409 when inviting editor on Free plan
+ok 15 - Membership invite route: returns 409 when inviting editor on Free plan
+  ---
+  duration_ms: 32.814125
+  ...
+# Subtest: Membership invite: blocks inviting 3rd editor on Pro Beta
+ok 16 - Membership invite: blocks inviting 3rd editor on Pro Beta
+  ---
+  duration_ms: 28.145583
+  ...
+# Subtest: Membership invite: blocks inviting verifier (feature disabled)
+ok 17 - Membership invite: blocks inviting verifier (feature disabled)
+  ---
+  duration_ms: 24.894084
+  ...
+# Subtest: DELETE organization: soft-deletes org and cascades to projects
+ok 18 - DELETE organization: soft-deletes org and cascades to projects
+  ---
+  duration_ms: 37.959167
+  ...
+# Subtest: DELETE /api/organizations/[organizationId]: route soft-deletes org and cascades projects
+ok 19 - DELETE /api/organizations/[organizationId]: route soft-deletes org and cascades projects
+  ---
+  duration_ms: 34.002417
+  ...
+# Subtest: DELETE organization: only allows OWNER to delete
+ok 20 - DELETE organization: only allows OWNER to delete
+  ---
+  duration_ms: 33.026083
+  ...
+# Subtest: Organization usage: accurately counts all resources
+ok 21 - Organization usage: accurately counts all resources
+  ---
+  duration_ms: 36.176708
+  ...
+# Subtest: Accept membership route: marks invite accepted and increments editor usage
+ok 22 - Accept membership route: marks invite accepted and increments editor usage
+  ---
+  duration_ms: 35.477834
+  ...
+# Subtest: GET project and report routes: completion follows filled and cleared data despite stale stored completion
+ok 23 - GET project and report routes: completion follows filled and cleared data despite stale stored completion
+  ---
+  duration_ms: 101.687083
+  ...
+# Subtest: GET project and report routes: repeatable fields count once and completion stays within 100 percent
+ok 24 - GET project and report routes: repeatable fields count once and completion stays within 100 percent
+  ---
+  duration_ms: 49.974917
+  ...
+# Subtest: POST /api/projects: creates project on Free plan
+ok 25 - POST /api/projects: creates project on Free plan
+  ---
+  duration_ms: 31.709041
+  ...
+# Subtest: POST /api/projects: blocks 2nd project on Free plan
+ok 26 - POST /api/projects: blocks 2nd project on Free plan
+  ---
+  duration_ms: 37.255958
+  ...
+# Subtest: POST /api/projects: allows 3 projects on Pro Beta
+ok 27 - POST /api/projects: allows 3 projects on Pro Beta
+  ---
+  duration_ms: 36.516959
+  ...
+# Subtest: POST /api/projects: blocks 4th project on Pro Beta
+ok 28 - POST /api/projects: blocks 4th project on Pro Beta
+  ---
+  duration_ms: 36.986
+  ...
+# Subtest: POST /api/projects: archived projects dont count toward limit
+ok 29 - POST /api/projects: archived projects dont count toward limit
+  ---
+  duration_ms: 31.873708
+  ...
+# Subtest: POST /api/projects: reported projects dont count toward limit
+ok 30 - POST /api/projects: reported projects dont count toward limit
+  ---
+  duration_ms: 30.455959
+  ...
+# Subtest: POST /api/projects/:id/restore: restores deleted project within retention
+ok 31 - POST /api/projects/:id/restore: restores deleted project within retention
+  ---
+  duration_ms: 45.9515
+  ...
+# Subtest: POST /api/projects/:id/restore: blocks restore when limit exceeded
+ok 32 - POST /api/projects/:id/restore: blocks restore when limit exceeded
+  ---
+  duration_ms: 37.689
+  ...
+# Subtest: POST /api/projects/:id/restore: blocks restore after retention window
+ok 33 - POST /api/projects/:id/restore: blocks restore after retention window
+  ---
+  duration_ms: 30.496709
+  ...
+# Subtest: POST /api/projects/[id]/restore: route returns structured PLAN_LIMIT_EXCEEDED details
+ok 34 - POST /api/projects/[id]/restore: route returns structured PLAN_LIMIT_EXCEEDED details
+  ---
+  duration_ms: 28.418667
+  ...
+# Subtest: POST /api/projects/[id]/restore: route returns RETENTION_EXPIRED after 30 days
+ok 35 - POST /api/projects/[id]/restore: route returns RETENTION_EXPIRED after 30 days
+  ---
+  duration_ms: 26.578875
+  ...
+# Subtest: POST /api/projects/:id/restore: restores archived to active requires limit check
+ok 36 - POST /api/projects/:id/restore: restores archived to active requires limit check
+  ---
+  duration_ms: 29.107125
+  ...
+# Subtest: POST /api/projects/:id/restore: computes retention metadata correctly
+ok 37 - POST /api/projects/:id/restore: computes retention metadata correctly
+  ---
+  duration_ms: 22.833875
+  ...
+# Subtest: Project status transitions: active → archived
+ok 38 - Project status transitions: active → archived
+  ---
+  duration_ms: 30.834666
+  ...
+# Subtest: Project status transitions: active → reported
+ok 39 - Project status transitions: active → reported
+  ---
+  duration_ms: 28.606292
+  ...
+# Subtest: Project status transitions: active → deleted (soft-delete)
+ok 40 - Project status transitions: active → deleted (soft-delete)
+  ---
+  duration_ms: 25.399875
+  ...
+# Subtest: Project status transitions: reported → archived is blocked
+ok 41 - Project status transitions: reported → archived is blocked
+  ---
+  duration_ms: 25.917083
+  ...
+# Subtest: PATCH /api/projects/[id]/status: route marks active project as reported
+ok 42 - PATCH /api/projects/[id]/status: route marks active project as reported
+  ---
+  duration_ms: 29.540375
+  ...
+# Subtest: computeProjectRetention: returns null for null deletedAt
+ok 43 - computeProjectRetention: returns null for null deletedAt
+  ---
+  duration_ms: 43.691542
+  ...
+# Subtest: computeProjectRetention: returns retention metadata for deleted project
+ok 44 - computeProjectRetention: returns retention metadata for deleted project
+  ---
+  duration_ms: 10.888292
+  ...
+# Subtest: computeProjectRetention: returns negative days for expired retention
+ok 45 - computeProjectRetention: returns negative days for expired retention
+  ---
+  duration_ms: 11.631
+  ...
+# Subtest: getPlan: returns plan summary for existing organization
+ok 46 - getPlan: returns plan summary for existing organization
+  ---
+  duration_ms: 17.487708
+  ...
+# Subtest: getPlan: throws NOT_FOUND for deleted organization
+ok 47 - getPlan: throws NOT_FOUND for deleted organization
+  ---
+  duration_ms: 16.458333
+  ...
+# Subtest: getPlan: throws NOT_FOUND for non-existent organization
+ok 48 - getPlan: throws NOT_FOUND for non-existent organization
+  ---
+  duration_ms: 10.544167
+  ...
+# Subtest: assertOrgMembership: succeeds for accepted membership with sufficient role
+ok 49 - assertOrgMembership: succeeds for accepted membership with sufficient role
+  ---
+  duration_ms: 18.489542
+  ...
+# Subtest: assertOrgMembership: throws FORBIDDEN when user is not a member
+ok 50 - assertOrgMembership: throws FORBIDDEN when user is not a member
+  ---
+  duration_ms: 18.366208
+  ...
+# Subtest: assertOrgMembership: throws FORBIDDEN when role is insufficient
+ok 51 - assertOrgMembership: throws FORBIDDEN when role is insufficient
+  ---
+  duration_ms: 19.830042
+  ...
+# Subtest: assertOrgMembership: throws FORBIDDEN for pending invite
+ok 52 - assertOrgMembership: throws FORBIDDEN for pending invite
+  ---
+  duration_ms: 20.001584
+  ...
+# Subtest: assertOrgMembership: throws FORBIDDEN for deleted organization
+ok 53 - assertOrgMembership: throws FORBIDDEN for deleted organization
+  ---
+  duration_ms: 18.987917
+  ...
+# Subtest: assertOrgMembership: OWNER can always access (highest role)
+ok 54 - assertOrgMembership: OWNER can always access (highest role)
+  ---
+  duration_ms: 17.24
+  ...
+# Subtest: getOrganizationUsage: counts only active projects
+ok 55 - getOrganizationUsage: counts only active projects
+  ---
+  duration_ms: 30.424584
+  ...
+# Subtest: getOrganizationUsage: counts only accepted EDITOR memberships
+ok 56 - getOrganizationUsage: counts only accepted EDITOR memberships
+  ---
+  duration_ms: 20.397792
+  ...
+# Subtest: getOrganizationUsage: owner does not count toward editor limit
+ok 57 - getOrganizationUsage: owner does not count toward editor limit
+  ---
+  duration_ms: 15.944083
+  ...
+# Subtest: getOrganizationUsage: counts verifiers separately
+ok 58 - getOrganizationUsage: counts verifiers separately
+  ---
+  duration_ms: 17.350625
+  ...
+# Subtest: getOrganizationUsage: counts all viewer roles
+ok 59 - getOrganizationUsage: counts all viewer roles
+  ---
+  duration_ms: 16.762541
+  ...
+# Subtest: assertWithinLimit: allows creating project on Free plan when at 0/1
+ok 60 - assertWithinLimit: allows creating project on Free plan when at 0/1
+  ---
+  duration_ms: 15.911334
+  ...
+# Subtest: assertWithinLimit: blocks creating 2nd project on Free plan
+ok 61 - assertWithinLimit: blocks creating 2nd project on Free plan
+  ---
+  duration_ms: 16.59825
+  ...
+# Subtest: assertWithinLimit: allows 3 projects on Pro Beta plan
+ok 62 - assertWithinLimit: allows 3 projects on Pro Beta plan
+  ---
+  duration_ms: 18.695209
+  ...
+# Subtest: assertWithinLimit: blocks creating 4th project on Pro Beta plan
+ok 63 - assertWithinLimit: blocks creating 4th project on Pro Beta plan
+  ---
+  duration_ms: 21.816875
+  ...
+# Subtest: assertWithinLimit: archived projects do not count toward limit
+ok 64 - assertWithinLimit: archived projects do not count toward limit
+  ---
+  duration_ms: 17.469875
+  ...
+# Subtest: assertWithinLimit: blocks inviting editor on Free plan
+ok 65 - assertWithinLimit: blocks inviting editor on Free plan
+  ---
+  duration_ms: 15.995791
+  ...
+# Subtest: assertWithinLimit: allows inviting 2 editors on Pro Beta plan
+ok 66 - assertWithinLimit: allows inviting 2 editors on Pro Beta plan
+  ---
+  duration_ms: 16.908375
+  ...
+# Subtest: assertWithinLimit: blocks inviting 3rd editor on Pro Beta plan
+ok 67 - assertWithinLimit: blocks inviting 3rd editor on Pro Beta plan
+  ---
+  duration_ms: 16.04875
+  ...
+# Subtest: assertWithinLimit: blocks inviting verifier (feature disabled)
+ok 68 - assertWithinLimit: blocks inviting verifier (feature disabled)
+  ---
+  duration_ms: 15.005625
+  ...
+# Subtest: assertWithinLimit: never blocks unlimited resource (viewers)
+ok 69 - assertWithinLimit: never blocks unlimited resource (viewers)
+  ---
+  duration_ms: 14.394083
+  ...
+# Subtest: assertWithinLimit: handles needed=0 (no-op)
+ok 70 - assertWithinLimit: handles needed=0 (no-op)
+  ---
+  duration_ms: 15.630458
+  ...
+1..70
+# tests 70
+# suites 0
+# pass 70
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3501.4545

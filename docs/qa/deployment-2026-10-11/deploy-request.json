@@ -1,0 +1,30 @@
+{
+  "request": {
+    "name": "carbonreport",
+    "project": "prj_SJpvNVj6U9AE4rSlJhaArbyZlaGa",
+    "target": "production",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1074893955,
+      "ref": "main",
+      "sha": "3d3c7670a4077266318bce484e2bf63402727024"
+    }
+  },
+  "response": {
+    "id": "dpl_4r4huWnv4GBPLExyYQMM9AsP55SX",
+    "url": "carbonreport-tqaihumun-conrad-projects.vercel.app",
+    "readyState": "INITIALIZING",
+    "status": "INITIALIZING",
+    "gitSource": {
+      "type": "github",
+      "repoId": 1074893955,
+      "ref": "main",
+      "sha": "3d3c7670a4077266318bce484e2bf63402727024"
+    }
+  },
+  "finalState": {
+    "readyState": "ERROR",
+    "errorCode": "git_info_fail",
+    "aliasAssigned": false
+  }
+}

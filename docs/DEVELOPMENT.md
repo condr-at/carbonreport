@@ -104,11 +104,22 @@ npm run db:push:local
 npm run db:seed:local
 ```
 
-Deploy/staging:
+Deploy/staging with existing data:
+
+Before applying changes, inspect the pending migration SQL and migration status, confirm the target database, and verify that a current backup can be restored. Load the intended target environment explicitly for every command; the example file must define both `DATABASE_URL` and `DIRECT_URL` for the same intended database. Do not rely on an inherited local environment or the repository's default `.env`.
+
 ```bash
-npx prisma migrate deploy
-node prisma/seed.js  # or npm run db:seed depending on script
+npx tsx scripts/with-env.ts /secure/path/to/target.env npx prisma migrate status
+# After reviewing pending migrations and the backup:
+npx tsx scripts/with-env.ts /secure/path/to/target.env npx prisma migrate deploy
+# Add the supplier-package definitions, then check the same target database:
+npx tsx scripts/with-env.ts /secure/path/to/target.env npm run db:sync-cbam-fields
+npx tsx scripts/with-env.ts /secure/path/to/target.env npm run templates:check
 ```
+
+The supplier-package sync only adds missing definitions from the 28 `cbam_pkg_*` entries; its empty upsert updates preserve deployed/customized definitions and existing project data. Investigate any `templates:check` failures against that target rather than reseeding it.
+
+**Never run the full seed, a database reset or `prisma db push` against existing shared/staging/production data.** The full seed deletes application and catalog records. Use reviewed migrations for schema changes and the additive sync for these field definitions.
 
 If a migration fails, use the checklist in the "Database Migration Playbook" below (resolve/rollback/retry) rather than editing applied SQL.
 
