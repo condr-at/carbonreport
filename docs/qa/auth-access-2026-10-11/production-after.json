@@ -1,0 +1,31 @@
+{
+  "checks": [
+    {
+      "scenario": "verified test account before real reset",
+      "login": 200,
+      "refresh": 200,
+      "protectedRead": 200,
+      "emailVerified": true
+    },
+    {
+      "scenario": "invalid credentials fail without HTTP 500",
+      "reset": {
+        "status": 400,
+        "code": "INVALID_TOKEN"
+      },
+      "refresh": {
+        "status": 401,
+        "code": "UNAUTHORIZED",
+        "clearedCookies": [
+          "cr_access_token",
+          "cr_refresh_token"
+        ]
+      },
+      "missingRefresh": {
+        "status": 401,
+        "code": "UNAUTHORIZED"
+      }
+    }
+  ],
+  "checkedAt": "2026-10-11T14:51:13.090Z"
+}

@@ -1,0 +1,17 @@
+{
+  "codeCommit": "1a834c10b2a86389f1021a97b202bcaa839d1643",
+  "deploymentId": "dpl_5yLhw6brumiRFSmnkwHkcQRK3wfs",
+  "deploymentUrl": "https://carbonreport-3s4hcwn6k-conrad-projects.vercel.app",
+  "productionUrl": "https://carbonreport.app",
+  "vercelState": "READY",
+  "gitStatus": "Vercel success",
+  "ciUrl": "https://github.com/condr-at/carbonreport/actions/runs/38148711035",
+  "ciStatus": "completed",
+  "realReset": {
+    "requestUi": "If an account exists, you will receive an email with instructions",
+    "delivery": "Waiting for user confirmation",
+    "completion": "User must set new password and confirm sign-out/sign-in",
+    "requestSubmittedDate": "2026-10-11"
+  },
+  "ciConclusion": "success"
+}

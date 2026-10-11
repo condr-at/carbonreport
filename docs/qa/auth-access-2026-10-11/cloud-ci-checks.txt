@@ -1,0 +1,15 @@
+GitHub Actions: https://github.com/condr-at/carbonreport/actions/runs/38148711035
+Commit: 1a834c10b2a86389f1021a97b202bcaa839d1643
+Conclusion: success
+supplier-package	Verify runner tools and destructive-operation guards	2026-10-11T14:49:53.2472346Z # tests 2
+supplier-package	Verify runner tools and destructive-operation guards	2026-10-11T14:49:53.2475377Z # pass 2
+supplier-package	Verify runner tools and destructive-operation guards	2026-10-11T14:49:53.2490009Z # fail 0
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:50:15.0388201Z # tests 222
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:50:15.0389165Z # pass 222
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:50:15.0389489Z # fail 0
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:50:39.6873136Z  ✓ Compiled successfully in 21.3s
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:50:39.6891466Z    Linting and checking validity of types ...
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:52:12.9799891Z # {"result": "pass", "datasetVersion": 7, "directLotEmissions": 30, "indirectLotEmissions": 6, "zipSha256": "54d4da204e9151b4cad37783ac69a79a27b3d8ed20c439fa982feb1302779bbf"}
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:52:16.5296040Z # tests 14
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:52:16.5297020Z # pass 14
+supplier-package	Registration, supplier ZIP, reset, session recovery and roles	2026-10-11T14:52:16.5297907Z # fail 0

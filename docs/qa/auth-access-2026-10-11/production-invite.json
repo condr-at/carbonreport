@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-10-11T14:51:22.488Z",
+  "scope": "Existing synthetic QA E2E organization and owner-authorized test recipient; no customer data or outbound invite email",
+  "created": 201,
+  "role": "VIEWER_READONLY",
+  "inviteStatus": "pending",
+  "pendingProjectRead": 403
+}
